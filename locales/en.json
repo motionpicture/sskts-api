@@ -1,0 +1,12 @@
+{
+	"Message": {
+		"Searching": "Searching...",
+		"Sending": "Now sending...",
+		"Sent": "Sent",
+		"Unsent": "Transmission failed",
+		"UnexpectedError": "A system error has occurred. Please try again later. Sorry for the inconvenience.",
+		"Expired": "Expired",
+		"NotFound": "Page not found",
+		"Invalid": "Invalid."
+	}
+}
