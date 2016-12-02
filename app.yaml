@@ -22,4 +22,3 @@ skip_files:
 
 env_variables:
   NODE_ENV: 'dev'
-  PORT: '8080'
