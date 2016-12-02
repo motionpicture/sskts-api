@@ -11,8 +11,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 const routing_controllers_1 = require("routing-controllers");
 let NotFoundMiddleware = class NotFoundMiddleware {
     use(request, response, next) {
-        if (!request.route)
-            return next(new Error('Not Found'));
+        // if (!request.route) return next(new Error('Not Found'));
+        if (!request.route) {
+            response.statusCode = 404;
+            return response.json({
+                success: false,
+                message: 'Not Found.'
+            });
+        }
         next();
     }
 };

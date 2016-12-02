@@ -22,7 +22,7 @@ const i18n = require('i18n');
 let app = express();
 if (process.env.NODE_ENV !== 'prod') {
     // サーバーエラーテスト
-    app.get('/api/500', (req, res) => {
+    app.get('/dev/500', (req, res) => {
         req.on('data', (chunk) => {
         });
         req.on('end', () => {

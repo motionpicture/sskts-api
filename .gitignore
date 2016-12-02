@@ -3,6 +3,7 @@ logs/*
 node_modules/*
 typings/*
 iisnode/*
+npm-debug.log
 
 !.gitignore
 !.gitkeep
