@@ -1,10 +1,10 @@
 import express = require('express');
 import bodyParser = require('body-parser');
-import conf = require('config');
+// import conf = require('config');
 // import mongoose = require('mongoose');
 import i18n = require('i18n');
-import passport = require('passport');
-import passportHttpBearer = require('passport-http-bearer');
+// import passport = require('passport');
+// import passportHttpBearer = require('passport-http-bearer');
 // import Models from '../common/models/Models';
 
 // let BearerStrategy = passportHttpBearer.Strategy;
@@ -46,7 +46,8 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-
+// 静的ファイル
+app.use(express.static(__dirname + '/../../public'));
 
 // i18n を利用する設定
 i18n.configure({

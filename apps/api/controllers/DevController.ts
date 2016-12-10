@@ -1,5 +1,5 @@
 import {BaseController} from './BaseController';
-import {JsonController, Req, Get} from "routing-controllers";
+import {JsonController, Get} from "routing-controllers";
 import mongoose = require('mongoose');
 import conf = require('config');
 let MONGOLAB_URI = conf.get<string>('mongolab_uri');

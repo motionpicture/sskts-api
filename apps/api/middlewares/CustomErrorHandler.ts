@@ -1,4 +1,4 @@
-import {ErrorMiddlewareInterface, MiddlewareInterface, MiddlewareGlobalAfter} from "routing-controllers";
+import {ErrorMiddlewareInterface, MiddlewareGlobalAfter} from "routing-controllers";
 import {Request, Response, NextFunction} from "express";
 
 @MiddlewareGlobalAfter()

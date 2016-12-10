@@ -1,4 +1,3 @@
-import {Request, Response, NextFunction} from "express";
 import {MiddlewareGlobalBefore, MiddlewareInterface} from "routing-controllers";
 import Log4js = require('log4js');
 
