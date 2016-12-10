@@ -5,8 +5,8 @@ let env = process.env.NODE_ENV || 'dev';
 
 // ディレクトリなければ作成(初回アクセス時だけ)
 let logDir = `${__dirname}/../../../logs/${env}/api`;
-// let fs = require('fs-extra');
-// fs.mkdirsSync(logDir);
+let fs = require('fs-extra');
+fs.mkdirsSync(logDir);
 
 log4js.configure({
     appenders: [
