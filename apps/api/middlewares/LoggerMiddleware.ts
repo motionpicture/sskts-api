@@ -1,4 +1,5 @@
 import log4js = require("log4js");
+import config = require("config");
 
 import {MiddlewareGlobalBefore, MiddlewareInterface} from "routing-controllers";
 
@@ -37,7 +38,7 @@ log4js.configure({
 // add mongo logger
 var mongoAppender = require('log4js-node-mongodb');
 log4js.addAppender(
-    mongoAppender.appender({connectionString: 'localhost:27017/logs'}),
+    mongoAppender.appender({connectionString: config.get<string>("mongolab_uri_for_logs")}),
     'mongo'
 );
 

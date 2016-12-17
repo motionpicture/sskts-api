@@ -9,6 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 const log4js = require("log4js");
+const config = require("config");
 const routing_controllers_1 = require("routing-controllers");
 let env = process.env.NODE_ENV || "dev";
 // ディレクトリなければ作成(初回アクセス時だけ)
@@ -41,7 +42,7 @@ log4js.configure({
 });
 // add mongo logger
 var mongoAppender = require('log4js-node-mongodb');
-log4js.addAppender(mongoAppender.appender({ connectionString: 'localhost:27017/logs' }), 'mongo');
+log4js.addAppender(mongoAppender.appender({ connectionString: config.get("mongolab_uri_for_logs") }), 'mongo');
 let LoggerMiddleware = class LoggerMiddleware {
     use(request, response, next) {
         if (process.env.NODE_ENV === "dev")

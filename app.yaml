@@ -21,6 +21,7 @@ skip_files:
 - ^node_modules$
 - ^logs$
 - ^typings$
+- ^iisnode$
 
 env_variables:
   NODE_ENV: 'dev'
