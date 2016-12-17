@@ -8,14 +8,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-const BaseController_1 = require('./BaseController');
+const BaseController_1 = require("./BaseController");
 const routing_controllers_1 = require("routing-controllers");
-const mongoose = require('mongoose');
-const conf = require('config');
-let MONGOLAB_URI = conf.get('mongolab_uri');
+const mongoose = require("mongoose");
+const conf = require("config");
+let MONGOLAB_URI = conf.get("mongolab_uri");
 let DevController = class DevController extends BaseController_1.BaseController {
     environmentVariables() {
-        this.logger.debug('debugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebug');
+        this.logger.debug("debugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebug");
+        this.logger.debug("process.env:", process.env);
         return {
             success: true,
             variables: process.env
@@ -29,7 +30,7 @@ let DevController = class DevController extends BaseController_1.BaseController 
         }).then(() => {
             return {
                 success: true,
-                message: 'connected.'
+                message: "connected."
             };
         }, (err) => {
             return {
@@ -46,7 +47,7 @@ let DevController = class DevController extends BaseController_1.BaseController 
         }).then(() => {
             return {
                 success: true,
-                message: 'disconnected.'
+                message: "disconnected."
             };
         }, (err) => {
             return {
@@ -57,25 +58,25 @@ let DevController = class DevController extends BaseController_1.BaseController 
     }
 };
 __decorate([
-    routing_controllers_1.Get("/environmentVariables"), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', []), 
-    __metadata('design:returntype', void 0)
+    routing_controllers_1.Get("/environmentVariables"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
 ], DevController.prototype, "environmentVariables", null);
 __decorate([
-    routing_controllers_1.Get("/mongoose/connect"), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', []), 
-    __metadata('design:returntype', void 0)
+    routing_controllers_1.Get("/mongoose/connect"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
 ], DevController.prototype, "connectMongoose", null);
 __decorate([
-    routing_controllers_1.Get("/mongoose/disconnect"), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', []), 
-    __metadata('design:returntype', void 0)
+    routing_controllers_1.Get("/mongoose/disconnect"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
 ], DevController.prototype, "disconnectMongoose", null);
 DevController = __decorate([
-    routing_controllers_1.JsonController("/dev"), 
-    __metadata('design:paramtypes', [])
+    routing_controllers_1.JsonController("/dev"),
+    __metadata("design:paramtypes", [])
 ], DevController);
 exports.DevController = DevController;

@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-const BaseController_1 = require('./BaseController');
+const BaseController_1 = require("./BaseController");
 const routing_controllers_1 = require("routing-controllers");
 let TransactionController = class TransactionController extends BaseController_1.BaseController {
     /**
@@ -22,8 +22,8 @@ let TransactionController = class TransactionController extends BaseController_1
         return {
             success: true,
             message: message,
-            transaction_id: '12345',
-            transaction_password: '12345'
+            transaction_id: "12345",
+            transaction_password: "12345"
         };
     }
     /**
@@ -34,8 +34,8 @@ let TransactionController = class TransactionController extends BaseController_1
      */
     publishPaymentNo(transactionId, transactionPassword) {
         let message = null;
-        let moment = require('moment');
-        let paymentNo = `${moment().format('YYYYMMDD')}12345`; // 購入番号
+        let moment = require("moment");
+        let paymentNo = `${moment().format("YYYYMMDD")}12345`; // 購入番号
         return {
             success: true,
             message: message,
@@ -54,27 +54,26 @@ let TransactionController = class TransactionController extends BaseController_1
     }
 };
 __decorate([
-    routing_controllers_1.Post("/create"), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', []), 
-    __metadata('design:returntype', void 0)
+    routing_controllers_1.Post("/create"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
 ], TransactionController.prototype, "create", null);
 __decorate([
     routing_controllers_1.Post("/publishPaymentNo"),
-    __param(0, routing_controllers_1.BodyParam("transaction_id")),
-    __param(1, routing_controllers_1.BodyParam("transaction_password")), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', [String, String]), 
-    __metadata('design:returntype', void 0)
+    __param(0, routing_controllers_1.BodyParam("transaction_id")), __param(1, routing_controllers_1.BodyParam("transaction_password")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
 ], TransactionController.prototype, "publishPaymentNo", null);
 __decorate([
-    routing_controllers_1.Post("/sign"), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', []), 
-    __metadata('design:returntype', void 0)
+    routing_controllers_1.Post("/sign"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
 ], TransactionController.prototype, "sign", null);
 TransactionController = __decorate([
-    routing_controllers_1.JsonController("/transaction"), 
-    __metadata('design:paramtypes', [])
+    routing_controllers_1.JsonController("/transaction"),
+    __metadata("design:paramtypes", [])
 ], TransactionController);
 exports.TransactionController = TransactionController;

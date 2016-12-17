@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-const BaseController_1 = require('./BaseController');
+const BaseController_1 = require("./BaseController");
 const routing_controllers_1 = require("routing-controllers");
 let PerformanceController = class PerformanceController extends BaseController_1.BaseController {
     /**
@@ -32,7 +32,7 @@ let PerformanceController = class PerformanceController extends BaseController_1
             success: true,
             result: {
                 _id: id,
-                film_name: 'film_name'
+                film_name: "film_name"
             }
         };
     }
@@ -46,27 +46,27 @@ let PerformanceController = class PerformanceController extends BaseController_1
     }
 };
 __decorate([
-    routing_controllers_1.Get("/performances"), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', []), 
-    __metadata('design:returntype', void 0)
+    routing_controllers_1.Get("/performances"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
 ], PerformanceController.prototype, "find", null);
 __decorate([
     routing_controllers_1.Get("/performance/:id"),
-    __param(0, routing_controllers_1.Param("id")), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', [String]), 
-    __metadata('design:returntype', void 0)
+    __param(0, routing_controllers_1.Param("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
 ], PerformanceController.prototype, "findById", null);
 __decorate([
     routing_controllers_1.Get("/performance/:id/seatStatuses"),
-    __param(0, routing_controllers_1.Param("id")), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', [String]), 
-    __metadata('design:returntype', void 0)
+    __param(0, routing_controllers_1.Param("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
 ], PerformanceController.prototype, "getSeatStatuses", null);
 PerformanceController = __decorate([
-    routing_controllers_1.JsonController(), 
-    __metadata('design:paramtypes', [])
+    routing_controllers_1.JsonController(),
+    __metadata("design:paramtypes", [])
 ], PerformanceController);
 exports.PerformanceController = PerformanceController;

@@ -1,14 +1,15 @@
-import {BaseController} from './BaseController';
+import {BaseController} from "./BaseController";
 import {JsonController, Get} from "routing-controllers";
-import mongoose = require('mongoose');
-import conf = require('config');
-let MONGOLAB_URI = conf.get<string>('mongolab_uri');
+import mongoose = require("mongoose");
+import conf = require("config");
+let MONGOLAB_URI = conf.get<string>("mongolab_uri");
 
 @JsonController("/dev")
 export class DevController extends BaseController {
     @Get("/environmentVariables")
     environmentVariables() {
-        this.logger.debug('debugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebug');
+        this.logger.debug("debugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebug");
+        this.logger.debug("process.env:", process.env);
         return {
             success: true,
             variables: process.env
@@ -24,7 +25,7 @@ export class DevController extends BaseController {
         }).then(() => {
             return {
                 success: true,
-                message: 'connected.'
+                message: "connected."
             }
         }, (err) => {
             return {
@@ -43,7 +44,7 @@ export class DevController extends BaseController {
         }).then(() => {
             return {
                 success: true,
-                message: 'disconnected.'
+                message: "disconnected."
             }
         }, (err) => {
             return {

@@ -1,6 +1,6 @@
-import {BaseController} from './BaseController';
+import {BaseController} from "./BaseController";
 import {JsonController, BodyParam, Post} from "routing-controllers";
-import momentModule = require('moment');
+import momentModule = require("moment");
 
 @JsonController("/transaction")
 export class TransactionController extends BaseController {
@@ -14,8 +14,8 @@ export class TransactionController extends BaseController {
         return {
             success: true,
             message: message,
-            transaction_id: '12345',
-            transaction_password: '12345'
+            transaction_id: "12345",
+            transaction_password: "12345"
         };
     }
 
@@ -28,8 +28,8 @@ export class TransactionController extends BaseController {
     @Post("/publishPaymentNo")
     publishPaymentNo(@BodyParam("transaction_id") transactionId: string, @BodyParam("transaction_password") transactionPassword: string) {
         let message: string = null;
-        let moment: typeof momentModule = require('moment');
-        let paymentNo = `${moment().format('YYYYMMDD')}12345` // 購入番号
+        let moment: typeof momentModule = require("moment");
+        let paymentNo = `${moment().format("YYYYMMDD")}12345` // 購入番号
 
         return {
             success: true,

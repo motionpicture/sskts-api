@@ -19,7 +19,7 @@ let CustomErrorHandler = class CustomErrorHandler {
     }
 };
 CustomErrorHandler = __decorate([
-    routing_controllers_1.MiddlewareGlobalAfter(), 
-    __metadata('design:paramtypes', [])
+    routing_controllers_1.MiddlewareGlobalAfter(),
+    __metadata("design:paramtypes", [])
 ], CustomErrorHandler);
 exports.CustomErrorHandler = CustomErrorHandler;

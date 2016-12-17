@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-const BaseController_1 = require('./BaseController');
+const BaseController_1 = require("./BaseController");
 const routing_controllers_1 = require("routing-controllers");
 let ReservationController = class ReservationController extends BaseController_1.BaseController {
     /**
@@ -47,30 +47,27 @@ let ReservationController = class ReservationController extends BaseController_1
 };
 __decorate([
     routing_controllers_1.Post("/createByTransactionId"),
-    __param(0, routing_controllers_1.BodyParam("transaction_id")),
-    __param(1, routing_controllers_1.BodyParam("transaction_password")), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', [String, String]), 
-    __metadata('design:returntype', void 0)
+    __param(0, routing_controllers_1.BodyParam("transaction_id")), __param(1, routing_controllers_1.BodyParam("transaction_password")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
 ], ReservationController.prototype, "createByTransactionId", null);
 __decorate([
     routing_controllers_1.Post("/removeByTransactionId"),
-    __param(0, routing_controllers_1.BodyParam("transaction_id")),
-    __param(1, routing_controllers_1.BodyParam("transaction_password")), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', [String, String]), 
-    __metadata('design:returntype', void 0)
+    __param(0, routing_controllers_1.BodyParam("transaction_id")), __param(1, routing_controllers_1.BodyParam("transaction_password")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
 ], ReservationController.prototype, "removeByTransactionId", null);
 __decorate([
     routing_controllers_1.Post("/updateByTransactionId"),
-    __param(0, routing_controllers_1.BodyParam("transaction_id")),
-    __param(1, routing_controllers_1.BodyParam("transaction_password")), 
-    __metadata('design:type', Function), 
-    __metadata('design:paramtypes', [String, String]), 
-    __metadata('design:returntype', void 0)
+    __param(0, routing_controllers_1.BodyParam("transaction_id")), __param(1, routing_controllers_1.BodyParam("transaction_password")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
 ], ReservationController.prototype, "updateByTransactionId", null);
 ReservationController = __decorate([
-    routing_controllers_1.JsonController("/reservation"), 
-    __metadata('design:paramtypes', [])
+    routing_controllers_1.JsonController("/reservation"),
+    __metadata("design:paramtypes", [])
 ], ReservationController);
 exports.ReservationController = ReservationController;

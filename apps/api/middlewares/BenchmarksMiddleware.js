@@ -11,12 +11,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 const routing_controllers_1 = require("routing-controllers");
 let BenchmarksMiddleware = class BenchmarksMiddleware {
     use(request, response, next) {
-        if (process.env.NODE_ENV === 'dev') {
+        if (process.env.NODE_ENV === "dev") {
             let startMemory = process.memoryUsage();
             let startTime = process.hrtime();
-            let log4js = require('log4js');
-            let logger = log4js.getLogger('system');
-            request.on('end', () => {
+            let log4js = require("log4js");
+            let logger = log4js.getLogger("system");
+            request.on("end", () => {
                 let endMemory = process.memoryUsage();
                 let memoryUsage = endMemory.rss - startMemory.rss;
                 let diff = process.hrtime(startTime);
@@ -27,7 +27,7 @@ let BenchmarksMiddleware = class BenchmarksMiddleware {
     }
 };
 BenchmarksMiddleware = __decorate([
-    routing_controllers_1.MiddlewareGlobalBefore(), 
-    __metadata('design:paramtypes', [])
+    routing_controllers_1.MiddlewareGlobalBefore(),
+    __metadata("design:paramtypes", [])
 ], BenchmarksMiddleware);
 exports.BenchmarksMiddleware = BenchmarksMiddleware;

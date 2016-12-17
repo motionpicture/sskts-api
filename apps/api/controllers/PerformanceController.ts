@@ -1,4 +1,4 @@
-import {BaseController} from './BaseController';
+import {BaseController} from "./BaseController";
 import {JsonController, Param, Get} from "routing-controllers";
 
 @JsonController()
@@ -28,7 +28,7 @@ export class PerformanceController extends BaseController {
             success: true,
             result: {
                 _id: id,
-                film_name: 'film_name'
+                film_name: "film_name"
             }
         };
     }
