@@ -33,6 +33,8 @@ if (process.env.NODE_ENV !== "prod") {
         });
     });
 }
+// import benchmarks from './middlewares/benchmarksMiddleware';
+// app.use(benchmarks); // ベンチマーク的な
 // view engine setup
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "ejs");
@@ -74,17 +76,26 @@ app.use(i18n.init);
 //         console.log("disconnected.");
 //     });
 // }
-require("reflect-metadata");
-const routing_controllers_1 = require("routing-controllers");
-// import {useContainer, useExpressServer} from "routing-controllers";
-// import {Container} from "typedi";
-// its important to set container before any operation you do with routing-controllers,
-// including importing controllers
-// useContainer(Container);
-// now import all our controllers. alternatively you can specify controllerDirs in routing-controller options
-routing_controllers_1.useExpressServer(app, {
-    controllers: [__dirname + "/controllers/**/*.js"],
-    middlewares: [__dirname + "/middlewares/**/*.js"],
-    defaultErrorHandler: false // disable default error handler, only if you have your own error handler
+// routers
+const devRouter_1 = require("./routers/devRouter");
+const filmRouter_1 = require("./routers/filmRouter");
+const theaterRouter_1 = require("./routers/theaterRouter");
+app.use('/dev', devRouter_1.default);
+app.use('/', filmRouter_1.default);
+app.use('/', theaterRouter_1.default);
+// 404
+app.use((req, res, next) => {
+    res.json({
+        success: false,
+        message: "Not Found"
+    });
+});
+// error handlers
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.json({
+        success: false,
+        message: err.message
+    });
 });
 module.exports = app;

@@ -39,6 +39,9 @@ if (process.env.NODE_ENV !== "prod") {
     });
 }
 
+// import benchmarks from './middlewares/benchmarksMiddleware';
+// app.use(benchmarks); // ベンチマーク的な
+
 // view engine setup
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "ejs");
@@ -89,20 +92,29 @@ app.use(i18n.init);
 //     });
 // }
 
-import "reflect-metadata";
-import {useExpressServer} from "routing-controllers";
-// import {useContainer, useExpressServer} from "routing-controllers";
-// import {Container} from "typedi";
+// routers
+import devRouter from "./routers/devRouter";
+import filmRouter from "./routers/filmRouter";
+import theaterRouter from "./routers/theaterRouter";
+app.use('/dev', devRouter)
+app.use('/', filmRouter)
+app.use('/', theaterRouter)
 
-// its important to set container before any operation you do with routing-controllers,
-// including importing controllers
-// useContainer(Container);
+// 404
+app.use((req, res, next) => {
+    res.json({
+        success: false,
+        message: "Not Found"
+    });
+});
 
-// now import all our controllers. alternatively you can specify controllerDirs in routing-controller options
-useExpressServer(app, {
-    controllers: [__dirname + "/controllers/**/*.js"],
-    middlewares: [__dirname + "/middlewares/**/*.js"],
-    defaultErrorHandler: false // disable default error handler, only if you have your own error handler
+// error handlers
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err);
+    res.json({
+        success: false,
+        message: err.message
+    });
 });
 
 export = app;
