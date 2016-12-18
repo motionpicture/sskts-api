@@ -1,8 +1,6 @@
 import log4js = require("log4js");
 import config = require("config");
 
-import {MiddlewareGlobalBefore, MiddlewareInterface} from "routing-controllers";
-
 let env = process.env.NODE_ENV || "dev";
 
 // ディレクトリなければ作成(初回アクセス時だけ)
@@ -42,8 +40,7 @@ log4js.addAppender(
     'mongo'
 );
 
-@MiddlewareGlobalBefore()
-export class LoggerMiddleware implements MiddlewareInterface {
+export class LoggerMiddleware {
     use(request: any, response: any, next?: (err?: any) => any): any {
         if (process.env.NODE_ENV === "dev") return log4js.connectLogger(log4js.getLogger("access"), {})(request, response, next);
         next();

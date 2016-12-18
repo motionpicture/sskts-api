@@ -1,16 +1,6 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 const log4js = require("log4js");
 const config = require("config");
-const routing_controllers_1 = require("routing-controllers");
 let env = process.env.NODE_ENV || "dev";
 // ディレクトリなければ作成(初回アクセス時だけ)
 let logDir = `${__dirname}/../../../logs/${env}/api`;
@@ -43,15 +33,11 @@ log4js.configure({
 // add mongo logger
 var mongoAppender = require('log4js-node-mongodb');
 log4js.addAppender(mongoAppender.appender({ connectionString: config.get("mongolab_uri_for_logs") }), 'mongo');
-let LoggerMiddleware = class LoggerMiddleware {
+class LoggerMiddleware {
     use(request, response, next) {
         if (process.env.NODE_ENV === "dev")
             return log4js.connectLogger(log4js.getLogger("access"), {})(request, response, next);
         next();
     }
-};
-LoggerMiddleware = __decorate([
-    routing_controllers_1.MiddlewareGlobalBefore(),
-    __metadata("design:paramtypes", [])
-], LoggerMiddleware);
+}
 exports.LoggerMiddleware = LoggerMiddleware;
