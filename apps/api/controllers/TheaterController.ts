@@ -1,8 +1,7 @@
-import {Request} from "express";
 import {BaseController} from "./BaseController";
-import {JsonController, Req, Get, Param, UseBefore} from "routing-controllers";
-import {COAOAuthMiddleware} from "../middlewares/COAOAuthMiddleware"; 
-import requestModule = require("request");
+import {JsonController, Get, Param} from "routing-controllers";
+import request = require("request");
+import config = require("config");
 
 @JsonController()
 export class TheaterController extends BaseController {
@@ -10,31 +9,49 @@ export class TheaterController extends BaseController {
      * 劇場詳細をコードから取得する
      */
     @Get("/theater/:code")
-    @UseBefore(COAOAuthMiddleware)
-    findByCode(@Param("code") id: string, @Req() request: Request) {
-        return new Promise((resolve, reject) => {
-            requestModule.get({
-                url: "http://coacinema.aa0.netvolante.jp/api/v1/theater/001/theater/",
-                auth: {
-                    'bearer': request["access_token"]
-                }
-            }, (error, response, body) => {
-                if (error) return reject(error);
-                if (body.message) return reject(new Error(body.message));
+    findByCode(@Param("code") code: string) {
+        let theater: {
+            theater_code: string,
+            theater_name: string,
+            theater_name_eng: string,
+            theater_name_kana: string,
+        }
 
-                resolve(body);
+        return new Promise((resolve, reject) => {
+            this.publishAccessToken((err, accessToken) => {
+                if (err) return reject(err);
+
+                request.get({
+                    url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${code}/theater/`,
+                    auth: {bearer: accessToken},
+                    json: true
+                }, (error, response, body) => {
+                    this.logger.debug("request processed.", error, body);
+                    if (error) return reject(error);
+                    if (typeof body === "string")  return reject(new Error(body));
+                    if (body.message) return reject(new Error(body.message));
+                    if (body.status !== 0) return reject(new Error(body.status));
+
+                    theater = {
+                        theater_code: body.theater_code,
+                        theater_name: body.theater_name,
+                        theater_name_eng: body.theater_name_eng,
+                        theater_name_kana: body.theater_name_kana,
+                    }
+
+                    resolve(theater);
+                });
             });
-        }).then((body) => {
+        }).then((result: typeof theater) => {
             return {
                 success: true,
                 message: null,
-                result: body
+                theater: result
             };
         }, (err) => {
             return {
                 success: false,
-                message: err.message,
-                result: null
+                message: err.message
             }
         });
     }

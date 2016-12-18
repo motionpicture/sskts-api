@@ -13,47 +13,60 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 const BaseController_1 = require("./BaseController");
 const routing_controllers_1 = require("routing-controllers");
-const COAOAuthMiddleware_1 = require("../middlewares/COAOAuthMiddleware");
-const requestModule = require("request");
+const request = require("request");
+const config = require("config");
 let TheaterController = class TheaterController extends BaseController_1.BaseController {
     /**
      * 劇場詳細をコードから取得する
      */
-    findByCode(id, request) {
+    findByCode(code) {
+        let theater;
         return new Promise((resolve, reject) => {
-            requestModule.get({
-                url: "http://coacinema.aa0.netvolante.jp/api/v1/theater/001/theater/",
-                auth: {
-                    'bearer': request["access_token"]
-                }
-            }, (error, response, body) => {
-                if (error)
-                    return reject(error);
-                if (body.message)
-                    return reject(new Error(body.message));
-                resolve(body);
+            this.publishAccessToken((err, accessToken) => {
+                if (err)
+                    return reject(err);
+                request.get({
+                    url: `${config.get("coa_api_endpoint")}/api/v1/theater/${code}/theater/`,
+                    auth: { bearer: accessToken },
+                    json: true
+                }, (error, response, body) => {
+                    this.logger.debug("request processed.", error, body);
+                    if (error)
+                        return reject(error);
+                    if (typeof body === "string")
+                        return reject(new Error(body));
+                    if (body.message)
+                        return reject(new Error(body.message));
+                    if (body.status !== 0)
+                        return reject(new Error(body.status));
+                    theater = {
+                        theater_code: body.theater_code,
+                        theater_name: body.theater_name,
+                        theater_name_eng: body.theater_name_eng,
+                        theater_name_kana: body.theater_name_kana,
+                    };
+                    resolve(theater);
+                });
             });
-        }).then((body) => {
+        }).then((result) => {
             return {
                 success: true,
                 message: null,
-                result: body
+                theater: result
             };
         }, (err) => {
             return {
                 success: false,
-                message: err.message,
-                result: null
+                message: err.message
             };
         });
     }
 };
 __decorate([
     routing_controllers_1.Get("/theater/:code"),
-    routing_controllers_1.UseBefore(COAOAuthMiddleware_1.COAOAuthMiddleware),
-    __param(0, routing_controllers_1.Param("code")), __param(1, routing_controllers_1.Req()),
+    __param(0, routing_controllers_1.Param("code")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], TheaterController.prototype, "findByCode", null);
 TheaterController = __decorate([
