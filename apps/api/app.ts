@@ -1,5 +1,6 @@
 import express = require("express");
 import bodyParser = require("body-parser");
+import expressValidator = require("express-validator");
 // import conf = require("config");
 // import mongoose = require("mongoose");
 import i18n = require("i18n");
@@ -50,6 +51,7 @@ app.set("view engine", "ejs");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // 静的ファイル
 app.use(express.static(__dirname + "/../../public"));

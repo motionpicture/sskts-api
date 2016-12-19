@@ -9,6 +9,7 @@
     "body-parser": "^1.15.2",
     "config": "^1.24.0",
     "express": "^4.14.0",
+    "express-validator": "^3.1.0",
     "fs-extra": "^1.0.0",
     "i18n": "^0.8.3",
     "log4js": "^1.0.1",
@@ -19,8 +20,7 @@
     "passport": "^0.3.2",
     "passport-http-bearer": "^1.0.1",
     "redis": "^2.6.3",
-    "request": "^2.79.0",
-    "validator": "^6.2.0"
+    "request": "^2.79.0"
   },
   "devDependencies": {},
   "repository": {},
