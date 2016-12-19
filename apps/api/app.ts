@@ -39,6 +39,8 @@ if (process.env.NODE_ENV !== "prod") {
     });
 }
 
+import logger from './middlewares/logger';
+app.use(logger);
 // import benchmarks from './middlewares/benchmarksMiddleware';
 // app.use(benchmarks); // ベンチマーク的な
 
@@ -93,9 +95,9 @@ app.use(i18n.init);
 // }
 
 // routers
-import devRouter from "./routers/devRouter";
-import filmRouter from "./routers/filmRouter";
-import theaterRouter from "./routers/theaterRouter";
+import devRouter from "./routers/dev";
+import filmRouter from "./routers/film";
+import theaterRouter from "./routers/theater";
 app.use('/dev', devRouter)
 app.use('/', filmRouter)
 app.use('/', theaterRouter)
