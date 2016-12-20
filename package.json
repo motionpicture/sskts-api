@@ -6,10 +6,24 @@
     "start": "node ./api.js"
   },
   "dependencies": {
-    "body-parser": "^1.15.2",
+    "@types/bluebird": "^3.0.36",
+    "@types/body-parser": "0.0.33",
+    "@types/config": "0.0.31",
+    "@types/express": "^4.0.34",
+    "@types/fs-extra": "0.0.35",
+    "@types/i18n": "^0.5.20",
+    "@types/log4js": "0.0.32",
+    "@types/moment": "^2.13.0",
+    "@types/mongoose": "^4.7.1",
+    "@types/numeral": "0.0.18",
+    "@types/passport": "^0.2.35",
+    "@types/passport-http-bearer": "^1.0.30",
+    "@types/redis": "^0.12.34",
+    "@types/request": "0.0.36",
+    "body-parser": "latest",
     "config": "^1.24.0",
     "express": "^4.14.0",
-    "express-validator": "^3.1.0",
+    "express-validator": "^3.1.1",
     "fs-extra": "^1.0.0",
     "i18n": "^0.8.3",
     "log4js": "^1.0.1",
@@ -31,5 +45,6 @@
     "node": ">=7.0.0",
     "npm": ">=3.10.0"
   },
-  "description": "This is a repogitory for SASAKI_TICKET API."
+  "description": "This is a repogitory for SASAKI_TICKET API.",
+  "config": {}
 }
