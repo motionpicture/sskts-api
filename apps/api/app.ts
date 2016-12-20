@@ -99,10 +99,14 @@ app.use(i18n.init);
 // routers
 import devRouter from "./routers/dev";
 import filmRouter from "./routers/film";
+import performanceRouter from "./routers/performance";
+import screenRouter from "./routers/screen";
 import theaterRouter from "./routers/theater";
-app.use('/dev', devRouter)
-app.use('/', filmRouter)
-app.use('/', theaterRouter)
+app.use('/dev', devRouter);
+app.use('/', filmRouter);
+app.use('/', performanceRouter);
+app.use('/', theaterRouter);
+app.use('/', screenRouter);
 
 // 404
 app.use((req, res, next) => {

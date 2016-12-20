@@ -5,14 +5,10 @@ const COA = require("../modules/coa");
  */
 function find(theaterCode) {
     return new Promise((resolve, reject) => {
-        COA.publishAccessToken((err, accessToken) => {
+        COA.findFilmsByTheaterCode(theaterCode, (err, films) => {
             if (err)
                 return reject(err);
-            COA.findFilmsByTheaterCode(accessToken, theaterCode, (err, films) => {
-                if (err)
-                    return reject(err);
-                resolve(films);
-            });
+            resolve(films);
         });
     });
 }

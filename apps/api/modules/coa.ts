@@ -1,7 +1,23 @@
 import request = require("request");
 import config = require("config");
 
-export function publishAccessToken(cb: (err: Error, accessToken: string) => void): void {
+/**
+ * API認証情報
+ */
+var credentials = {
+    access_token: "",
+    expired_at: ""
+}
+
+/**
+ * アクセストークンを発行する
+ */
+export function publishAccessToken(cb: (err: Error) => void): void {
+    // TODO アクセストークン有効期限チェック
+    if (credentials.access_token) {
+        return cb(null);
+    }
+
     request.post({
         url: `${config.get<string>("coa_api_endpoint")}/token/access_token`,
         form: {
@@ -9,12 +25,14 @@ export function publishAccessToken(cb: (err: Error, accessToken: string) => void
         },
         json: true
     }, (error, response, body) => {
-        console.log("request /token/access_token processed.", body);
-        if (error) return cb(error, null);
-        if (typeof body === "string")  return cb(new Error(body), null);
-        if (body.message) return cb(new Error(body.message), null);
+        console.log("request processed.", body);
+        if (error) return cb(error);
+        if (typeof body === "string")  return cb(new Error(body));
+        if (body.message) return cb(new Error(body.message));
 
-        cb(null, body.access_token);
+        credentials = body;
+
+        cb(null);
     });
 }
 
@@ -24,32 +42,27 @@ export interface findTheaterByCodeResult {
     theater_name_eng: string,
     theater_name_kana: string
 }
-export function findTheaterByCode(accessToken: string, code: string, cb: (err: Error, theater: findTheaterByCodeResult) => void): void {
-    request.get({
-        url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${code}/theater/`,
-        auth: {bearer: accessToken},
-        json: true
-    }, (error, response, body) => {
-        console.log("request processed.", error, body);
-        if (error) return cb(error, null);
-        if (typeof body === "string")  return cb(new Error(body), null);
-        if (body.message) return cb(new Error(body.message), null);
-        if (body.status !== 0) return cb(new Error(body.status), null);
+export function findTheaterByCode(code: string, cb: (err: Error, theater: findTheaterByCodeResult) => void): void {
+    publishAccessToken((err) => {
+        request.get({
+            url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${code}/theater/`,
+            auth: {bearer: credentials.access_token},
+            json: true
+        }, (error, response, body) => {
+            console.log("request processed.", error);
+            if (error) return cb(error, null);
+            if (typeof body === "string")  return cb(new Error(body), null);
+            if (body.message) return cb(new Error(body.message), null);
+            if (body.status !== 0) return cb(new Error(body.status), null);
 
-        cb(null, {
-            theater_code: body.theater_code,
-            theater_name: body.theater_name,
-            theater_name_eng: body.theater_name_eng,
-            theater_name_kana: body.theater_name_kana,
+            cb(null, {
+                theater_code: body.theater_code,
+                theater_name: body.theater_name,
+                theater_name_eng: body.theater_name_eng,
+                theater_name_kana: body.theater_name_kana,
+            });
         });
     });
-}
-
-export interface findTheaterByCodeResult {
-    theater_code: string,
-    theater_name: string,
-    theater_name_eng: string,
-    theater_name_kana: string
 }
 
 export interface findFilmsByTheaterCodeResult {
@@ -68,18 +81,86 @@ export interface findFilmsByTheaterCodeResult {
     date_begin: string,
     date_end: string
 };
-export function findFilmsByTheaterCode(accessToken: string, theaterCode: string, cb: (err: Error, films: Array<findFilmsByTheaterCodeResult>) => void): void {
-    request.get({
-        url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${theaterCode}/title/`,
-        auth: {bearer: accessToken},
-        json: true
-    }, (error, response, body) => {
-        console.log("request processed.", error, body);
-        if (error) return cb(error, null);
-        if (typeof body === "string")  return cb(new Error(body), null);
-        if (body.message) return cb(new Error(body.message), null);
-        if (body.status !== 0) return cb(new Error(body.status), null);
+export function findFilmsByTheaterCode(theaterCode: string, cb: (err: Error, films: Array<findFilmsByTheaterCodeResult>) => void): void {
+    publishAccessToken((err) => {
+        request.get({
+            url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${theaterCode}/title/`,
+            auth: {bearer: credentials.access_token},
+            json: true
+        }, (error, response, body) => {
+            console.log("request processed.", error);
+            if (error) return cb(error, null);
+            if (typeof body === "string")  return cb(new Error(body), null);
+            if (body.message) return cb(new Error(body.message), null);
+            if (body.status !== 0) return cb(new Error(body.status), null);
 
-        cb(null, body.list_title);
+            cb(null, body.list_title);
+        });
+    });
+}
+
+
+export interface findScreensByTheaterCodeResult {
+    screen_code: string,
+    screen_name: string,
+    screen_name_eng: string,
+    list_seat: Array<{
+        seat_num: string,
+        flg_special: string,
+        flg_hc: string,
+        flg_pair: string,
+        flg_free: string,
+        flg_spare: string
+    }>
+};
+export function findScreensByTheaterCode(theaterCode: string, cb: (err: Error, screens: Array<findScreensByTheaterCodeResult>) => void): void {
+    publishAccessToken((err) => {
+        request.get({
+            url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${theaterCode}/screen/`,
+            auth: {bearer: credentials.access_token},
+            json: true
+        }, (error, response, body) => {
+            console.log("request processed.", error);
+            if (error) return cb(error, null);
+            if (typeof body === "string")  return cb(new Error(body), null);
+            if (body.message) return cb(new Error(body.message), null);
+            if (body.status !== 0) return cb(new Error(body.status), null);
+
+            cb(null, body.list_screen);
+        });
+    });
+}
+
+export interface findPerformancesByTheaterCodeResult {
+    date_jouei: string,
+    title_code: string,
+    title_branch_num: string,
+    time_begin: string,
+    time_end: string,
+    screen_code: string,
+    trailer_time: number,
+    kbn_service: string,
+    kbn_acoustic: string,
+    name_service_day: string,
+}
+export function findPerformancesByTheaterCode(theaterCode: string, cb: (err: Error, screens: Array<findPerformancesByTheaterCodeResult>) => void): void {
+    publishAccessToken((err) => {
+        request.get({
+            url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${theaterCode}/schedule/`,
+            auth: {bearer: credentials.access_token},
+            json: true,
+            qs: {
+                begin: "20161220",
+                end: "20161220"
+            }
+        }, (error, response, body) => {
+            console.log("request processed.", error);
+            if (error) return cb(error, null);
+            if (typeof body === "string")  return cb(new Error(body), null);
+            if (body.message) return cb(new Error(body.message), null);
+            if (body.status !== 0) return cb(new Error(body.status), null);
+
+            cb(null, body.list_schedule);
+        });
     });
 }

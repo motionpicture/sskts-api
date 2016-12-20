@@ -1,17 +1,17 @@
 "use strict";
-const express = require("express");
-let router = express.Router();
-const theaterController = require("../controllers/theater");
-router.get("/theater/:code", (req, res, next) => {
+const express_1 = require("express");
+let router = express_1.Router();
+const performanceController = require("../controllers/performance");
+router.get("/performances", (req, res, next) => {
+    req.checkQuery("theater_code", "theater_code required.").notEmpty();
     req.getValidationResult().then((result) => {
         if (!result.isEmpty()) {
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
         }
-        theaterController.findByCode(req.params.code).then((theater) => {
+        performanceController.find(req.query.theater_code).then((performances) => {
             res.json({
                 success: true,
-                message: null,
-                theater: theater
+                performances: performances
             });
         }, (err) => {
             res.json({

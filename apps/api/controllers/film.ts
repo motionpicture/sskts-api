@@ -22,14 +22,10 @@ export function find(theaterCode: string) {
     }
 
     return new Promise((resolve: (films: Array<film>) => void, reject: (err: Error) => void) => {
-        COA.publishAccessToken((err, accessToken) => {
+        COA.findFilmsByTheaterCode(theaterCode, (err, films) => {
             if (err) return reject(err);
 
-            COA.findFilmsByTheaterCode(accessToken, theaterCode, (err, films) => {
-                if (err) return reject(err);
-
-                resolve(films);
-            });
+            resolve(films);
         });
     });
 }

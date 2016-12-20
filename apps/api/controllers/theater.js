@@ -5,18 +5,14 @@ const COA = require("../modules/coa");
  */
 function findByCode(code) {
     return new Promise((resolve, reject) => {
-        COA.publishAccessToken((err, accessToken) => {
+        COA.findTheaterByCode(code, (err, theater) => {
             if (err)
                 return reject(err);
-            COA.findTheaterByCode(accessToken, code, (err, theater) => {
-                if (err)
-                    return reject(err);
-                resolve({
-                    theater_code: theater.theater_code,
-                    theater_name_ja: theater.theater_name,
-                    theater_name_en: theater.theater_name_eng,
-                    theater_name_kana: theater.theater_name_kana,
-                });
+            resolve({
+                theater_code: theater.theater_code,
+                theater_name_ja: theater.theater_name,
+                theater_name_en: theater.theater_name_eng,
+                theater_name_kana: theater.theater_name_kana,
             });
         });
     });

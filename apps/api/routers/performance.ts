@@ -1,8 +1,8 @@
 import {Router} from "express";
 let router = Router();
 
-import * as filmController from "../controllers/film";
-router.get("/films", (req, res, next) => {
+import * as performanceController from "../controllers/performance";
+router.get("/performances", (req, res, next) => {
     req.checkQuery("theater_code", "theater_code required.").notEmpty();
 
     req.getValidationResult().then((result) => {
@@ -10,10 +10,10 @@ router.get("/films", (req, res, next) => {
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
         }
 
-        filmController.find(req.query.theater_code).then((films) => {
+        performanceController.find(req.query.theater_code).then((performances) => {
             res.json({
                 success: true,
-                films: films
+                performances: performances
             });
         }, (err) => {
             res.json({

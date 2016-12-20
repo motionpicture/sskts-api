@@ -83,10 +83,14 @@ app.use(i18n.init);
 // routers
 const dev_1 = require("./routers/dev");
 const film_1 = require("./routers/film");
+const performance_1 = require("./routers/performance");
+const screen_1 = require("./routers/screen");
 const theater_1 = require("./routers/theater");
 app.use('/dev', dev_1.default);
 app.use('/', film_1.default);
+app.use('/', performance_1.default);
 app.use('/', theater_1.default);
+app.use('/', screen_1.default);
 // 404
 app.use((req, res, next) => {
     res.json({

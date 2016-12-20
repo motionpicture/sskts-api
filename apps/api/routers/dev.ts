@@ -11,7 +11,6 @@ let MONGOLAB_URI = conf.get<string>("mongolab_uri");
 // })
 
 router.get("/environmentVariables", (req, res, next) => {
-    // this.logger.debug("debugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebugdebug");
     // this.logger.debug("process.env:", process.env);
     res.json({
         success: true,
