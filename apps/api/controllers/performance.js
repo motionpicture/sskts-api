@@ -1,5 +1,5 @@
 "use strict";
-const COA = require("../modules/coa");
+const COA = require("../../common/utils/coa");
 /**
  * パフォーマンス検索
  */

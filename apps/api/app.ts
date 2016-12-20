@@ -1,8 +1,8 @@
 import express = require("express");
 import bodyParser = require("body-parser");
 import expressValidator = require("express-validator");
-// import conf = require("config");
-// import mongoose = require("mongoose");
+import config = require("config");
+import mongoose = require("mongoose");
 import i18n = require("i18n");
 // import passport = require("passport");
 // import passportHttpBearer = require("passport-http-bearer");
@@ -71,9 +71,9 @@ app.use(i18n.init);
 
 
 
-// let MONGOLAB_URI = conf.get<string>("mongolab_uri");
-// mongoose.connect(MONGOLAB_URI, {
-// });
+let MONGOLAB_URI = config.get<string>("mongolab_uri");
+mongoose.connect(MONGOLAB_URI, {
+});
 // if (process.env.NODE_ENV !== "prod") {
 //     let db = mongoose.connection;
 //     db.on("connecting", () => {

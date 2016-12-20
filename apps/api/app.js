@@ -2,8 +2,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const expressValidator = require("express-validator");
-// import conf = require("config");
-// import mongoose = require("mongoose");
+const config = require("config");
+const mongoose = require("mongoose");
 const i18n = require("i18n");
 // import passport = require("passport");
 // import passportHttpBearer = require("passport-http-bearer");
@@ -56,9 +56,8 @@ i18n.configure({
 });
 // i18n の設定を有効化
 app.use(i18n.init);
-// let MONGOLAB_URI = conf.get<string>("mongolab_uri");
-// mongoose.connect(MONGOLAB_URI, {
-// });
+let MONGOLAB_URI = config.get("mongolab_uri");
+mongoose.connect(MONGOLAB_URI, {});
 // if (process.env.NODE_ENV !== "prod") {
 //     let db = mongoose.connection;
 //     db.on("connecting", () => {

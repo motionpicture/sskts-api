@@ -1,4 +1,4 @@
-import * as COA from "../modules/coa";
+import * as COA from "../../common/utils/coa";
 
 /**
  * パフォーマンス検索
