@@ -34,11 +34,11 @@ program
     });
 
 program
-    .command("importPerformancesByTheaterCode <theaterCode>")
+    .command("importPerformancesByTheaterCode <theaterCode> <day_start> <day_end>")
     .description("パフォーマンス情報インポート")
-    .action((theaterCode, options) => {
+    .action((theaterCode, start, end, options) => {
         // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
-        performanceController.importByTheaterCode(theaterCode);
+        performanceController.importByTheaterCode(theaterCode, start, end);
     });
 
 // program

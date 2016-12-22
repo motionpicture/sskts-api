@@ -1,34 +1,23 @@
 "use strict";
-const COA = require("../../common/utils/coa");
+const models_1 = require("../../common/models");
 /**
- * 作品検索
+ * 作品詳細
  */
-function find(theaterCode) {
+function findById(id) {
     return new Promise((resolve, reject) => {
-        COA.findFilmsByTheaterCode(theaterCode, (err, films) => {
+        models_1.film.findOne({
+            _id: id
+        }, (err, film) => {
             if (err)
                 return reject(err);
-            // 出力したい形式に変換
-            let results = films.map((film) => {
-                return {
-                    code: film.title_code,
-                    branch_num: film.title_branch_num,
-                    name_ja: film.title_name,
-                    name_en: film.title_name_eng,
-                    name_kana: film.title_name_kana,
-                    name_short: film.title_name_short,
-                    name_original: film.title_name_orig,
-                    kbn_eirin: film.kbn_eirin,
-                    kbn_eizou: film.kbn_eizou,
-                    kbn_joueihousiki: film.kbn_joueihousiki,
-                    kbn_jimakufukikae: film.kbn_jimakufukikae,
-                    minutes: film.show_time,
-                    date_start: film.date_begin,
-                    date_end: film.date_end
-                };
+            if (!film)
+                return reject(new Error("Not Found."));
+            resolve({
+                _id: film.get("_id"),
+                name: film.get("name"),
+                name_kana: film.get("name_kana")
             });
-            resolve(results);
         });
     });
 }
-exports.find = find;
+exports.findById = findById;

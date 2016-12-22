@@ -131,36 +131,46 @@ export function findScreensByTheaterCode(theaterCode: string, cb: (err: Error, s
     });
 }
 
-export interface findPerformancesByTheaterCodeResult {
-    date_jouei: string,
-    title_code: string,
-    title_branch_num: string,
-    time_begin: string,
-    time_end: string,
-    screen_code: string,
-    trailer_time: number,
-    kbn_service: string,
-    kbn_acoustic: string,
-    name_service_day: string,
-}
-export function findPerformancesByTheaterCode(theaterCode: string, cb: (err: Error, screens: Array<findPerformancesByTheaterCodeResult>) => void): void {
-    publishAccessToken((err) => {
-        request.get({
-            url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${theaterCode}/schedule/`,
-            auth: {bearer: credentials.access_token},
-            json: true,
-            qs: {
-                begin: "20161220",
-                end: "20161220"
-            }
-        }, (error, response, body) => {
-            console.log("request processed.", error);
-            if (error) return cb(error, null);
-            if (typeof body === "string")  return cb(new Error(body), null);
-            if (body.message) return cb(new Error(body.message), null);
-            if (body.status !== 0) return cb(new Error(body.status), null);
+export namespace findPerformancesByTheaterCodeInterface {
+    export interface Args {
+        /** 劇場コード */
+        theater_code: string,
+        /** スケジュールを抽出する上映日の開始日　　※日付は西暦8桁 "YYYYMMDD" */
+        begin: string,
+        /** スケジュールを抽出する上映日の終了日　　※日付は西暦8桁 "YYYYMMDD" */
+        end: string,
+    }
+    export interface Screen {
+        date_jouei: string,
+        title_code: string,
+        title_branch_num: string,
+        time_begin: string,
+        time_end: string,
+        screen_code: string,
+        trailer_time: number,
+        kbn_service: string,
+        kbn_acoustic: string,
+        name_service_day: string,
+    }
+    export function call(args: Args, cb: (err: Error, screens: Array<Screen>) => void): void {
+        publishAccessToken((err) => {
+            request.get({
+                url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/schedule/`,
+                auth: {bearer: credentials.access_token},
+                json: true,
+                qs: {
+                    begin: args.begin,
+                    end: args.end
+                }
+            }, (error, response, body) => {
+                console.log("request processed.", error);
+                if (error) return cb(error, null);
+                if (typeof body === "string")  return cb(new Error(body), null);
+                if (body.message) return cb(new Error(body.message), null);
+                if (body.status !== 0) return cb(new Error(body.status), null);
 
-            cb(null, body.list_schedule);
+                cb(null, body.list_schedule);
+            });
         });
-    });
+    }
 }

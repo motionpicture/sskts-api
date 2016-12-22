@@ -2,13 +2,33 @@
 const express_1 = require("express");
 let router = express_1.Router();
 const performanceController = require("../controllers/performance");
-router.get("/performances", (req, res, next) => {
-    req.checkQuery("theater_code", "theater_code required.").notEmpty();
+router.get("/performance/:id", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty()) {
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
         }
-        performanceController.find(req.query.theater_code).then((performances) => {
+        performanceController.findById(req.params.id).then((performance) => {
+            res.json({
+                success: true,
+                performance: performance
+            });
+        }, (err) => {
+            res.json({
+                success: false,
+                message: err.message
+            });
+        });
+    });
+});
+router.get("/performances", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        if (!result.isEmpty()) {
+            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        }
+        performanceController.find({
+            day: req.query.day,
+            theater: req.query.theater,
+        }).then((performances) => {
             res.json({
                 success: true,
                 performances: performances

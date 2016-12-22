@@ -2,18 +2,16 @@ import {Router} from "express";
 let router = Router();
 
 import * as screenController from "../controllers/screen";
-router.get("/screens", (req, res, next) => {
-    req.checkQuery("theater_code", "theater_code required.").notEmpty();
-
+router.get("/screen/:id", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty()) {
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
         }
 
-        screenController.find(req.query.theater_code).then((screens) => {
+        screenController.findById(req.params.id).then((screen) => {
             res.json({
                 success: true,
-                screens: screens
+                screen: screen
             });
         }, (err) => {
             res.json({

@@ -7,8 +7,12 @@ import {performance as performanceModel, screen as screenModel} from "../../comm
 /**
  * 劇場コード指定でパフォーマンス情報をCOAからインポートする
  */
-export function importByTheaterCode(theaterCode: string): void {
-    COA.findPerformancesByTheaterCode(theaterCode, (err, performances) => {
+export function importByTheaterCode(theaterCode: string, begin: string, end: string): void {
+    COA.findPerformancesByTheaterCodeInterface.call({
+        theater_code: theaterCode,
+        begin: begin,
+        end: end,
+    }, (err, performances) => {
         if (err) return process.exit(0);
 
         mongoose.connect(MONGOLAB_URI);

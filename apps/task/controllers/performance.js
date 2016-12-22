@@ -7,8 +7,12 @@ const models_1 = require("../../common/models");
 /**
  * 劇場コード指定でパフォーマンス情報をCOAからインポートする
  */
-function importByTheaterCode(theaterCode) {
-    COA.findPerformancesByTheaterCode(theaterCode, (err, performances) => {
+function importByTheaterCode(theaterCode, begin, end) {
+    COA.findPerformancesByTheaterCodeInterface.call({
+        theater_code: theaterCode,
+        begin: begin,
+        end: end,
+    }, (err, performances) => {
         if (err)
             return process.exit(0);
         mongoose.connect(MONGOLAB_URI);

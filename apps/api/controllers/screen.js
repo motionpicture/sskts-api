@@ -1,16 +1,26 @@
 "use strict";
-const COA = require("../../common/utils/coa");
+const models_1 = require("../../common/models");
 /**
- * スクリーン検索
+ * スクリーン詳細
  */
-function find(theaterCode) {
-    ;
+function findById(id) {
     return new Promise((resolve, reject) => {
-        COA.findScreensByTheaterCode(theaterCode, (err, screens) => {
+        models_1.screen.findOne({
+            _id: id
+        })
+            .exec((err, screen) => {
             if (err)
                 return reject(err);
-            resolve(screens);
+            if (!screen)
+                return reject(new Error("Not Found."));
+            resolve({
+                _id: screen.get("_id"),
+                theater: screen.get("theater"),
+                name: screen.get("name"),
+                seats_number: screen.get("seats_number"),
+                sections: screen.get("sections")
+            });
         });
     });
 }
-exports.find = find;
+exports.findById = findById;
