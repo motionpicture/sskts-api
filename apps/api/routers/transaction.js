@@ -1,15 +1,16 @@
 "use strict";
-const express_1 = require("express");
-let router = express_1.Router();
-const screenController = require("../controllers/screen");
-router.get("/screen/:id", (req, res, next) => {
+const express = require("express");
+let router = express.Router();
+const transactionController = require("../controllers/transaction");
+router.all("/transaction/create", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
-        screenController.findById(req.params.id).then((screen) => {
+        transactionController.create().then((transaction) => {
             res.json({
                 success: true,
-                screen: screen
+                message: null,
+                transaction: transaction
             });
         }, (err) => {
             res.json({

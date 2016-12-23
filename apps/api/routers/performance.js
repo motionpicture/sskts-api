@@ -22,9 +22,8 @@ router.get("/performance/:id", (req, res, next) => {
 });
 router.get("/performances", (req, res, next) => {
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) {
+        if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
-        }
         performanceController.find({
             day: req.query.day,
             theater: req.query.theater,

@@ -10,7 +10,9 @@ const models_1 = require("../../common/models");
 function importByCode(code) {
     mongoose.connect(MONGOLAB_URI);
     return new Promise((resolve, reject) => {
-        COA.findTheaterByCode(code, (err, theater) => {
+        COA.findTheaterInterface.call({
+            theater_code: code
+        }, (err, theater) => {
             console.log('request COA processed.', err, theater);
             if (err)
                 return reject(err);

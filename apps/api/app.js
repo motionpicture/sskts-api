@@ -42,7 +42,7 @@ app.use(logger_1.default);
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "ejs");
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true })); // The extended option allows to choose between parsing the URL-encoded data with the querystring library (when false) or the qs library (when true).
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // 静的ファイル
 app.use(express.static(__dirname + "/../../public"));
@@ -85,11 +85,15 @@ const film_1 = require("./routers/film");
 const performance_1 = require("./routers/performance");
 const screen_1 = require("./routers/screen");
 const theater_1 = require("./routers/theater");
+const transaction_1 = require("./routers/transaction");
+const transactionItem_1 = require("./routers/transactionItem");
 app.use('/dev', dev_1.default);
 app.use('/', film_1.default);
 app.use('/', performance_1.default);
 app.use('/', theater_1.default);
 app.use('/', screen_1.default);
+app.use('/', transaction_1.default);
+app.use('/', transactionItem_1.default);
 // 404
 app.use((req, res, next) => {
     res.json({

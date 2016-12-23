@@ -4,6 +4,8 @@ const filmModel = require("./models/film");
 const performanceModel = require("./models/performance");
 const screenModel = require("./models/screen");
 const theaterModel = require("./models/theater");
+const transactionModel = require("./models/transaction");
+const transactionItemModel = require("./models/transactionItem");
 /**
  * 劇場とパフォーマンスの整合性を保つ
  * 劇場と予約の整合性を保つ
@@ -43,3 +45,5 @@ exports.film = mongoose.model('Film', filmModel.schema);
 exports.performance = mongoose.model('Performance', performanceModel.schema);
 exports.screen = mongoose.model('Screen', screenModel.schema);
 exports.theater = mongoose.model('Theater', theaterModel.schema);
+exports.transaction = mongoose.model('Transaction', transactionModel.schema);
+exports.transactionItem = mongoose.model('TransactionItem', transactionItemModel.schema);

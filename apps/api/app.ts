@@ -50,7 +50,7 @@ app.set("views", `${__dirname}/views`);
 app.set("view engine", "ejs");
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true })); // The extended option allows to choose between parsing the URL-encoded data with the querystring library (when false) or the qs library (when true).
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // 静的ファイル
@@ -102,11 +102,15 @@ import filmRouter from "./routers/film";
 import performanceRouter from "./routers/performance";
 import screenRouter from "./routers/screen";
 import theaterRouter from "./routers/theater";
+import transactionRouter from "./routers/transaction";
+import transactionItemRouter from "./routers/transactionItem";
 app.use('/dev', devRouter);
 app.use('/', filmRouter);
 app.use('/', performanceRouter);
 app.use('/', theaterRouter);
 app.use('/', screenRouter);
+app.use('/', transactionRouter);
+app.use('/', transactionItemRouter);
 
 // 404
 app.use((req, res, next) => {

@@ -8,7 +8,9 @@ import {screen as screenModel} from "../../common/models";
  * 劇場コード指定でスクリーン情報をCOAからインポートする
  */
 export function importByTheaterCode(theaterCode: string): void {
-    COA.findScreensByTheaterCode(theaterCode, (err, screens) => {
+    COA.findScreensByTheaterCodeInterface.call({
+        theater_code: theaterCode
+    }, (err, screens) => {
         if (err) return process.exit(0);
 
         mongoose.connect(MONGOLAB_URI);

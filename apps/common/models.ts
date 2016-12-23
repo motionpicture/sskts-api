@@ -4,6 +4,8 @@ import * as filmModel from './models/film';
 import * as performanceModel from './models/performance';
 import * as screenModel from './models/screen';
 import * as theaterModel from './models/theater';
+import * as transactionModel from './models/transaction';
+import * as transactionItemModel from './models/transactionItem';
 
 /**
  * 劇場とパフォーマンスの整合性を保つ
@@ -47,3 +49,5 @@ export var film = mongoose.model('Film', filmModel.schema);
 export var performance = mongoose.model('Performance', performanceModel.schema);
 export var screen = mongoose.model('Screen', screenModel.schema);
 export var theater = mongoose.model('Theater', theaterModel.schema);
+export var transaction = mongoose.model('Transaction', transactionModel.schema);
+export var transactionItem = mongoose.model('TransactionItem', transactionItemModel.schema);

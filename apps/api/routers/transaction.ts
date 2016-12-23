@@ -1,16 +1,16 @@
 import express = require('express')
 let router = express.Router();
 
-import * as theaterController from "../controllers/theater";
-router.get("/theater/:code", (req, res, next) => {
+import * as transactionController from "../controllers/transaction";
+router.all("/transaction/create", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
 
-        theaterController.findByCode(req.params.code).then((theater) => {
+        transactionController.create().then((transaction) => {
             res.json({
                 success: true,
                 message: null,
-                theater: theater
+                transaction: transaction
             });
         }, (err) => {
             res.json({

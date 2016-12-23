@@ -1,17 +1,49 @@
+import {transaction as transactionModel} from "../../common/models";
+import moment = require("moment");
+
 /**
  * 取引開始
  */
-// @Post("/create")
-// create() {
-//     let message: string = null;
+export function create() {
+    interface transaction {
+        _id: any,
+        password: String,
+        expired_at: String
+    }
+    return new Promise((resolve: (result: transaction) => void, reject: (err: Error) => void) => {
+        let password = "password"; // TODO パスワード生成方法を決める
 
-//     return {
-//         success: true,
-//         message: message,
-//         transaction_id: "12345",
-//         transaction_password: "12345"
-//     };
-// }
+        transactionModel.create([{
+            password: password,
+            expired_at: moment().add(+30, 'minutes')
+        }], (err, transactions) => {
+            if (err) return reject(err);
+
+            resolve({
+                _id: transactions[0].get("_id"),
+                password: transactions[0].get("password"),
+                expired_at: transactions[0].get("expired_at")
+            });
+        });
+    });
+}
+
+/**
+ * idとpasswordから取引の有効性確認
+ */
+export function isValid(id: string, password: string, cb: (err: Error, isValid: boolean) => void) {
+    // TODO 有効期限確認
+
+    transactionModel.findOne({
+        _id: id,
+        password: password
+    }, "_id", (err, transaction) => {
+        if (err) return cb(err, false);
+        if (!transaction) return cb(new Error("transaction for a given id and password not found."), false);
+
+        cb(null, true);
+    });
+}
 
 /**
  * 購入番号発行

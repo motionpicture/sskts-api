@@ -1,9 +1,22 @@
 import request = require('request');
 
 let options = {
-    url: 'http://localhost:8080/reservation/removeTmps',
+    url: 'http://localhost:8080/transactionItem/create/reservation',
     form: {
-        tmp_payment_no: '12345'
+        transaction_id: "585c9a3abea301258844b455",
+        transaction_password: "password",
+        reservations: [
+            {
+                test: "test"
+            },{
+                performance: "12345",
+                seat_code: "A-2",
+            },{
+                performance: "12345",
+                seat_code: "A-3",
+            },
+            "test"
+        ]
     }
 };
 

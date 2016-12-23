@@ -8,7 +8,9 @@ const models_1 = require("../../common/models");
  * 劇場コード指定で作品情報をCOAからインポートする
  */
 function importByTheaterCode(theaterCode) {
-    COA.findFilmsByTheaterCode(theaterCode, (err, films) => {
+    COA.findFilmsByTheaterCodeInterface.call({
+        theater_code: theaterCode
+    }, (err, films) => {
         if (err)
             return process.exit(0);
         mongoose.connect(MONGOLAB_URI);
