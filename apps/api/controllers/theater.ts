@@ -1,3 +1,4 @@
+import * as COA from "../../common/utils/coa";
 import {theater as theaterModel} from "../../common/models";
 
 /**
@@ -24,5 +25,42 @@ export function findByCode(code: string) {
                 theater_name_kana: theater.get("name_kana")
             });
         })
+    });
+}
+
+/**
+ * コード指定で劇場情報をCOAからインポートする
+ */
+export function importByCode(code: string) {
+    return new Promise((resolve, reject) => {
+        COA.findTheaterInterface.call({
+            theater_code: code
+        }, (err, theater) => {
+            if (err) return reject(err);
+
+            // あれば更新、なければ追加
+            // this.logger.debug('updating sponsor...');
+            theaterModel.findOneAndUpdate(
+                {
+                    _id: theater.theater_code
+                },
+                {
+                    name: {
+                        ja: theater.theater_name,
+                        en: theater.theater_name_eng
+                    },
+                    name_kana: theater.theater_name_kana
+                },
+                {
+                    new: true,
+                    upsert: true
+                },
+                (err, theater) => {
+                    console.log("theater updated.", theater);
+                    // this.logger.debug('sponsor updated', err);
+                    (err) ? reject(err) : resolve();
+                }
+            );
+        });
     });
 }

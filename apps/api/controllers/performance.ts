@@ -1,4 +1,5 @@
-import {performance as performanceModel} from "../../common/models";
+import * as COA from "../../common/utils/coa";
+import {performance as performanceModel, screen as screenModel} from "../../common/models";
 
 /**
  * パフォーマンス詳細
@@ -107,5 +108,72 @@ export function find(conditions: conditions) {
 
             resolve(performances);
         })
+    });
+}
+
+/**
+ * 劇場コード指定でパフォーマンス情報をCOAからインポートする
+ */
+export function importByTheaterCode(theaterCode: string, begin: string, end: string) {
+    return new Promise((resolveAll, rejectAll) => {
+        COA.findPerformancesByTheaterCodeInterface.call({
+            theater_code: theaterCode,
+            begin: begin,
+            end: end,
+        }, (err, performances) => {
+            if (err) return rejectAll(err);
+
+            screenModel.find({theater: theaterCode}, 'name theater').populate('theater', 'name').exec((err, screens) => {
+                // あれば更新、なければ追加
+                let promises = performances.map((performance) => {
+                    return new Promise((resolve, reject) => {
+                        if (!performance.title_code) return resolve();
+                        if (!performance.title_branch_num) return resolve();
+                        if (!performance.screen_code) return resolve();
+
+                        // this.logger.debug('updating sponsor...');
+                        let id = `${performance.date_jouei}${performance.title_code}${performance.title_branch_num}${performance.screen_code}${performance.time_begin}`;
+
+                        // 劇場とスクリーン名称を追加
+                        let _screen = screens.find((screen) => {
+                            return (screen.get("_id").toString() === performance.screen_code);
+                        });
+                        if (!_screen) return reject("no screen.");
+
+                        console.log("updating performance...");
+                        performanceModel.findOneAndUpdate(
+                            {
+                                _id: id
+                            },
+                            {
+                                screen: performance.screen_code,
+                                screen_name: _screen.get("name"),
+                                theater: _screen.get("theater").get("_id"),
+                                theater_name: _screen.get("theater").get("name"),
+                                film: performance.title_code + performance.title_branch_num,
+                                day: performance.date_jouei,
+                                time_start: performance.time_begin,
+                                time_end: performance.time_end
+                            },
+                            {
+                                new: true,
+                                upsert: true
+                            },
+                            (err) => {
+                                console.log('performance updated.', err);
+                                // this.logger.debug('sponsor updated', err);
+                                (err) ? reject(err) : resolve();
+                            }
+                        );
+                    });
+                });
+
+                Promise.all(promises).then(() => {
+                    resolveAll();
+                }, (err) => {
+                    rejectAll(err);
+                });
+            });
+        });
     });
 }

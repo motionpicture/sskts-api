@@ -21,4 +21,22 @@ router.get("/theater/:code", (req, res, next) => {
     });
 });
 
+router.get("/theater/:code/import", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+
+        theaterController.importByCode(req.params.code).then(() => {
+            res.json({
+                success: true,
+                message: null,
+            });
+        }, (err) => {
+            res.json({
+                success: false,
+                message: err.message
+            });
+        });
+    });
+});
+
 export default router;
