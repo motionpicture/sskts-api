@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const ownerModel = require("./owner");
 const authorizationModel = require("./authorization");
+const performanceModel = require("./performance");
 /** model name */
 exports.name = "Asset";
 /**
@@ -18,7 +19,16 @@ exports.schema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: authorizationModel.name
         }
-    ]
+    ],
+    payment_no: String,
+    group: String,
+    amount: Number,
+    performance: {
+        type: String,
+        ref: performanceModel.name,
+    },
+    seat_code: String,
+    ticket_type_code: String,
 }, {
     collection: 'assets',
     timestamps: {
@@ -26,3 +36,5 @@ exports.schema = new mongoose.Schema({
         updatedAt: 'updated_at',
     }
 });
+/** 座席予約グループ */
+exports.GROUP_SEAT_RESERVATION = "SEAT_RESERVATION";

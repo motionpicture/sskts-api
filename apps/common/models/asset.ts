@@ -1,6 +1,7 @@
 import mongoose = require('mongoose');
 import * as ownerModel from './owner';
 import * as authorizationModel from './authorization';
+import * as performanceModel from './performance';
 
 /** model name */
 export var name = "Asset";
@@ -19,7 +20,18 @@ export var schema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: authorizationModel.name
         }
-    ]
+    ],
+
+    payment_no: String, // 購入番号
+    group: String, // 資産グループ
+    amount: Number, // 金額
+
+    performance: {
+        type: String,
+        ref: performanceModel.name,
+    },
+    seat_code: String,
+    ticket_type_code: String, // 券種
 },{
     collection: 'assets',
     timestamps: { 
@@ -27,3 +39,6 @@ export var schema = new mongoose.Schema({
         updatedAt: 'updated_at',
     }
 });
+
+/** 座席予約グループ */
+export var GROUP_SEAT_RESERVATION = "SEAT_RESERVATION";

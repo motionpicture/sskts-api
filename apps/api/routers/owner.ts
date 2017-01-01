@@ -3,9 +3,9 @@ let router = express.Router();
 
 import * as ownerController from "../controllers/owner";
 router.post("/owner/create", (req, res, next) => {
-    req.getValidationResult().then((result) => {
-        req.checkBody("group", "invalid group.").notEmpty();
+    req.checkBody("group", "invalid group.").notEmpty();
 
+    req.getValidationResult().then((result) => {
         if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
 
         ownerController.create(req.body.group).then((owner) => {
@@ -19,6 +19,33 @@ router.post("/owner/create", (req, res, next) => {
                 success: false,
                 message: err.message
             });
+        });
+    });
+});
+
+router.all("/owner/:id/update", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
+        });
+    });
+});
+
+router.get("/owner/:id/assets", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
+        });
+    });
+});
+
+router.get("/owner/:id/transactions", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
         });
     });
 });

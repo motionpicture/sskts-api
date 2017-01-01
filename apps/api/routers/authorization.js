@@ -1,7 +1,6 @@
 "use strict";
 const express = require("express");
 let router = express.Router();
-Object.defineProperty(exports, "__esModule", { value: true });
 // import authentication4transaction from "../middlewares/authentication4transaction";
 // import * as authorizationController from "../controllers/authorization";
 // router.post("/transactionItem/create/reservation", authentication4transaction, (req, res, next) => {
@@ -34,4 +33,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //         });
 //     });
 // });
+router.all("/authorization/issue", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
+        });
+    });
+});
+router.all("/authorization/revoke", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
+        });
+    });
+});
+router.all("/authorization/reissue", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
+        });
+    });
+});
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = router;

@@ -37,4 +37,31 @@ let router = express.Router();
 //     });
 // });
 
+router.all("/authorization/issue", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
+        });
+    });
+});
+
+router.all("/authorization/revoke", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
+        });
+    });
+});
+
+router.all("/authorization/reissue", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
+        });
+    });
+});
+
 export default router;
