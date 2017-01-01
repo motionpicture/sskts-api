@@ -1,4 +1,5 @@
 import mongoose = require('mongoose');
+import * as theaterModel from './theater';
 
 /** model name */
 export var name = "Film";
@@ -13,6 +14,11 @@ export var schema = new mongoose.Schema({
     },
     film_group: {
         type: String,
+        required: true
+    },
+    theater: { 
+        type: String,
+        ref: theaterModel.name,
         required: true
     },
     name: {

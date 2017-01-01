@@ -6,13 +6,13 @@ const filmController = require("../apps/api/controllers/film");
 const performanceController = require("../apps/api/controllers/performance");
 const config = require("config");
 const mongoose = require("mongoose");
-let MONGOLAB_URI = config.get('mongolab_uri');
+let MONGOLAB_URI = config.get("mongolab_uri");
 // let env = process.env.NODE_ENV || "dev";
 program
     .version("0.0.1");
 program
     .command("importTheater <code>")
-    .description("劇場情報インポート")
+    .description("import theater from COA.")
     .action((code, options) => {
     // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
     mongoose.connect(MONGOLAB_URI);
@@ -26,7 +26,7 @@ program
 });
 program
     .command("importFilmsByTheaterCode <theaterCode>")
-    .description("作品情報インポート")
+    .description("import films from COA.")
     .action((theaterCode, options) => {
     // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
     mongoose.connect(MONGOLAB_URI);
@@ -40,7 +40,7 @@ program
 });
 program
     .command("importScreensByTheaterCode <theaterCode>")
-    .description("スクリーン情報インポート")
+    .description("import screens from COA.")
     .action((theaterCode, options) => {
     // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
     mongoose.connect(MONGOLAB_URI);
@@ -54,7 +54,7 @@ program
 });
 program
     .command("importPerformancesByTheaterCode <theaterCode> <day_start> <day_end>")
-    .description("パフォーマンス情報インポート")
+    .description("import performances from COA.")
     .action((theaterCode, start, end, options) => {
     // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
     mongoose.connect(MONGOLAB_URI);
@@ -66,7 +66,7 @@ program
         mongoose.disconnect();
     });
 });
-// import childProcess = require('child_process');
+// import childProcess = require("child_process");
 program
     .command("*")
     .action((env) => {

@@ -41,9 +41,11 @@ function importByTheaterCode(theaterCode) {
                         return resolve();
                     // this.logger.debug('updating sponsor...');
                     models_1.film.findOneAndUpdate({
-                        _id: film.title_code + film.title_branch_num
+                        // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
+                        _id: `${theaterCode}${film.title_code}${film.title_branch_num}`
                     }, {
                         film_group: film.title_code,
+                        theater: theaterCode,
                         name: {
                             ja: film.title_name,
                             en: film.title_name_eng

@@ -33,16 +33,14 @@ function findById(id) {
 exports.findById = findById;
 function find(conditions) {
     // 検索条件を作成
-    let andConditions = [];
+    let andConditions = [
+        { _id: { $ne: null } }
+    ];
     if (conditions.day) {
-        andConditions.push({
-            day: conditions.day
-        });
+        andConditions.push({ day: conditions.day });
     }
     if (conditions.theater) {
-        andConditions.push({
-            theater: conditions.theater
-        });
+        andConditions.push({ theater: conditions.theater });
     }
     return new Promise((resolve, reject) => {
         models_1.performance.find({ $and: andConditions })
@@ -79,10 +77,12 @@ function importByTheaterCode(theaterCode, begin, end) {
                         if (!performance.screen_code)
                             return resolve();
                         // this.logger.debug('updating sponsor...');
-                        let id = `${performance.date_jouei}${performance.title_code}${performance.title_branch_num}${performance.screen_code}${performance.time_begin}`;
+                        let id = `${theaterCode}${performance.date_jouei}${performance.title_code}${performance.title_branch_num}${performance.screen_code}${performance.time_begin}`;
+                        let screenCode = `${theaterCode}${performance.screen_code}`;
+                        let filmCode = `${theaterCode}${performance.title_code}${performance.title_branch_num}`;
                         // 劇場とスクリーン名称を追加
                         let _screen = screens.find((screen) => {
-                            return (screen.get("_id").toString() === performance.screen_code);
+                            return (screen.get("_id").toString() === screenCode);
                         });
                         if (!_screen)
                             return reject("no screen.");
@@ -90,11 +90,11 @@ function importByTheaterCode(theaterCode, begin, end) {
                         models_1.performance.findOneAndUpdate({
                             _id: id
                         }, {
-                            screen: performance.screen_code,
+                            screen: _screen.get("_id"),
                             screen_name: _screen.get("name"),
                             theater: _screen.get("theater").get("_id"),
                             theater_name: _screen.get("theater").get("name"),
-                            film: performance.title_code + performance.title_branch_num,
+                            film: filmCode,
                             day: performance.date_jouei,
                             time_start: performance.time_begin,
                             time_end: performance.time_end

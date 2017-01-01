@@ -47,7 +47,7 @@ function importByTheaterCode(theaterCode) {
                     });
                     // this.logger.debug('updating sponsor...');
                     models_1.screen.findOneAndUpdate({
-                        _id: screen.screen_code
+                        _id: `${theaterCode}${screen.screen_code}`
                     }, {
                         theater: theaterCode,
                         name: {

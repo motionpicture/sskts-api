@@ -72,7 +72,7 @@ export function importByTheaterCode(theaterCode: string) {
                     // this.logger.debug('updating sponsor...');
                     screenModel.findOneAndUpdate(
                         {
-                            _id: screen.screen_code
+                            _id: `${theaterCode}${screen.screen_code}`
                         },
                         {
                             theater: theaterCode,
