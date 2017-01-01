@@ -87,13 +87,17 @@ const screen_1 = require("./routers/screen");
 const theater_1 = require("./routers/theater");
 const transaction_1 = require("./routers/transaction");
 const authorization_1 = require("./routers/authorization");
+const owner_1 = require("./routers/owner");
 app.use("/dev", dev_1.default);
-app.use("/", film_1.default);
-app.use("/", performance_1.default);
-app.use("/", theater_1.default);
-app.use("/", screen_1.default);
-app.use("/", transaction_1.default);
-app.use("/", authorization_1.default);
+app.use("/", [
+    film_1.default,
+    performance_1.default,
+    theater_1.default,
+    screen_1.default,
+    transaction_1.default,
+    authorization_1.default,
+    owner_1.default,
+]);
 // 404
 app.use((req, res, next) => {
     res.json({

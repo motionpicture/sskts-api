@@ -104,13 +104,17 @@ import screenRouter from "./routers/screen";
 import theaterRouter from "./routers/theater";
 import transactionRouter from "./routers/transaction";
 import authorizationRouter from "./routers/authorization";
+import ownerRouter from "./routers/owner";
 app.use("/dev", devRouter);
-app.use("/", filmRouter);
-app.use("/", performanceRouter);
-app.use("/", theaterRouter);
-app.use("/", screenRouter);
-app.use("/", transactionRouter);
-app.use("/", authorizationRouter);
+app.use("/", [
+    filmRouter,
+    performanceRouter,
+    theaterRouter,
+    screenRouter,
+    transactionRouter,
+    authorizationRouter,
+    ownerRouter,
+]);
 
 // 404
 app.use((req, res, next) => {
