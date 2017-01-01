@@ -4,8 +4,10 @@ const filmModel = require("./models/film");
 const performanceModel = require("./models/performance");
 const screenModel = require("./models/screen");
 const theaterModel = require("./models/theater");
+const assetModel = require("./models/asset");
+const authorizationModel = require("./models/authorization");
+const ownerModel = require("./models/owner");
 const transactionModel = require("./models/transaction");
-const transactionItemModel = require("./models/transactionItem");
 /**
  * 劇場とパフォーマンスの整合性を保つ
  * 劇場と予約の整合性を保つ
@@ -41,9 +43,11 @@ const transactionItemModel = require("./models/transactionItem");
 //         }
 //     );
 // });
-exports.film = mongoose.model('Film', filmModel.schema);
-exports.performance = mongoose.model('Performance', performanceModel.schema);
-exports.screen = mongoose.model('Screen', screenModel.schema);
-exports.theater = mongoose.model('Theater', theaterModel.schema);
-exports.transaction = mongoose.model('Transaction', transactionModel.schema);
-exports.transactionItem = mongoose.model('TransactionItem', transactionItemModel.schema);
+exports.film = mongoose.model(filmModel.name, filmModel.schema);
+exports.performance = mongoose.model(performanceModel.name, performanceModel.schema);
+exports.screen = mongoose.model(screenModel.name, screenModel.schema);
+exports.theater = mongoose.model(theaterModel.name, theaterModel.schema);
+exports.asset = mongoose.model(assetModel.name, assetModel.schema);
+exports.authorization = mongoose.model(authorizationModel.name, authorizationModel.schema);
+exports.owner = mongoose.model(ownerModel.name, ownerModel.schema);
+exports.transaction = mongoose.model(transactionModel.name, transactionModel.schema);

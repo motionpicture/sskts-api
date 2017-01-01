@@ -1,21 +1,16 @@
 "use strict";
 const log4js = require("log4js");
-const config = require("config");
+// import config = require("config");
 let env = process.env.NODE_ENV || "dev";
 log4js.configure({
     appenders: [
         {
             category: "access",
-            // type: "dateFile",
-            // filename: `${logDir}/access.log`,
-            // pattern: "-yyyy-MM-dd",
-            type: "log4js-node-mongodb",
-            connectionString: config.get("mongolab_uri_for_logs"),
+            type: "console"
         },
         {
             category: "system",
-            type: "log4js-node-mongodb",
-            connectionString: config.get("mongolab_uri_for_logs"),
+            type: "console"
         },
         {
             type: "console"

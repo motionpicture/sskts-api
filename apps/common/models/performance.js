@@ -1,6 +1,11 @@
 "use strict";
 const mongoose = require("mongoose");
 const moment = require("moment");
+const theaterModel = require("./theater");
+const screenModel = require("./screen");
+const filmModel = require("./film");
+/** model name */
+exports.name = "Performance";
 /**
  * パフォーマンススキーマ
  */
@@ -11,7 +16,7 @@ exports.schema = new mongoose.Schema({
     },
     theater: {
         type: String,
-        ref: 'Theater',
+        ref: theaterModel.name,
         required: true
     },
     theater_name: {
@@ -20,7 +25,7 @@ exports.schema = new mongoose.Schema({
     },
     screen: {
         type: String,
-        ref: 'Screen',
+        ref: screenModel.name,
         required: true
     },
     screen_name: {
@@ -29,7 +34,7 @@ exports.schema = new mongoose.Schema({
     },
     film: {
         type: String,
-        ref: 'Film',
+        ref: filmModel.name,
         required: true
     },
     film_name: {

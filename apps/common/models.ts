@@ -4,8 +4,10 @@ import * as filmModel from './models/film';
 import * as performanceModel from './models/performance';
 import * as screenModel from './models/screen';
 import * as theaterModel from './models/theater';
+import * as assetModel from './models/asset';
+import * as authorizationModel from './models/authorization';
+import * as ownerModel from './models/owner';
 import * as transactionModel from './models/transaction';
-import * as transactionItemModel from './models/transactionItem';
 
 /**
  * 劇場とパフォーマンスの整合性を保つ
@@ -45,9 +47,11 @@ import * as transactionItemModel from './models/transactionItem';
 // });
 
 
-export var film = mongoose.model('Film', filmModel.schema);
-export var performance = mongoose.model('Performance', performanceModel.schema);
-export var screen = mongoose.model('Screen', screenModel.schema);
-export var theater = mongoose.model('Theater', theaterModel.schema);
-export var transaction = mongoose.model('Transaction', transactionModel.schema);
-export var transactionItem = mongoose.model('TransactionItem', transactionItemModel.schema);
+export var film = mongoose.model(filmModel.name, filmModel.schema);
+export var performance = mongoose.model(performanceModel.name, performanceModel.schema);
+export var screen = mongoose.model(screenModel.name, screenModel.schema);
+export var theater = mongoose.model(theaterModel.name, theaterModel.schema);
+export var asset = mongoose.model(assetModel.name, assetModel.schema);
+export var authorization = mongoose.model(authorizationModel.name, authorizationModel.schema);
+export var owner = mongoose.model(ownerModel.name, ownerModel.schema);
+export var transaction = mongoose.model(transactionModel.name, transactionModel.schema);

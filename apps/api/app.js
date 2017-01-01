@@ -36,7 +36,7 @@ if (process.env.NODE_ENV !== "prod") {
 }
 const logger_1 = require("./middlewares/logger");
 app.use(logger_1.default);
-// import benchmarks from './middlewares/benchmarksMiddleware';
+// import benchmarks from "./middlewares/benchmarksMiddleware";
 // app.use(benchmarks); // ベンチマーク的な
 // view engine setup
 app.set("views", `${__dirname}/views`);
@@ -86,14 +86,14 @@ const performance_1 = require("./routers/performance");
 const screen_1 = require("./routers/screen");
 const theater_1 = require("./routers/theater");
 const transaction_1 = require("./routers/transaction");
-const transactionItem_1 = require("./routers/transactionItem");
-app.use('/dev', dev_1.default);
-app.use('/', film_1.default);
-app.use('/', performance_1.default);
-app.use('/', theater_1.default);
-app.use('/', screen_1.default);
-app.use('/', transaction_1.default);
-app.use('/', transactionItem_1.default);
+const authorization_1 = require("./routers/authorization");
+app.use("/dev", dev_1.default);
+app.use("/", film_1.default);
+app.use("/", performance_1.default);
+app.use("/", theater_1.default);
+app.use("/", screen_1.default);
+app.use("/", transaction_1.default);
+app.use("/", authorization_1.default);
 // 404
 app.use((req, res, next) => {
     res.json({

@@ -40,9 +40,9 @@ if (process.env.NODE_ENV !== "prod") {
     });
 }
 
-import logger from './middlewares/logger';
+import logger from "./middlewares/logger";
 app.use(logger);
-// import benchmarks from './middlewares/benchmarksMiddleware';
+// import benchmarks from "./middlewares/benchmarksMiddleware";
 // app.use(benchmarks); // ベンチマーク的な
 
 // view engine setup
@@ -103,14 +103,14 @@ import performanceRouter from "./routers/performance";
 import screenRouter from "./routers/screen";
 import theaterRouter from "./routers/theater";
 import transactionRouter from "./routers/transaction";
-import transactionItemRouter from "./routers/transactionItem";
-app.use('/dev', devRouter);
-app.use('/', filmRouter);
-app.use('/', performanceRouter);
-app.use('/', theaterRouter);
-app.use('/', screenRouter);
-app.use('/', transactionRouter);
-app.use('/', transactionItemRouter);
+import authorizationRouter from "./routers/authorization";
+app.use("/dev", devRouter);
+app.use("/", filmRouter);
+app.use("/", performanceRouter);
+app.use("/", theaterRouter);
+app.use("/", screenRouter);
+app.use("/", transactionRouter);
+app.use("/", authorizationRouter);
 
 // 404
 app.use((req, res, next) => {

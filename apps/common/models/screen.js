@@ -1,5 +1,8 @@
 "use strict";
 const mongoose = require("mongoose");
+const theaterModel = require("./theater");
+/** model name */
+exports.name = "Screen";
 /**
  * スクリーンスキーマ
  */
@@ -10,7 +13,7 @@ exports.schema = new mongoose.Schema({
     },
     theater: {
         type: String,
-        ref: 'Theater',
+        ref: theaterModel.name,
         required: true
     },
     name: {

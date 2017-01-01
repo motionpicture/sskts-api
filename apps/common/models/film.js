@@ -1,5 +1,7 @@
 "use strict";
 const mongoose = require("mongoose");
+/** model name */
+exports.name = "Film";
 /**
  * 作品スキーマ
  */

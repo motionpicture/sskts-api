@@ -1,5 +1,8 @@
 import mongoose = require('mongoose');
 
+/** model name */
+export var name = "Theater";
+
 /**
  * 劇場スキーマ
  */

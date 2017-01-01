@@ -1,4 +1,8 @@
 import mongoose = require('mongoose');
+import * as theaterModel from './theater';
+
+/** model name */
+export var name = "Screen";
 
 /**
  * スクリーンスキーマ
@@ -10,7 +14,7 @@ export var schema = new mongoose.Schema({
     },
     theater: { 
         type: String,
-        ref: 'Theater',
+        ref: theaterModel.name,
         required: true
     },
     name: {

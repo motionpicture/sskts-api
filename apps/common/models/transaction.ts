@@ -1,20 +1,16 @@
 import mongoose = require('mongoose');
 
+/** model name */
+export var name = "Transaction";
+
 /**
  * 取引スキーマ
  */
 export var schema = new mongoose.Schema({
-    password: {
-        type: String,
-        required: true
-    },
-    expired_at: {
-        type: Date,
-        required: true
-    },
-    status: {
-        type: String,
-    }
+    password: String,
+    expired_at: Date,
+    status: String,
+    payment_no: String,
 },{
     collection: 'transactions',
     timestamps: { 
@@ -25,9 +21,7 @@ export var schema = new mongoose.Schema({
 
 /** 進行中 */
 export var STATUS_PROCSSING = "PROCESSING";
-/** 同意待ち */
-export var STATUS_WAITING_SINGED = "WAITING_SINGED";
-/** 同意済み */
-export var STATUS_SIGNED = "SIGNED";
+/** 成立済み */
+export var STATUS_CLOSED = "CLOSED";
 /** 期限切れ */
 export var STATUS_EXPIRED = "EXPIRED";

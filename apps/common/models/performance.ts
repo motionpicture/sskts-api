@@ -1,5 +1,11 @@
 import mongoose = require('mongoose');
-import moment = require('moment')
+import moment = require('moment');
+import * as theaterModel from './theater';
+import * as screenModel from './screen';
+import * as filmModel from './film';
+
+/** model name */
+export var name = "Performance";
 
 /**
  * パフォーマンススキーマ
@@ -11,7 +17,7 @@ export var schema = new mongoose.Schema({
     },
     theater: { 
         type: String,
-        ref: 'Theater',
+        ref: theaterModel.name,
         required: true
     },
     theater_name: {
@@ -20,7 +26,7 @@ export var schema = new mongoose.Schema({
     },
     screen: { 
         type: String,
-        ref: 'Screen',
+        ref: screenModel.name,
         required: true
     },
     screen_name: {
@@ -29,7 +35,7 @@ export var schema = new mongoose.Schema({
     },
     film: { 
         type: String,
-        ref: 'Film',
+        ref: filmModel.name,
         required: true
     },
     film_name: {

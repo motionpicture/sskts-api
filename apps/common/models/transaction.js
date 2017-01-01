@@ -1,20 +1,15 @@
 "use strict";
 const mongoose = require("mongoose");
+/** model name */
+exports.name = "Transaction";
 /**
  * 取引スキーマ
  */
 exports.schema = new mongoose.Schema({
-    password: {
-        type: String,
-        required: true
-    },
-    expired_at: {
-        type: Date,
-        required: true
-    },
-    status: {
-        type: String,
-    }
+    password: String,
+    expired_at: Date,
+    status: String,
+    payment_no: String,
 }, {
     collection: 'transactions',
     timestamps: {
@@ -24,9 +19,7 @@ exports.schema = new mongoose.Schema({
 });
 /** 進行中 */
 exports.STATUS_PROCSSING = "PROCESSING";
-/** 同意待ち */
-exports.STATUS_WAITING_SINGED = "WAITING_SINGED";
-/** 同意済み */
-exports.STATUS_SIGNED = "SIGNED";
+/** 成立済み */
+exports.STATUS_CLOSED = "CLOSED";
 /** 期限切れ */
 exports.STATUS_EXPIRED = "EXPIRED";
