@@ -1,7 +1,10 @@
 import express = require('express')
 let router = express.Router();
 
+import authentication4transaction from "../middlewares/authentication4transaction";
 import * as transactionController from "../controllers/transaction";
+// import * as authorizationController from "../controllers/authorization";
+
 router.get("/transactions", (req, res, next) => {
     req.getValidationResult().then((result) => {
         res.json({
@@ -30,7 +33,7 @@ router.all("/transaction/start", (req, res, next) => {
     });
 });
 
-router.all("/transaction/:id/publishPaymentNo", (req, res, next) => {
+router.all("/transaction/:id/publishPaymentNo", authentication4transaction, (req, res, next) => {
     req.getValidationResult().then((result) => {
         res.json({
             success: false,
@@ -39,7 +42,7 @@ router.all("/transaction/:id/publishPaymentNo", (req, res, next) => {
     });
 });
 
-router.all("/transaction/:id/close", (req, res, next) => {
+router.all("/transaction/:id/close", authentication4transaction, (req, res, next) => {
     req.getValidationResult().then((result) => {
         res.json({
             success: false,
@@ -48,7 +51,16 @@ router.all("/transaction/:id/close", (req, res, next) => {
     });
 });
 
-router.all("/transaction/:id/update", (req, res, next) => {
+router.all("/transaction/:id/authorize", authentication4transaction, (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        res.json({
+            success: false,
+            message: "now coding..."
+        });
+    });
+});
+
+router.all("/transaction/:id/unauthorize", authentication4transaction, (req, res, next) => {
     req.getValidationResult().then((result) => {
         res.json({
             success: false,

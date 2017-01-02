@@ -1,7 +1,5 @@
 import express = require('express')
 let router = express.Router();
-// import authentication4transaction from "../middlewares/authentication4transaction";
-// import * as authorizationController from "../controllers/authorization";
 
 // router.post("/transactionItem/create/reservation", authentication4transaction, (req, res, next) => {
 //     req.checkBody("reservations").notEmpty();
@@ -36,32 +34,5 @@ let router = express.Router();
 //         });
 //     });
 // });
-
-router.all("/authorization/issue", (req, res, next) => {
-    req.getValidationResult().then((result) => {
-        res.json({
-            success: false,
-            message: "now coding..."
-        });
-    });
-});
-
-router.all("/authorization/revoke", (req, res, next) => {
-    req.getValidationResult().then((result) => {
-        res.json({
-            success: false,
-            message: "now coding..."
-        });
-    });
-});
-
-router.all("/authorization/reissue", (req, res, next) => {
-    req.getValidationResult().then((result) => {
-        res.json({
-            success: false,
-            message: "now coding..."
-        });
-    });
-});
 
 export default router;
