@@ -1,12 +1,12 @@
 "use strict";
-const models_1 = require("../../common/models");
+const OwnerModel = require("../../common/models/owner");
 /**
  * 所有者作成
  */
 function create(group) {
     // TODO group文字列のバリデーション
     return new Promise((resolve, reject) => {
-        models_1.owner.create({
+        OwnerModel.default.create({
             group: group,
         }).then((owner) => {
             resolve({
@@ -24,7 +24,7 @@ exports.create = create;
  */
 function findByIdAndUpdate(id, update) {
     return new Promise((resolve, reject) => {
-        models_1.owner.findOneAndUpdate({
+        OwnerModel.default.findOneAndUpdate({
             _id: id
         }, {
             $set: update

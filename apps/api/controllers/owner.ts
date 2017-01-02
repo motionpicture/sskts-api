@@ -1,4 +1,4 @@
-import {owner as ownerModel} from "../../common/models";
+import * as OwnerModel from "../../common/models/owner";
 
 /**
  * 所有者作成
@@ -11,7 +11,7 @@ export function create(group: string) {
         group: string,
     }
     return new Promise((resolve: (result: owner) => void, reject: (err: Error) => void) => {
-        ownerModel.create({
+        OwnerModel.default.create({
             group: group,
         }).then((owner) => {
             resolve({
@@ -47,7 +47,7 @@ export function findByIdAndUpdate(id: string, update: Update) {
         tel: string,
     }
     return new Promise((resolve: (result: owner) => void, reject: (err: Error) => void) => {
-        ownerModel.findOneAndUpdate({
+        OwnerModel.default.findOneAndUpdate({
             _id: id
         }, {
             $set: update

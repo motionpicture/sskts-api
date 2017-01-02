@@ -22,6 +22,10 @@ export var schema = new mongoose.Schema({
     }
 });
 
+export default mongoose.model(name, schema);
+
+/** 運営者グループ */
+export var GROUP_ADMINISTRATOR = "ADMINISTRATOR";
 /** 匿名グループ */
 export var GROUP_ANONYMOUS = "ANONYMOUS";
 /** 会員グループ */

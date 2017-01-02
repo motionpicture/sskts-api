@@ -1,4 +1,5 @@
-import mongoose = require('mongoose');
+import mongoose = require("mongoose");
+import * as ownerModel from "./owner";
 
 /** model name */
 export var name = "Transaction";
@@ -11,13 +12,20 @@ export var schema = new mongoose.Schema({
     expired_at: Date,
     status: String,
     payment_no: String,
+    owners: [{ // 取引の対象所有者リスト
+        type: String,
+        ref: ownerModel.name,
+        required: true
+    }],
 },{
-    collection: 'transactions',
+    collection: "transactions",
     timestamps: { 
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 });
+
+export default mongoose.model(name, schema);
 
 /** 進行中 */
 export var STATUS_PROCSSING = "PROCESSING";

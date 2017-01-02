@@ -6,8 +6,6 @@ const screenModel = require("./models/screen");
 const theaterModel = require("./models/theater");
 const assetModel = require("./models/asset");
 const authorizationModel = require("./models/authorization");
-const ownerModel = require("./models/owner");
-const transactionModel = require("./models/transaction");
 /**
  * 劇場とパフォーマンスの整合性を保つ
  * 劇場と予約の整合性を保つ
@@ -49,5 +47,3 @@ exports.screen = mongoose.model(screenModel.name, screenModel.schema);
 exports.theater = mongoose.model(theaterModel.name, theaterModel.schema);
 exports.asset = mongoose.model(assetModel.name, assetModel.schema);
 exports.authorization = mongoose.model(authorizationModel.name, authorizationModel.schema);
-exports.owner = mongoose.model(ownerModel.name, ownerModel.schema);
-exports.transaction = mongoose.model(transactionModel.name, transactionModel.schema);
