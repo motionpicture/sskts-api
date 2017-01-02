@@ -1,23 +1,20 @@
 import request = require('request');
 
+// let options = {
+//     url: 'http://localhost:8080/owner/create',
+//     body: {
+//         group: "ANONYMOUS",
+//     },
+//     json: true
+// };
+
 let options = {
-    url: 'http://localhost:8080/transactionItem/create/reservation',
-    form: {
-        transaction_id: "585c9a3abea301258844b455",
-        transaction_password: "password",
-        reservations: [
-            {
-                test: "test"
-            },{
-                performance: "12345",
-                seat_code: "A-2",
-            },{
-                performance: "12345",
-                seat_code: "A-3",
-            },
-            "test"
-        ]
-    }
+    url: `http://localhost:8080/owner/5869c2c316aaa805d835f94a/update`,
+    // url: `http://localhost:8080/owner/5869c2c316aaa805d835f94b/update`,
+    body: {
+        email: "ilovegadd@gmail.com",
+    },
+    json: true
 };
 
 request.post(options, (error, response, body) => {
