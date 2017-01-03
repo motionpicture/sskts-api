@@ -26,7 +26,6 @@ export function create4reservation(args: Create4reservationArgs) {
 
     return new Promise((resolveAll: (results: Array<result>) => void, rejectAll: (err: Error) => void) => {
         // 今回は、COA連携なのでまずCOAAPIで確認
-        // パフォーマンス情報を取得
         AssetModel.default.find({
             _id: {$in: args.assets}
         }).populate({
@@ -97,6 +96,63 @@ export function create4reservation(args: Create4reservationArgs) {
                     resolveAll(results);
                 }, (err) => {
                     rejectAll(err);
+                });
+            });
+        });
+    });
+}
+
+/**
+ * 資産承認取消
+ */
+export function removeByCoaTmpReserveNum(tmpReserveNum: string) {
+    return new Promise((resolve: () => void, reject: (err: Error) => void) => {
+        // 承認を非アクティブに変更
+        AuthorizationModel.default.update({
+            coa_tmp_reserve_num: tmpReserveNum
+        }, {
+            active: false
+        }, {
+            multi: true
+        }, (err, raw) => {
+            console.log("authorizations updated.", err, raw);
+            if (err) return reject(err);
+
+            // 資産から承認IDを削除
+            AuthorizationModel.default.find({
+                coa_tmp_reserve_num: tmpReserveNum
+            }, "asset").exec((err, authorizations) => {
+                AssetModel.default.update({
+                    _id: {$in: authorizations.map((authorization) => {return authorization.get("asset")})}
+                }, {
+                    $pullAll: { authorizations: authorizations.map((authorization) => {return authorization.get("_id")}) }
+                }, {
+                    multi: true
+                }, (err, raw) => {
+                    if (err) return reject(err);
+
+                    // TODO COA座席仮予約削除
+                    AssetModel.default.findOne({
+                        _id: authorizations[0].get("asset")
+                    }).populate({
+                        path: "performance",
+                        populate: {
+                            path: "film"
+                        }
+                    }).exec((err, asset) => {
+                        COA.deleteTmpReserveInterface.call({
+                            theater_code: asset.get("performance").get("theater"),
+                            date_jouei: asset.get("performance").get("day"),
+                            title_code: asset.get("performance").get("film").get("film_group"),
+                            title_branch_num: asset.get("performance").get("film").get("film_branch_code"),
+                            time_begin: asset.get("performance").get("time_start"),
+                            tmp_reserve_num: tmpReserveNum,
+                        }, (err, success) => {
+                            if (err) return reject(err);
+
+                            resolve();
+                        });
+                    });
                 });
             });
         });

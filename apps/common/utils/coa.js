@@ -190,3 +190,39 @@ var reserveSeatsTemporarilyInterface;
     }
     reserveSeatsTemporarilyInterface.call = call;
 })(reserveSeatsTemporarilyInterface = exports.reserveSeatsTemporarilyInterface || (exports.reserveSeatsTemporarilyInterface = {}));
+/**
+ * 座席仮予約削除
+ */
+var deleteTmpReserveInterface;
+(function (deleteTmpReserveInterface) {
+    function call(args, cb) {
+        console.log("deleteTmpReserveInterface calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${config.get("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/del_tmp_reserve/`,
+                auth: { bearer: credentials.access_token },
+                json: true,
+                qs: {
+                    date_jouei: args.date_jouei,
+                    title_code: args.title_code,
+                    title_branch_num: args.title_branch_num,
+                    time_begin: args.time_begin,
+                    tmp_reserve_num: args.tmp_reserve_num,
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("deleteTmpReserveInterface called.", error, body);
+                if (error)
+                    return cb(error, null);
+                if (typeof body === "string")
+                    return cb(new Error(body), null);
+                if (body.message)
+                    return cb(new Error(body.message), null);
+                if (body.status !== 0)
+                    return cb(new Error(body.status), null);
+                cb(null, true);
+            });
+        });
+    }
+    deleteTmpReserveInterface.call = call;
+})(deleteTmpReserveInterface = exports.deleteTmpReserveInterface || (exports.deleteTmpReserveInterface = {}));

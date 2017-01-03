@@ -308,3 +308,51 @@ export namespace reserveSeatsTemporarilyInterface {
         });
     }
 }
+
+/**
+ * 座席仮予約削除
+ */
+export namespace deleteTmpReserveInterface {
+    export interface Args {
+        /** 施設コード */
+        theater_code: string,
+        /** 上映日 */
+        date_jouei: string,
+        /** 作品コード */
+        title_code: string,
+        /** 作品枝番 */
+        title_branch_num: string,
+        /** 上映時刻 */
+        time_begin: string,
+        /** 座席チケット仮予約番号 */
+        tmp_reserve_num: string,
+    }
+    export interface Result {
+    }
+    export function call(args: Args, cb: (err: Error, result: boolean) => void): void {
+        console.log("deleteTmpReserveInterface calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/del_tmp_reserve/`,
+                auth: {bearer: credentials.access_token},
+                json: true,
+                qs: {
+                    date_jouei: args.date_jouei,
+                    title_code: args.title_code,
+                    title_branch_num: args.title_branch_num,
+                    time_begin: args.time_begin,
+                    tmp_reserve_num: args.tmp_reserve_num,
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("deleteTmpReserveInterface called.", error, body);
+                if (error) return cb(error, null);
+                if (typeof body === "string")  return cb(new Error(body), null);
+                if (body.message) return cb(new Error(body.message), null);
+                if (body.status !== 0) return cb(new Error(body.status), null);
+
+                cb(null, true);
+            });
+        });
+    }
+}

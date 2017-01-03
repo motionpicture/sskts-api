@@ -33,11 +33,20 @@ import request = require("request");
 //     json: true
 // };
 
+// let options = {
+//     url: "http://localhost:8080/transaction/5869f374d07cec157c6000c8/authorize",
+//     body: {
+//         password: "password",
+//         assets: ["586b77476620961178fdeb41", "586b77476620961178fdeb42"],
+//     },
+//     json: true
+// };
+
 let options = {
-    url: "http://localhost:8080/transaction/5869f374d07cec157c6000c8/authorize",
+    url: "http://localhost:8080/transaction/5869f374d07cec157c6000c8/unauthorize",
     body: {
         password: "password",
-        assets: ["586b77476620961178fdeb37", "586b77476620961178fdeb38"],
+        coa_tmp_reserve_num: "138",
     },
     json: true
 };

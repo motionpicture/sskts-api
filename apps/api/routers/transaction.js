@@ -89,10 +89,20 @@ router.all("/transaction/:id/authorize", authentication4transaction_1.default, (
     });
 });
 router.all("/transaction/:id/unauthorize", authentication4transaction_1.default, (req, res, next) => {
+    // TODO validations
     req.getValidationResult().then((result) => {
-        res.json({
-            success: false,
-            message: "now coding..."
+        if (!result.isEmpty())
+            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        AuthorizationController.removeByCoaTmpReserveNum(req.body.coa_tmp_reserve_num).then(() => {
+            res.json({
+                success: true,
+                message: null
+            });
+        }, (err) => {
+            res.json({
+                success: false,
+                message: err.message
+            });
         });
     });
 });
