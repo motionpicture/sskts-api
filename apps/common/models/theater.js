@@ -29,3 +29,5 @@ exports.schema = new mongoose.Schema({
         updatedAt: 'updated_at',
     }
 });
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = mongoose.model(exports.name, exports.schema);

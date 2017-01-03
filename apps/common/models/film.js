@@ -40,9 +40,11 @@ exports.schema = new mongoose.Schema({
     // kbn_jimakufukikae: String, // 字幕吹替区分(字幕、吹き替え)
     copyright: String // コピーライト
 }, {
-    collection: 'films',
+    collection: "films",
     timestamps: {
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 });
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = mongoose.model(exports.name, exports.schema);

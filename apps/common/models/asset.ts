@@ -30,7 +30,8 @@ export var schema = new mongoose.Schema({
         type: String,
         ref: performanceModel.name,
     },
-    seat_code: String,
+    section: String, // 座席セクション
+    seat_code: String, // 座席コード
     ticket_type_code: String, // 券種
 },{
     collection: 'assets',
@@ -39,6 +40,18 @@ export var schema = new mongoose.Schema({
         updatedAt: 'updated_at',
     }
 });
+
+schema.index(
+    {
+        group: 1,
+        performance: 1,
+        section: 1,
+        seat_code: 1,
+    },
+    {
+        unique: true
+    }
+);
 
 export default mongoose.model(name, schema);
 

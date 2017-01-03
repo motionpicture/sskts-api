@@ -1,12 +1,12 @@
 "use strict";
 const COA = require("../../common/utils/coa");
-const models_1 = require("../../common/models");
+const TheaterModel = require("../../common/models/theater");
 /**
  * コードから劇場情報を取得する
  */
 function findByCode(code) {
     return new Promise((resolve, reject) => {
-        models_1.theater.findOne({
+        TheaterModel.default.findOne({
             _id: code
         }, (err, theater) => {
             if (err)
@@ -33,7 +33,7 @@ function importByCode(code) {
                 return reject(err);
             // あれば更新、なければ追加
             // this.logger.debug('updating sponsor...');
-            models_1.theater.findOneAndUpdate({
+            TheaterModel.default.findOneAndUpdate({
                 _id: theater.theater_code
             }, {
                 name: {

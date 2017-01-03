@@ -1,8 +1,3 @@
-import mongoose = require('mongoose');
-
-import * as filmModel from './models/film';
-import * as theaterModel from './models/theater';
-
 /**
  * 劇場とパフォーマンスの整合性を保つ
  * 劇場と予約の整合性を保つ
@@ -39,7 +34,3 @@ import * as theaterModel from './models/theater';
 //         }
 //     );
 // });
-
-
-export var film = mongoose.model(filmModel.name, filmModel.schema);
-export var theater = mongoose.model(theaterModel.name, theaterModel.schema);

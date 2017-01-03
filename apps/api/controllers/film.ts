@@ -1,4 +1,4 @@
-import {film as filmModel} from "../../common/models";
+import * as FilmModel from "../../common/models/film";
 import * as COA from "../../common/utils/coa";
 
 /**
@@ -15,7 +15,7 @@ export function findById(id: string) {
     }
 
     return new Promise((resolve: (result: film) => void, reject: (err: Error) => void) => {
-        filmModel.findOne({
+        FilmModel.default.findOne({
             _id: id
         }, (err, film) => {
             if (err) return reject(err);
@@ -47,7 +47,7 @@ export function importByTheaterCode(theaterCode: string) {
                     if (!film.title_branch_num) return resolve();
 
                     // this.logger.debug('updating sponsor...');
-                    filmModel.findOneAndUpdate(
+                    FilmModel.default.findOneAndUpdate(
                         {
                             // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
                             _id: `${theaterCode}${film.title_code}${film.title_branch_num}`

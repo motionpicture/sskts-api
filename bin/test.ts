@@ -37,20 +37,7 @@ let options = {
     url: "http://localhost:8080/transaction/5869f374d07cec157c6000c8/authorize",
     body: {
         password: "password",
-        owner: "5868e16789cc75249cdbfa4b",
-        // asset: "12345",
-        authorization_group: "COA",
-        performance: "001201701038561032040",
-        reservations: [
-            {
-                section: "0",
-                seat_code: "Ｃ－７"
-            },
-            {
-                section: "0",
-                seat_code: "Ｃ－８"
-            }
-        ]
+        assets: ["586b77476620961178fdeb37", "586b77476620961178fdeb38"],
     },
     json: true
 };

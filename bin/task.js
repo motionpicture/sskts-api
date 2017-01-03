@@ -4,6 +4,7 @@ const theaterController = require("../apps/api/controllers/theater");
 const screenController = require("../apps/api/controllers/screen");
 const filmController = require("../apps/api/controllers/film");
 const performanceController = require("../apps/api/controllers/performance");
+const AssetController = require("../apps/api/controllers/asset");
 const config = require("config");
 const mongoose = require("mongoose");
 let MONGOLAB_URI = config.get("mongolab_uri");
@@ -63,6 +64,20 @@ program
         mongoose.disconnect();
     }, (err) => {
         console.log("importPerformancesByTheaterCode processed.", err);
+        mongoose.disconnect();
+    });
+});
+program
+    .command("importAssets4seatReservation <day_start> <day_end>")
+    .description("import assets.")
+    .action((start, end, options) => {
+    // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
+    mongoose.connect(MONGOLAB_URI);
+    AssetController.importSeatReservations(start, end).then(() => {
+        console.log("importAssets4seatReservation processed.");
+        mongoose.disconnect();
+    }, (err) => {
+        console.log("importAssets4seatReservation processed.", err);
         mongoose.disconnect();
     });
 });

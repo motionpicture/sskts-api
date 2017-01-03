@@ -32,7 +32,7 @@ export function findById(id: string) {
         PerformanceModel.default.findOne({
             _id: id
         })
-        .populate('film', 'name minutes copyright')
+        .populate("film", "name minutes copyright")
         .exec((err, performance) => {
             if (err) return reject(err);
             if (!performance) return reject(new Error("Not Found."));
@@ -99,7 +99,7 @@ export function find(conditions: conditions) {
 
     return new Promise((resolve: (result: Array<performance>) => void, reject: (err: Error) => void) => {
         PerformanceModel.default.find({$and: andConditions})
-        .populate('film', 'name minutes copyright')
+        .populate("film", "name minutes copyright")
         .lean(true)
         .exec((err, performances: Array<performance>) => {
             if (err) return reject(err);
@@ -121,7 +121,7 @@ export function importByTheaterCode(theaterCode: string, begin: string, end: str
         }, (err, performances) => {
             if (err) return rejectAll(err);
 
-            ScreenModel.default.find({theater: theaterCode}, 'name theater').populate('theater', 'name').exec((err, screens) => {
+            ScreenModel.default.find({theater: theaterCode}, "name theater sections").populate("theater", "name").exec((err, screens) => {
                 // あれば更新、なければ追加
                 let promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
@@ -129,7 +129,7 @@ export function importByTheaterCode(theaterCode: string, begin: string, end: str
                         if (!performance.title_branch_num) return resolve();
                         if (!performance.screen_code) return resolve();
 
-                        // this.logger.debug('updating sponsor...');
+                        // this.logger.debug("updating sponsor...");
                         let id = `${theaterCode}${performance.date_jouei}${performance.title_code}${performance.title_branch_num}${performance.screen_code}${performance.time_begin}`;
                         let screenCode = `${theaterCode}${performance.screen_code}`;
                         let filmCode = `${theaterCode}${performance.title_code}${performance.title_branch_num}`;
@@ -159,10 +159,11 @@ export function importByTheaterCode(theaterCode: string, begin: string, end: str
                                 new: true,
                                 upsert: true
                             },
-                            (err) => {
-                                console.log('performance updated.', err);
-                                // this.logger.debug('sponsor updated', err);
-                                (err) ? reject(err) : resolve();
+                            (err, performance) => {
+                                console.log("performance updated.", err);
+                                if (err) return reject(err); 
+                                // this.logger.debug("sponsor updated", err);
+                                resolve();
                             }
                         );
                     });

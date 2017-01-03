@@ -59,5 +59,5 @@ exports.schema = new mongoose.Schema({
 });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = mongoose.model(exports.name, exports.schema);
-exports.GROUP_COA = "COA";
+exports.GROUP_ASSET = "ASSET";
 exports.GROUP_GMO = "GMO";

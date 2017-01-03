@@ -277,6 +277,7 @@ export namespace reserveSeatsTemporarilyInterface {
         }>
     }
     export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+        console.log("reserveSeatsTemporarilyInterface calling...", args);
         publishAccessToken((err) => {
             request.get({
                 url: `${config.get<string>("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/upd_tmp_reserve_seat/`,
@@ -293,6 +294,7 @@ export namespace reserveSeatsTemporarilyInterface {
                 },
                 useQuerystring: true
             }, (error, response, body) => {
+                console.log("reserveSeatsTemporarilyInterface called.", error, body);
                 if (error) return cb(error, null);
                 if (typeof body === "string")  return cb(new Error(body), null);
                 if (body.message) return cb(new Error(body.message), null);

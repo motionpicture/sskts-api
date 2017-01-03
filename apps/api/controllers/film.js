@@ -1,12 +1,12 @@
 "use strict";
-const models_1 = require("../../common/models");
+const FilmModel = require("../../common/models/film");
 const COA = require("../../common/utils/coa");
 /**
  * 作品詳細
  */
 function findById(id) {
     return new Promise((resolve, reject) => {
-        models_1.film.findOne({
+        FilmModel.default.findOne({
             _id: id
         }, (err, film) => {
             if (err)
@@ -40,7 +40,7 @@ function importByTheaterCode(theaterCode) {
                     if (!film.title_branch_num)
                         return resolve();
                     // this.logger.debug('updating sponsor...');
-                    models_1.film.findOneAndUpdate({
+                    FilmModel.default.findOneAndUpdate({
                         // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
                         _id: `${theaterCode}${film.title_code}${film.title_branch_num}`
                     }, {

@@ -27,6 +27,7 @@ exports.schema = new mongoose.Schema({
         type: String,
         ref: performanceModel.name,
     },
+    section: String,
     seat_code: String,
     ticket_type_code: String,
 }, {
@@ -35,6 +36,14 @@ exports.schema = new mongoose.Schema({
         createdAt: 'created_at',
         updatedAt: 'updated_at',
     }
+});
+exports.schema.index({
+    group: 1,
+    performance: 1,
+    section: 1,
+    seat_code: 1,
+}, {
+    unique: true
 });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = mongoose.model(exports.name, exports.schema);

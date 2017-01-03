@@ -30,3 +30,5 @@ export var schema = new mongoose.Schema({
         updatedAt: 'updated_at',
     }
 });
+
+export default mongoose.model(name, schema);

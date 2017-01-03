@@ -1,5 +1,5 @@
 import * as COA from "../../common/utils/coa";
-import {theater as theaterModel} from "../../common/models";
+import * as TheaterModel from "../../common/models/theater";
 
 /**
  * コードから劇場情報を取得する
@@ -13,7 +13,7 @@ export function findByCode(code: string) {
     }
 
     return new Promise((resolve: (result: theater) => void, reject: (err: Error) => void) => {
-        theaterModel.findOne({
+        TheaterModel.default.findOne({
             _id: code
         }, (err, theater) => {
             if (err) return reject(err);
@@ -40,7 +40,7 @@ export function importByCode(code: string) {
 
             // あれば更新、なければ追加
             // this.logger.debug('updating sponsor...');
-            theaterModel.findOneAndUpdate(
+            TheaterModel.default.findOneAndUpdate(
                 {
                     _id: theater.theater_code
                 },

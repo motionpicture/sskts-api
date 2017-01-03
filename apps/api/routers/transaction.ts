@@ -4,7 +4,6 @@ let router = express.Router();
 import authentication4transaction from "../middlewares/authentication4transaction";
 import * as TransactionController from "../controllers/transaction";
 import * as AuthorizationController from "../controllers/authorization";
-import * as AuthorizationModel from "../../common/models/authorization";
 
 router.get("/transactions", (req, res, next) => {
     req.getValidationResult().then((result) => {
@@ -79,35 +78,21 @@ router.all("/transaction/:id/authorize", authentication4transaction, (req, res, 
     req.getValidationResult().then((result) => {
         if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
 
-        switch (req.body.authorization_group) {
-            case AuthorizationModel.GROUP_COA:
-
-                AuthorizationController.create4reservation({
-                    transaction: req.params.id,
-                    owner: req.body.owner,
-                    performance: req.body.performance,
-                    reservations: req.body.reservations
-                }).then((authorizations) => {
-                    res.json({
-                        success: true,
-                        message: null,
-                        authorizations: authorizations
-                    });
-                }, (err) => {
-                    res.json({
-                        success: false,
-                        message: err.message
-                    });
-                });
-                break;
-
-            default:
-                res.json({
-                    success: false,
-                    message: "invalid group."
-                });
-                break;
-        }
+        AuthorizationController.create4reservation({
+            transaction: req.params.id,
+            assets: req.body.assets,
+        }).then((authorizations) => {
+            res.json({
+                success: true,
+                message: null,
+                authorizations: authorizations
+            });
+        }, (err) => {
+            res.json({
+                success: false,
+                message: err.message
+            });
+        });
     });
 });
 

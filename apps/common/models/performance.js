@@ -51,25 +51,25 @@ exports.schema = new mongoose.Schema({
     // name_service_day: String, // サービスデイ名称(「映画の日」「レディースデイ」など　※割引区分、割引コード、特定日等の組み合わせで登録するため名称で連携の方が容易)
     canceled: Boolean // 上映中止フラグ
 }, {
-    collection: 'performances',
+    collection: "performances",
     timestamps: {
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 });
 /** 開始文字列を表示形式で取得 */
-exports.schema.virtual('start_str_ja').get(function () {
+exports.schema.virtual("start_str_ja").get(function () {
     return `${this.day.substr(0, 4)}/${this.day.substr(4, 2)}/${this.day.substr(6)} 開場 ${this.open_time.substr(0, 2)}:${this.open_time.substr(2)} 開演 ${this.start_time.substr(0, 2)}:${this.start_time.substr(2)}`;
 });
-exports.schema.virtual('start_str_en').get(function () {
-    let date = `${moment(`${this.day.substr(0, 4)}-${this.day.substr(4, 2)}-${this.day.substr(6)}T00:00:00+09:00`).format('MMMM DD, YYYY')}`;
+exports.schema.virtual("start_str_en").get(function () {
+    let date = `${moment(`${this.day.substr(0, 4)}-${this.day.substr(4, 2)}-${this.day.substr(6)}T00:00:00+09:00`).format("MMMM DD, YYYY")}`;
     return `Open: ${this.open_time.substr(0, 2)}:${this.open_time.substr(2)}/Start: ${this.start_time.substr(0, 2)}:${this.start_time.substr(2)} on ${date}`;
 });
-exports.schema.virtual('location_str_ja').get(function () {
-    return `${this.get('theater_name')['ja']} ${this.get('screen_name')['ja']}`;
+exports.schema.virtual("location_str_ja").get(function () {
+    return `${this.get("theater_name")["ja"]} ${this.get("screen_name")["ja"]}`;
 });
-exports.schema.virtual('location_str_en').get(function () {
-    return `at ${this.get('screen_name')['en']}, ${this.get('theater_name')['en']}`;
+exports.schema.virtual("location_str_en").get(function () {
+    return `at ${this.get("screen_name")["en"]}, ${this.get("theater_name")["en"]}`;
 });
 /**
  * 空席ステータスを算出する
@@ -79,7 +79,7 @@ exports.schema.virtual('location_str_en').get(function () {
 /*
 schema.methods.getSeatStatus = function(reservationNumber: number) {
     // 上映日当日過ぎていればG
-    if (parseInt(this.day) < parseInt(moment().format('YYYYMMDD'))) return PerformanceUtil.SEAT_STATUS_G;
+    if (parseInt(this.day) < parseInt(moment().format("YYYYMMDD"))) return PerformanceUtil.SEAT_STATUS_G;
 
     // 残席0以下なら問答無用に×
     let availableSeatNum = this.screen.seats_number - reservationNumber;

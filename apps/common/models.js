@@ -1,7 +1,3 @@
-"use strict";
-const mongoose = require("mongoose");
-const filmModel = require("./models/film");
-const theaterModel = require("./models/theater");
 /**
  * 劇場とパフォーマンスの整合性を保つ
  * 劇場と予約の整合性を保つ
@@ -37,5 +33,3 @@ const theaterModel = require("./models/theater");
 //         }
 //     );
 // });
-exports.film = mongoose.model(filmModel.name, filmModel.schema);
-exports.theater = mongoose.model(theaterModel.name, theaterModel.schema);

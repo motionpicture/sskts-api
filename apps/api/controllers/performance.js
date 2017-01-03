@@ -10,7 +10,7 @@ function findById(id) {
         PerformanceModel.default.findOne({
             _id: id
         })
-            .populate('film', 'name minutes copyright')
+            .populate("film", "name minutes copyright")
             .exec((err, performance) => {
             if (err)
                 return reject(err);
@@ -45,7 +45,7 @@ function find(conditions) {
     }
     return new Promise((resolve, reject) => {
         PerformanceModel.default.find({ $and: andConditions })
-            .populate('film', 'name minutes copyright')
+            .populate("film", "name minutes copyright")
             .lean(true)
             .exec((err, performances) => {
             if (err)
@@ -67,7 +67,7 @@ function importByTheaterCode(theaterCode, begin, end) {
         }, (err, performances) => {
             if (err)
                 return rejectAll(err);
-            ScreenModel.default.find({ theater: theaterCode }, 'name theater').populate('theater', 'name').exec((err, screens) => {
+            ScreenModel.default.find({ theater: theaterCode }, "name theater sections").populate("theater", "name").exec((err, screens) => {
                 // あれば更新、なければ追加
                 let promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
@@ -77,7 +77,7 @@ function importByTheaterCode(theaterCode, begin, end) {
                             return resolve();
                         if (!performance.screen_code)
                             return resolve();
-                        // this.logger.debug('updating sponsor...');
+                        // this.logger.debug("updating sponsor...");
                         let id = `${theaterCode}${performance.date_jouei}${performance.title_code}${performance.title_branch_num}${performance.screen_code}${performance.time_begin}`;
                         let screenCode = `${theaterCode}${performance.screen_code}`;
                         let filmCode = `${theaterCode}${performance.title_code}${performance.title_branch_num}`;
@@ -102,10 +102,12 @@ function importByTheaterCode(theaterCode, begin, end) {
                         }, {
                             new: true,
                             upsert: true
-                        }, (err) => {
-                            console.log('performance updated.', err);
-                            // this.logger.debug('sponsor updated', err);
-                            (err) ? reject(err) : resolve();
+                        }, (err, performance) => {
+                            console.log("performance updated.", err);
+                            if (err)
+                                return reject(err);
+                            // this.logger.debug("sponsor updated", err);
+                            resolve();
                         });
                     });
                 });

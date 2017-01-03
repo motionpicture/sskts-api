@@ -70,5 +70,5 @@ export var schema = new mongoose.Schema({
 
 export default mongoose.model(name, schema);
 
-export var GROUP_COA = "COA";
+export var GROUP_ASSET = "ASSET";
 export var GROUP_GMO = "GMO";

@@ -1,5 +1,5 @@
-import mongoose = require('mongoose');
-import * as theaterModel from './theater';
+import mongoose = require("mongoose");
+import * as theaterModel from "./theater";
 
 /** model name */
 export var name = "Film";
@@ -41,9 +41,11 @@ export var schema = new mongoose.Schema({
     // kbn_jimakufukikae: String, // 字幕吹替区分(字幕、吹き替え)
     copyright: String // コピーライト
 },{
-    collection: 'films',
+    collection: "films",
     timestamps: { 
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 });
+
+export default mongoose.model(name, schema);

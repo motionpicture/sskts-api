@@ -155,6 +155,7 @@ var findPerformancesByTheaterCodeInterface;
 var reserveSeatsTemporarilyInterface;
 (function (reserveSeatsTemporarilyInterface) {
     function call(args, cb) {
+        console.log("reserveSeatsTemporarilyInterface calling...", args);
         publishAccessToken((err) => {
             request.get({
                 url: `${config.get("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/upd_tmp_reserve_seat/`,
@@ -171,6 +172,7 @@ var reserveSeatsTemporarilyInterface;
                 },
                 useQuerystring: true
             }, (error, response, body) => {
+                console.log("reserveSeatsTemporarilyInterface called.", error, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
