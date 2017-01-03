@@ -1,6 +1,7 @@
 import mongoose = require('mongoose');
 import * as transactionModel from './transaction';
 import * as assetModel from './asset';
+import * as ownerModel from './owner';
 
 /** model name */
 export var name = "Authorization";
@@ -14,16 +15,34 @@ export var schema = new mongoose.Schema({
         ref: transactionModel.name,
         required: true
     },
-    asset: {
+    owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: assetModel.name,
+        ref: ownerModel.name,
         required: true
     },
     active: Boolean,
     amount: Number,
+    group: String,
 
 
 
+    /** asset管理の場合 */
+    asset: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: assetModel.name,
+    },
+
+
+
+    /** COA資産管理の場合 */
+    coa_tmp_reserve_num: String,
+    performance: String,
+    section: String,
+    seat_code: String,
+
+
+
+    /** GMO資産管理の場合 */
     gmo_shop_pass_string: String, // GMO決済開始時に送信するチェック文字列
     gmo_shop_id: String,
     gmo_amount: String,
@@ -48,3 +67,8 @@ export var schema = new mongoose.Schema({
         updatedAt: 'updated_at',
     }
 });
+
+export default mongoose.model(name, schema);
+
+export var GROUP_COA = "COA";
+export var GROUP_GMO = "GMO";

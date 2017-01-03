@@ -30,6 +30,7 @@ function publishAccessToken(cb) {
         if (body.message)
             return cb(new Error(body.message));
         credentials = body;
+        console.log("credentials:", credentials);
         cb(null);
     });
 }
@@ -148,3 +149,42 @@ var findPerformancesByTheaterCodeInterface;
     }
     findPerformancesByTheaterCodeInterface.call = call;
 })(findPerformancesByTheaterCodeInterface = exports.findPerformancesByTheaterCodeInterface || (exports.findPerformancesByTheaterCodeInterface = {}));
+/**
+ * 座席仮予約
+ */
+var reserveSeatsTemporarilyInterface;
+(function (reserveSeatsTemporarilyInterface) {
+    function call(args, cb) {
+        publishAccessToken((err) => {
+            request.get({
+                url: `${config.get("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/upd_tmp_reserve_seat/`,
+                auth: { bearer: credentials.access_token },
+                json: true,
+                qs: {
+                    date_jouei: args.date_jouei,
+                    title_code: args.title_code,
+                    title_branch_num: args.title_branch_num,
+                    time_begin: args.time_begin,
+                    cnt_reserve_seat: args.list_seat.length,
+                    seat_section: args.list_seat.map((value) => { return value.seat_section; }),
+                    seat_num: args.list_seat.map((value) => { return value.seat_num; }),
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                if (error)
+                    return cb(error, null);
+                if (typeof body === "string")
+                    return cb(new Error(body), null);
+                if (body.message)
+                    return cb(new Error(body.message), null);
+                if (body.status !== 0)
+                    return cb(new Error(body.status), null);
+                cb(null, {
+                    tmp_reserve_num: body.tmp_reserve_num,
+                    list_tmp_reserve: body.list_tmp_reserve
+                });
+            });
+        });
+    }
+    reserveSeatsTemporarilyInterface.call = call;
+})(reserveSeatsTemporarilyInterface = exports.reserveSeatsTemporarilyInterface || (exports.reserveSeatsTemporarilyInterface = {}));

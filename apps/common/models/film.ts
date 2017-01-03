@@ -12,15 +12,16 @@ export var schema = new mongoose.Schema({
         type: String,
         required: true
     },
-    film_group: {
-        type: String,
-        required: true
-    },
     theater: { 
         type: String,
         ref: theaterModel.name,
         required: true
     },
+    film_group: {
+        type: String,
+        required: true
+    },
+    film_branch_code: String,
     name: {
         type: {
             ja: String,

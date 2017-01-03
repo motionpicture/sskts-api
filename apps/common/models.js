@@ -1,11 +1,7 @@
 "use strict";
 const mongoose = require("mongoose");
 const filmModel = require("./models/film");
-const performanceModel = require("./models/performance");
-const screenModel = require("./models/screen");
 const theaterModel = require("./models/theater");
-const assetModel = require("./models/asset");
-const authorizationModel = require("./models/authorization");
 /**
  * 劇場とパフォーマンスの整合性を保つ
  * 劇場と予約の整合性を保つ
@@ -42,8 +38,4 @@ const authorizationModel = require("./models/authorization");
 //     );
 // });
 exports.film = mongoose.model(filmModel.name, filmModel.schema);
-exports.performance = mongoose.model(performanceModel.name, performanceModel.schema);
-exports.screen = mongoose.model(screenModel.name, screenModel.schema);
 exports.theater = mongoose.model(theaterModel.name, theaterModel.schema);
-exports.asset = mongoose.model(assetModel.name, assetModel.schema);
-exports.authorization = mongoose.model(authorizationModel.name, authorizationModel.schema);

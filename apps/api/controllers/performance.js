@@ -1,12 +1,13 @@
 "use strict";
 const COA = require("../../common/utils/coa");
-const models_1 = require("../../common/models");
+const PerformanceModel = require("../../common/models/performance");
+const ScreenModel = require("../../common/models/screen");
 /**
  * パフォーマンス詳細
  */
 function findById(id) {
     return new Promise((resolve, reject) => {
-        models_1.performance.findOne({
+        PerformanceModel.default.findOne({
             _id: id
         })
             .populate('film', 'name minutes copyright')
@@ -43,7 +44,7 @@ function find(conditions) {
         andConditions.push({ theater: conditions.theater });
     }
     return new Promise((resolve, reject) => {
-        models_1.performance.find({ $and: andConditions })
+        PerformanceModel.default.find({ $and: andConditions })
             .populate('film', 'name minutes copyright')
             .lean(true)
             .exec((err, performances) => {
@@ -66,7 +67,7 @@ function importByTheaterCode(theaterCode, begin, end) {
         }, (err, performances) => {
             if (err)
                 return rejectAll(err);
-            models_1.screen.find({ theater: theaterCode }, 'name theater').populate('theater', 'name').exec((err, screens) => {
+            ScreenModel.default.find({ theater: theaterCode }, 'name theater').populate('theater', 'name').exec((err, screens) => {
                 // あれば更新、なければ追加
                 let promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
@@ -87,7 +88,7 @@ function importByTheaterCode(theaterCode, begin, end) {
                         if (!_screen)
                             return reject("no screen.");
                         console.log("updating performance...");
-                        models_1.performance.findOneAndUpdate({
+                        PerformanceModel.default.findOneAndUpdate({
                             _id: id
                         }, {
                             screen: _screen.get("_id"),

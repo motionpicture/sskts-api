@@ -2,12 +2,13 @@ import express = require('express')
 let router = express.Router();
 
 import authentication4transaction from "../middlewares/authentication4transaction";
-import * as transactionController from "../controllers/transaction";
-// import * as authorizationController from "../controllers/authorization";
+import * as TransactionController from "../controllers/transaction";
+import * as AuthorizationController from "../controllers/authorization";
+import * as AuthorizationModel from "../../common/models/authorization";
 
 router.get("/transactions", (req, res, next) => {
     req.getValidationResult().then((result) => {
-        transactionController.find({}).then((transactions) => {
+        TransactionController.find({}).then((transactions) => {
             res.json({
                 success: true,
                 message: null,
@@ -29,7 +30,7 @@ router.all("/transaction/start", (req, res, next) => {
         // TODO ownersの型チェック
 
         // let owners = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
-        transactionController.create(req.body.owners).then((transaction) => {
+        TransactionController.create(req.body.owners).then((transaction) => {
             res.json({
                 success: true,
                 message: null,
@@ -57,7 +58,7 @@ router.all("/transaction/:id/close", authentication4transaction, (req, res, next
     req.getValidationResult().then((result) => {
         if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
 
-        transactionController.close(req.params.id).then((transaction) => {
+        TransactionController.close(req.params.id).then((transaction) => {
             res.json({
                 success: true,
                 message: null,
@@ -73,11 +74,40 @@ router.all("/transaction/:id/close", authentication4transaction, (req, res, next
 });
 
 router.all("/transaction/:id/authorize", authentication4transaction, (req, res, next) => {
+    // TODO validations
+
     req.getValidationResult().then((result) => {
-        res.json({
-            success: false,
-            message: "now coding..."
-        });
+        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+
+        switch (req.body.authorization_group) {
+            case AuthorizationModel.GROUP_COA:
+
+                AuthorizationController.create4reservation({
+                    transaction: req.params.id,
+                    owner: req.body.owner,
+                    performance: req.body.performance,
+                    reservations: req.body.reservations
+                }).then((authorizations) => {
+                    res.json({
+                        success: true,
+                        message: null,
+                        authorizations: authorizations
+                    });
+                }, (err) => {
+                    res.json({
+                        success: false,
+                        message: err.message
+                    });
+                });
+                break;
+
+            default:
+                res.json({
+                    success: false,
+                    message: "invalid group."
+                });
+                break;
+        }
     });
 });
 

@@ -1,5 +1,6 @@
 import * as COA from "../../common/utils/coa";
-import {performance as performanceModel, screen as screenModel} from "../../common/models";
+import * as PerformanceModel from "../../common/models/performance";
+import * as ScreenModel from "../../common/models/screen";
 
 /**
  * パフォーマンス詳細
@@ -28,7 +29,7 @@ export function findById(id: string) {
     }
 
     return new Promise((resolve: (result: performance) => void, reject: (err: Error) => void) => {
-        performanceModel.findOne({
+        PerformanceModel.default.findOne({
             _id: id
         })
         .populate('film', 'name minutes copyright')
@@ -97,7 +98,7 @@ export function find(conditions: conditions) {
     }
 
     return new Promise((resolve: (result: Array<performance>) => void, reject: (err: Error) => void) => {
-        performanceModel.find({$and: andConditions})
+        PerformanceModel.default.find({$and: andConditions})
         .populate('film', 'name minutes copyright')
         .lean(true)
         .exec((err, performances: Array<performance>) => {
@@ -120,7 +121,7 @@ export function importByTheaterCode(theaterCode: string, begin: string, end: str
         }, (err, performances) => {
             if (err) return rejectAll(err);
 
-            screenModel.find({theater: theaterCode}, 'name theater').populate('theater', 'name').exec((err, screens) => {
+            ScreenModel.default.find({theater: theaterCode}, 'name theater').populate('theater', 'name').exec((err, screens) => {
                 // あれば更新、なければ追加
                 let promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
@@ -140,7 +141,7 @@ export function importByTheaterCode(theaterCode: string, begin: string, end: str
                         if (!_screen) return reject("no screen.");
 
                         console.log("updating performance...");
-                        performanceModel.findOneAndUpdate(
+                        PerformanceModel.default.findOneAndUpdate(
                             {
                                 _id: id
                             },

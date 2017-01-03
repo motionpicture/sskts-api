@@ -100,6 +100,8 @@ schema.methods.getSeatStatus = function(reservationNumber: number) {
 schema.index(
     {
         day: 1,
-        start_time: 1
+        time_start: 1
     }
 );
+
+export default mongoose.model(name, schema);

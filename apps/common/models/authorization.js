@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const transactionModel = require("./transaction");
 const assetModel = require("./asset");
+const ownerModel = require("./owner");
 /** model name */
 exports.name = "Authorization";
 /**
@@ -13,13 +14,25 @@ exports.schema = new mongoose.Schema({
         ref: transactionModel.name,
         required: true
     },
-    asset: {
+    owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: assetModel.name,
+        ref: ownerModel.name,
         required: true
     },
     active: Boolean,
     amount: Number,
+    group: String,
+    /** asset管理の場合 */
+    asset: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: assetModel.name,
+    },
+    /** COA資産管理の場合 */
+    coa_tmp_reserve_num: String,
+    performance: String,
+    section: String,
+    seat_code: String,
+    /** GMO資産管理の場合 */
     gmo_shop_pass_string: String,
     gmo_shop_id: String,
     gmo_amount: String,
@@ -44,3 +57,7 @@ exports.schema = new mongoose.Schema({
         updatedAt: 'updated_at',
     }
 });
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = mongoose.model(exports.name, exports.schema);
+exports.GROUP_COA = "COA";
+exports.GROUP_GMO = "GMO";

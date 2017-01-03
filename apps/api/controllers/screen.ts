@@ -1,5 +1,5 @@
 import * as COA from "../../common/utils/coa";
-import {screen as screenModel} from "../../common/models";
+import * as ScreenModel from "../../common/models/screen";
 
 /**
  * スクリーン詳細
@@ -30,7 +30,7 @@ export function findById(id: string) {
     }
 
     return new Promise((resolve: (result: screen) => void, reject: (err: Error) => void) => {
-        screenModel.findOne({
+        ScreenModel.default.findOne({
             _id: id
         })
         .exec((err, screen) => {
@@ -70,7 +70,7 @@ export function importByTheaterCode(theaterCode: string) {
                     });
 
                     // this.logger.debug('updating sponsor...');
-                    screenModel.findOneAndUpdate(
+                    ScreenModel.default.findOneAndUpdate(
                         {
                             _id: `${theaterCode}${screen.screen_code}`
                         },

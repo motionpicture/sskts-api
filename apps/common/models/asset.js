@@ -36,5 +36,7 @@ exports.schema = new mongoose.Schema({
         updatedAt: 'updated_at',
     }
 });
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = mongoose.model(exports.name, exports.schema);
 /** 座席予約グループ */
 exports.GROUP_SEAT_RESERVATION = "SEAT_RESERVATION";

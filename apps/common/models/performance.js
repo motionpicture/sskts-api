@@ -95,5 +95,7 @@ schema.methods.getSeatStatus = function(reservationNumber: number) {
 */
 exports.schema.index({
     day: 1,
-    start_time: 1
+    time_start: 1
 });
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = mongoose.model(exports.name, exports.schema);

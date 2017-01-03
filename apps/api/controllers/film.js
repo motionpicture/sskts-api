@@ -45,6 +45,7 @@ function importByTheaterCode(theaterCode) {
                         _id: `${theaterCode}${film.title_code}${film.title_branch_num}`
                     }, {
                         film_group: film.title_code,
+                        film_branch_code: film.title_branch_num,
                         theater: theaterCode,
                         name: {
                             ja: film.title_name,

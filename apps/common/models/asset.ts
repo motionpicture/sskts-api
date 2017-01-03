@@ -40,5 +40,7 @@ export var schema = new mongoose.Schema({
     }
 });
 
+export default mongoose.model(name, schema);
+
 /** 座席予約グループ */
 export var GROUP_SEAT_RESERVATION = "SEAT_RESERVATION";
