@@ -11,8 +11,8 @@ exports.default = (req, res, next) => {
         if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
         // 取引の有効性確認
-        transactionController.isValid(req.params.id, req.body.password, (err, isValid) => {
-            if (!isValid)
+        transactionController.isAvalilable(req.params.id, req.body.password, (err, isAvalilable) => {
+            if (!isAvalilable)
                 return next(err);
             next();
         });

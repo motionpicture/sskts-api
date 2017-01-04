@@ -48,28 +48,29 @@ exports.create = create;
 /**
  * idとpasswordから取引の有効性確認
  */
-function isValid(id, password, cb) {
-    // TODO 有効期限確認
+function isAvalilable(id, password, cb) {
     TransactionModel.default.findOne({
         _id: id,
-        password: password
-    }, "_id", (err, transaction) => {
+        password: password,
+        status: TransactionModel.STATUS_PROCSSING,
+    }, "expired_at", (err, transaction) => {
         if (err)
             return cb(err, false);
         if (!transaction)
             return cb(new Error("transaction for a given id and password not found."), false);
+        if (transaction.get("expired_at") <= Date.now())
+            return cb(new Error("transaction expired."), false);
         cb(null, true);
     });
 }
-exports.isValid = isValid;
+exports.isAvalilable = isAvalilable;
 /**
  * 取引成立
  */
 function close(id) {
     return new Promise((resolve, reject) => {
         TransactionModel.default.findOneAndUpdate({
-            _id: id,
-            status: TransactionModel.STATUS_PROCSSING,
+            _id: id
         }, {
             $set: { status: TransactionModel.STATUS_CLOSED }
         }, {

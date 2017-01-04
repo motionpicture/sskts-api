@@ -4,13 +4,14 @@ import * as OwnerModel from "../../common/models/owner";
  * 所有者作成
  */
 export function create(group: string) {
-    // TODO group文字列のバリデーション
-
     interface owner {
         _id: string,
         group: string,
     }
     return new Promise((resolve: (result: owner) => void, reject: (err: Error) => void) => {
+        // group文字列のバリデーション
+        if (!OwnerModel.isAvailableGroup(group)) return reject(new Error("invalid group name."));
+
         OwnerModel.default.create({
             group: group,
         }).then((owner) => {
@@ -24,18 +25,18 @@ export function create(group: string) {
     });
 }
 
-interface Update {
+/**
+ * 所有者更新
+ */
+export function findByIdAndUpdate(args: {
+    _id: string,
     name?: {
         ja: string,
         en: string
     },
     email?: string,
     tel?: string,
-}
-/**
- * 所有者更新
- */
-export function findByIdAndUpdate(id: string, update: Update) {
+}) {
     interface owner {
         _id: string,
         group: string,
@@ -48,9 +49,9 @@ export function findByIdAndUpdate(id: string, update: Update) {
     }
     return new Promise((resolve: (result: owner) => void, reject: (err: Error) => void) => {
         OwnerModel.default.findOneAndUpdate({
-            _id: id
+            _id: args._id
         }, {
-            $set: update
+            $set: args
         }, {
             new: true,
             upsert: false

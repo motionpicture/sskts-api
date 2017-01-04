@@ -27,14 +27,15 @@ router.all("/owner/:id/update", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
 
-        let update = {
+        let args = {
+            _id: req.params.id,
             name: {
                 ja: (req.body.name_ja) ? req.body.name_ja : undefined,
                 en: (req.body.name_en) ? req.body.name_en : undefined,
             },
             email: (req.body.email) ? req.body.email : undefined,
         };
-        ownerController.findByIdAndUpdate(req.params.id, update).then((owner) => {
+        ownerController.findByIdAndUpdate(args).then((owner) => {
             res.json({
                 success: true,
                 message: null,

@@ -1,25 +1,18 @@
 import mongoose = require('mongoose');
 import * as AssetModel from "../../common/models/asset";
 import * as TransactionModel from "../../common/models/transaction";
+import * as AuthorizationModel from "../../common/models/authorization";
 import * as COA from "../../common/utils/coa";
 
-interface Create4reservationArgs {
-    transaction: string,
-    assets: Array<string>,
-    // owner: string,
-    // performance: string,
-    // reservations: Array<{
-    //     section: string,
-    //     seat_code: string
-    // }>
-}
 /**
  * 資産の承認をとる
  */
-export function create4reservation(args: Create4reservationArgs) {
+export function create4reservation(args: {
+    transaction: string,
+    assets: Array<string>,
+}) {
     interface result {
         _id: string,
-        transaction: string,
         asset: string,
         owner: string,
         coa_tmp_reserve_num: string,
@@ -54,7 +47,7 @@ export function create4reservation(args: Create4reservationArgs) {
 
                 // 本来は以下順序
                 // 1.authorizationを非アクティブで作成
-                // 2.assetにauthorizationが作成済みでないかどうか確認(今回は、COA連携なのでassetを確認せずに、アクティブな承認を作成)
+                // 2.assetにauthorizationが作成済みでないかどうか確認(今回は、COA連携なのでassetを確認せずに取引追加)
                 // 3.authorizationをアクティブにする
 
                 TransactionModel.default.findOne({
@@ -69,7 +62,8 @@ export function create4reservation(args: Create4reservationArgs) {
                             asset: asset.get("_id"),
                             owner: asset.get("owner"),
                             coa_tmp_reserve_num: result.tmp_reserve_num.toString(),
-                            active: false
+                            active: false,
+                            group: AuthorizationModel.GROUP_ASSET
                         });
                     });
                     transaction.save((err, transaction) => {
@@ -109,24 +103,36 @@ export function create4reservation(args: Create4reservationArgs) {
 /**
  * 資産承認取消
  */
-export function removeByCoaTmpReserveNum(tmpReserveNum: string) {
+export function removeByCoaTmpReserveNum(args: {
+    /** 取引ID */
+    transaction_id: string,
+    /** COA仮予約番号 */
+    tmp_reserve_num: string
+}) {
+    // 1.取引の承認を非アクティブに変更
+    // 2.資産から取引を削除
+    // 3.COA仮予約取消
+
     return new Promise((resolve: () => void, reject: (err: Error) => void) => {
-        // 承認を非アクティブに変更
         TransactionModel.default.findOne({
-            "authorizations": { $elemMatch: { coa_tmp_reserve_num: tmpReserveNum } }
+            _id: args.transaction_id,
+            authorizations: { $elemMatch: { coa_tmp_reserve_num: args.tmp_reserve_num } }
         }).exec((err, transaction) => {
             if (err) return reject(err);
-            if (!transaction) return reject(new Error("transaction not found."));
+            if (!transaction) return reject(new Error("transaction with given tmp_reserve_num not found."));
 
             let assetIds: Array<string> = [];
             transaction.get("authorizations").forEach((authorization: mongoose.Document) => {
-                if (authorization.get("coa_tmp_reserve_num") !== tmpReserveNum) return; 
+                if (authorization.get("coa_tmp_reserve_num") !== args.tmp_reserve_num) return; 
                 authorization.set("active", false);
                 assetIds.push(authorization.get("asset"));
             });
 
+            // 取引の承認を非アクティブに変更
             transaction.save((err, transaction) => {
-                // 資産から承認IDを削除
+                if (err) return reject(err);
+
+                // 資産から取引を削除
                 AssetModel.default.update({
                     _id: {$in: assetIds}
                 }, {
@@ -136,7 +142,7 @@ export function removeByCoaTmpReserveNum(tmpReserveNum: string) {
                 }, (err, raw) => {
                     if (err) return reject(err);
 
-                    // TODO COA座席仮予約削除
+                    // COA仮予約取消
                     AssetModel.default.findOne({
                         _id: assetIds[0]
                     }).populate({
@@ -145,13 +151,16 @@ export function removeByCoaTmpReserveNum(tmpReserveNum: string) {
                             path: "film"
                         }
                     }).exec((err, asset) => {
+                        if (err) return reject(err);
+                        if (!asset) return reject(new Error("asset not found."));
+
                         COA.deleteTmpReserveInterface.call({
                             theater_code: asset.get("performance").get("theater"),
                             date_jouei: asset.get("performance").get("day"),
                             title_code: asset.get("performance").get("film").get("film_group"),
                             title_branch_num: asset.get("performance").get("film").get("film_branch_code"),
                             time_begin: asset.get("performance").get("time_start"),
-                            tmp_reserve_num: tmpReserveNum,
+                            tmp_reserve_num: args.tmp_reserve_num,
                         }, (err, success) => {
                             if (err) return reject(err);
 

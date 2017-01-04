@@ -1,6 +1,7 @@
 "use strict";
 const request = require("request");
 const config = require("config");
+let COA_URI = config.get("coa_api_endpoint");
 /**
  * API認証情報
  */
@@ -12,12 +13,11 @@ let credentials = {
  * アクセストークンを発行する
  */
 function publishAccessToken(cb) {
-    // TODO アクセストークン有効期限チェック
-    if (credentials.access_token) {
+    // アクセストークン有効期限チェック
+    if (credentials.access_token && Date.parse(credentials.expired_at) > Date.now())
         return cb(null);
-    }
     request.post({
-        url: `${config.get("coa_api_endpoint")}/token/access_token`,
+        url: `${COA_URI}/token/access_token`,
         form: {
             refresh_token: config.get("coa_api_refresh_token")
         },
@@ -42,7 +42,7 @@ var findTheaterInterface;
     function call(args, cb) {
         publishAccessToken((err) => {
             request.get({
-                url: `${config.get("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/theater/`,
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/theater/`,
                 auth: { bearer: credentials.access_token },
                 json: true
             }, (error, response, body) => {
@@ -74,7 +74,7 @@ var findFilmsByTheaterCodeInterface;
     function call(args, cb) {
         publishAccessToken((err) => {
             request.get({
-                url: `${config.get("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/title/`,
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/title/`,
                 auth: { bearer: credentials.access_token },
                 json: true
             }, (error, response, body) => {
@@ -101,7 +101,7 @@ var findScreensByTheaterCodeInterface;
     function call(args, cb) {
         publishAccessToken((err) => {
             request.get({
-                url: `${config.get("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/screen/`,
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/screen/`,
                 auth: { bearer: credentials.access_token },
                 json: true
             }, (error, response, body) => {
@@ -127,7 +127,7 @@ var findPerformancesByTheaterCodeInterface;
     function call(args, cb) {
         publishAccessToken((err) => {
             request.get({
-                url: `${config.get("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/schedule/`,
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/schedule/`,
                 auth: { bearer: credentials.access_token },
                 json: true,
                 qs: {
@@ -158,7 +158,7 @@ var reserveSeatsTemporarilyInterface;
         console.log("reserveSeatsTemporarilyInterface calling...", args);
         publishAccessToken((err) => {
             request.get({
-                url: `${config.get("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/upd_tmp_reserve_seat/`,
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/upd_tmp_reserve_seat/`,
                 auth: { bearer: credentials.access_token },
                 json: true,
                 qs: {
@@ -199,7 +199,7 @@ var deleteTmpReserveInterface;
         console.log("deleteTmpReserveInterface calling...", args);
         publishAccessToken((err) => {
             request.get({
-                url: `${config.get("coa_api_endpoint")}/api/v1/theater/${args.theater_code}/del_tmp_reserve/`,
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/del_tmp_reserve/`,
                 auth: { bearer: credentials.access_token },
                 json: true,
                 qs: {

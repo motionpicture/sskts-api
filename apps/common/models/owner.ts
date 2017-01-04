@@ -30,3 +30,14 @@ export var GROUP_ADMINISTRATOR = "ADMINISTRATOR";
 export var GROUP_ANONYMOUS = "ANONYMOUS";
 /** 会員グループ */
 export var GROUP_MEMBER = "MEMBER";
+
+/**
+ * 利用可能なグループ名かどうか
+ */
+export function isAvailableGroup(group: string) {
+    return (
+           group === GROUP_ADMINISTRATOR
+        || group === GROUP_ANONYMOUS
+        || group === GROUP_MEMBER
+    );
+}

@@ -73,15 +73,15 @@ export function create(owners: Array<string>) {
 /**
  * idとpasswordから取引の有効性確認
  */
-export function isValid(id: string, password: string, cb: (err: Error, isValid: boolean) => void) {
-    // TODO 有効期限確認
-
+export function isAvalilable(id: string, password: string, cb: (err: Error, isValid: boolean) => void) {
     TransactionModel.default.findOne({
         _id: id,
-        password: password
-    }, "_id", (err, transaction) => {
+        password: password,
+        status: TransactionModel.STATUS_PROCSSING,
+    }, "expired_at", (err, transaction) => {
         if (err) return cb(err, false);
         if (!transaction) return cb(new Error("transaction for a given id and password not found."), false);
+        if (transaction.get("expired_at") <= Date.now()) return cb(new Error("transaction expired."), false);
 
         cb(null, true);
     });
@@ -98,9 +98,7 @@ export function close(id: string) {
     }
     return new Promise((resolve: (result: transaction) => void, reject: (err: Error) => void) => {
         TransactionModel.default.findOneAndUpdate({
-            _id: id,
-            status: TransactionModel.STATUS_PROCSSING,
-            // TODO expiredチェック
+            _id: id
         }, {
             $set: {status: TransactionModel.STATUS_CLOSED}
         }, {

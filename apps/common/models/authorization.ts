@@ -9,11 +9,6 @@ export var name = "Authorization";
  * 承認スキーマ
  */
 export var schema = new mongoose.Schema({
-    // transaction: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: transactionModel.name,
-    //     required: true
-    // },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.name,
@@ -21,7 +16,10 @@ export var schema = new mongoose.Schema({
     },
     active: Boolean,
     amount: Number,
-    group: String,
+    group: {
+        type: String,
+        required: true
+    },
 
 
 

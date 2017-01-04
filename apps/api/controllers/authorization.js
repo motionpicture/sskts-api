@@ -1,6 +1,7 @@
 "use strict";
 const AssetModel = require("../../common/models/asset");
 const TransactionModel = require("../../common/models/transaction");
+const AuthorizationModel = require("../../common/models/authorization");
 const COA = require("../../common/utils/coa");
 /**
  * 資産の承認をとる
@@ -35,7 +36,7 @@ function create4reservation(args) {
                     return rejectAll(err);
                 // 本来は以下順序
                 // 1.authorizationを非アクティブで作成
-                // 2.assetにauthorizationが作成済みでないかどうか確認(今回は、COA連携なのでassetを確認せずに、アクティブな承認を作成)
+                // 2.assetにauthorizationが作成済みでないかどうか確認(今回は、COA連携なのでassetを確認せずに取引追加)
                 // 3.authorizationをアクティブにする
                 TransactionModel.default.findOne({
                     _id: args.transaction
@@ -50,7 +51,8 @@ function create4reservation(args) {
                             asset: asset.get("_id"),
                             owner: asset.get("owner"),
                             coa_tmp_reserve_num: result.tmp_reserve_num.toString(),
-                            active: false
+                            active: false,
+                            group: AuthorizationModel.GROUP_ASSET
                         });
                     });
                     transaction.save((err, transaction) => {
@@ -91,25 +93,31 @@ exports.create4reservation = create4reservation;
 /**
  * 資産承認取消
  */
-function removeByCoaTmpReserveNum(tmpReserveNum) {
+function removeByCoaTmpReserveNum(args) {
+    // 1.取引の承認を非アクティブに変更
+    // 2.資産から取引を削除
+    // 3.COA仮予約取消
     return new Promise((resolve, reject) => {
-        // 承認を非アクティブに変更
         TransactionModel.default.findOne({
-            "authorizations": { $elemMatch: { coa_tmp_reserve_num: tmpReserveNum } }
+            _id: args.transaction_id,
+            authorizations: { $elemMatch: { coa_tmp_reserve_num: args.tmp_reserve_num } }
         }).exec((err, transaction) => {
             if (err)
                 return reject(err);
             if (!transaction)
-                return reject(new Error("transaction not found."));
+                return reject(new Error("transaction with given tmp_reserve_num not found."));
             let assetIds = [];
             transaction.get("authorizations").forEach((authorization) => {
-                if (authorization.get("coa_tmp_reserve_num") !== tmpReserveNum)
+                if (authorization.get("coa_tmp_reserve_num") !== args.tmp_reserve_num)
                     return;
                 authorization.set("active", false);
                 assetIds.push(authorization.get("asset"));
             });
+            // 取引の承認を非アクティブに変更
             transaction.save((err, transaction) => {
-                // 資産から承認IDを削除
+                if (err)
+                    return reject(err);
+                // 資産から取引を削除
                 AssetModel.default.update({
                     _id: { $in: assetIds }
                 }, {
@@ -119,7 +127,7 @@ function removeByCoaTmpReserveNum(tmpReserveNum) {
                 }, (err, raw) => {
                     if (err)
                         return reject(err);
-                    // TODO COA座席仮予約削除
+                    // COA仮予約取消
                     AssetModel.default.findOne({
                         _id: assetIds[0]
                     }).populate({
@@ -128,13 +136,17 @@ function removeByCoaTmpReserveNum(tmpReserveNum) {
                             path: "film"
                         }
                     }).exec((err, asset) => {
+                        if (err)
+                            return reject(err);
+                        if (!asset)
+                            return reject(new Error("asset not found."));
                         COA.deleteTmpReserveInterface.call({
                             theater_code: asset.get("performance").get("theater"),
                             date_jouei: asset.get("performance").get("day"),
                             title_code: asset.get("performance").get("film").get("film_group"),
                             title_branch_num: asset.get("performance").get("film").get("film_branch_code"),
                             time_begin: asset.get("performance").get("time_start"),
-                            tmp_reserve_num: tmpReserveNum,
+                            tmp_reserve_num: args.tmp_reserve_num,
                         }, (err, success) => {
                             if (err)
                                 return reject(err);

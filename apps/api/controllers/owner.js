@@ -4,8 +4,10 @@ const OwnerModel = require("../../common/models/owner");
  * 所有者作成
  */
 function create(group) {
-    // TODO group文字列のバリデーション
     return new Promise((resolve, reject) => {
+        // group文字列のバリデーション
+        if (!OwnerModel.isAvailableGroup(group))
+            return reject(new Error("invalid group name."));
         OwnerModel.default.create({
             group: group,
         }).then((owner) => {
@@ -22,12 +24,12 @@ exports.create = create;
 /**
  * 所有者更新
  */
-function findByIdAndUpdate(id, update) {
+function findByIdAndUpdate(args) {
     return new Promise((resolve, reject) => {
         OwnerModel.default.findOneAndUpdate({
-            _id: id
+            _id: args._id
         }, {
-            $set: update
+            $set: args
         }, {
             new: true,
             upsert: false

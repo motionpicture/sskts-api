@@ -103,7 +103,10 @@ router.all("/transaction/:id/unauthorize", authentication4transaction_1.default,
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
-        AuthorizationController.removeByCoaTmpReserveNum(req.body.coa_tmp_reserve_num).then(() => {
+        AuthorizationController.removeByCoaTmpReserveNum({
+            transaction_id: req.params.id,
+            tmp_reserve_num: req.body.coa_tmp_reserve_num,
+        }).then(() => {
             res.json({
                 success: true,
                 message: null

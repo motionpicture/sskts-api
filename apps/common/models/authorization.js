@@ -8,11 +8,6 @@ exports.name = "Authorization";
  * 承認スキーマ
  */
 exports.schema = new mongoose.Schema({
-    // transaction: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: transactionModel.name,
-    //     required: true
-    // },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.name,
@@ -20,7 +15,10 @@ exports.schema = new mongoose.Schema({
     },
     active: Boolean,
     amount: Number,
-    group: String,
+    group: {
+        type: String,
+        required: true
+    },
     /** asset管理の場合 */
     asset: {
         type: mongoose.Schema.Types.ObjectId,

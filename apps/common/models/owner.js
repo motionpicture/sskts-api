@@ -28,3 +28,12 @@ exports.GROUP_ADMINISTRATOR = "ADMINISTRATOR";
 exports.GROUP_ANONYMOUS = "ANONYMOUS";
 /** 会員グループ */
 exports.GROUP_MEMBER = "MEMBER";
+/**
+ * 利用可能なグループ名かどうか
+ */
+function isAvailableGroup(group) {
+    return (group === exports.GROUP_ADMINISTRATOR
+        || group === exports.GROUP_ANONYMOUS
+        || group === exports.GROUP_MEMBER);
+}
+exports.isAvailableGroup = isAvailableGroup;
