@@ -419,3 +419,67 @@ export namespace getStateReserveSeatInterface {
         });
     }
 }
+
+/**
+ * 空席状況
+ */
+export namespace countFreeSeatInterface {
+    export interface Args {
+        /** 劇場コード */
+        theater_code: string,
+        /** 空席情報を抽出する上映日の開始日　　※日付は西暦8桁 "YYYYMMDD" */
+        begin: string,
+        /** 空席情報を抽出する上映日の終了日　　※日付は西暦8桁 "YYYYMMDD" */
+        end: string,
+    }
+    export interface Result {
+        /** 施設コード */
+        theater_code: string,
+        /** 日程リスト */
+        list_date: Array<{
+            /** 上映日(日付は西暦8桁 "YYYYMMDD") */
+            date_jouei: string,
+            /** パフォーマンスリスト */
+            list_performance: Array<{
+                /** 作品コード(5桁) */
+                title_code: string,
+                /** 作品枝番(2桁) */
+                title_branch_num: string,
+                /** 上映開始時刻(4桁 "HHMM") */
+                time_begin: string,
+                /** 予約可能数(パフォーマンスの予約可能座席数) */
+                cnt_reserve_max: number,
+                /** 予約可能残席数(予約可能座席数から仮予約を含む予約数を引いた残席数) */
+                cnt_reserve_free: number,
+            }>,
+            /** パフォーマンス数 */
+            cnt_performance: number,
+        }>
+    }
+    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+        console.log("countFreeSeat calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/count_free_seat/`,
+                auth: {bearer: credentials.access_token},
+                json: true,
+                qs: {
+                    begin: args.begin,
+                    end: args.end,
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("countFreeSeat called.", error, body);
+                if (error) return cb(error, null);
+                if (typeof body === "string")  return cb(new Error(body), null);
+                if (body.message) return cb(new Error(body.message), null);
+                if (body.status !== 0) return cb(new Error(body.status), null);
+
+                cb(null, {
+                    theater_code: body.theater_code,
+                    list_date: body.list_date,
+                });
+            });
+        });
+    }
+}

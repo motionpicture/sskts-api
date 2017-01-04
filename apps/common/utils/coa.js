@@ -265,3 +265,39 @@ var getStateReserveSeatInterface;
     }
     getStateReserveSeatInterface.call = call;
 })(getStateReserveSeatInterface = exports.getStateReserveSeatInterface || (exports.getStateReserveSeatInterface = {}));
+/**
+ * 空席状況
+ */
+var countFreeSeatInterface;
+(function (countFreeSeatInterface) {
+    function call(args, cb) {
+        console.log("countFreeSeat calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/count_free_seat/`,
+                auth: { bearer: credentials.access_token },
+                json: true,
+                qs: {
+                    begin: args.begin,
+                    end: args.end,
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("countFreeSeat called.", error, body);
+                if (error)
+                    return cb(error, null);
+                if (typeof body === "string")
+                    return cb(new Error(body), null);
+                if (body.message)
+                    return cb(new Error(body.message), null);
+                if (body.status !== 0)
+                    return cb(new Error(body.status), null);
+                cb(null, {
+                    theater_code: body.theater_code,
+                    list_date: body.list_date,
+                });
+            });
+        });
+    }
+    countFreeSeatInterface.call = call;
+})(countFreeSeatInterface = exports.countFreeSeatInterface || (exports.countFreeSeatInterface = {}));

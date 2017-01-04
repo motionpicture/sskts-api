@@ -48,7 +48,7 @@ export function findById(id: string) {
                 film_name: performance.get("film").get("name"),
                 day: performance.get("day"),
                 time_start: performance.get("time_start"),
-                time_end: performance.get("time_end")
+                time_end: performance.get("time_end"),
             });
         })
     });
@@ -105,6 +105,7 @@ export function find(conditions: conditions) {
         .exec((err, performances: Array<performance>) => {
             if (err) return reject(err);
 
+            // TODO 空席状況を追加
             resolve(performances);
         })
     });
@@ -240,6 +241,22 @@ export function getAssets(id: string) {
                     resolve(results);
                 });
             });
+        });
+    });
+}
+
+export function importSeatAvailability(theaterCode: string, start: string, end: string) {
+    return new Promise((resolve: (result: any) => void, reject: (err: Error) => void) => {
+        COA.countFreeSeatInterface.call({
+            theater_code: theaterCode,
+            begin: start,
+            end: end,
+        }, (err, result) => {
+            if (err) return reject(err);
+
+            // TODO どこかにインポートする
+
+            resolve(result);
         });
     });
 }
