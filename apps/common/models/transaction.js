@@ -1,7 +1,6 @@
 "use strict";
 const mongoose = require("mongoose");
 const OwnerModel = require("./owner");
-const AuthorizationModel = require("./authorization");
 /** model name */
 exports.name = "Transaction";
 /**
@@ -16,19 +15,13 @@ exports.schema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: OwnerModel.name,
             required: true
-        }],
-    authorizations: {
-        type: [AuthorizationModel.schema],
-    } // 承認リスト
+        }]
 }, {
     collection: "transactions",
     timestamps: {
         createdAt: "created_at",
         updatedAt: "updated_at",
     }
-}).post("validate", function (doc) {
-    // TODO
-    console.log("has been validated (but not saved yet)", doc.authorizations.length);
 });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = mongoose.model(exports.name, exports.schema);

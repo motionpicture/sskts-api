@@ -94,36 +94,49 @@ exports.create4reservation = create4reservation;
  * 承認追加(GROUP_COA_SEAT_RESERVATION)
  */
 function create4coaSeatReservation(args) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolveAll, rejectAll) => {
         // 今回は、COA連携なのでassetを確認せずに、authorizationをアクティブで作成
-        TransactionModel.default.findOne({
-            _id: args.transaction
-        }, (err, transaction) => {
-            args.authorizations.forEach((authorization) => {
-                transaction.get("authorizations").push({
-                    coa_tmp_reserve_num: authorization.coa_tmp_reserve_num,
-                    performance: authorization.performance,
-                    section: authorization.section,
-                    seat_code: authorization.seat_code,
-                    ticket_code: authorization.ticket_code,
-                    ticket_name_ja: authorization.ticket_name_ja,
-                    ticket_name_en: authorization.ticket_name_en,
-                    ticket_name_kana: authorization.ticket_name_kana,
-                    std_price: authorization.std_price,
-                    add_price: authorization.add_price,
-                    dis_price: authorization.dis_price,
-                    price: authorization.price,
+        let results = [];
+        let promises = args.authorizations.map((authorizationArg) => {
+            return new Promise((resolve, reject) => {
+                AuthorizationModel.default.create({
+                    coa_tmp_reserve_num: authorizationArg.coa_tmp_reserve_num,
+                    performance: authorizationArg.performance,
+                    section: authorizationArg.section,
+                    seat_code: authorizationArg.seat_code,
+                    ticket_code: authorizationArg.ticket_code,
+                    ticket_name_ja: authorizationArg.ticket_name_ja,
+                    ticket_name_en: authorizationArg.ticket_name_en,
+                    ticket_name_kana: authorizationArg.ticket_name_kana,
+                    std_price: authorizationArg.std_price,
+                    add_price: authorizationArg.add_price,
+                    dis_price: authorizationArg.dis_price,
+                    price: authorizationArg.price,
                     group: AuthorizationModel.GROUP_COA_SEAT_RESERVATION,
                     owner: "5868e16789cc75249cdbfa4b",
                     active: true,
+                }).then((authorization) => {
+                    results.push({
+                        success: true,
+                        messsge: null,
+                        authorization: authorization,
+                    });
+                    resolve();
+                }, (err) => {
+                    console.log(err);
+                    results.push({
+                        authorization: authorizationArg,
+                        success: false,
+                        messsge: err.message
+                    });
+                    resolve();
                 });
             });
-            // saveメソッドでないとmongooseのvalidationは効かないので注意
-            transaction.save((err, transaction) => {
-                if (err)
-                    return reject(err);
-                resolve(transaction.get("authorizations"));
-            });
+        });
+        Promise.all(promises).then(() => {
+            resolveAll(results);
+        }, (err) => {
+            rejectAll(err);
         });
     });
 }

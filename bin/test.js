@@ -32,13 +32,13 @@ let options;
 //     json: true
 // };
 options = {
-    url: "http://localhost:8080/transaction/586d050012c62224c8568d52/authorize/coaSeatReservation",
+    url: "http://localhost:8080/transaction/586d85ad090b7e08b097651d/authorize/coaSeatReservation",
     body: {
         password: "password",
         authorizations: [
             {
                 coa_tmp_reserve_num: "999",
-                // performance: "001201701018513021010",
+                performance: "001201701018513021010",
                 section: "0",
                 seat_code: "HC",
                 ticket_code: "10",

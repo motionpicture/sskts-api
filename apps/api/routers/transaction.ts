@@ -115,11 +115,11 @@ router.all("/transaction/:id/authorize/coaSeatReservation", authentication4trans
         AuthorizationController.create4coaSeatReservation({
             transaction: req.params.id,
             authorizations: req.body.authorizations,
-        }).then((authorizations) => {
+        }).then((results) => {
             res.json({
                 success: true,
                 message: null,
-                authorizations: authorizations
+                results: results
             });
         }, (err) => {
             res.json({

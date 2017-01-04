@@ -25,7 +25,7 @@ export var schema = new mongoose.Schema({
     },
     group: { // 承認グループ
         type: String,
-        required: true
+        required: true,
     },
 
 
@@ -90,7 +90,30 @@ export var schema = new mongoose.Schema({
     }
 });
 
-// export default mongoose.model(name, schema);
+schema.pre("save", function(next){
+    switch (this.group) {
+        case GROUP_COA_SEAT_RESERVATION:
+            if (!this.coa_tmp_reserve_num) return next(new Error("coa_tmp_reserve_num required."));
+            if (!this.performance) return next(new Error("performance required."));
+            if (!this.section) return next(new Error("section required."));
+            if (!this.seat_code) return next(new Error("seat_code required."));
+            if (!this.ticket_code) return next(new Error("ticket_code required."));
+            if (!this.ticket_name_ja) return next(new Error("ticket_name_ja required."));
+            // if (!this.ticket_name_en) return next(new Error("ticket_name_en required."));
+            // if (!this.ticket_name_kana) return next(new Error("ticket_name_kana required."));
+            if (this.std_price !== 0 && !this.std_price) return next(new Error("std_price required."));
+            if (this.add_price !== 0 && !this.add_price) return next(new Error("add_price required."));
+            if (this.dis_price !== 0 && !this.dis_price) return next(new Error("dis_price required."));
+
+            break;
+        default:
+            break;
+    }
+
+    next();
+});
+
+export default mongoose.model(name, schema);
 
 /** 内部資産管理 */
 export var GROUP_ASSET = "ASSET";

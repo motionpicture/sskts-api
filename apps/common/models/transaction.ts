@@ -1,6 +1,5 @@
 import mongoose = require("mongoose");
 import * as OwnerModel from "./owner";
-import * as AuthorizationModel from "./authorization";
 
 /** model name */
 export var name = "Transaction";
@@ -17,27 +16,13 @@ export var schema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.name,
         required: true
-    }],
-    authorizations: {
-        type: [AuthorizationModel.schema],
-        // validate: {
-        //     validator: function (v) {
-        //         console.log(v);
-        //         return true;
-        //         // return /\d{3}-\d{3}-\d{4}/.test(v);
-        //     },
-        //     message: '{VALUE} is not a valid phone number!'
-        // },
-    } // 承認リスト
+    }]
 }, {
     collection: "transactions",
     timestamps: {
         createdAt: "created_at",
         updatedAt: "updated_at",
     }
-}).post("validate", function(doc: any) {
-    // TODO
-    console.log("has been validated (but not saved yet)", doc.authorizations.length);
 });
 
 export default mongoose.model(name, schema);
