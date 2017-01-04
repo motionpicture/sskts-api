@@ -266,16 +266,18 @@ export function importSeatAvailability(theaterCode: string, start: string, end: 
  */
 export function getTickets(id: string) {
     interface Result {
-        ticket_code: string,
-        ticket_name: string,
-        ticket_name_kana: string,
-        ticket_name_eng: string,
+        code: string,
+        name: {
+            ja: string,
+            en: string,
+        },
+        name_kana: string,
+        note: string,
         std_price: number,
         add_price: number,
         sale_price: number,
         limit_count: number,
         limit_unit: string,
-        ticket_note: string,
     }
     return new Promise((resolve: (results: Array<Result>) => void, reject: (err: Error) => void) => {
         PerformanceModel.default.findOne({
@@ -284,7 +286,6 @@ export function getTickets(id: string) {
             if (err) return reject(err);
             if (!performance) return reject(new Error("performance not found."));
 
-            // COA座席予約状態抽出
             COA.salesTicketInterface.call({
                 theater_code: performance.get("theater"),
                 date_jouei: performance.get("day"),
@@ -294,7 +295,24 @@ export function getTickets(id: string) {
             }, (err, result) => {
                 if (err) return reject(err);
 
-                resolve(result.list_ticket);
+                let results = result.list_ticket.map((ticket) => {
+                    return {
+                        code: ticket.ticket_code,
+                        name: {
+                            ja: ticket.ticket_name,
+                            en: ticket.ticket_name_eng,
+                        },
+                        name_kana: ticket.ticket_name_kana,
+                        note: ticket.ticket_note,
+                        std_price: ticket.std_price,
+                        add_price: ticket.add_price,
+                        sale_price: ticket.sale_price,
+                        limit_count: ticket.limit_count,
+                        limit_unit: ticket.limit_unit,
+                    }
+                });
+
+                resolve(results);
             });
         });
     });

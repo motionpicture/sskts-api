@@ -36,9 +36,9 @@ export var schema = new mongoose.Schema({
     section: String, // 座席セクション
     seat_code: String, // 座席コード
     ticket_code: String, // チケットコード
-    ticket_name: String, // チケット名
+    ticket_name_ja: String, // チケット名
+    ticket_name_en: String, // チケット名（英）
     ticket_name_kana: String, // チケット名（カナ）
-    ticket_name_eng: String, // チケット名（英）
     std_price: Number, // 標準単価
     add_price: Number, // 加算単価(３Ｄ，ＩＭＡＸ、４ＤＸ等の加算料金)
     dis_price: Number, // 割引額
