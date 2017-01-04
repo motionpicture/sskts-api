@@ -43,4 +43,24 @@ router.get("/performances", (req, res, next) => {
     });
 });
 
+router.get("/performance/:id/assets", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        if (!result.isEmpty()) {
+            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        }
+
+        performanceController.getAssets(req.params.id).then((assets) => {
+            res.json({
+                success: true,
+                assets: assets
+            });
+        }, (err) => {
+            res.json({
+                success: false,
+                message: err.message
+            });
+        });
+    });
+});
+
 export default router;

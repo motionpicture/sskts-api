@@ -226,3 +226,42 @@ var deleteTmpReserveInterface;
     }
     deleteTmpReserveInterface.call = call;
 })(deleteTmpReserveInterface = exports.deleteTmpReserveInterface || (exports.deleteTmpReserveInterface = {}));
+/**
+ * 座席予約状態抽出
+ */
+var getStateReserveSeatInterface;
+(function (getStateReserveSeatInterface) {
+    function call(args, cb) {
+        console.log("getStateReserveSeat calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/state_reserve_seat/`,
+                auth: { bearer: credentials.access_token },
+                json: true,
+                qs: {
+                    date_jouei: args.date_jouei,
+                    title_code: args.title_code,
+                    title_branch_num: args.title_branch_num,
+                    time_begin: args.time_begin,
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("getStateReserveSeat called.", error, body);
+                if (error)
+                    return cb(error, null);
+                if (typeof body === "string")
+                    return cb(new Error(body), null);
+                if (body.message)
+                    return cb(new Error(body.message), null);
+                if (body.status !== 0)
+                    return cb(new Error(body.status), null);
+                cb(null, {
+                    cnt_reserve_free: body.cnt_reserve_free,
+                    cnt_seat_line: body.cnt_seat_line,
+                    list_seat: body.list_seat,
+                });
+            });
+        });
+    }
+    getStateReserveSeatInterface.call = call;
+})(getStateReserveSeatInterface = exports.getStateReserveSeatInterface || (exports.getStateReserveSeatInterface = {}));

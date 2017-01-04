@@ -2,6 +2,7 @@
 const COA = require("../../common/utils/coa");
 const PerformanceModel = require("../../common/models/performance");
 const ScreenModel = require("../../common/models/screen");
+const AssetModel = require("../../common/models/asset");
 /**
  * パフォーマンス詳細
  */
@@ -121,3 +122,58 @@ function importByTheaterCode(theaterCode, begin, end) {
     });
 }
 exports.importByTheaterCode = importByTheaterCode;
+/**
+ * 座席予約状態を取得する
+ */
+function getAssets(id) {
+    return new Promise((resolve, reject) => {
+        PerformanceModel.default.findOne({
+            _id: id
+        }).populate("film").exec((err, performance) => {
+            if (err)
+                return reject(err);
+            if (!performance)
+                return reject(new Error("performance not found."));
+            AssetModel.default.find({
+                group: AssetModel.GROUP_SEAT_RESERVATION,
+                performance: id
+            }).exec((err, assets) => {
+                if (err)
+                    return reject(err);
+                if (assets.length === 0)
+                    return resolve([]);
+                // COA座席予約状態抽出
+                COA.getStateReserveSeatInterface.call({
+                    theater_code: performance.get("theater"),
+                    date_jouei: performance.get("day"),
+                    title_code: performance.get("film").get("film_group"),
+                    title_branch_num: performance.get("film").get("film_branch_code"),
+                    time_begin: performance.get("time_start"),
+                }, (err, result) => {
+                    if (err)
+                        return reject(err);
+                    // セクションごとの、利用可能座席コードリスト
+                    let availableSeatCodesBySecton = {};
+                    result.list_seat.forEach((value) => {
+                        availableSeatCodesBySecton[value.seat_section] = value.list_free_seat.map((freeSeat) => {
+                            return freeSeat.seat_num;
+                        });
+                    });
+                    ;
+                    let results = assets.map((asset) => {
+                        return {
+                            _id: asset.get("_id"),
+                            section: asset.get("section"),
+                            seat_code: asset.get("seat_code"),
+                            ticket_type: asset.get("ticket_type"),
+                            amount: asset.get("amount"),
+                            avalilable: (availableSeatCodesBySecton[asset.get("section")] && availableSeatCodesBySecton[asset.get("section")].indexOf(asset.get("seat_code")) >= 0) ? true : false
+                        };
+                    });
+                    resolve(results);
+                });
+            });
+        });
+    });
+}
+exports.getAssets = getAssets;

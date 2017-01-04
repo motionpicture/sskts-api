@@ -1,6 +1,7 @@
 import * as COA from "../../common/utils/coa";
 import * as PerformanceModel from "../../common/models/performance";
 import * as ScreenModel from "../../common/models/screen";
+import * as AssetModel from "../../common/models/asset";
 
 /**
  * パフォーマンス詳細
@@ -173,6 +174,70 @@ export function importByTheaterCode(theaterCode: string, begin: string, end: str
                     resolveAll();
                 }, (err) => {
                     rejectAll(err);
+                });
+            });
+        });
+    });
+}
+
+/**
+ * 座席予約状態を取得する
+ */
+export function getAssets(id: string) {
+    interface Result {
+        _id: string,
+        section: string,
+        seat_code: string,
+        ticket_type: string,
+        amount: number,
+        avalilable: boolean,
+    }
+    return new Promise((resolve: (results: Array<Result>) => void, reject: (err: Error) => void) => {
+        PerformanceModel.default.findOne({
+            _id: id
+        }).populate("film").exec((err, performance) => {
+            if (err) return reject(err);
+            if (!performance) return reject(new Error("performance not found."));
+
+            AssetModel.default.find({
+                group: AssetModel.GROUP_SEAT_RESERVATION,
+                performance: id
+            }).exec((err, assets) => {
+                if (err) return reject(err);
+                if (assets.length === 0) return resolve([]);
+
+                // COA座席予約状態抽出
+                COA.getStateReserveSeatInterface.call({
+                    theater_code: performance.get("theater"),
+                    date_jouei: performance.get("day"),
+                    title_code: performance.get("film").get("film_group"),
+                    title_branch_num: performance.get("film").get("film_branch_code"),
+                    time_begin: performance.get("time_start"),
+                }, (err, result) => {
+                    if (err) return reject(err);
+
+                    // セクションごとの、利用可能座席コードリスト
+                    let availableSeatCodesBySecton: {
+                        [sectionCode: string]: Array<string>;
+                    } = {};
+                    result.list_seat.forEach((value) => {
+                        availableSeatCodesBySecton[value.seat_section] = value.list_free_seat.map((freeSeat) => {
+                            return freeSeat.seat_num;
+                        });
+                    });;
+
+                    let results = assets.map((asset) => {
+                        return {
+                            _id: asset.get("_id"),
+                            section: asset.get("section"),
+                            seat_code: asset.get("seat_code"),
+                            ticket_type: asset.get("ticket_type"),
+                            amount: asset.get("amount"),
+                            avalilable: (availableSeatCodesBySecton[asset.get("section")] && availableSeatCodesBySecton[asset.get("section")].indexOf(asset.get("seat_code")) >= 0) ? true : false
+                        };
+                    });
+
+                    resolve(results);
                 });
             });
         });

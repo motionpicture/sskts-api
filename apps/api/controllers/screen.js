@@ -56,10 +56,10 @@ function importByTheaterCode(theaterCode) {
                         },
                         sections: [
                             {
-                                code: "001",
+                                code: "0",
                                 name: {
-                                    ja: "セクション001",
-                                    en: "section001",
+                                    ja: "セクション0",
+                                    en: "section0",
                                 },
                                 seats: seats
                             }
