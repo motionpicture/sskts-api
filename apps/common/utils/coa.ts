@@ -483,3 +483,73 @@ export namespace countFreeSeatInterface {
         });
     }
 }
+
+/**
+ * 販売可能チケット情報
+ */
+export namespace salesTicketInterface {
+    export interface Args {
+        /** 施設コード */
+        theater_code: string,
+        /** 上映日 */
+        date_jouei: string,
+        /** 作品コード */
+        title_code: string,
+        /** 作品枝番 */
+        title_branch_num: string,
+        /** 上映時刻 */
+        time_begin: string,
+    }
+    export interface Result {
+        /** 購入可能チケット情報リスト */
+        list_ticket: Array<{
+            /** チケットコード */
+            ticket_code: string,
+            /** チケット名 */
+            ticket_name: string,
+            /** チケット名（カナ） */
+            ticket_name_kana: string,
+            /** チケット名（英） */
+            ticket_name_eng: string,
+            /** 標準単価 */
+            std_price: number,
+            /** 加算単価(３Ｄ，ＩＭＡＸ、４ＤＸ等の加算料金) */
+            add_price: number,
+            /** 販売単価(標準単価＋加算単価) */
+            sale_price: number,
+            /** 人数制限(制限が無い場合は１) */
+            limit_count: number,
+            /** 制限単位(１：ｎ人単位、２：ｎ人以上) */
+            limit_unit: string,
+            /** チケット備考(注意事項等) */
+            ticket_note: string,
+        }>
+    }
+    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+        console.log("salesTicket calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/sales_ticket/`,
+                auth: {bearer: credentials.access_token},
+                json: true,
+                qs: {
+                    date_jouei: args.date_jouei,
+                    title_code: args.title_code,
+                    title_branch_num: args.title_branch_num,
+                    time_begin: args.time_begin,
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("salesTicket called.", error, body);
+                if (error) return cb(error, null);
+                if (typeof body === "string")  return cb(new Error(body), null);
+                if (body.message) return cb(new Error(body.message), null);
+                if (body.status !== 0) return cb(new Error(body.status), null);
+
+                cb(null, {
+                    list_ticket: body.list_ticket,
+                });
+            });
+        });
+    }
+}

@@ -15,7 +15,7 @@ export var schema = new mongoose.Schema({
         required: true
     },
     active: Boolean,
-    amount: Number,
+    price: Number,
     group: {
         type: String,
         required: true

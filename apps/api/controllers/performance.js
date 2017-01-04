@@ -160,14 +160,13 @@ function getAssets(id) {
                             return freeSeat.seat_num;
                         });
                     });
-                    ;
                     let results = assets.map((asset) => {
                         return {
                             _id: asset.get("_id"),
                             section: asset.get("section"),
                             seat_code: asset.get("seat_code"),
                             ticket_type: asset.get("ticket_type"),
-                            amount: asset.get("amount"),
+                            price: asset.get("price"),
                             avalilable: (availableSeatCodesBySecton[asset.get("section")] && availableSeatCodesBySecton[asset.get("section")].indexOf(asset.get("seat_code")) >= 0) ? true : false
                         };
                     });
@@ -193,3 +192,31 @@ function importSeatAvailability(theaterCode, start, end) {
     });
 }
 exports.importSeatAvailability = importSeatAvailability;
+/**
+ * 販売可能チケット情報を取得する
+ */
+function getTickets(id) {
+    return new Promise((resolve, reject) => {
+        PerformanceModel.default.findOne({
+            _id: id
+        }).populate("film").exec((err, performance) => {
+            if (err)
+                return reject(err);
+            if (!performance)
+                return reject(new Error("performance not found."));
+            // COA座席予約状態抽出
+            COA.salesTicketInterface.call({
+                theater_code: performance.get("theater"),
+                date_jouei: performance.get("day"),
+                title_code: performance.get("film").get("film_group"),
+                title_branch_num: performance.get("film").get("film_branch_code"),
+                time_begin: performance.get("time_start"),
+            }, (err, result) => {
+                if (err)
+                    return reject(err);
+                resolve(result.list_ticket);
+            });
+        });
+    });
+}
+exports.getTickets = getTickets;

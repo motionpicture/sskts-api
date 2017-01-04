@@ -21,7 +21,7 @@ export function importSeatReservations(start: string, end: string) {
                 performance: string,
                 section: string,
                 seat_code: string,
-                amount: number,
+                price: number,
                 // TODO 券種も？
             }> = [];
 
@@ -34,7 +34,7 @@ export function importSeatReservations(start: string, end: string) {
                             performance: performance.get("_id"),
                             section: section.code,
                             seat_code: seat.code,
-                            amount: 1800 // TODO 初期値
+                            price: 1800 // TODO 初期値?
                         });
                     });
                 });

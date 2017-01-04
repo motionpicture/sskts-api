@@ -190,7 +190,7 @@ export function getAssets(id: string) {
         section: string,
         seat_code: string,
         ticket_type: string,
-        amount: number,
+        price: number,
         avalilable: boolean,
     }
     return new Promise((resolve: (results: Array<Result>) => void, reject: (err: Error) => void) => {
@@ -225,7 +225,7 @@ export function getAssets(id: string) {
                         availableSeatCodesBySecton[value.seat_section] = value.list_free_seat.map((freeSeat) => {
                             return freeSeat.seat_num;
                         });
-                    });;
+                    });
 
                     let results = assets.map((asset) => {
                         return {
@@ -233,7 +233,7 @@ export function getAssets(id: string) {
                             section: asset.get("section"),
                             seat_code: asset.get("seat_code"),
                             ticket_type: asset.get("ticket_type"),
-                            amount: asset.get("amount"),
+                            price: asset.get("price"),
                             avalilable: (availableSeatCodesBySecton[asset.get("section")] && availableSeatCodesBySecton[asset.get("section")].indexOf(asset.get("seat_code")) >= 0) ? true : false
                         };
                     });
@@ -257,6 +257,45 @@ export function importSeatAvailability(theaterCode: string, start: string, end: 
             // TODO どこかにインポートする
 
             resolve(result);
+        });
+    });
+}
+
+/**
+ * 販売可能チケット情報を取得する
+ */
+export function getTickets(id: string) {
+    interface Result {
+        ticket_code: string,
+        ticket_name: string,
+        ticket_name_kana: string,
+        ticket_name_eng: string,
+        std_price: number,
+        add_price: number,
+        sale_price: number,
+        limit_count: number,
+        limit_unit: string,
+        ticket_note: string,
+    }
+    return new Promise((resolve: (results: Array<Result>) => void, reject: (err: Error) => void) => {
+        PerformanceModel.default.findOne({
+            _id: id
+        }).populate("film").exec((err, performance) => {
+            if (err) return reject(err);
+            if (!performance) return reject(new Error("performance not found."));
+
+            // COA座席予約状態抽出
+            COA.salesTicketInterface.call({
+                theater_code: performance.get("theater"),
+                date_jouei: performance.get("day"),
+                title_code: performance.get("film").get("film_group"),
+                title_branch_num: performance.get("film").get("film_branch_code"),
+                time_begin: performance.get("time_start"),
+            }, (err, result) => {
+                if (err) return reject(err);
+
+                resolve(result.list_ticket);
+            });
         });
     });
 }

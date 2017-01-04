@@ -1,6 +1,6 @@
 "use strict";
 const mongoose = require("mongoose");
-const ownerModel = require("./owner");
+const OwnerModel = require("./owner");
 const TransactionModel = require("./transaction");
 const PerformanceModel = require("./performance");
 /** model name */
@@ -11,7 +11,7 @@ exports.name = "Asset";
 exports.schema = new mongoose.Schema({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: ownerModel.name,
+        ref: OwnerModel.name,
         required: true
     },
     transactions: [
@@ -22,19 +22,26 @@ exports.schema = new mongoose.Schema({
     ],
     payment_no: String,
     group: String,
-    amount: Number,
+    price: Number,
+    // GROUP_SEAT_RESERVATIONの場合の属性
     performance: {
         type: String,
         ref: PerformanceModel.name,
     },
     section: String,
     seat_code: String,
-    ticket_type_code: String,
+    ticket_code: String,
+    ticket_name: String,
+    ticket_name_kana: String,
+    ticket_name_eng: String,
+    std_price: Number,
+    add_price: Number,
+    dis_price: Number,
 }, {
-    collection: 'assets',
+    collection: "assets",
     timestamps: {
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 });
 exports.schema.index({
