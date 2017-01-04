@@ -553,3 +553,49 @@ export namespace salesTicketInterface {
         });
     }
 }
+
+/**
+ * 券種マスター抽出
+ */
+export namespace ticketInterface {
+    export interface Args {
+        /** 施設コード */
+        theater_code: string
+    }
+    export interface Result {
+        /** 券種リスト */
+        list_ticket: Array<{
+            /** チケットコード */
+            ticket_code: string,
+            /** チケット名 */
+            ticket_name: string,
+            /** チケット名(カナ) */
+            ticket_name_kana: string,
+            /** チケット名(英) */
+            ticket_name_eng: string,
+        }>
+    }
+    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+        console.log("ticket calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/ticket/`,
+                auth: {bearer: credentials.access_token},
+                json: true,
+                qs: {
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("ticket called.", error, body);
+                if (error) return cb(error, null);
+                if (typeof body === "string")  return cb(new Error(body), null);
+                if (body.message) return cb(new Error(body.message), null);
+                if (body.status !== 0) return cb(new Error(body.status), null);
+
+                cb(null, {
+                    list_ticket: body.list_ticket,
+                });
+            });
+        });
+    }
+}

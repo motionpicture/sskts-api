@@ -52,5 +52,9 @@ exports.schema = new mongoose.Schema({
     }
 });
 // export default mongoose.model(name, schema);
+/** 内部資産管理 */
 exports.GROUP_ASSET = "ASSET";
+/** GMO資産管理 */
 exports.GROUP_GMO = "GMO";
+/** ムビチケ資産管理 */
+exports.GROUP_MVTK = "MVTK";

@@ -64,5 +64,9 @@ export var schema = new mongoose.Schema({
 
 // export default mongoose.model(name, schema);
 
+/** 内部資産管理 */
 export var GROUP_ASSET = "ASSET";
+/** GMO資産管理 */
 export var GROUP_GMO = "GMO";
+/** ムビチケ資産管理 */
+export var GROUP_MVTK = "MVTK";

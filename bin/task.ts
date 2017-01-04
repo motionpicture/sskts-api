@@ -4,6 +4,7 @@ import * as screenController from "../apps/api/controllers/screen";
 import * as filmController from "../apps/api/controllers/film";
 import * as PerformanceController from "../apps/api/controllers/performance";
 import * as AssetController from "../apps/api/controllers/asset";
+import * as TicketController from "../apps/api/controllers/ticket";
 
 import config = require("config");
 import mongoose = require("mongoose");
@@ -106,6 +107,22 @@ program
             mongoose.disconnect();
         }, (err) => {
             console.log("importSeatAvailability processed.", err);
+            mongoose.disconnect();
+        });
+    });
+
+program
+    .command("importTickets <theaterCode>")
+    .description("import tickets.")
+    .action((theaterCode, options) => {
+        // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
+        mongoose.connect(MONGOLAB_URI);
+
+        TicketController.importByTheaterCode(theaterCode).then(() => {
+            console.log("importTickets processed.");
+            mongoose.disconnect();
+        }, (err) => {
+            console.log("importTickets processed.", err);
             mongoose.disconnect();
         });
     });

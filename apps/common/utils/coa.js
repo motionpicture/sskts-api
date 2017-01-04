@@ -338,3 +338,35 @@ var salesTicketInterface;
     }
     salesTicketInterface.call = call;
 })(salesTicketInterface = exports.salesTicketInterface || (exports.salesTicketInterface = {}));
+/**
+ * 券種マスター抽出
+ */
+var ticketInterface;
+(function (ticketInterface) {
+    function call(args, cb) {
+        console.log("ticket calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/ticket/`,
+                auth: { bearer: credentials.access_token },
+                json: true,
+                qs: {},
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("ticket called.", error, body);
+                if (error)
+                    return cb(error, null);
+                if (typeof body === "string")
+                    return cb(new Error(body), null);
+                if (body.message)
+                    return cb(new Error(body.message), null);
+                if (body.status !== 0)
+                    return cb(new Error(body.status), null);
+                cb(null, {
+                    list_ticket: body.list_ticket,
+                });
+            });
+        });
+    }
+    ticketInterface.call = call;
+})(ticketInterface = exports.ticketInterface || (exports.ticketInterface = {}));
