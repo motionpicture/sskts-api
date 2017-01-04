@@ -1,8 +1,8 @@
 "use strict";
 const mongoose = require("mongoose");
 const ownerModel = require("./owner");
-const authorizationModel = require("./authorization");
-const performanceModel = require("./performance");
+const TransactionModel = require("./transaction");
+const PerformanceModel = require("./performance");
 /** model name */
 exports.name = "Asset";
 /**
@@ -14,10 +14,10 @@ exports.schema = new mongoose.Schema({
         ref: ownerModel.name,
         required: true
     },
-    authorizations: [
+    transactions: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: authorizationModel.name
+            ref: TransactionModel.name
         }
     ],
     payment_no: String,
@@ -25,7 +25,7 @@ exports.schema = new mongoose.Schema({
     amount: Number,
     performance: {
         type: String,
-        ref: performanceModel.name,
+        ref: PerformanceModel.name,
     },
     section: String,
     seat_code: String,

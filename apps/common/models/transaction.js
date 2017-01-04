@@ -1,6 +1,7 @@
 "use strict";
 const mongoose = require("mongoose");
-const ownerModel = require("./owner");
+const OwnerModel = require("./owner");
+const AuthorizationModel = require("./authorization");
 /** model name */
 exports.name = "Transaction";
 /**
@@ -12,10 +13,11 @@ exports.schema = new mongoose.Schema({
     status: String,
     payment_no: String,
     owners: [{
-            type: String,
-            ref: ownerModel.name,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: OwnerModel.name,
             required: true
         }],
+    authorizations: [AuthorizationModel.schema] // 承認リスト
 }, {
     collection: "transactions",
     timestamps: {

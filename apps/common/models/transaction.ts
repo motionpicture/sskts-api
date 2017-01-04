@@ -1,5 +1,6 @@
 import mongoose = require("mongoose");
-import * as ownerModel from "./owner";
+import * as OwnerModel from "./owner";
+import * as AuthorizationModel from "./authorization";
 
 /** model name */
 export var name = "Transaction";
@@ -13,10 +14,11 @@ export var schema = new mongoose.Schema({
     status: String,
     payment_no: String,
     owners: [{ // 取引の対象所有者リスト
-        type: String,
-        ref: ownerModel.name,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: OwnerModel.name,
         required: true
     }],
+    authorizations: [AuthorizationModel.schema] // 承認リスト
 },{
     collection: "transactions",
     timestamps: { 

@@ -1,7 +1,6 @@
-import mongoose = require('mongoose');
-import * as transactionModel from './transaction';
-import * as assetModel from './asset';
-import * as ownerModel from './owner';
+import mongoose = require("mongoose");
+import * as AssetModel from "./asset";
+import * as OwnerModel from "./owner";
 
 /** model name */
 export var name = "Authorization";
@@ -10,14 +9,14 @@ export var name = "Authorization";
  * 承認スキーマ
  */
 export var schema = new mongoose.Schema({
-    transaction: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: transactionModel.name,
-        required: true
-    },
+    // transaction: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: transactionModel.name,
+    //     required: true
+    // },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: ownerModel.name,
+        ref: OwnerModel.name,
         required: true
     },
     active: Boolean,
@@ -29,16 +28,13 @@ export var schema = new mongoose.Schema({
     /** asset管理の場合 */
     asset: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: assetModel.name,
+        ref: AssetModel.name,
     },
 
 
 
     /** COA資産管理の場合 */
-    coa_tmp_reserve_num: String,
-    performance: String,
-    section: String,
-    seat_code: String,
+    coa_tmp_reserve_num: String, // COA仮予約番号
 
 
 
@@ -61,14 +57,14 @@ export var schema = new mongoose.Schema({
     gmo_payment_term: String,
     gmo_status: String,
 },{
-    collection: 'authorizations',
+    collection: "authorizations",
     timestamps: { 
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 });
 
-export default mongoose.model(name, schema);
+// export default mongoose.model(name, schema);
 
 export var GROUP_ASSET = "ASSET";
 export var GROUP_GMO = "GMO";

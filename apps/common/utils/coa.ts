@@ -265,7 +265,7 @@ export namespace reserveSeatsTemporarilyInterface {
     }
     export interface Result {
         /** 座席チケット仮予約番号 */
-        tmp_reserve_num: string,
+        tmp_reserve_num: number,
         /** 仮予約結果リスト(仮予約失敗時の座席毎の仮予約状況) */
         list_tmp_reserve: Array<{
             /** 座席セクション */

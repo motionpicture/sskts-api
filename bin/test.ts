@@ -34,19 +34,19 @@ import request = require("request");
 // };
 
 // let options = {
-//     url: "http://localhost:8080/transaction/5869f374d07cec157c6000c8/authorize",
+//     url: "http://localhost:8080/transaction/586c591c07e8e424881851fc/authorize",
 //     body: {
 //         password: "password",
-//         assets: ["586b77476620961178fdeb41", "586b77476620961178fdeb42"],
+//         assets: ["586b77476620961178fdeb73", "586b77476620961178fdeb74"],
 //     },
 //     json: true
 // };
 
 let options = {
-    url: "http://localhost:8080/transaction/5869f374d07cec157c6000c8/unauthorize",
+    url: "http://localhost:8080/transaction/586c591c07e8e424881851fc/unauthorize",
     body: {
         password: "password",
-        coa_tmp_reserve_num: "138",
+        coa_tmp_reserve_num: "161",
     },
     json: true
 };

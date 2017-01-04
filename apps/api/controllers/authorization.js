@@ -1,6 +1,6 @@
 "use strict";
 const AssetModel = require("../../common/models/asset");
-const AuthorizationModel = require("../../common/models/authorization");
+const TransactionModel = require("../../common/models/transaction");
 const COA = require("../../common/utils/coa");
 /**
  * 資産の承認をとる
@@ -37,43 +37,51 @@ function create4reservation(args) {
                 // 1.authorizationを非アクティブで作成
                 // 2.assetにauthorizationが作成済みでないかどうか確認(今回は、COA連携なのでassetを確認せずに、アクティブな承認を作成)
                 // 3.authorizationをアクティブにする
-                let results = [];
-                let promises = assets.map((asset) => {
-                    return new Promise((resolve, reject) => {
-                        AuthorizationModel.default.create({
-                            transaction: args.transaction,
+                TransactionModel.default.findOne({
+                    _id: args.transaction
+                }, (err, transaction) => {
+                    if (err)
+                        return rejectAll(err);
+                    if (!transaction)
+                        return rejectAll(new Error("transaction not found."));
+                    // 取引と資産に対して、承認情報をセット
+                    assets.forEach((asset) => {
+                        transaction.get("authorizations").push({
                             asset: asset.get("_id"),
                             owner: asset.get("owner"),
-                            coa_tmp_reserve_num: result.tmp_reserve_num,
+                            coa_tmp_reserve_num: result.tmp_reserve_num.toString(),
                             active: false
-                        }).then((authorization) => {
-                            asset.set("authorizations", [authorization.get("_id")]);
-                            asset.save((err, asset) => {
-                                if (err)
-                                    return reject(err);
-                                authorization.set("active", true);
-                                authorization.save((err, authorization) => {
+                        });
+                    });
+                    transaction.save((err, transaction) => {
+                        if (err)
+                            rejectAll(err);
+                        let promises = assets.map((asset) => {
+                            return new Promise((resolve, reject) => {
+                                asset.get("transactions").push(transaction.get("_id"));
+                                asset.save((err, asset) => {
                                     if (err)
                                         return reject(err);
-                                    results.push({
-                                        _id: authorization.get("_id"),
-                                        transaction: authorization.get("transaction"),
-                                        asset: authorization.get("asset"),
-                                        owner: authorization.get("owner"),
-                                        coa_tmp_reserve_num: authorization.get("coa_tmp_reserve_num"),
-                                    });
                                     resolve();
                                 });
                             });
+                        });
+                        Promise.all(promises).then(() => {
+                            // 資産の承認確認が全てとれたら承認をアクティブ化
+                            transaction.get("authorizations").forEach((authorization) => {
+                                if (authorization.get("coa_tmp_reserve_num") !== result.tmp_reserve_num.toString())
+                                    return;
+                                authorization.set("active", true);
+                            });
+                            transaction.save((err, transaction) => {
+                                if (err)
+                                    rejectAll(err);
+                                resolveAll(transaction.get("authorizations"));
+                            });
                         }, (err) => {
-                            reject(err);
+                            rejectAll(err);
                         });
                     });
-                });
-                Promise.all(promises).then(() => {
-                    resolveAll(results);
-                }, (err) => {
-                    rejectAll(err);
                 });
             });
         });
@@ -86,24 +94,26 @@ exports.create4reservation = create4reservation;
 function removeByCoaTmpReserveNum(tmpReserveNum) {
     return new Promise((resolve, reject) => {
         // 承認を非アクティブに変更
-        AuthorizationModel.default.update({
-            coa_tmp_reserve_num: tmpReserveNum
-        }, {
-            active: false
-        }, {
-            multi: true
-        }, (err, raw) => {
-            console.log("authorizations updated.", err, raw);
+        TransactionModel.default.findOne({
+            "authorizations": { $elemMatch: { coa_tmp_reserve_num: tmpReserveNum } }
+        }).exec((err, transaction) => {
             if (err)
                 return reject(err);
-            // 資産から承認IDを削除
-            AuthorizationModel.default.find({
-                coa_tmp_reserve_num: tmpReserveNum
-            }, "asset").exec((err, authorizations) => {
+            if (!transaction)
+                return reject(new Error("transaction not found."));
+            let assetIds = [];
+            transaction.get("authorizations").forEach((authorization) => {
+                if (authorization.get("coa_tmp_reserve_num") !== tmpReserveNum)
+                    return;
+                authorization.set("active", false);
+                assetIds.push(authorization.get("asset"));
+            });
+            transaction.save((err, transaction) => {
+                // 資産から承認IDを削除
                 AssetModel.default.update({
-                    _id: { $in: authorizations.map((authorization) => { return authorization.get("asset"); }) }
+                    _id: { $in: assetIds }
                 }, {
-                    $pullAll: { authorizations: authorizations.map((authorization) => { return authorization.get("_id"); }) }
+                    $pullAll: { transactions: [transaction.get("_id")] }
                 }, {
                     multi: true
                 }, (err, raw) => {
@@ -111,7 +121,7 @@ function removeByCoaTmpReserveNum(tmpReserveNum) {
                         return reject(err);
                     // TODO COA座席仮予約削除
                     AssetModel.default.findOne({
-                        _id: authorizations[0].get("asset")
+                        _id: assetIds[0]
                     }).populate({
                         path: "performance",
                         populate: {

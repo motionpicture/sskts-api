@@ -42,9 +42,19 @@ router.all("/transaction/start", (req, res, next) => {
 });
 router.all("/transaction/:id/publishPaymentNo", authentication4transaction_1.default, (req, res, next) => {
     req.getValidationResult().then((result) => {
-        res.json({
-            success: false,
-            message: "now coding..."
+        if (!result.isEmpty())
+            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        TransactionController.publishPaymentNo(req.params.id).then((paymentNo) => {
+            res.json({
+                success: true,
+                message: null,
+                payment_no: paymentNo
+            });
+        }, (err) => {
+            res.json({
+                success: false,
+                message: err.message
+            });
         });
     });
 });

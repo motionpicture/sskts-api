@@ -91,29 +91,25 @@ function close(id) {
 exports.close = close;
 /**
  * 購入番号発行
- *
- * 購入者情報、決済方法関連情報、が必須
- * すでにGMOで与信確保済みであれば取り消してから新たに与信確保
  */
-// @Post("/publishPaymentNo")
-// publishPaymentNo(@BodyParam("transaction_id") transactionId: string, @BodyParam("transaction_password") transactionPassword: string) {
-//     let message: string = null;
-//     let moment: typeof momentModule = require("moment");
-//     let paymentNo = `${moment().format("YYYYMMDD")}12345` // 購入番号
-//     return {
-//         success: true,
-//         message: message,
-//         paymentNo: paymentNo
-//     };
-// }
-/**
- * 取引に対して署名を行う
- */
-// @Post("/sign")
-// sign() {
-//     let message: string = null;
-//     return {
-//         success: true,
-//         message: message
-//     };
-// }
+function publishPaymentNo(id) {
+    return new Promise((resolve, reject) => {
+        // COA本予約で購入番号取得
+        // 取引に番号を登録
+        TransactionModel.default.findOneAndUpdate({
+            _id: id,
+        }, {
+            $set: { payment_no: "12345" }
+        }, {
+            new: true,
+            upsert: false
+        }, ((err, transaction) => {
+            if (err)
+                return reject(err);
+            if (!transaction)
+                return reject(new Error("transaction not found."));
+            resolve("12345");
+        }));
+    });
+}
+exports.publishPaymentNo = publishPaymentNo;

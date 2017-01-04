@@ -1,7 +1,7 @@
 import mongoose = require('mongoose');
 import * as ownerModel from './owner';
-import * as authorizationModel from './authorization';
-import * as performanceModel from './performance';
+import * as TransactionModel from './transaction';
+import * as PerformanceModel from './performance';
 
 /** model name */
 export var name = "Asset";
@@ -15,10 +15,10 @@ export var schema = new mongoose.Schema({
         ref: ownerModel.name,
         required: true
     },
-    authorizations: [ // 承認リスト
+    transactions: [ // 承認リスト
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: authorizationModel.name
+            ref: TransactionModel.name
         }
     ],
 
@@ -28,7 +28,7 @@ export var schema = new mongoose.Schema({
 
     performance: {
         type: String,
-        ref: performanceModel.name,
+        ref: PerformanceModel.name,
     },
     section: String, // 座席セクション
     seat_code: String, // 座席コード
