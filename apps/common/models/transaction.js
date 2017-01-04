@@ -17,13 +17,18 @@ exports.schema = new mongoose.Schema({
             ref: OwnerModel.name,
             required: true
         }],
-    authorizations: [AuthorizationModel.schema] // 承認リスト
+    authorizations: {
+        type: [AuthorizationModel.schema],
+    } // 承認リスト
 }, {
     collection: "transactions",
     timestamps: {
         createdAt: "created_at",
         updatedAt: "updated_at",
     }
+}).post("validate", function (doc) {
+    // TODO
+    console.log("has been validated (but not saved yet)", doc.authorizations.length);
 });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = mongoose.model(exports.name, exports.schema);

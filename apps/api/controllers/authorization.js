@@ -91,6 +91,44 @@ function create4reservation(args) {
 }
 exports.create4reservation = create4reservation;
 /**
+ * 承認追加(GROUP_COA_SEAT_RESERVATION)
+ */
+function create4coaSeatReservation(args) {
+    return new Promise((resolve, reject) => {
+        // 今回は、COA連携なのでassetを確認せずに、authorizationをアクティブで作成
+        TransactionModel.default.findOne({
+            _id: args.transaction
+        }, (err, transaction) => {
+            args.authorizations.forEach((authorization) => {
+                transaction.get("authorizations").push({
+                    coa_tmp_reserve_num: authorization.coa_tmp_reserve_num,
+                    performance: authorization.performance,
+                    section: authorization.section,
+                    seat_code: authorization.seat_code,
+                    ticket_code: authorization.ticket_code,
+                    ticket_name_ja: authorization.ticket_name_ja,
+                    ticket_name_en: authorization.ticket_name_en,
+                    ticket_name_kana: authorization.ticket_name_kana,
+                    std_price: authorization.std_price,
+                    add_price: authorization.add_price,
+                    dis_price: authorization.dis_price,
+                    price: authorization.price,
+                    group: AuthorizationModel.GROUP_COA_SEAT_RESERVATION,
+                    owner: "5868e16789cc75249cdbfa4b",
+                    active: true,
+                });
+            });
+            // saveメソッドでないとmongooseのvalidationは効かないので注意
+            transaction.save((err, transaction) => {
+                if (err)
+                    return reject(err);
+                resolve(transaction.get("authorizations"));
+            });
+        });
+    });
+}
+exports.create4coaSeatReservation = create4coaSeatReservation;
+/**
  * 資産承認取消
  */
 function removeByCoaTmpReserveNum(args) {

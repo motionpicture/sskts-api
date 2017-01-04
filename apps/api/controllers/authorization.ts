@@ -21,7 +21,7 @@ export function create4reservation(args: {
     return new Promise((resolveAll: (results: Array<result>) => void, rejectAll: (err: Error) => void) => {
         // 今回は、COA連携なのでまずCOAAPIで確認
         AssetModel.default.find({
-            _id: {$in: args.assets}
+            _id: { $in: args.assets }
         }).populate({
             path: "performance",
             populate: {
@@ -101,6 +101,67 @@ export function create4reservation(args: {
 }
 
 /**
+ * 承認追加(GROUP_COA_SEAT_RESERVATION)
+ */
+export function create4coaSeatReservation(args: {
+    transaction: string,
+    authorizations: Array<{
+        coa_tmp_reserve_num: string,
+        performance: string,
+        section: string,
+        seat_code: string,
+        ticket_code: string,
+        ticket_name_ja: string,
+        ticket_name_en: string,
+        ticket_name_kana: string,
+        std_price: number,
+        add_price: number,
+        dis_price: number,
+        price: number,
+    }>,
+}) {
+    interface result {
+        _id: string,
+        asset: string,
+        owner: string,
+        coa_tmp_reserve_num: string,
+    }
+
+    return new Promise((resolve: (results: Array<result>) => void, reject: (err: Error) => void) => {
+        // 今回は、COA連携なのでassetを確認せずに、authorizationをアクティブで作成
+        TransactionModel.default.findOne({
+            _id: args.transaction
+        }, (err, transaction) => {
+            args.authorizations.forEach((authorization) => {
+                transaction.get("authorizations").push({
+                    coa_tmp_reserve_num: authorization.coa_tmp_reserve_num,
+                    performance: authorization.performance,
+                    section: authorization.section,
+                    seat_code: authorization.seat_code,
+                    ticket_code: authorization.ticket_code,
+                    ticket_name_ja: authorization.ticket_name_ja,
+                    ticket_name_en: authorization.ticket_name_en,
+                    ticket_name_kana: authorization.ticket_name_kana,
+                    std_price: authorization.std_price,
+                    add_price: authorization.add_price,
+                    dis_price: authorization.dis_price,
+                    price: authorization.price,
+                    group: AuthorizationModel.GROUP_COA_SEAT_RESERVATION,
+                    owner: "5868e16789cc75249cdbfa4b", // TODO 運営者ID管理
+                    active: true,
+                });
+            });
+
+            // saveメソッドでないとmongooseのvalidationは効かないので注意
+            transaction.save((err, transaction) => {
+                if (err) return reject(err);
+                resolve(transaction.get("authorizations"));
+            });
+        });
+    });
+}
+
+/**
  * 資産承認取消
  */
 export function removeByCoaTmpReserveNum(args: {
@@ -123,7 +184,7 @@ export function removeByCoaTmpReserveNum(args: {
 
             let assetIds: Array<string> = [];
             transaction.get("authorizations").forEach((authorization: mongoose.Document) => {
-                if (authorization.get("coa_tmp_reserve_num") !== args.tmp_reserve_num) return; 
+                if (authorization.get("coa_tmp_reserve_num") !== args.tmp_reserve_num) return;
                 authorization.set("active", false);
                 assetIds.push(authorization.get("asset"));
             });
@@ -134,7 +195,7 @@ export function removeByCoaTmpReserveNum(args: {
 
                 // 資産から取引を削除
                 AssetModel.default.update({
-                    _id: {$in: assetIds}
+                    _id: { $in: assetIds }
                 }, {
                     $pullAll: { transactions: [transaction.get("_id")] }
                 }, {

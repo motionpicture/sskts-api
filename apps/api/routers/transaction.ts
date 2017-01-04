@@ -106,6 +106,30 @@ router.all("/transaction/:id/authorize", authentication4transaction, (req, res, 
     });
 });
 
+router.all("/transaction/:id/authorize/coaSeatReservation", authentication4transaction, (req, res, next) => {
+    // TODO validations
+
+    req.getValidationResult().then((result) => {
+        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+
+        AuthorizationController.create4coaSeatReservation({
+            transaction: req.params.id,
+            authorizations: req.body.authorizations,
+        }).then((authorizations) => {
+            res.json({
+                success: true,
+                message: null,
+                authorizations: authorizations
+            });
+        }, (err) => {
+            res.json({
+                success: false,
+                message: err.message
+            });
+        });
+    });
+});
+
 router.all("/transaction/:id/unauthorize", authentication4transaction, (req, res, next) => {
     // TODO validations
 

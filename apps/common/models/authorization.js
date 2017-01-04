@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const AssetModel = require("./asset");
 const OwnerModel = require("./owner");
+const PerformanceModel = require("./performance");
 /** model name */
 exports.name = "Authorization";
 /**
@@ -13,20 +14,39 @@ exports.schema = new mongoose.Schema({
         ref: OwnerModel.name,
         required: true
     },
-    active: Boolean,
-    price: Number,
+    active: {
+        type: Boolean,
+        required: true
+    },
+    price: {
+        type: Number,
+        required: true
+    },
     group: {
         type: String,
         required: true
     },
-    /** asset管理の場合 */
+    /** GROUP_ASSETの場合 */
     asset: {
         type: mongoose.Schema.Types.ObjectId,
         ref: AssetModel.name,
     },
-    /** COA資産管理の場合 */
+    /** GROUP_COA_SEAT_RESERVATIONの場合 */
     coa_tmp_reserve_num: String,
-    /** GMO資産管理の場合 */
+    performance: {
+        type: String,
+        ref: PerformanceModel.name,
+    },
+    section: String,
+    seat_code: String,
+    ticket_code: String,
+    ticket_name_ja: String,
+    ticket_name_en: String,
+    ticket_name_kana: String,
+    std_price: Number,
+    add_price: Number,
+    dis_price: Number,
+    /** GROUP_GMOの場合 */
     gmo_shop_pass_string: String,
     gmo_shop_id: String,
     gmo_amount: String,
@@ -54,6 +74,8 @@ exports.schema = new mongoose.Schema({
 // export default mongoose.model(name, schema);
 /** 内部資産管理 */
 exports.GROUP_ASSET = "ASSET";
+/** COA座席予約資産管理 */
+exports.GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
 /** GMO資産管理 */
 exports.GROUP_GMO = "GMO";
 /** ムビチケ資産管理 */

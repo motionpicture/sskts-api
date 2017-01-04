@@ -27,11 +27,49 @@ let options: request.Options;
 //     json: true
 // };
 
+// options = {
+//     url: "http://localhost:8080/transaction/586c8710c4dfe7189814a630/authorize",
+//     body: {
+//         password: "password",
+//         assets: ["586b77476620961178fdeb75", "586b77476620961178fdeb76"],
+//     },
+//     json: true
+// };
+
 options = {
-    url: "http://localhost:8080/transaction/586c8710c4dfe7189814a630/authorize",
+    url: "http://localhost:8080/transaction/586d050012c62224c8568d52/authorize/coaSeatReservation",
     body: {
         password: "password",
-        assets: ["586b77476620961178fdeb75", "586b77476620961178fdeb76"],
+        authorizations: [
+            {
+                coa_tmp_reserve_num: "999",
+                // performance: "001201701018513021010",
+                section: "0",
+                seat_code: "HC",
+                ticket_code: "10",
+                ticket_name_ja: "一般",
+                ticket_name_en: "",
+                ticket_name_kana: "",
+                std_price: 1000,
+                add_price: 200,
+                dis_price: 0,
+                price: 1200,
+            },
+            {
+                coa_tmp_reserve_num: "999",
+                performance: "001201701018513021010",
+                section: "0",
+                seat_code: "Ｃ－１０",
+                ticket_code: "10",
+                ticket_name_ja: "一般",
+                ticket_name_en: "",
+                ticket_name_kana: "",
+                std_price: 1000,
+                add_price: 200,
+                dis_price: 0,
+                price: 1200,
+            }
+        ],
     },
     json: true
 };

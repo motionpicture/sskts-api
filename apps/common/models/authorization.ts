@@ -1,6 +1,7 @@
 import mongoose = require("mongoose");
 import * as AssetModel from "./asset";
 import * as OwnerModel from "./owner";
+import * as PerformanceModel from "./performance";
 
 /** model name */
 export var name = "Authorization";
@@ -9,21 +10,27 @@ export var name = "Authorization";
  * 承認スキーマ
  */
 export var schema = new mongoose.Schema({
-    owner: {
+    owner: { // 所有者
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.name,
         required: true
     },
-    active: Boolean,
-    price: Number,
-    group: {
+    active: { // 有効な承認かどうか
+        type: Boolean,
+        required: true
+    },
+    price: { // 価格
+        type: Number,
+        required: true
+    },
+    group: { // 承認グループ
         type: String,
         required: true
     },
 
 
 
-    /** asset管理の場合 */
+    /** GROUP_ASSETの場合 */
     asset: {
         type: mongoose.Schema.Types.ObjectId,
         ref: AssetModel.name,
@@ -31,12 +38,30 @@ export var schema = new mongoose.Schema({
 
 
 
-    /** COA資産管理の場合 */
+
+
+
+    /** GROUP_COA_SEAT_RESERVATIONの場合 */
     coa_tmp_reserve_num: String, // COA仮予約番号
+    performance: {
+        type: String,
+        ref: PerformanceModel.name,
+    },
+    section: String, // 座席セクション
+    seat_code: String, // 座席コード
+    ticket_code: String, // チケットコード
+    ticket_name_ja: String, // チケット名
+    ticket_name_en: String, // チケット名（英）
+    ticket_name_kana: String, // チケット名（カナ）
+    std_price: Number, // 標準単価
+    add_price: Number, // 加算単価(３Ｄ，ＩＭＡＸ、４ＤＸ等の加算料金)
+    dis_price: Number, // 割引額
 
 
 
-    /** GMO資産管理の場合 */
+
+
+    /** GROUP_GMOの場合 */
     gmo_shop_pass_string: String, // GMO決済開始時に送信するチェック文字列
     gmo_shop_id: String,
     gmo_amount: String,
@@ -54,6 +79,9 @@ export var schema = new mongoose.Schema({
     gmo_cvs_receipt_url: String,
     gmo_payment_term: String,
     gmo_status: String,
+
+
+
 },{
     collection: "authorizations",
     timestamps: { 
@@ -66,6 +94,8 @@ export var schema = new mongoose.Schema({
 
 /** 内部資産管理 */
 export var GROUP_ASSET = "ASSET";
+/** COA座席予約資産管理 */
+export var GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
 /** GMO資産管理 */
 export var GROUP_GMO = "GMO";
 /** ムビチケ資産管理 */
