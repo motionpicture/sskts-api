@@ -54,10 +54,10 @@ exports.schema = new mongoose.Schema({
         },
     ]
 }, {
-    collection: 'screens',
+    collection: "screens",
     timestamps: {
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });

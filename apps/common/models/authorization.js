@@ -32,6 +32,11 @@ exports.schema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    process_status: {
+        type: String,
+        required: true,
+        default: exports.PROCESS_STATUS_PENDING
+    },
     /** GROUP_ASSETの場合 */
     asset: {
         type: mongoose.Schema.Types.ObjectId,
@@ -53,11 +58,13 @@ exports.schema = new mongoose.Schema({
     add_price: Number,
     dis_price: Number,
     /** GROUP_GMOの場合 */
-    gmo_shop_pass_string: String,
     gmo_shop_id: String,
-    gmo_amount: String,
-    gmo_tax: String,
+    gmo_shop_pass: String,
+    gmo_amount: Number,
     gmo_access_id: String,
+    gmo_access_pass: String,
+    gmo_job_cd: String,
+    gmo_tax: Number,
     gmo_forward: String,
     gmo_method: String,
     gmo_approve: String,
@@ -69,7 +76,6 @@ exports.schema = new mongoose.Schema({
     gmo_cvs_receipt_no: String,
     gmo_cvs_receipt_url: String,
     gmo_payment_term: String,
-    gmo_status: String,
 }, {
     collection: "authorizations",
     timestamps: {
@@ -100,6 +106,17 @@ exports.schema.pre("save", function (next) {
                 return next(new Error("add_price required."));
             if (this.dis_price !== 0 && !this.dis_price)
                 return next(new Error("dis_price required."));
+        case exports.GROUP_GMO:
+            if (!this.gmo_shop_id)
+                return next(new Error("gmo_shop_id required."));
+            if (!this.gmo_shop_pass)
+                return next(new Error("gmo_shop_pass required."));
+            if (!this.gmo_access_id)
+                return next(new Error("gmo_access_id required."));
+            if (!this.gmo_access_pass)
+                return next(new Error("gmo_access_pass required."));
+            if (this.gmo_amount !== 0 && !this.gmo_amount)
+                return next(new Error("gmo_amount required."));
             break;
         default:
             break;
@@ -116,3 +133,9 @@ exports.GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
 exports.GROUP_GMO = "GMO";
 /** ムビチケ資産管理 */
 exports.GROUP_MVTK = "MVTK";
+/** 処理待ち */
+exports.PROCESS_STATUS_PENDING = "PENDING";
+/** 処理進行中 */
+exports.PROCESS_STATUS_UNDERWAY = "UNDERWAY";
+/** 処理済み */
+exports.PROCESS_STATUS_FINISHED = "FINISHED";

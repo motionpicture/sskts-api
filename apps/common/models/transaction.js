@@ -31,3 +31,5 @@ exports.STATUS_PROCSSING = "PROCESSING";
 exports.STATUS_CLOSED = "CLOSED";
 /** 期限切れ */
 exports.STATUS_EXPIRED = "EXPIRED";
+/** 取消済み */
+exports.STATUS_CANCELED = "CANCELED";

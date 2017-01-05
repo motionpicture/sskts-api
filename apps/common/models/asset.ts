@@ -1,7 +1,6 @@
 import mongoose = require("mongoose");
 import * as OwnerModel from "./owner";
 import * as TransactionModel from "./transaction";
-import * as PerformanceModel from "./performance";
 
 /** model name */
 export var name = "Asset";
@@ -22,26 +21,10 @@ export var schema = new mongoose.Schema({
         }
     ],
 
-    payment_no: String, // 購入番号
     group: String, // 資産グループ
     price: Number, // 金額
 
 
-
-    // GROUP_SEAT_RESERVATIONの場合の属性
-    performance: {
-        type: String,
-        ref: PerformanceModel.name,
-    },
-    section: String, // 座席セクション
-    seat_code: String, // 座席コード
-    ticket_code: String, // チケットコード
-    ticket_name_ja: String, // チケット名
-    ticket_name_en: String, // チケット名（英）
-    ticket_name_kana: String, // チケット名（カナ）
-    std_price: Number, // 標準単価
-    add_price: Number, // 加算単価(３Ｄ，ＩＭＡＸ、４ＤＸ等の加算料金)
-    dis_price: Number, // 割引額
 },{
     collection: "assets",
     timestamps: { 
@@ -49,18 +32,6 @@ export var schema = new mongoose.Schema({
         updatedAt: "updated_at",
     }
 });
-
-schema.index(
-    {
-        group: 1,
-        performance: 1,
-        section: 1,
-        seat_code: 1,
-    },
-    {
-        unique: true
-    }
-);
 
 export default mongoose.model(name, schema);
 

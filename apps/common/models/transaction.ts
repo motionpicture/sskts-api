@@ -33,3 +33,5 @@ export var STATUS_PROCSSING = "PROCESSING";
 export var STATUS_CLOSED = "CLOSED";
 /** 期限切れ */
 export var STATUS_EXPIRED = "EXPIRED";
+/** 取消済み */
+export var STATUS_CANCELED = "CANCELED";

@@ -14,10 +14,10 @@ exports.schema = new mongoose.Schema({
     email: String,
     tel: String,
 }, {
-    collection: 'owners',
+    collection: "owners",
     timestamps: {
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });

@@ -1,5 +1,5 @@
-import mongoose = require('mongoose');
-import * as theaterModel from './theater';
+import mongoose = require("mongoose");
+import * as theaterModel from "./theater";
 
 /** model name */
 export var name = "Screen";
@@ -55,10 +55,10 @@ export var schema = new mongoose.Schema({
         },
     ]
 },{
-    collection: 'screens',
+    collection: "screens",
     timestamps: { 
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
     }
 });
 

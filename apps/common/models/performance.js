@@ -1,6 +1,5 @@
 "use strict";
 const mongoose = require("mongoose");
-const moment = require("moment");
 const theaterModel = require("./theater");
 const screenModel = require("./screen");
 const filmModel = require("./film");
@@ -58,19 +57,13 @@ exports.schema = new mongoose.Schema({
     }
 });
 /** 開始文字列を表示形式で取得 */
-exports.schema.virtual("start_str_ja").get(function () {
-    return `${this.day.substr(0, 4)}/${this.day.substr(4, 2)}/${this.day.substr(6)} 開場 ${this.open_time.substr(0, 2)}:${this.open_time.substr(2)} 開演 ${this.start_time.substr(0, 2)}:${this.start_time.substr(2)}`;
-});
-exports.schema.virtual("start_str_en").get(function () {
-    let date = `${moment(`${this.day.substr(0, 4)}-${this.day.substr(4, 2)}-${this.day.substr(6)}T00:00:00+09:00`).format("MMMM DD, YYYY")}`;
-    return `Open: ${this.open_time.substr(0, 2)}:${this.open_time.substr(2)}/Start: ${this.start_time.substr(0, 2)}:${this.start_time.substr(2)} on ${date}`;
-});
-exports.schema.virtual("location_str_ja").get(function () {
-    return `${this.get("theater_name")["ja"]} ${this.get("screen_name")["ja"]}`;
-});
-exports.schema.virtual("location_str_en").get(function () {
-    return `at ${this.get("screen_name")["en"]}, ${this.get("theater_name")["en"]}`;
-});
+// schema.virtual("start_str_ja").get(function() {
+//     return `${this.day.substr(0, 4)}/${this.day.substr(4, 2)}/${this.day.substr(6)} 開場 ${this.open_time.substr(0, 2)}:${this.open_time.substr(2)} 開演 ${this.start_time.substr(0, 2)}:${this.start_time.substr(2)}`;
+// });
+// schema.virtual("start_str_en").get(function() {
+//     let date = `${moment(`${this.day.substr(0, 4)}-${this.day.substr(4, 2)}-${this.day.substr(6)}T00:00:00+09:00`).format("MMMM DD, YYYY")}`;
+//     return `Open: ${this.open_time.substr(0, 2)}:${this.open_time.substr(2)}/Start: ${this.start_time.substr(0, 2)}:${this.start_time.substr(2)} on ${date}`;
+// });
 /**
  * 空席ステータスを算出する
  *

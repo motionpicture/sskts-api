@@ -202,6 +202,98 @@ export function create4coaSeatReservation(args: {
 }
 
 /**
+ * 承認追加(GROUP_GMO)
+ */
+export function create4gmo(args: {
+    transaction: string,
+    authorizations: Array<{
+        gmo_shop_id: string,
+        gmo_shop_pass: string,
+        gmo_amount: number,
+        gmo_access_id: string,
+        gmo_access_pass: string,
+        gmo_job_cd: string,
+        gmo_tax?: number,
+        gmo_forward?: string,
+        gmo_method?: string,
+        gmo_approve?: string,
+        gmo_tran_id?: string,
+        gmo_tran_date?: string,
+        gmo_pay_type: string,
+        gmo_cvs_code?: string,
+        gmo_cvs_conf_no?: string,
+        gmo_cvs_receipt_no?: string,
+        gmo_cvs_receipt_url?: string,
+        gmo_payment_term?: string,
+        price: number,
+        owner: string,
+    }>,
+}) {
+    interface Result {
+        success: boolean,
+        message: string,
+        authorization: any,
+    }
+
+    return new Promise((resolveAll: (results: Array<Result>) => void, rejectAll: (err: Error) => void) => {
+        // 今回は、COA連携なのでassetを確認せずに、authorizationをアクティブで作成
+        let results: Array<Result> = [];
+        let promises = args.authorizations.map((authorizationArg) => {
+            return new Promise((resolve, reject) => {
+                AuthorizationModel.default.create({
+                    transaction: args.transaction,
+                    gmo_shop_id: authorizationArg.gmo_shop_id,
+                    gmo_shop_password: authorizationArg.gmo_shop_pass,
+                    gmo_amount: authorizationArg.gmo_amount,
+                    gmo_access_id: authorizationArg.gmo_access_id,
+                    gmo_access_password: authorizationArg.gmo_access_pass,
+                    gmo_job_cd: authorizationArg.gmo_job_cd,
+                    gmo_tax: authorizationArg.gmo_tax,
+                    gmo_forward: authorizationArg.gmo_forward,
+                    gmo_method: authorizationArg.gmo_method,
+                    gmo_approve: authorizationArg.gmo_approve,
+                    gmo_tran_id: authorizationArg.gmo_tran_id,
+                    gmo_tran_date: authorizationArg.gmo_tran_date,
+                    gmo_pay_type: authorizationArg.gmo_pay_type,
+                    gmo_cvs_code: authorizationArg.gmo_cvs_code,
+                    gmo_cvs_conf_no: authorizationArg.gmo_cvs_conf_no,
+                    gmo_cvs_receipt_no: authorizationArg.gmo_cvs_receipt_no,
+                    gmo_cvs_receipt_url: authorizationArg.gmo_cvs_receipt_url,
+                    gmo_payment_term: authorizationArg.gmo_payment_term,
+                    price: authorizationArg.price,
+                    owner: authorizationArg.owner,
+                    group: AuthorizationModel.GROUP_GMO,
+                    active: true,
+                }).then((authorization) => {
+                    results.push({
+                        success: true,
+                        message: null,
+                        authorization: authorization,
+                    });
+
+                    resolve();
+                }, (err) => {
+                    console.log(err)
+                    results.push({
+                        authorization: authorizationArg,
+                        success: false,
+                        message: err.message
+                    });
+
+                    resolve();
+                });
+            });
+        });
+
+        Promise.all(promises).then(() => {
+            resolveAll(results);
+        }, (err) => {
+            rejectAll(err);
+        });
+    });
+}
+
+/**
  * 資産承認取消
  */
 export function remove(args: {
