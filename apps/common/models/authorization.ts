@@ -2,6 +2,7 @@ import mongoose = require("mongoose");
 import * as AssetModel from "./asset";
 import * as OwnerModel from "./owner";
 import * as PerformanceModel from "./performance";
+import * as TransactionModel from "./transaction";
 
 /** model name */
 export var name = "Authorization";
@@ -10,6 +11,11 @@ export var name = "Authorization";
  * 承認スキーマ
  */
 export var schema = new mongoose.Schema({
+    transaction: { // 取引
+        type: mongoose.Schema.Types.ObjectId,
+        ref: TransactionModel.name,
+        required: true
+    },
     owner: { // 所有者
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.name,

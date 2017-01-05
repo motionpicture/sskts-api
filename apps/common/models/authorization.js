@@ -3,12 +3,18 @@ const mongoose = require("mongoose");
 const AssetModel = require("./asset");
 const OwnerModel = require("./owner");
 const PerformanceModel = require("./performance");
+const TransactionModel = require("./transaction");
 /** model name */
 exports.name = "Authorization";
 /**
  * 承認スキーマ
  */
 exports.schema = new mongoose.Schema({
+    transaction: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: TransactionModel.name,
+        required: true
+    },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.name,

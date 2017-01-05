@@ -23,14 +23,6 @@ let options;
 //     },
 //     json: true
 // };
-// options = {
-//     url: "http://localhost:8080/transaction/586c8710c4dfe7189814a630/authorize",
-//     body: {
-//         password: "password",
-//         assets: ["586b77476620961178fdeb75", "586b77476620961178fdeb76"],
-//     },
-//     json: true
-// };
 options = {
     url: "http://localhost:8080/transaction/586d8cc2fe0c971cd4b714f2/authorize",
     body: {
@@ -69,14 +61,14 @@ options = {
     },
     json: true
 };
-// options = {
-//     url: "http://localhost:8080/transaction/586c8710c4dfe7189814a630/unauthorize",
-//     body: {
-//         password: "password",
-//         coa_tmp_reserve_num: "162",
-//     },
-//     json: true
-// };
+options = {
+    url: "http://localhost:8080/transaction/586d8cc2fe0c971cd4b714f2/unauthorize",
+    body: {
+        password: "password",
+        authorizations: ["586d9190ffe1bd0f9c2281cb", "586d9190ffe1bd0f9c2281cc"],
+    },
+    json: true
+};
 // options = {
 //     url: "http://localhost:8080/transaction/586c8710c4dfe7189814a630/close",
 //     body: {

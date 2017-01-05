@@ -1,8 +1,4 @@
-import mongoose = require('mongoose');
-import * as AssetModel from "../../common/models/asset";
-import * as TransactionModel from "../../common/models/transaction";
 import * as AuthorizationModel from "../../common/models/authorization";
-import * as COA from "../../common/utils/coa";
 
 export function create(args: {
     /** 取引ID */
@@ -14,7 +10,7 @@ export function create(args: {
 }) {
     interface Result {
         success: boolean,
-        messsge: string,
+        message: string,
         authorization: any,
     }
 
@@ -150,7 +146,7 @@ export function create4coaSeatReservation(args: {
 }) {
     interface Result {
         success: boolean,
-        messsge: string,
+        message: string,
         authorization: any,
     }
 
@@ -160,6 +156,7 @@ export function create4coaSeatReservation(args: {
         let promises = args.authorizations.map((authorizationArg) => {
             return new Promise((resolve, reject) => {
                 AuthorizationModel.default.create({
+                    transaction: args.transaction,
                     coa_tmp_reserve_num: authorizationArg.coa_tmp_reserve_num,
                     performance: authorizationArg.performance,
                     section: authorizationArg.section,
@@ -178,7 +175,7 @@ export function create4coaSeatReservation(args: {
                 }).then((authorization) => {
                     results.push({
                         success: true,
-                        messsge: null,
+                        message: null,
                         authorization: authorization,
                     });
 
@@ -188,7 +185,7 @@ export function create4coaSeatReservation(args: {
                     results.push({
                         authorization: authorizationArg,
                         success: false,
-                        messsge: err.message
+                        message: err.message
                     });
 
                     resolve();
@@ -207,72 +204,63 @@ export function create4coaSeatReservation(args: {
 /**
  * 資産承認取消
  */
-export function removeByCoaTmpReserveNum(args: {
+export function remove(args: {
     /** 取引ID */
-    transaction_id: string,
-    /** COA仮予約番号 */
-    tmp_reserve_num: string
+    transaction: string,
+    /** 承認IDリスト */
+    authorizations: Array<string>
 }) {
     // 1.取引の承認を非アクティブに変更
-    // 2.資産から取引を削除
-    // 3.COA仮予約取消
+    // 2.資産から取引を削除(資産管理の場合)
 
-    return new Promise((resolve: () => void, reject: (err: Error) => void) => {
-        TransactionModel.default.findOne({
-            _id: args.transaction_id,
-            authorizations: { $elemMatch: { coa_tmp_reserve_num: args.tmp_reserve_num } }
-        }).exec((err, transaction) => {
-            if (err) return reject(err);
-            if (!transaction) return reject(new Error("transaction with given tmp_reserve_num not found."));
+    interface Result {
+        success: boolean,
+        message: string,
+        authorization: string,
+    }
 
-            let assetIds: Array<string> = [];
-            transaction.get("authorizations").forEach((authorization: mongoose.Document) => {
-                if (authorization.get("coa_tmp_reserve_num") !== args.tmp_reserve_num) return;
-                authorization.set("active", false);
-                assetIds.push(authorization.get("asset"));
-            });
-
-            // 取引の承認を非アクティブに変更
-            transaction.save((err, transaction) => {
-                if (err) return reject(err);
-
-                // 資産から取引を削除
-                AssetModel.default.update({
-                    _id: { $in: assetIds }
+    return new Promise((resolveAll: (results: Array<Result>) => void, rejectAll: (err: Error) => void) => {
+        let results: Array<Result> = [];
+        let promises = args.authorizations.map((authorizationId) => {
+            return new Promise((resolve, reject) => {
+                AuthorizationModel.default.findOneAndUpdate({
+                    _id: authorizationId,
+                    transaction: args.transaction
                 }, {
-                    $pullAll: { transactions: [transaction.get("_id")] }
+                    active: false
                 }, {
-                    multi: true
-                }, (err, raw) => {
-                    if (err) return reject(err);
-
-                    // COA仮予約取消
-                    AssetModel.default.findOne({
-                        _id: assetIds[0]
-                    }).populate({
-                        path: "performance",
-                        populate: {
-                            path: "film"
-                        }
-                    }).exec((err, asset) => {
-                        if (err) return reject(err);
-                        if (!asset) return reject(new Error("asset not found."));
-
-                        COA.deleteTmpReserveInterface.call({
-                            theater_code: asset.get("performance").get("theater"),
-                            date_jouei: asset.get("performance").get("day"),
-                            title_code: asset.get("performance").get("film").get("film_group"),
-                            title_branch_num: asset.get("performance").get("film").get("film_branch_code"),
-                            time_begin: asset.get("performance").get("time_start"),
-                            tmp_reserve_num: args.tmp_reserve_num,
-                        }, (err, success) => {
-                            if (err) return reject(err);
-
-                            resolve();
+                    new: true,
+                    upsert: false
+                }, (err, authorization) => {
+                    if (err) {
+                        results.push({
+                            success: false,
+                            message: err.message,
+                            authorization: authorizationId
                         });
-                    });
+                    } else if (!authorization) {
+                        results.push({
+                            success: false,
+                            message: "authorization not found.",
+                            authorization: authorizationId
+                        });
+                    } else {
+                        results.push({
+                            success: true,
+                            message: null,
+                            authorization: authorizationId
+                        });
+                    }
+
+                    resolve();
                 });
             });
+        });
+
+        Promise.all(promises).then(() => {
+            resolveAll(results);
+        }, (err) => {
+            rejectAll(err);
         });
     });
 }

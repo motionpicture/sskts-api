@@ -1,8 +1,5 @@
 "use strict";
-const AssetModel = require("../../common/models/asset");
-const TransactionModel = require("../../common/models/transaction");
 const AuthorizationModel = require("../../common/models/authorization");
-const COA = require("../../common/utils/coa");
 function create(args) {
     switch (args.group) {
         case AuthorizationModel.GROUP_COA_SEAT_RESERVATION:
@@ -114,6 +111,7 @@ function create4coaSeatReservation(args) {
         let promises = args.authorizations.map((authorizationArg) => {
             return new Promise((resolve, reject) => {
                 AuthorizationModel.default.create({
+                    transaction: args.transaction,
                     coa_tmp_reserve_num: authorizationArg.coa_tmp_reserve_num,
                     performance: authorizationArg.performance,
                     section: authorizationArg.section,
@@ -132,7 +130,7 @@ function create4coaSeatReservation(args) {
                 }).then((authorization) => {
                     results.push({
                         success: true,
-                        messsge: null,
+                        message: null,
                         authorization: authorization,
                     });
                     resolve();
@@ -141,7 +139,7 @@ function create4coaSeatReservation(args) {
                     results.push({
                         authorization: authorizationArg,
                         success: false,
-                        messsge: err.message
+                        message: err.message
                     });
                     resolve();
                 });
@@ -158,69 +156,52 @@ exports.create4coaSeatReservation = create4coaSeatReservation;
 /**
  * 資産承認取消
  */
-function removeByCoaTmpReserveNum(args) {
+function remove(args) {
     // 1.取引の承認を非アクティブに変更
-    // 2.資産から取引を削除
-    // 3.COA仮予約取消
-    return new Promise((resolve, reject) => {
-        TransactionModel.default.findOne({
-            _id: args.transaction_id,
-            authorizations: { $elemMatch: { coa_tmp_reserve_num: args.tmp_reserve_num } }
-        }).exec((err, transaction) => {
-            if (err)
-                return reject(err);
-            if (!transaction)
-                return reject(new Error("transaction with given tmp_reserve_num not found."));
-            let assetIds = [];
-            transaction.get("authorizations").forEach((authorization) => {
-                if (authorization.get("coa_tmp_reserve_num") !== args.tmp_reserve_num)
-                    return;
-                authorization.set("active", false);
-                assetIds.push(authorization.get("asset"));
-            });
-            // 取引の承認を非アクティブに変更
-            transaction.save((err, transaction) => {
-                if (err)
-                    return reject(err);
-                // 資産から取引を削除
-                AssetModel.default.update({
-                    _id: { $in: assetIds }
+    // 2.資産から取引を削除(資産管理の場合)
+    return new Promise((resolveAll, rejectAll) => {
+        let results = [];
+        let promises = args.authorizations.map((authorizationId) => {
+            return new Promise((resolve, reject) => {
+                AuthorizationModel.default.findOneAndUpdate({
+                    _id: authorizationId,
+                    transaction: args.transaction
                 }, {
-                    $pullAll: { transactions: [transaction.get("_id")] }
+                    active: false
                 }, {
-                    multi: true
-                }, (err, raw) => {
-                    if (err)
-                        return reject(err);
-                    // COA仮予約取消
-                    AssetModel.default.findOne({
-                        _id: assetIds[0]
-                    }).populate({
-                        path: "performance",
-                        populate: {
-                            path: "film"
-                        }
-                    }).exec((err, asset) => {
-                        if (err)
-                            return reject(err);
-                        if (!asset)
-                            return reject(new Error("asset not found."));
-                        COA.deleteTmpReserveInterface.call({
-                            theater_code: asset.get("performance").get("theater"),
-                            date_jouei: asset.get("performance").get("day"),
-                            title_code: asset.get("performance").get("film").get("film_group"),
-                            title_branch_num: asset.get("performance").get("film").get("film_branch_code"),
-                            time_begin: asset.get("performance").get("time_start"),
-                            tmp_reserve_num: args.tmp_reserve_num,
-                        }, (err, success) => {
-                            if (err)
-                                return reject(err);
-                            resolve();
+                    new: true,
+                    upsert: false
+                }, (err, authorization) => {
+                    if (err) {
+                        results.push({
+                            success: false,
+                            message: err.message,
+                            authorization: authorizationId
                         });
-                    });
+                    }
+                    else if (!authorization) {
+                        results.push({
+                            success: false,
+                            message: "authorization not found.",
+                            authorization: authorizationId
+                        });
+                    }
+                    else {
+                        results.push({
+                            success: true,
+                            message: null,
+                            authorization: authorizationId
+                        });
+                    }
+                    resolve();
                 });
             });
         });
+        Promise.all(promises).then(() => {
+            resolveAll(results);
+        }, (err) => {
+            rejectAll(err);
+        });
     });
 }
-exports.removeByCoaTmpReserveNum = removeByCoaTmpReserveNum;
+exports.remove = remove;
