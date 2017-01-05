@@ -37,9 +37,10 @@ let options: request.Options;
 // };
 
 options = {
-    url: "http://localhost:8080/transaction/586d85ad090b7e08b097651d/authorize/coaSeatReservation",
+    url: "http://localhost:8080/transaction/586d8cc2fe0c971cd4b714f2/authorize",
     body: {
         password: "password",
+        authorization_group: "COA_SEAT_RESERVATION",
         authorizations: [
             {
                 coa_tmp_reserve_num: "999",

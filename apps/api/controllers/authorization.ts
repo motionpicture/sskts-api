@@ -4,101 +4,129 @@ import * as TransactionModel from "../../common/models/transaction";
 import * as AuthorizationModel from "../../common/models/authorization";
 import * as COA from "../../common/utils/coa";
 
+export function create(args: {
+    /** 取引ID */
+    transaction: string,
+    /** 承認グループ */
+    group: string,
+    /** 承認リスト */
+    authorizations: Array<any>
+}) {
+    interface Result {
+        success: boolean,
+        messsge: string,
+        authorization: any,
+    }
+
+    switch (args.group) {
+        case AuthorizationModel.GROUP_COA_SEAT_RESERVATION:
+            return create4coaSeatReservation({
+                transaction: args.transaction,
+                authorizations: args.authorizations,
+            });
+
+        default:
+            return new Promise((resolve: (results: Array<Result>) => void, reject: (err: Error) => void) => {
+                reject(new Error("invalid group."));
+            });
+    }
+}
+
 /**
  * 資産の承認をとる
  */
-export function create4reservation(args: {
-    transaction: string,
-    assets: Array<string>,
-}) {
-    interface result {
-        _id: string,
-        asset: string,
-        owner: string,
-        coa_tmp_reserve_num: string,
-    }
+// export function create4reservation(args: {
+//     transaction: string,
+//     assets: Array<string>,
+// }) {
+//     interface result {
+//         _id: string,
+//         asset: string,
+//         owner: string,
+//         coa_tmp_reserve_num: string,
+//     }
 
-    return new Promise((resolveAll: (results: Array<result>) => void, rejectAll: (err: Error) => void) => {
-        // 今回は、COA連携なのでまずCOAAPIで確認
-        AssetModel.default.find({
-            _id: { $in: args.assets }
-        }).populate({
-            path: "performance",
-            populate: {
-                path: "film"
-            }
-        }).exec((err, assets) => {
-            if (err) return rejectAll(err);
+//     return new Promise((resolveAll: (results: Array<result>) => void, rejectAll: (err: Error) => void) => {
+//         // 今回は、COA連携なのでまずCOAAPIで確認
+//         AssetModel.default.find({
+//             _id: { $in: args.assets }
+//         }).populate({
+//             path: "performance",
+//             populate: {
+//                 path: "film"
+//             }
+//         }).exec((err, assets) => {
+//             if (err) return rejectAll(err);
 
-            COA.reserveSeatsTemporarilyInterface.call({
-                theater_code: assets[0].get("performance").get("theater"),
-                date_jouei: assets[0].get("performance").get("day"),
-                title_code: assets[0].get("performance").get("film").get("film_group"),
-                title_branch_num: assets[0].get("performance").get("film").get("film_branch_code"),
-                time_begin: assets[0].get("performance").get("time_start"),
-                list_seat: assets.map((asset) => {
-                    return {
-                        seat_section: asset.get("section"),
-                        seat_num: asset.get("seat_code"),
-                    };
-                })
-            }, (err, result) => {
-                if (err) return rejectAll(err);
+//             COA.reserveSeatsTemporarilyInterface.call({
+//                 theater_code: assets[0].get("performance").get("theater"),
+//                 date_jouei: assets[0].get("performance").get("day"),
+//                 title_code: assets[0].get("performance").get("film").get("film_group"),
+//                 title_branch_num: assets[0].get("performance").get("film").get("film_branch_code"),
+//                 time_begin: assets[0].get("performance").get("time_start"),
+//                 list_seat: assets.map((asset) => {
+//                     return {
+//                         seat_section: asset.get("section"),
+//                         seat_num: asset.get("seat_code"),
+//                     };
+//                 })
+//             }, (err, result) => {
+//                 if (err) return rejectAll(err);
 
-                // 本来は以下順序
-                // 1.authorizationを非アクティブで作成
-                // 2.assetにauthorizationが作成済みでないかどうか確認(今回は、COA連携なのでassetを確認せずに取引追加)
-                // 3.authorizationをアクティブにする
+//                 // 本来は以下順序
+//                 // 1.authorizationを非アクティブで作成
+//                 // 2.assetにauthorizationが作成済みでないかどうか確認(今回は、COA連携なのでassetを確認せずに取引追加)
+//                 // 3.authorizationをアクティブにする
 
-                TransactionModel.default.findOne({
-                    _id: args.transaction
-                }, (err, transaction) => {
-                    if (err) return rejectAll(err);
-                    if (!transaction) return rejectAll(new Error("transaction not found."));
+//                 TransactionModel.default.findOne({
+//                     _id: args.transaction
+//                 }, (err, transaction) => {
+//                     if (err) return rejectAll(err);
+//                     if (!transaction) return rejectAll(new Error("transaction not found."));
 
-                    // 取引と資産に対して、承認情報をセット
-                    assets.forEach((asset) => {
-                        transaction.get("authorizations").push({
-                            asset: asset.get("_id"),
-                            owner: asset.get("owner"),
-                            coa_tmp_reserve_num: result.tmp_reserve_num.toString(),
-                            active: false,
-                            group: AuthorizationModel.GROUP_ASSET
-                        });
-                    });
-                    transaction.save((err, transaction) => {
-                        if (err) rejectAll(err);
+//                     // 取引と資産に対して、承認情報をセット
+//                     assets.forEach((asset) => {
+//                         transaction.get("authorizations").push({
+//                             asset: asset.get("_id"),
+//                             owner: asset.get("owner"),
+//                             coa_tmp_reserve_num: result.tmp_reserve_num.toString(),
+//                             active: false,
+//                             group: AuthorizationModel.GROUP_ASSET
+//                         });
+//                     });
+//                     transaction.save((err, transaction) => {
+//                         if (err) rejectAll(err);
 
-                        let promises = assets.map((asset) => {
-                            return new Promise((resolve, reject) => {
-                                asset.get("transactions").push(transaction.get("_id"));
-                                asset.save((err, asset) => {
-                                    if (err) return reject(err);
-                                    resolve();
-                                });
-                            });
-                        });
+//                         let promises = assets.map((asset) => {
+//                             return new Promise((resolve, reject) => {
+//                                 asset.get("transactions").push(transaction.get("_id"));
+//                                 asset.save((err, asset) => {
+//                                     if (err) return reject(err);
+//                                     resolve();
+//                                 });
+//                             });
+//                         });
 
-                        Promise.all(promises).then(() => {
-                            // 資産の承認確認が全てとれたら承認をアクティブ化
-                            transaction.get("authorizations").forEach((authorization: mongoose.Document) => {
-                                if (authorization.get("coa_tmp_reserve_num") !== result.tmp_reserve_num.toString()) return;
-                                authorization.set("active", true);
-                            });
-                            transaction.save((err, transaction) => {
-                                if (err) rejectAll(err);
+//                         Promise.all(promises).then(() => {
+//                             // 資産の承認確認が全てとれたら承認をアクティブ化
+//                             transaction.get("authorizations").forEach((authorization: mongoose.Document) => {
+//                                 if (authorization.get("coa_tmp_reserve_num") !== result.tmp_reserve_num.toString()) return;
+//                                 authorization.set("active", true);
+//                             });
+//                             transaction.save((err, transaction) => {
+//                                 if (err) rejectAll(err);
 
-                                resolveAll(transaction.get("authorizations"));
-                            });
-                        }, (err) => {
-                            rejectAll(err);
-                        });
-                    });
-                });
-            });
-        });
-    });
-}
+//                                 resolveAll(transaction.get("authorizations"));
+//                             });
+//                         }, (err) => {
+//                             rejectAll(err);
+//                         });
+//                     });
+//                 });
+//             });
+//         });
+//     });
+// }
 
 /**
  * 承認追加(GROUP_COA_SEAT_RESERVATION)
@@ -120,15 +148,15 @@ export function create4coaSeatReservation(args: {
         price: number,
     }>,
 }) {
-    interface result {
+    interface Result {
         success: boolean,
         messsge: string,
         authorization: any,
     }
 
-    return new Promise((resolveAll: (results: Array<result>) => void, rejectAll: (err: Error) => void) => {
+    return new Promise((resolveAll: (results: Array<Result>) => void, rejectAll: (err: Error) => void) => {
         // 今回は、COA連携なのでassetを確認せずに、authorizationをアクティブで作成
-        let results: Array<result> = [];
+        let results: Array<Result> = [];
         let promises = args.authorizations.map((authorizationArg) => {
             return new Promise((resolve, reject) => {
                 AuthorizationModel.default.create({
