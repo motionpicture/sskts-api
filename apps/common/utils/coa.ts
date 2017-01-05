@@ -605,32 +605,56 @@ export namespace ticketInterface {
  */
 export namespace updateReserveInterface {
     export interface Args {
+        /** 施設コード */
         theater_code: string,
+        /** 上映日 */
         date_jouei: string,
+        /** 作品コード */
         title_code: string,
+        /** 作品枝番 */
         title_branch_num: string,
+        /** 上映時刻 */
         time_begin: string,
+        /** 座席チケット仮予約番号 */
         tmp_reserve_num: string,
+        /** 予約者名 */
         reserve_name: string,
+        /** 予約者名（かな） */
         reserve_name_kana: string,
+        /** 電話番号 */
         tel_num: string,
+        /** メールアドレス */
         mail_addr: string,
+        /** 予約金額 */
         reserve_amount: number,
+        /** 価格情報リスト */
         list_ticket: Array<{
+            /** チケットコード */
             ticket_code: string,
+            /** 標準単価 */
             std_price: number,
+            /** 加算単価 */
             add_price: number,
+            /** 割引額 */
             dis_price: number,
+            /** 金額 */
             sale_price: number,
+            /** 枚数 */
             ticket_count: number,
+            /** 座席番号 */
             seat_num: string,
         }>
     }
     export interface Result {
+        /** 座席チケット購入番号 */
         reserve_num: string,
+        /** 入場QRリスト */
         list_qr: Array<{
+            /** 座席セクション */
             seat_section: string,
+            /** 座席番号 */
             seat_num: string,
+            /** 座席入場QRコード */
             seat_qrcode: string,
         }>
     }
@@ -666,15 +690,25 @@ export namespace updateReserveInterface {
  */
 export namespace deleteReserveInterface {
     export interface Args {
+        /** 施設コード */
         theater_code: string,
+        /** 上映日 */
         date_jouei: string,
+        /** 作品コード */
         title_code: string,
+        /** 作品枝番 */
         title_branch_num: string,
+        /** 上映時刻 */
         time_begin: string,
+        /** 座席チケット購入番号 */
         reserve_num: string,
+        /** 電話番号 */
         tel_num: string,
+        /** 座席単位削除リスト */
         list_seat: Array<{
+            /** 座席セクション */
             seat_section: string,
+            /** 座席番号 */
             seat_num: string,
         }>				
     }
@@ -709,23 +743,37 @@ export namespace deleteReserveInterface {
  */
 export namespace stateReserveInterface {
     export interface Args {
+        /** 施設コード */
         theater_code: string,
+        /** 座席チケット購入番号 */
         reserve_num	: string,
+        /** 電話番号 */
         tel_num: string,
     }
     export interface Result {
+        /** 上映日 */
         date_jouei: string,
+        /** 作品コード */
         title_code: string,
+        /** 作品枝番 */
         title_branch_num: string,
+        /** 上映時刻 */
         time_begin: string,
+        /** 予約座席リスト */
         list_reserve_seat: Array<{
+            /** 座席番号 */
             seat_num: string,
-            list_ticket: Array<{
-                ticket_code: string,
-                ticket_name: string,
-                ticket_price: number,
-                ticket_count: number,
-            }>
+        }>,
+        /** 価格情報リスト */
+        list_ticket: Array<{
+            /** チケットコード */
+            ticket_code: string,
+            /** チケット名 */
+            ticket_name: string,
+            /** 金額 */
+            ticket_price: number,
+            /** 枚数 */
+            ticket_count: number,
         }>
     }
     export function call(args: Args, cb: (err: Error, result: Result) => void): void {
@@ -752,6 +800,7 @@ export namespace stateReserveInterface {
                     title_branch_num: body.title_branch_num,
                     time_begin: body.time_begin,
                     list_reserve_seat: body.list_reserve_seat,
+                    list_ticket: body.list_ticket,
                 });
             });
         });
