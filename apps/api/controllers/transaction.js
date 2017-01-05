@@ -48,7 +48,7 @@ exports.create = create;
 /**
  * idとpasswordから取引の有効性確認
  */
-function isAvalilable(id, password, cb) {
+function isAvailable(id, password, cb) {
     TransactionModel.default.findOne({
         _id: id,
         password: password,
@@ -63,7 +63,7 @@ function isAvalilable(id, password, cb) {
         cb(null, true);
     });
 }
-exports.isAvalilable = isAvalilable;
+exports.isAvailable = isAvailable;
 /**
  * 取引成立
  */

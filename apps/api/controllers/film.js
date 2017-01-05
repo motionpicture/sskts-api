@@ -16,7 +16,19 @@ function findById(id) {
             resolve({
                 _id: film.get("_id"),
                 name: film.get("name"),
-                name_kana: film.get("name_kana")
+                name_kana: film.get("name_kana"),
+                name_short: film.get("name_short"),
+                name_original: film.get("name_original"),
+                minutes: film.get("minutes"),
+                date_start: film.get("date_start"),
+                date_end: film.get("date_end"),
+                kbn_eirin: film.get("kbn_eirin"),
+                kbn_eizou: film.get("kbn_eizou"),
+                kbn_joueihousiki: film.get("kbn_joueihousiki"),
+                kbn_jimakufukikae: film.get("kbn_jimakufukikae"),
+                copyright: film.get("copyright"),
+                coa_title_code: film.get("coa_title_code"),
+                coa_title_branch_num: film.get("coa_title_branch_num"),
             });
         });
     });
@@ -44,8 +56,8 @@ function importByTheaterCode(theaterCode) {
                         // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
                         _id: `${theaterCode}${film.title_code}${film.title_branch_num}`
                     }, {
-                        film_group: film.title_code,
-                        film_branch_code: film.title_branch_num,
+                        coa_title_code: film.title_code,
+                        coa_title_branch_num: film.title_branch_num,
                         theater: theaterCode,
                         name: {
                             ja: film.title_name,
@@ -56,7 +68,11 @@ function importByTheaterCode(theaterCode) {
                         name_original: film.title_name_orig,
                         minutes: film.show_time,
                         date_start: film.date_begin,
-                        date_end: film.date_end // 公演終了予定日※日付は西暦8桁 "YYYYMMDD"
+                        date_end: film.date_end,
+                        kbn_eirin: film.kbn_eirin,
+                        kbn_eizou: film.kbn_eizou,
+                        kbn_joueihousiki: film.kbn_joueihousiki,
+                        kbn_jimakufukikae: film.kbn_jimakufukikae,
                     }, {
                         new: true,
                         upsert: true

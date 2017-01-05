@@ -17,11 +17,6 @@ export var schema = new mongoose.Schema({
         ref: theaterModel.name,
         required: true
     },
-    film_group: {
-        type: String,
-        required: true
-    },
-    film_branch_code: String,
     name: {
         type: {
             ja: String,
@@ -35,11 +30,19 @@ export var schema = new mongoose.Schema({
     minutes: Number, // 上映時間
     date_start: String, // 公演開始予定日※日付は西暦8桁 "YYYYMMDD"
     date_end: String, // 公演終了予定日※日付は西暦8桁 "YYYYMMDD"
-    // kbn_eirin: String, // 映倫区分(PG12,R15,R18)
-    // kbn_eizou: String, // 映像区分(２D、３D)
-    // kbn_joeihousiki: String, // 上映方式区分(ＩＭＡＸ，４ＤＸ等)
-    // kbn_jimakufukikae: String, // 字幕吹替区分(字幕、吹き替え)
-    copyright: String // コピーライト
+    kbn_eirin: String, // 映倫区分(PG12,R15,R18)
+    kbn_eizou: String, // 映像区分(２D、３D)
+    kbn_joueihousiki: String, // 上映方式区分(ＩＭＡＸ，４ＤＸ等)
+    kbn_jimakufukikae: String, // 字幕吹替区分(字幕、吹き替え)
+    copyright: String, // コピーライト
+    coa_title_code: {
+        type: String,
+        required: true
+    },
+    coa_title_branch_num: {
+        type: String,
+        required: true
+    },
 },{
     collection: "films",
     timestamps: { 

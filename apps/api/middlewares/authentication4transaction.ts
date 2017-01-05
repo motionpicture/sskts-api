@@ -12,8 +12,8 @@ export default (req: Request, res: Response, next: NextFunction) => {
         if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
 
         // 取引の有効性確認
-        transactionController.isAvalilable(req.params.id, req.body.password, (err, isAvalilable) => {
-            if (!isAvalilable) return next(err);
+        transactionController.isAvailable(req.params.id, req.body.password, (err, isAvailable) => {
+            if (!isAvailable) return next(err);
             next();
         });
     });

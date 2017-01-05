@@ -23,8 +23,8 @@ export function findById(id: string) {
             ja: string,
             en: string
         },
-        film_group: string,
-        film_branch_code: string,
+        coa_title_code: string,
+        coa_title_branch_num: string,
         day: string,
         time_start: string,
         time_end: string
@@ -34,7 +34,7 @@ export function findById(id: string) {
         PerformanceModel.default.findOne({
             _id: id
         })
-        .populate("film", "name minutes copyright film_group film_branch_code")
+        .populate("film", "name minutes copyright coa_title_code coa_title_branch_num")
         .exec((err, performance) => {
             if (err) return reject(err);
             if (!performance) return reject(new Error("Not Found."));
@@ -47,8 +47,8 @@ export function findById(id: string) {
                 theater_name: performance.get("theater_name"),
                 film: performance.get("film").get("_id"),
                 film_name: performance.get("film").get("name"),
-                film_group: performance.get("film").get("film_group"),
-                film_branch_code: performance.get("film").get("film_branch_code"),
+                coa_title_code: performance.get("film").get("coa_title_code"),
+                coa_title_branch_num: performance.get("film").get("coa_title_branch_num"),
                 day: performance.get("day"),
                 time_start: performance.get("time_start"),
                 time_end: performance.get("time_end"),

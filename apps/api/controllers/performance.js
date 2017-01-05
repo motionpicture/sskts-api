@@ -10,7 +10,7 @@ function findById(id) {
         PerformanceModel.default.findOne({
             _id: id
         })
-            .populate("film", "name minutes copyright film_group film_branch_code")
+            .populate("film", "name minutes copyright coa_title_code coa_title_branch_num")
             .exec((err, performance) => {
             if (err)
                 return reject(err);
@@ -24,8 +24,8 @@ function findById(id) {
                 theater_name: performance.get("theater_name"),
                 film: performance.get("film").get("_id"),
                 film_name: performance.get("film").get("name"),
-                film_group: performance.get("film").get("film_group"),
-                film_branch_code: performance.get("film").get("film_branch_code"),
+                coa_title_code: performance.get("film").get("coa_title_code"),
+                coa_title_branch_num: performance.get("film").get("coa_title_branch_num"),
                 day: performance.get("day"),
                 time_start: performance.get("time_start"),
                 time_end: performance.get("time_end"),
