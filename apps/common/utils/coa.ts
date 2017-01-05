@@ -44,7 +44,7 @@ export namespace findTheaterInterface {
         /** 劇場コード */
         theater_code: string
     }
-    export interface Theater {
+    export interface Result {
         /** 施設コード */
         theater_code: string,
         /** 施設名称 */
@@ -54,7 +54,7 @@ export namespace findTheaterInterface {
         /** 施設名称（英） */
         theater_name_kana: string
     }
-    export function call(args: Args, cb: (err: Error, theater: Theater) => void): void {
+    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
         publishAccessToken((err) => {
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/theater/`,
@@ -85,7 +85,7 @@ export namespace findFilmsByTheaterCodeInterface {
         /** 劇場コード */
         theater_code: string
     }
-    export interface Film {
+    export interface Result {
         /** 作品コード */
         title_code: string,
         /** 作品枝番 */
@@ -115,7 +115,7 @@ export namespace findFilmsByTheaterCodeInterface {
         /** 公演終了予定日 */
         date_end: string
     };
-    export function call(args: Args, cb: (err: Error, films: Array<Film>) => void): void {
+    export function call(args: Args, cb: (err: Error, results: Array<Result>) => void): void {
         publishAccessToken((err) => {
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/title/`,
@@ -141,7 +141,7 @@ export namespace findScreensByTheaterCodeInterface {
         /** 劇場コード */
         theater_code: string
     }
-    export interface Screen {
+    export interface Result {
         /** スクリーンコード */
         screen_code: string,
         /** スクリーン名 */
@@ -164,7 +164,7 @@ export namespace findScreensByTheaterCodeInterface {
             flg_spare: string
         }>
     };
-    export function call(args: Args, cb: (err: Error, screens: Array<Screen>) => void): void {
+    export function call(args: Args, cb: (err: Error, results: Array<Result>) => void): void {
         publishAccessToken((err) => {
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/screen/`,
@@ -194,7 +194,7 @@ export namespace findPerformancesByTheaterCodeInterface {
         /** スケジュールを抽出する上映日の終了日　　※日付は西暦8桁 "YYYYMMDD" */
         end: string,
     }
-    export interface Performance {
+    export interface Result {
         /** 上映日 */
         date_jouei: string,
         /** 作品コード */
@@ -216,7 +216,7 @@ export namespace findPerformancesByTheaterCodeInterface {
         /** サービスデイ名称 */
         name_service_day: string,
     }
-    export function call(args: Args, cb: (err: Error, screens: Array<Performance>) => void): void {
+    export function call(args: Args, cb: (err: Error, results: Array<Result>) => void): void {
         publishAccessToken((err) => {
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/schedule/`,
@@ -594,6 +594,164 @@ export namespace ticketInterface {
 
                 cb(null, {
                     list_ticket: body.list_ticket,
+                });
+            });
+        });
+    }
+}
+
+/**
+ * 座席本予約
+ */
+export namespace updateReserveInterface {
+    export interface Args {
+        theater_code: string,
+        date_jouei: string,
+        title_code: string,
+        title_branch_num: string,
+        time_begin: string,
+        tmp_reserve_num: string,
+        reserve_name: string,
+        reserve_name_kana: string,
+        tel_num: string,
+        mail_addr: string,
+        reserve_amount: number,
+        list_ticket: Array<{
+            ticket_code: string,
+            std_price: number,
+            add_price: number,
+            dis_price: number,
+            sale_price: number,
+            ticket_count: number,
+            seat_num: string,
+        }>
+    }
+    export interface Result {
+        reserve_num: string,
+        list_qr: Array<{
+            seat_section: string,
+            seat_num: string,
+            seat_qrcode: string,
+        }>
+    }
+    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+        console.log("updateReserve calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/upd_reserve/`,
+                auth: {bearer: credentials.access_token},
+                json: true,
+                qs: {
+                    // TODO クエリパラメータつくる
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("updateReserve called.", error, body);
+                if (error) return cb(error, null);
+                if (typeof body === "string")  return cb(new Error(body), null);
+                if (body.message) return cb(new Error(body.message), null);
+                if (body.status !== 0) return cb(new Error(body.status), null);
+
+                cb(null, {
+                    reserve_num: body.reserve_num,
+                    list_qr: body.list_qr,
+                });
+            });
+        });
+    }
+}
+
+/**
+ * 購入チケット取り消し
+ */
+export namespace deleteReserveInterface {
+    export interface Args {
+        theater_code: string,
+        date_jouei: string,
+        title_code: string,
+        title_branch_num: string,
+        time_begin: string,
+        reserve_num: string,
+        tel_num: string,
+        list_seat: Array<{
+            seat_section: string,
+            seat_num: string,
+        }>				
+    }
+    export interface Result {
+    }
+    export function call(args: Args, cb: (err: Error, result: boolean) => void): void {
+        console.log("deleteReserve calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/del_reserve/`,
+                auth: {bearer: credentials.access_token},
+                json: true,
+                qs: {
+                    // TODO クエリパラメータつくる
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("deleteReserve called.", error, body);
+                if (error) return cb(error, false);
+                if (typeof body === "string")  return cb(new Error(body), false);
+                if (body.message) return cb(new Error(body.message), false);
+                if (body.status !== 0) return cb(new Error(body.status), false);
+
+                cb(null, true);
+            });
+        });
+    }
+}
+
+/**
+ * 購入チケット内容抽出
+ */
+export namespace stateReserveInterface {
+    export interface Args {
+        theater_code: string,
+        reserve_num	: string,
+        tel_num: string,
+    }
+    export interface Result {
+        date_jouei: string,
+        title_code: string,
+        title_branch_num: string,
+        time_begin: string,
+        list_reserve_seat: Array<{
+            seat_num: string,
+            list_ticket: Array<{
+                ticket_code: string,
+                ticket_name: string,
+                ticket_price: number,
+                ticket_count: number,
+            }>
+        }>
+    }
+    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+        console.log("stateReserve calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/state_reserve/`,
+                auth: {bearer: credentials.access_token},
+                json: true,
+                qs: {
+                    // TODO クエリパラメータつくる
+                },
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("stateReserve called.", error, body);
+                if (error) return cb(error, null);
+                if (typeof body === "string")  return cb(new Error(body), null);
+                if (body.message) return cb(new Error(body.message), null);
+                if (body.status !== 0) return cb(new Error(body.status), null);
+
+                cb(null, {
+                    date_jouei: body.date_jouei,
+                    title_code: body.title_code,
+                    title_branch_num: body.title_branch_num,
+                    time_begin: body.time_begin,
+                    list_reserve_seat: body.list_reserve_seat,
                 });
             });
         });

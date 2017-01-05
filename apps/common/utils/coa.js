@@ -370,3 +370,102 @@ var ticketInterface;
     }
     ticketInterface.call = call;
 })(ticketInterface = exports.ticketInterface || (exports.ticketInterface = {}));
+/**
+ * 座席本予約
+ */
+var updateReserveInterface;
+(function (updateReserveInterface) {
+    function call(args, cb) {
+        console.log("updateReserve calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/upd_reserve/`,
+                auth: { bearer: credentials.access_token },
+                json: true,
+                qs: {},
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("updateReserve called.", error, body);
+                if (error)
+                    return cb(error, null);
+                if (typeof body === "string")
+                    return cb(new Error(body), null);
+                if (body.message)
+                    return cb(new Error(body.message), null);
+                if (body.status !== 0)
+                    return cb(new Error(body.status), null);
+                cb(null, {
+                    reserve_num: body.reserve_num,
+                    list_qr: body.list_qr,
+                });
+            });
+        });
+    }
+    updateReserveInterface.call = call;
+})(updateReserveInterface = exports.updateReserveInterface || (exports.updateReserveInterface = {}));
+/**
+ * 購入チケット取り消し
+ */
+var deleteReserveInterface;
+(function (deleteReserveInterface) {
+    function call(args, cb) {
+        console.log("deleteReserve calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/del_reserve/`,
+                auth: { bearer: credentials.access_token },
+                json: true,
+                qs: {},
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("deleteReserve called.", error, body);
+                if (error)
+                    return cb(error, false);
+                if (typeof body === "string")
+                    return cb(new Error(body), false);
+                if (body.message)
+                    return cb(new Error(body.message), false);
+                if (body.status !== 0)
+                    return cb(new Error(body.status), false);
+                cb(null, true);
+            });
+        });
+    }
+    deleteReserveInterface.call = call;
+})(deleteReserveInterface = exports.deleteReserveInterface || (exports.deleteReserveInterface = {}));
+/**
+ * 購入チケット内容抽出
+ */
+var stateReserveInterface;
+(function (stateReserveInterface) {
+    function call(args, cb) {
+        console.log("stateReserve calling...", args);
+        publishAccessToken((err) => {
+            request.get({
+                url: `${COA_URI}/api/v1/theater/${args.theater_code}/state_reserve/`,
+                auth: { bearer: credentials.access_token },
+                json: true,
+                qs: {},
+                useQuerystring: true
+            }, (error, response, body) => {
+                console.log("stateReserve called.", error, body);
+                if (error)
+                    return cb(error, null);
+                if (typeof body === "string")
+                    return cb(new Error(body), null);
+                if (body.message)
+                    return cb(new Error(body.message), null);
+                if (body.status !== 0)
+                    return cb(new Error(body.status), null);
+                cb(null, {
+                    date_jouei: body.date_jouei,
+                    title_code: body.title_code,
+                    title_branch_num: body.title_branch_num,
+                    time_begin: body.time_begin,
+                    list_reserve_seat: body.list_reserve_seat,
+                });
+            });
+        });
+    }
+    stateReserveInterface.call = call;
+})(stateReserveInterface = exports.stateReserveInterface || (exports.stateReserveInterface = {}));
