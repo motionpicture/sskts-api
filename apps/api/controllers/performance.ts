@@ -127,6 +127,8 @@ export function importByTheaterCode(theaterCode: string, begin: string, end: str
             if (err) return rejectAll(err);
 
             ScreenModel.default.find({theater: theaterCode}, "name theater sections").populate("theater", "name").exec((err, screens) => {
+                if (err) return rejectAll(err);
+
                 // あれば更新、なければ追加
                 let promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
@@ -164,10 +166,9 @@ export function importByTheaterCode(theaterCode: string, begin: string, end: str
                                 new: true,
                                 upsert: true
                             },
-                            (err, performance) => {
+                            (err) => {
                                 console.log("performance updated.", err);
                                 if (err) return reject(err); 
-                                // this.logger.debug("sponsor updated", err);
                                 resolve();
                             }
                         );

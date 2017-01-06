@@ -17,7 +17,7 @@ program
 program
     .command("importTheater <code>")
     .description("import theater from COA.")
-    .action((code, options) => {
+    .action((code) => {
         // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
         mongoose.connect(MONGOLAB_URI);
 
@@ -33,7 +33,7 @@ program
 program
     .command("importFilmsByTheaterCode <theaterCode>")
     .description("import films from COA.")
-    .action((theaterCode, options) => {
+    .action((theaterCode) => {
         // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
         mongoose.connect(MONGOLAB_URI);
 
@@ -49,7 +49,7 @@ program
 program
     .command("importScreensByTheaterCode <theaterCode>")
     .description("import screens from COA.")
-    .action((theaterCode, options) => {
+    .action((theaterCode) => {
         // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
         mongoose.connect(MONGOLAB_URI);
 
@@ -65,7 +65,7 @@ program
 program
     .command("importPerformancesByTheaterCode <theaterCode> <day_start> <day_end>")
     .description("import performances from COA.")
-    .action((theaterCode, start, end, options) => {
+    .action((theaterCode, start, end) => {
         // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
         mongoose.connect(MONGOLAB_URI);
 
@@ -81,7 +81,7 @@ program
 program
     .command("importSeatAvailability <theaterCode> <day_start> <day_end>")
     .description("import seat availability.")
-    .action((theaterCode, start, end, options) => {
+    .action((theaterCode, start, end) => {
         // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
         mongoose.connect(MONGOLAB_URI);
 
@@ -97,7 +97,7 @@ program
 program
     .command("importTickets <theaterCode>")
     .description("import tickets.")
-    .action((theaterCode, options) => {
+    .action((theaterCode) => {
         // let logDir = `${__dirname}/../../logs/${env}/task/Test${method.charAt(0).toUpperCase()}${method.slice(1)}`;
         mongoose.connect(MONGOLAB_URI);
 

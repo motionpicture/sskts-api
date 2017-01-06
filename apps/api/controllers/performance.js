@@ -2,9 +2,6 @@
 const COA = require("../../common/utils/coa");
 const PerformanceModel = require("../../common/models/performance");
 const ScreenModel = require("../../common/models/screen");
-/**
- * パフォーマンス詳細
- */
 function findById(id) {
     return new Promise((resolve, reject) => {
         PerformanceModel.default.findOne({
@@ -35,7 +32,6 @@ function findById(id) {
 }
 exports.findById = findById;
 function find(conditions) {
-    // 検索条件を作成
     let andConditions = [
         { _id: { $ne: null } }
     ];
@@ -52,15 +48,11 @@ function find(conditions) {
             .exec((err, performances) => {
             if (err)
                 return reject(err);
-            // TODO 空席状況を追加
             resolve(performances);
         });
     });
 }
 exports.find = find;
-/**
- * 劇場コード指定でパフォーマンス情報をCOAからインポートする
- */
 function importByTheaterCode(theaterCode, begin, end) {
     return new Promise((resolveAll, rejectAll) => {
         COA.findPerformancesByTheaterCodeInterface.call({
@@ -71,7 +63,8 @@ function importByTheaterCode(theaterCode, begin, end) {
             if (err)
                 return rejectAll(err);
             ScreenModel.default.find({ theater: theaterCode }, "name theater sections").populate("theater", "name").exec((err, screens) => {
-                // あれば更新、なければ追加
+                if (err)
+                    return rejectAll(err);
                 let promises = performances.map((performance) => {
                     return new Promise((resolve, reject) => {
                         if (!performance.title_code)
@@ -80,11 +73,9 @@ function importByTheaterCode(theaterCode, begin, end) {
                             return resolve();
                         if (!performance.screen_code)
                             return resolve();
-                        // this.logger.debug("updating sponsor...");
                         let id = `${theaterCode}${performance.date_jouei}${performance.title_code}${performance.title_branch_num}${performance.screen_code}${performance.time_begin}`;
                         let screenCode = `${theaterCode}${performance.screen_code}`;
                         let filmCode = `${theaterCode}${performance.title_code}${performance.title_branch_num}`;
-                        // 劇場とスクリーン名称を追加
                         let _screen = screens.find((screen) => {
                             return (screen.get("_id").toString() === screenCode);
                         });
@@ -105,11 +96,10 @@ function importByTheaterCode(theaterCode, begin, end) {
                         }, {
                             new: true,
                             upsert: true
-                        }, (err, performance) => {
+                        }, (err) => {
                             console.log("performance updated.", err);
                             if (err)
                                 return reject(err);
-                            // this.logger.debug("sponsor updated", err);
                             resolve();
                         });
                     });
@@ -133,7 +123,6 @@ function importSeatAvailability(theaterCode, start, end) {
         }, (err, result) => {
             if (err)
                 return reject(err);
-            // TODO どこかにインポートする
             resolve(result);
         });
     });

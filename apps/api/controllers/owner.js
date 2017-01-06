@@ -1,11 +1,7 @@
 "use strict";
 const OwnerModel = require("../../common/models/owner");
-/**
- * 所有者作成
- */
 function create(group) {
     return new Promise((resolve, reject) => {
-        // group文字列のバリデーション
         if (!OwnerModel.isAvailableGroup(group))
             return reject(new Error("invalid group name."));
         OwnerModel.default.create({
@@ -21,9 +17,6 @@ function create(group) {
     });
 }
 exports.create = create;
-/**
- * 所有者更新
- */
 function findByIdAndUpdate(args) {
     return new Promise((resolve, reject) => {
         OwnerModel.default.findOneAndUpdate({

@@ -4,19 +4,15 @@ let router = express.Router();
 const mongoose = require("mongoose");
 const conf = require("config");
 let MONGOLAB_URI = conf.get("mongolab_uri");
-// middleware that is specific to this router
-// router.use((req, res, next) => {
-//   console.log('Time: ', Date.now())
-//   next()
-// })
-router.get("/environmentVariables", (req, res, next) => {
-    // this.logger.debug("process.env:", process.env);
+router.get("/environmentVariables", (req, res) => {
+    console.log("ip:", req.ip);
     res.json({
         success: true,
         variables: process.env
     });
 });
-router.get("/mongoose/connect", (req, res, next) => {
+router.get("/mongoose/connect", (req, res) => {
+    console.log("ip:", req.ip);
     mongoose.connect(MONGOLAB_URI, (err) => {
         if (err) {
             res.json({
@@ -30,10 +26,10 @@ router.get("/mongoose/connect", (req, res, next) => {
                 message: "connected."
             });
         }
-        return;
     });
 });
-router.get("/mongoose/disconnect", (req, res, next) => {
+router.get("/mongoose/disconnect", (req, res) => {
+    console.log("ip:", req.ip);
     mongoose.disconnect((err) => {
         if (err) {
             res.json({
@@ -47,7 +43,6 @@ router.get("/mongoose/disconnect", (req, res, next) => {
                 message: "disconnected."
             });
         }
-        return;
     });
 });
 Object.defineProperty(exports, "__esModule", { value: true });

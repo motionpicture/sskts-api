@@ -6,6 +6,8 @@ const TransactionController = require("../controllers/transaction");
 const AuthorizationController = require("../controllers/authorization");
 router.get("/transactions", (req, res, next) => {
     req.getValidationResult().then((result) => {
+        if (!result.isEmpty())
+            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
         TransactionController.find({}).then((transactions) => {
             res.json({
                 success: true,
@@ -24,8 +26,6 @@ router.post("/transaction/start", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
-        // TODO ownersの型チェック
-        // let owners = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
         TransactionController.create(req.body.owners).then((transaction) => {
             res.json({
                 success: true,
@@ -59,7 +59,6 @@ router.post("/transaction/:id/close", authentication4transaction_1.default, (req
     });
 });
 router.post("/transaction/:id/authorize", authentication4transaction_1.default, (req, res, next) => {
-    // TODO validations
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
@@ -82,7 +81,6 @@ router.post("/transaction/:id/authorize", authentication4transaction_1.default, 
     });
 });
 router.post("/transaction/:id/unauthorize", authentication4transaction_1.default, (req, res, next) => {
-    // TODO validations
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));

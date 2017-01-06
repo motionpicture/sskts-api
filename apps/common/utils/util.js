@@ -1,10 +1,4 @@
 "use strict";
-/**
- * ハッシュ値を作成する
- *
- * @param {string} password
- * @param {string} salt
- */
 function createHash(password, salt) {
     let crypto = require('crypto');
     let sha512 = crypto.createHash('sha512');
@@ -12,29 +6,18 @@ function createHash(password, salt) {
     return sha512.digest('hex');
 }
 exports.createHash = createHash;
-/**
- * 全角→半角変換
- */
 function toHalfWidth(str) {
     return str.split('').map((value) => {
-        // 全角であれば変換
         return value.replace(/[！-～]/g, String.fromCharCode(value.charCodeAt(0) - 0xFEE0)).replace('　', ' ');
     }).join('');
 }
 exports.toHalfWidth = toHalfWidth;
-/**
- * 半角→全角変換
- */
 function toFullWidth(str) {
     return str.split('').map((value) => {
-        // 半角であれば変換
         return value.replace(/[!-~]/g, String.fromCharCode(value.charCodeAt(0) + 0xFEE0)).replace(' ', '　');
     }).join('');
 }
 exports.toFullWidth = toFullWidth;
-/**
- * 都道府県リスト
- */
 function getPrefectrues() {
     return [
         { code: '01', name: { ja: '北海道', en: 'Hokkaido Government' } },

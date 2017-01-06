@@ -1,6 +1,9 @@
 // read http://json.schemastore.org/tsconfig
 {
     "compilerOptions": {
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "charset": "utf8",
         "declaration": false,
         // "declarationDir": "./definitions",
         "diagnostics": false,
@@ -22,15 +25,17 @@
         "noLib": false,
         "noResolve": false,
         "noUnusedLocals": true,
-        "noUnusedParameters": false,
+        "noUnusedParameters": true,
         // "outDir": "",
         // "outFile": "./bin/tiff.js",
         "preserveConstEnums": false,
         "pretty": false,
+        "removeComments": true,
         "sourceMap": false,
         "strictNullChecks": false,
         "stripInternal": false,
         "suppressExcessPropertyErrors": false,
+        "suppressImplicitAnyIndexErrors": false,
         "target": "es6",
         "watch": false
     },

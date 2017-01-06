@@ -2,7 +2,6 @@
 const TransactionModel = require("../../common/models/transaction");
 const moment = require("moment");
 function find(conditions) {
-    // 検索条件を作成
     let andConditions = [
         { _id: { $ne: null } }
     ];
@@ -19,13 +18,9 @@ function find(conditions) {
     });
 }
 exports.find = find;
-/**
- * 取引開始
- */
 function create(owners) {
     return new Promise((resolve, reject) => {
-        // TODO 所有者IDの存在確認
-        let password = "password"; // TODO パスワード生成方法を決める
+        let password = "password";
         TransactionModel.default.create({
             password: password,
             expired_at: moment().add(+30, 'minutes'),
@@ -45,9 +40,6 @@ function create(owners) {
     });
 }
 exports.create = create;
-/**
- * idとpasswordから取引の有効性確認
- */
 function isAvailable(id, password, cb) {
     TransactionModel.default.findOne({
         _id: id,
@@ -64,9 +56,6 @@ function isAvailable(id, password, cb) {
     });
 }
 exports.isAvailable = isAvailable;
-/**
- * 取引成立
- */
 function close(id) {
     return new Promise((resolve, reject) => {
         TransactionModel.default.findOneAndUpdate({
@@ -90,9 +79,6 @@ function close(id) {
     });
 }
 exports.close = close;
-/**
- * 取引更新
- */
 function update(args) {
     return new Promise((resolve, reject) => {
         TransactionModel.default.findOneAndUpdate({

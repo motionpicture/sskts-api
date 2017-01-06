@@ -1,9 +1,6 @@
 "use strict";
 const COA = require("../../common/utils/coa");
 const TheaterModel = require("../../common/models/theater");
-/**
- * コードから劇場情報を取得する
- */
 function findByCode(code) {
     return new Promise((resolve, reject) => {
         TheaterModel.default.findOne({
@@ -21,9 +18,6 @@ function findByCode(code) {
     });
 }
 exports.findByCode = findByCode;
-/**
- * コード指定で劇場情報をCOAからインポートする
- */
 function importByCode(code) {
     return new Promise((resolve, reject) => {
         COA.findTheaterInterface.call({
@@ -31,8 +25,6 @@ function importByCode(code) {
         }, (err, theater) => {
             if (err)
                 return reject(err);
-            // あれば更新、なければ追加
-            // this.logger.debug('updating sponsor...');
             TheaterModel.default.findOneAndUpdate({
                 _id: theater.theater_code
             }, {
@@ -46,7 +38,6 @@ function importByCode(code) {
                 upsert: true
             }, (err, theater) => {
                 console.log("theater updated.", theater);
-                // this.logger.debug('sponsor updated', err);
                 (err) ? reject(err) : resolve();
             });
         });

@@ -4,11 +4,7 @@ const AssetModel = require("./asset");
 const OwnerModel = require("./owner");
 const PerformanceModel = require("./performance");
 const TransactionModel = require("./transaction");
-/** model name */
 exports.name = "Authorization";
-/**
- * 承認スキーマ
- */
 exports.schema = new mongoose.Schema({
     transaction: {
         type: mongoose.Schema.Types.ObjectId,
@@ -37,12 +33,10 @@ exports.schema = new mongoose.Schema({
         required: true,
         default: exports.PROCESS_STATUS_PENDING
     },
-    /** GROUP_ASSETの場合 */
     asset: {
         type: mongoose.Schema.Types.ObjectId,
         ref: AssetModel.name,
     },
-    /** GROUP_COA_SEAT_RESERVATIONの場合 */
     coa_tmp_reserve_num: String,
     performance: {
         type: String,
@@ -57,7 +51,6 @@ exports.schema = new mongoose.Schema({
     std_price: Number,
     add_price: Number,
     dis_price: Number,
-    /** GROUP_GMOの場合 */
     gmo_shop_id: String,
     gmo_shop_pass: String,
     gmo_amount: Number,
@@ -98,8 +91,6 @@ exports.schema.pre("save", function (next) {
                 return next(new Error("ticket_code required."));
             if (!this.ticket_name_ja)
                 return next(new Error("ticket_name_ja required."));
-            // if (!this.ticket_name_en) return next(new Error("ticket_name_en required."));
-            // if (!this.ticket_name_kana) return next(new Error("ticket_name_kana required."));
             if (this.std_price !== 0 && !this.std_price)
                 return next(new Error("std_price required."));
             if (this.add_price !== 0 && !this.add_price)
@@ -125,17 +116,10 @@ exports.schema.pre("save", function (next) {
 });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = mongoose.model(exports.name, exports.schema);
-/** 内部資産管理 */
 exports.GROUP_ASSET = "ASSET";
-/** COA座席予約資産管理 */
 exports.GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
-/** GMO資産管理 */
 exports.GROUP_GMO = "GMO";
-/** ムビチケ資産管理 */
 exports.GROUP_MVTK = "MVTK";
-/** 処理待ち */
 exports.PROCESS_STATUS_PENDING = "PENDING";
-/** 処理進行中 */
 exports.PROCESS_STATUS_UNDERWAY = "UNDERWAY";
-/** 処理済み */
 exports.PROCESS_STATUS_FINISHED = "FINISHED";

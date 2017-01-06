@@ -10,7 +10,8 @@ let MONGOLAB_URI = conf.get<string>("mongolab_uri");
 //   next()
 // })
 
-router.get("/environmentVariables", (req, res, next) => {
+router.get("/environmentVariables", (req, res) => {
+    console.log("ip:", req.ip);
     // this.logger.debug("process.env:", process.env);
     res.json({
         success: true,
@@ -18,7 +19,8 @@ router.get("/environmentVariables", (req, res, next) => {
     });
 });
 
-router.get("/mongoose/connect", (req, res, next) => {
+router.get("/mongoose/connect", (req, res) => {
+    console.log("ip:", req.ip);
     mongoose.connect(MONGOLAB_URI, (err) => {
         if (err) {
             res.json({
@@ -31,12 +33,11 @@ router.get("/mongoose/connect", (req, res, next) => {
                 message: "connected."
             });
         }
-
-        return;
     });
 });
 
-router.get("/mongoose/disconnect", (req, res, next) => {
+router.get("/mongoose/disconnect", (req, res) => {
+    console.log("ip:", req.ip);
     mongoose.disconnect((err) => {
         if (err) {
             res.json({
@@ -49,8 +50,6 @@ router.get("/mongoose/disconnect", (req, res, next) => {
                 message: "disconnected."
             });
         }
-
-        return;
     });
 });
 

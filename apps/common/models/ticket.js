@@ -1,11 +1,7 @@
 "use strict";
 const mongoose = require("mongoose");
 const TheaterModel = require("./theater");
-/** model name */
 exports.name = "Ticket";
-/**
- * 券種スキーマ
- */
 exports.schema = new mongoose.Schema({
     _id: {
         type: String,

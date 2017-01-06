@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from "express";
-import * as transactionController from "../controllers/transaction";
+import * as TransactionController from "../controllers/transaction";
 
 /**
  * 取引アクセス認証ミドルウェア
@@ -12,9 +12,15 @@ export default (req: Request, res: Response, next: NextFunction) => {
         if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
 
         // 取引の有効性確認
-        transactionController.isAvailable(req.params.id, req.body.password, (err, isAvailable) => {
-            if (!isAvailable) return next(err);
-            next();
+        TransactionController.isAvailable(req.params.id, req.body.password, (err) => {
+            if (err) {
+                res.json({
+                    success: false,
+                    message: err.message
+                });
+            } else {
+                next();
+            }
         });
     });
 }

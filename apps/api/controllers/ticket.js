@@ -1,9 +1,6 @@
 "use strict";
 const COA = require("../../common/utils/coa");
 const TicketModel = require("../../common/models/ticket");
-/**
- * コード指定で券種情報をCOAからインポートする
- */
 function importByTheaterCode(theaterCode) {
     return new Promise((resolveAll, rejectAll) => {
         COA.ticketInterface.call({
@@ -13,8 +10,6 @@ function importByTheaterCode(theaterCode) {
                 return rejectAll(err);
             let promises = result.list_ticket.map((ticket) => {
                 return new Promise((resolve, reject) => {
-                    // あれば更新、なければ追加
-                    // this.logger.debug('updating sponsor...');
                     TicketModel.default.findOneAndUpdate({
                         _id: `${theaterCode}${ticket.ticket_code}`
                     }, {
@@ -30,7 +25,6 @@ function importByTheaterCode(theaterCode) {
                         upsert: true
                     }, (err, ticket) => {
                         console.log("ticket updated.", ticket);
-                        // this.logger.debug('sponsor updated', err);
                         (err) ? reject(err) : resolve();
                     });
                 });

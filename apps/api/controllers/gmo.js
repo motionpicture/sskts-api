@@ -2,12 +2,8 @@
 const request = require("request");
 const querystring = require("querystring");
 const GMO = require("../../common/utils/gmo");
-/**
- * GMO仮売上
- */
 function executeAuth(args) {
     return new Promise((resolve, reject) => {
-        // 取引登録
         console.log("requesting...");
         request.post({
             url: "https://pt01.mul-pay.jp/payment/EntryTran.idPass",
@@ -27,7 +23,6 @@ function executeAuth(args) {
             let entryTranResult = querystring.parse(body);
             if (entryTranResult["ErrCode"])
                 return reject(new Error(body));
-            // 決済実行
             console.log("requesting...");
             request.post({
                 url: "https://pt01.mul-pay.jp/payment/ExecTran.idPass",
@@ -57,12 +52,8 @@ function executeAuth(args) {
     });
 }
 exports.executeAuth = executeAuth;
-/**
- * GMO実売上
- */
 function executeSales(args) {
     return new Promise((resolve, reject) => {
-        // 決済実行
         console.log("requesting...");
         request.post({
             url: "https://pt01.mul-pay.jp/payment/AlterTran.idPass",

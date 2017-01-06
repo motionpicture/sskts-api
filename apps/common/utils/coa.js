@@ -2,27 +2,21 @@
 const request = require("request");
 const config = require("config");
 let COA_URI = config.get("coa_api_endpoint");
-/**
- * API認証情報
- */
 let credentials = {
     access_token: "",
     expired_at: ""
 };
-/**
- * アクセストークンを発行する
- */
 function publishAccessToken(cb) {
-    // アクセストークン有効期限チェック
     if (credentials.access_token && Date.parse(credentials.expired_at) > Date.now())
         return cb(null);
     request.post({
-        url: `${COA_URI}/token/access_token`,
+        url: `${COA_URI}/token/access_toke`,
         form: {
             refresh_token: config.get("coa_api_refresh_token")
         },
         json: true
     }, (error, response, body) => {
+        console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
         if (error)
             return cb(error);
         if (typeof body === "string")
@@ -34,18 +28,18 @@ function publishAccessToken(cb) {
         cb(null);
     });
 }
-/**
- * 施設マスター抽出
- */
 var findTheaterInterface;
 (function (findTheaterInterface) {
     function call(args, cb) {
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/theater/`,
                 auth: { bearer: credentials.access_token },
                 json: true
             }, (error, response, body) => {
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -65,19 +59,19 @@ var findTheaterInterface;
     }
     findTheaterInterface.call = call;
 })(findTheaterInterface = exports.findTheaterInterface || (exports.findTheaterInterface = {}));
-/**
- * 作品マスター抽出
- */
 var findFilmsByTheaterCodeInterface;
 (function (findFilmsByTheaterCodeInterface) {
     ;
     function call(args, cb) {
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/title/`,
                 auth: { bearer: credentials.access_token },
                 json: true
             }, (error, response, body) => {
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -92,19 +86,19 @@ var findFilmsByTheaterCodeInterface;
     }
     findFilmsByTheaterCodeInterface.call = call;
 })(findFilmsByTheaterCodeInterface = exports.findFilmsByTheaterCodeInterface || (exports.findFilmsByTheaterCodeInterface = {}));
-/**
- * スクリーンマスター抽出
- */
 var findScreensByTheaterCodeInterface;
 (function (findScreensByTheaterCodeInterface) {
     ;
     function call(args, cb) {
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/screen/`,
                 auth: { bearer: credentials.access_token },
                 json: true
             }, (error, response, body) => {
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -119,13 +113,12 @@ var findScreensByTheaterCodeInterface;
     }
     findScreensByTheaterCodeInterface.call = call;
 })(findScreensByTheaterCodeInterface = exports.findScreensByTheaterCodeInterface || (exports.findScreensByTheaterCodeInterface = {}));
-/**
- * スケジュールマスター抽出
- */
 var findPerformancesByTheaterCodeInterface;
 (function (findPerformancesByTheaterCodeInterface) {
     function call(args, cb) {
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/schedule/`,
                 auth: { bearer: credentials.access_token },
@@ -135,6 +128,7 @@ var findPerformancesByTheaterCodeInterface;
                     end: args.end
                 }
             }, (error, response, body) => {
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -149,14 +143,13 @@ var findPerformancesByTheaterCodeInterface;
     }
     findPerformancesByTheaterCodeInterface.call = call;
 })(findPerformancesByTheaterCodeInterface = exports.findPerformancesByTheaterCodeInterface || (exports.findPerformancesByTheaterCodeInterface = {}));
-/**
- * 座席仮予約
- */
 var reserveSeatsTemporarilyInterface;
 (function (reserveSeatsTemporarilyInterface) {
     function call(args, cb) {
         console.log("reserveSeatsTemporarilyInterface calling...", args);
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/upd_tmp_reserve_seat/`,
                 auth: { bearer: credentials.access_token },
@@ -172,7 +165,7 @@ var reserveSeatsTemporarilyInterface;
                 },
                 useQuerystring: true
             }, (error, response, body) => {
-                console.log("reserveSeatsTemporarilyInterface called.", error, body);
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -190,14 +183,13 @@ var reserveSeatsTemporarilyInterface;
     }
     reserveSeatsTemporarilyInterface.call = call;
 })(reserveSeatsTemporarilyInterface = exports.reserveSeatsTemporarilyInterface || (exports.reserveSeatsTemporarilyInterface = {}));
-/**
- * 座席仮予約削除
- */
 var deleteTmpReserveInterface;
 (function (deleteTmpReserveInterface) {
     function call(args, cb) {
         console.log("deleteTmpReserveInterface calling...", args);
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/del_tmp_reserve/`,
                 auth: { bearer: credentials.access_token },
@@ -211,7 +203,7 @@ var deleteTmpReserveInterface;
                 },
                 useQuerystring: true
             }, (error, response, body) => {
-                console.log("deleteTmpReserveInterface called.", error, body);
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -226,14 +218,13 @@ var deleteTmpReserveInterface;
     }
     deleteTmpReserveInterface.call = call;
 })(deleteTmpReserveInterface = exports.deleteTmpReserveInterface || (exports.deleteTmpReserveInterface = {}));
-/**
- * 座席予約状態抽出
- */
 var getStateReserveSeatInterface;
 (function (getStateReserveSeatInterface) {
     function call(args, cb) {
         console.log("getStateReserveSeat calling...", args);
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/state_reserve_seat/`,
                 auth: { bearer: credentials.access_token },
@@ -246,7 +237,7 @@ var getStateReserveSeatInterface;
                 },
                 useQuerystring: true
             }, (error, response, body) => {
-                console.log("getStateReserveSeat called.", error, body);
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -265,14 +256,13 @@ var getStateReserveSeatInterface;
     }
     getStateReserveSeatInterface.call = call;
 })(getStateReserveSeatInterface = exports.getStateReserveSeatInterface || (exports.getStateReserveSeatInterface = {}));
-/**
- * 空席状況
- */
 var countFreeSeatInterface;
 (function (countFreeSeatInterface) {
     function call(args, cb) {
         console.log("countFreeSeat calling...", args);
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/count_free_seat/`,
                 auth: { bearer: credentials.access_token },
@@ -283,7 +273,7 @@ var countFreeSeatInterface;
                 },
                 useQuerystring: true
             }, (error, response, body) => {
-                console.log("countFreeSeat called.", error, body);
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -301,14 +291,13 @@ var countFreeSeatInterface;
     }
     countFreeSeatInterface.call = call;
 })(countFreeSeatInterface = exports.countFreeSeatInterface || (exports.countFreeSeatInterface = {}));
-/**
- * 販売可能チケット情報
- */
 var salesTicketInterface;
 (function (salesTicketInterface) {
     function call(args, cb) {
         console.log("salesTicket calling...", args);
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/sales_ticket/`,
                 auth: { bearer: credentials.access_token },
@@ -321,7 +310,7 @@ var salesTicketInterface;
                 },
                 useQuerystring: true
             }, (error, response, body) => {
-                console.log("salesTicket called.", error, body);
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -338,14 +327,13 @@ var salesTicketInterface;
     }
     salesTicketInterface.call = call;
 })(salesTicketInterface = exports.salesTicketInterface || (exports.salesTicketInterface = {}));
-/**
- * 券種マスター抽出
- */
 var ticketInterface;
 (function (ticketInterface) {
     function call(args, cb) {
         console.log("ticket calling...", args);
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/ticket/`,
                 auth: { bearer: credentials.access_token },
@@ -353,7 +341,7 @@ var ticketInterface;
                 qs: {},
                 useQuerystring: true
             }, (error, response, body) => {
-                console.log("ticket called.", error, body);
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -370,14 +358,13 @@ var ticketInterface;
     }
     ticketInterface.call = call;
 })(ticketInterface = exports.ticketInterface || (exports.ticketInterface = {}));
-/**
- * 座席本予約
- */
 var updateReserveInterface;
 (function (updateReserveInterface) {
     function call(args, cb) {
         console.log("updateReserve calling...", args);
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/upd_reserve/`,
                 auth: { bearer: credentials.access_token },
@@ -385,7 +372,7 @@ var updateReserveInterface;
                 qs: {},
                 useQuerystring: true
             }, (error, response, body) => {
-                console.log("updateReserve called.", error, body);
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")
@@ -403,14 +390,13 @@ var updateReserveInterface;
     }
     updateReserveInterface.call = call;
 })(updateReserveInterface = exports.updateReserveInterface || (exports.updateReserveInterface = {}));
-/**
- * 購入チケット取り消し
- */
 var deleteReserveInterface;
 (function (deleteReserveInterface) {
     function call(args, cb) {
         console.log("deleteReserve calling...", args);
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/del_reserve/`,
                 auth: { bearer: credentials.access_token },
@@ -418,7 +404,7 @@ var deleteReserveInterface;
                 qs: {},
                 useQuerystring: true
             }, (error, response, body) => {
-                console.log("deleteReserve called.", error, body);
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, false);
                 if (typeof body === "string")
@@ -433,14 +419,13 @@ var deleteReserveInterface;
     }
     deleteReserveInterface.call = call;
 })(deleteReserveInterface = exports.deleteReserveInterface || (exports.deleteReserveInterface = {}));
-/**
- * 購入チケット内容抽出
- */
 var stateReserveInterface;
 (function (stateReserveInterface) {
     function call(args, cb) {
         console.log("stateReserve calling...", args);
         publishAccessToken((err) => {
+            if (err)
+                return cb(new Error("failed in publishing access token."), null);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/state_reserve/`,
                 auth: { bearer: credentials.access_token },
@@ -448,7 +433,7 @@ var stateReserveInterface;
                 qs: {},
                 useQuerystring: true
             }, (error, response, body) => {
-                console.log("stateReserve called.", error, body);
+                console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
                     return cb(error, null);
                 if (typeof body === "string")

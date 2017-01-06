@@ -2,11 +2,7 @@
 const mongoose = require("mongoose");
 const OwnerModel = require("./owner");
 const TransactionModel = require("./transaction");
-/** model name */
 exports.name = "Asset";
-/**
- * 資産スキーマ
- */
 exports.schema = new mongoose.Schema({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
@@ -30,5 +26,4 @@ exports.schema = new mongoose.Schema({
 });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = mongoose.model(exports.name, exports.schema);
-/** 座席予約グループ */
 exports.GROUP_SEAT_RESERVATION = "SEAT_RESERVATION";

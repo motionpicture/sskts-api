@@ -7,6 +7,8 @@ import * as AuthorizationController from "../controllers/authorization";
 
 router.get("/transactions", (req, res, next) => {
     req.getValidationResult().then((result) => {
+        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+
         TransactionController.find({}).then((transactions) => {
             res.json({
                 success: true,

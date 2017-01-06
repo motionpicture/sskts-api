@@ -1,9 +1,6 @@
 "use strict";
 const FilmModel = require("../../common/models/film");
 const COA = require("../../common/utils/coa");
-/**
- * 作品詳細
- */
 function findById(id) {
     return new Promise((resolve, reject) => {
         FilmModel.default.findOne({
@@ -34,9 +31,6 @@ function findById(id) {
     });
 }
 exports.findById = findById;
-/**
- * 劇場コード指定で作品情報をCOAからインポートする
- */
 function importByTheaterCode(theaterCode) {
     return new Promise((resolveAll, rejectAll) => {
         COA.findFilmsByTheaterCodeInterface.call({
@@ -44,16 +38,13 @@ function importByTheaterCode(theaterCode) {
         }, (err, films) => {
             if (err)
                 return rejectAll(err);
-            // あれば更新、なければ追加
             let promises = films.map((film) => {
                 return new Promise((resolve, reject) => {
                     if (!film.title_code)
                         return resolve();
                     if (!film.title_branch_num)
                         return resolve();
-                    // this.logger.debug('updating sponsor...');
                     FilmModel.default.findOneAndUpdate({
-                        // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
                         _id: `${theaterCode}${film.title_code}${film.title_branch_num}`
                     }, {
                         coa_title_code: film.title_code,
@@ -78,7 +69,6 @@ function importByTheaterCode(theaterCode) {
                         upsert: true
                     }, (err) => {
                         console.log('film updated.', err);
-                        // this.logger.debug('sponsor updated', err);
                         (err) ? reject(err) : resolve();
                     });
                 });

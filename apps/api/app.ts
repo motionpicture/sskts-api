@@ -30,9 +30,9 @@ let app = express();
 
 if (process.env.NODE_ENV !== "prod") {
     // サーバーエラーテスト
-    app.get("/dev/500", (req, res) => {
-        req.on("data", (chunk) => {
-        });
+    app.get("/dev/500", (req) => {
+        // req.on("data", (chunk) => {
+        // });
 
         req.on("end", () => {
             throw new Error("500 manually.");
@@ -117,19 +117,19 @@ app.use("/", [
 ]);
 
 // 404
-app.use((req, res, next) => {
+app.use((req, res) => {
     res.json({
         success: false,
-        message: "Not Found"
+        message: `not found. [${req.originalUrl}]`
     });
 });
 
 // error handlers
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, req: express.Request, res: express.Response) => {
     console.error(err);
     res.json({
         success: false,
-        message: err.message
+        message: `${err.message}. [${req.originalUrl}]`
     });
 });
 

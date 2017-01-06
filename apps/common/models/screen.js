@@ -1,11 +1,7 @@
 "use strict";
 const mongoose = require("mongoose");
 const theaterModel = require("./theater");
-/** model name */
 exports.name = "Screen";
-/**
- * スクリーンスキーマ
- */
 exports.schema = new mongoose.Schema({
     _id: {
         type: String,
@@ -47,7 +43,7 @@ exports.schema = new mongoose.Schema({
                             ja: String,
                             en: String,
                         },
-                        additional_charge: Number // 追加料金
+                        additional_charge: Number
                     }
                 },
             ]

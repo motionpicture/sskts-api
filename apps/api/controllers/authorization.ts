@@ -14,18 +14,25 @@ export function create(args: {
         authorization: any,
     }
 
-    switch (args.group) {
-        case AuthorizationModel.GROUP_COA_SEAT_RESERVATION:
-            return create4coaSeatReservation({
-                transaction: args.transaction,
-                authorizations: args.authorizations,
-            });
+    return new Promise((resolve: (results: Array<Result>) => void, reject: (err: Error) => void) => {
+        switch (args.group) {
+            case AuthorizationModel.GROUP_COA_SEAT_RESERVATION:
+                create4coaSeatReservation({
+                    transaction: args.transaction,
+                    authorizations: args.authorizations,
+                }).then((results) => {
+                    resolve(results);
+                }, (err) => {
+                    reject(err);
+                });
 
-        default:
-            return new Promise((resolve: (results: Array<Result>) => void, reject: (err: Error) => void) => {
+                break;
+            default:
                 reject(new Error("invalid group."));
-            });
-    }
+                break;
+        }
+
+    });
 }
 
 /**
@@ -154,7 +161,7 @@ export function create4coaSeatReservation(args: {
         // 今回は、COA連携なのでassetを確認せずに、authorizationをアクティブで作成
         let results: Array<Result> = [];
         let promises = args.authorizations.map((authorizationArg) => {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 AuthorizationModel.default.create({
                     transaction: args.transaction,
                     coa_tmp_reserve_num: authorizationArg.coa_tmp_reserve_num,
@@ -239,7 +246,7 @@ export function create4gmo(args: {
         // 今回は、COA連携なのでassetを確認せずに、authorizationをアクティブで作成
         let results: Array<Result> = [];
         let promises = args.authorizations.map((authorizationArg) => {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 AuthorizationModel.default.create({
                     transaction: args.transaction,
                     gmo_shop_id: authorizationArg.gmo_shop_id,
@@ -314,7 +321,7 @@ export function remove(args: {
     return new Promise((resolveAll: (results: Array<Result>) => void, rejectAll: (err: Error) => void) => {
         let results: Array<Result> = [];
         let promises = args.authorizations.map((authorizationId) => {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 AuthorizationModel.default.findOneAndUpdate({
                     _id: authorizationId,
                     transaction: args.transaction

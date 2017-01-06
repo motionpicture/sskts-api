@@ -1,6 +1,5 @@
 "use strict";
 const log4js = require("log4js");
-// import config = require("config");
 let env = process.env.NODE_ENV || "dev";
 log4js.configure({
     appenders: [

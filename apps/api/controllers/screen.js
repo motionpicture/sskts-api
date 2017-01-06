@@ -1,9 +1,6 @@
 "use strict";
 const COA = require("../../common/utils/coa");
 const ScreenModel = require("../../common/models/screen");
-/**
- * スクリーン詳細
- */
 function findById(id) {
     return new Promise((resolve, reject) => {
         ScreenModel.default.findOne({
@@ -25,9 +22,6 @@ function findById(id) {
     });
 }
 exports.findById = findById;
-/**
- * 劇場コード指定でスクリーン情報をCOAからインポートする
- */
 function importByTheaterCode(theaterCode) {
     return new Promise((resolveAll, rejectAll) => {
         COA.findScreensByTheaterCodeInterface.call({
@@ -35,7 +29,6 @@ function importByTheaterCode(theaterCode) {
         }, (err, screens) => {
             if (err)
                 return rejectAll(err);
-            // あれば更新、なければ追加
             let promises = screens.map((screen) => {
                 return new Promise((resolve, reject) => {
                     if (!screen.screen_code)
@@ -45,7 +38,6 @@ function importByTheaterCode(theaterCode) {
                             code: seat.seat_num
                         };
                     });
-                    // this.logger.debug('updating sponsor...');
                     ScreenModel.default.findOneAndUpdate({
                         _id: `${theaterCode}${screen.screen_code}`
                     }, {
@@ -69,16 +61,13 @@ function importByTheaterCode(theaterCode) {
                         upsert: true
                     }, (err) => {
                         console.log('screen updated.', err);
-                        // this.logger.debug('sponsor updated', err);
                         (err) ? reject(err) : resolve();
                     });
                 });
             });
             Promise.all(promises).then(() => {
-                // this.logger.info('promised.');
                 resolveAll();
             }, (err) => {
-                // this.logger.error('promised.', err);
                 rejectAll(err);
             });
         });

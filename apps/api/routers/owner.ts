@@ -50,8 +50,8 @@ router.post("/owner/:id/update", (req, res, next) => {
     });
 });
 
-router.get("/owner/:id/assets", (req, res, next) => {
-    req.getValidationResult().then((result) => {
+router.get("/owner/:id/assets", (req, res) => {
+    req.getValidationResult().then(() => {
         res.json({
             success: false,
             message: "now coding..."
@@ -59,8 +59,8 @@ router.get("/owner/:id/assets", (req, res, next) => {
     });
 });
 
-router.get("/owner/:id/transactions", (req, res, next) => {
-    req.getValidationResult().then((result) => {
+router.get("/owner/:id/transactions", (req, res) => {
+    req.getValidationResult().then(() => {
         res.json({
             success: false,
             message: "now coding..."
