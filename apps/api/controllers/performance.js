@@ -8,6 +8,8 @@ function findById(id) {
             _id: id
         })
             .populate("film", "name minutes copyright coa_title_code coa_title_branch_num")
+            .populate("screen", "name coa_screen_code")
+            .populate("theater", "name")
             .exec((err, performance) => {
             if (err)
                 return reject(err);
@@ -16,13 +18,8 @@ function findById(id) {
             resolve({
                 _id: performance.get("_id"),
                 screen: performance.get("screen"),
-                screen_name: performance.get("screen_name"),
                 theater: performance.get("theater"),
-                theater_name: performance.get("theater_name"),
-                film: performance.get("film").get("_id"),
-                film_name: performance.get("film").get("name"),
-                coa_title_code: performance.get("film").get("coa_title_code"),
-                coa_title_branch_num: performance.get("film").get("coa_title_branch_num"),
+                film: performance.get("film"),
                 day: performance.get("day"),
                 time_start: performance.get("time_start"),
                 time_end: performance.get("time_end"),

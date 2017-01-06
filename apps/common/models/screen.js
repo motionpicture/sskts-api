@@ -12,6 +12,10 @@ exports.schema = new mongoose.Schema({
         ref: theaterModel.name,
         required: true
     },
+    coa_screen_code: {
+        type: String,
+        required: true
+    },
     name: {
         type: {
             ja: String,

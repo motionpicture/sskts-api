@@ -8,23 +8,30 @@ import * as ScreenModel from "../../common/models/screen";
 export function findById(id: string) {
     interface performance {
         _id: string,
-        screen: string,
-        screen_name: {
-            ja: string,
-            en: string
+        screen: {
+            _id: string,
+            name: {
+                ja: string,
+                en: string
+            },
+            coa_screen_code: string,
         },
-        theater: string,
-        theater_name: {
-            ja: string,
-            en: string
+        theater: {
+            _id: string,
+            name: {
+                ja: string,
+                en: string
+            },
         },
-        film: string,
-        film_name: {
-            ja: string,
-            en: string
+        film: {
+            _id: string,
+            name: {
+                ja: string,
+                en: string
+            },
+            coa_title_code: string,
+            coa_title_branch_num: string,
         },
-        coa_title_code: string,
-        coa_title_branch_num: string,
         day: string,
         time_start: string,
         time_end: string
@@ -35,6 +42,8 @@ export function findById(id: string) {
             _id: id
         })
         .populate("film", "name minutes copyright coa_title_code coa_title_branch_num")
+        .populate("screen", "name coa_screen_code")
+        .populate("theater", "name")
         .exec((err, performance) => {
             if (err) return reject(err);
             if (!performance) return reject(new Error("Not Found."));
@@ -42,13 +51,8 @@ export function findById(id: string) {
             resolve({
                 _id: performance.get("_id"),
                 screen: performance.get("screen"),
-                screen_name: performance.get("screen_name"),
                 theater: performance.get("theater"),
-                theater_name: performance.get("theater_name"),
-                film: performance.get("film").get("_id"),
-                film_name: performance.get("film").get("name"),
-                coa_title_code: performance.get("film").get("coa_title_code"),
-                coa_title_branch_num: performance.get("film").get("coa_title_branch_num"),
+                film: performance.get("film"),
                 day: performance.get("day"),
                 time_start: performance.get("time_start"),
                 time_end: performance.get("time_end"),

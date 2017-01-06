@@ -63,33 +63,48 @@ export function importByTheaterCode(theaterCode: string) {
                 return new Promise((resolve, reject) => {
                     if (!screen.screen_code) return resolve();
 
-                    let seats = screen.list_seat.map((seat) => {
-                        return {
+                    let sections: Array<{
+                        code: string,
+                        name: {
+                            ja: string,
+                            en: string,
+                        },
+                        seats: Array<{
+                            code: string
+                        }>
+                    }> = [];
+                    let sectionCodes: Array<string> = [];
+                    screen.list_seat.forEach((seat) => {
+                        if (sectionCodes.indexOf(seat.seat_section) < 0) {
+                            sectionCodes.push(seat.seat_section);
+                            sections.push({
+                                code: seat.seat_section,
+                                name: {
+                                    ja: `セクション${seat.seat_section}`,
+                                    en: `section${seat.seat_section}`,
+                                },
+                                seats: []
+                            });
+                        }
+
+                        sections[sectionCodes.indexOf(seat.seat_section)].seats.push({
                             code: seat.seat_num
-                        };
+                        });
                     });
 
-                    // this.logger.debug('updating sponsor...');
+                    console.log('updating screen...');
                     ScreenModel.default.findOneAndUpdate(
                         {
                             _id: `${theaterCode}${screen.screen_code}`
                         },
                         {
                             theater: theaterCode,
+                            coa_screen_code: screen.screen_code,
                             name: {
                                 ja: screen.screen_name,
                                 en: screen.screen_name_eng
                             },
-                            sections: [
-                                {
-                                    code: "0",
-                                    name: {
-                                        ja: "セクション0",
-                                        en: "section0",
-                                    },
-                                    seats: seats
-                                }
-                            ]
+                            sections: sections
                         },
                         {
                             new: true,
@@ -97,7 +112,6 @@ export function importByTheaterCode(theaterCode: string) {
                         },
                         (err) => {
                             console.log('screen updated.', err);
-                            // this.logger.debug('sponsor updated', err);
                             (err) ? reject(err) : resolve();
                         }
                     );
@@ -105,10 +119,8 @@ export function importByTheaterCode(theaterCode: string) {
             });
 
             Promise.all(promises).then(() => {
-                // this.logger.info('promised.');
                 resolveAll();
             }, (err) => {
-                // this.logger.error('promised.', err);
                 rejectAll(err);
             });
         });
