@@ -19,7 +19,7 @@ function publishAccessToken(cb: (err: Error | null) => void): void {
     if (credentials.access_token && Date.parse(credentials.expired_at) > Date.now()) return cb(null);
 
     request.post({
-        url: `${COA_URI}/token/access_toke`,
+        url: `${COA_URI}/token/access_token`,
         form: {
             refresh_token: config.get<string>("coa_api_refresh_token")
         },
@@ -157,6 +157,8 @@ export namespace findScreensByTheaterCodeInterface {
         screen_name_eng: string,
         /** 座席リスト */
         list_seat: Array<{
+            /** 座席セクション */
+            seat_section: string,
             /** 座席番号 */
             seat_num: string,
             /** 特別席フラグ */
@@ -268,6 +270,8 @@ export namespace reserveSeatsTemporarilyInterface {
         time_begin: string,
         /** 予約座席数 */
         // cnt_reserve_seat: number,
+        /** スクリーンコード */
+        screen_code: string,
         /** 予約座席リスト */
         list_seat: Array<{
             /** 座席セクション */
@@ -389,6 +393,8 @@ export namespace getStateReserveSeatInterface {
         title_branch_num: string,
         /** 上映時刻 */
         time_begin: string,
+        /** スクリーンコード */
+        screen_code: string,
     }
     export interface Result {
         /** 予約可能残席数 */
@@ -466,6 +472,8 @@ export namespace countFreeSeatInterface {
                 title_branch_num: string,
                 /** 上映開始時刻(4桁 "HHMM") */
                 time_begin: string,
+                /** スクリーンコード */
+                screen_code: string,
                 /** 予約可能数(パフォーマンスの予約可能座席数) */
                 cnt_reserve_max: number,
                 /** 予約可能残席数(予約可能座席数から仮予約を含む予約数を引いた残席数) */

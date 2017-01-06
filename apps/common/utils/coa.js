@@ -10,7 +10,7 @@ function publishAccessToken(cb) {
     if (credentials.access_token && Date.parse(credentials.expired_at) > Date.now())
         return cb(null);
     request.post({
-        url: `${COA_URI}/token/access_toke`,
+        url: `${COA_URI}/token/access_token`,
         form: {
             refresh_token: config.get("coa_api_refresh_token")
         },
