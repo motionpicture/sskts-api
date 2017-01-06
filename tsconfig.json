@@ -32,10 +32,10 @@
         "pretty": false,
         "removeComments": true,
         "sourceMap": false,
-        "strictNullChecks": false,
+        "strictNullChecks": true,
         "stripInternal": false,
         "suppressExcessPropertyErrors": false,
-        "suppressImplicitAnyIndexErrors": false,
+        "suppressImplicitAnyIndexErrors": true,
         "target": "es6",
         "watch": false
     },

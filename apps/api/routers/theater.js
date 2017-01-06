@@ -5,7 +5,7 @@ const theaterController = require("../controllers/theater");
 router.get("/theater/:code", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         theaterController.findByCode(req.params.code).then((theater) => {
             res.json({
                 success: true,
@@ -23,7 +23,7 @@ router.get("/theater/:code", (req, res, next) => {
 router.get("/theater/:code/import", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         theaterController.importByCode(req.params.code).then(() => {
             res.json({
                 success: true,

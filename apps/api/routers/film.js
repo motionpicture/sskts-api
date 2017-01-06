@@ -5,7 +5,7 @@ const filmController = require("../controllers/film");
 router.get("/film/:id", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         filmController.findById(req.params.id).then((film) => {
             res.json({
                 success: true,

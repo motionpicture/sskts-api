@@ -73,7 +73,7 @@ export function create(owners: Array<string>) {
 /**
  * idとpasswordから取引の有効性確認
  */
-export function isAvailable(id: string, password: string, cb: (err: Error, isValid: boolean) => void) {
+export function isAvailable(id: string, password: string, cb: (err: Error | null, isValid: boolean) => void) {
     TransactionModel.default.findOne({
         _id: id,
         password: password,

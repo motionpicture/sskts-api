@@ -4,6 +4,13 @@ const AssetModel = require("./asset");
 const OwnerModel = require("./owner");
 const PerformanceModel = require("./performance");
 const TransactionModel = require("./transaction");
+exports.GROUP_ASSET = "ASSET";
+exports.GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
+exports.GROUP_GMO = "GMO";
+exports.GROUP_MVTK = "MVTK";
+exports.PROCESS_STATUS_PENDING = "PENDING";
+exports.PROCESS_STATUS_UNDERWAY = "UNDERWAY";
+exports.PROCESS_STATUS_FINISHED = "FINISHED";
 exports.name = "Authorization";
 exports.schema = new mongoose.Schema({
     transaction: {
@@ -116,10 +123,3 @@ exports.schema.pre("save", function (next) {
 });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = mongoose.model(exports.name, exports.schema);
-exports.GROUP_ASSET = "ASSET";
-exports.GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
-exports.GROUP_GMO = "GMO";
-exports.GROUP_MVTK = "MVTK";
-exports.PROCESS_STATUS_PENDING = "PENDING";
-exports.PROCESS_STATUS_UNDERWAY = "UNDERWAY";
-exports.PROCESS_STATUS_FINISHED = "FINISHED";

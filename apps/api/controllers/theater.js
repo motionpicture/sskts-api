@@ -8,6 +8,8 @@ function findByCode(code) {
         }, (err, theater) => {
             if (err)
                 return reject(err);
+            if (!theater)
+                return reject(new Error("not found."));
             resolve({
                 theater_code: theater.get("_id"),
                 theater_name_ja: theater.get("name").ja,
@@ -25,6 +27,8 @@ function importByCode(code) {
         }, (err, theater) => {
             if (err)
                 return reject(err);
+            if (!theater)
+                return reject(new Error("theater not found."));
             TheaterModel.default.findOneAndUpdate({
                 _id: theater.theater_code
             }, {

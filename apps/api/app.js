@@ -55,11 +55,11 @@ app.use((req, res) => {
         message: `not found. [${req.originalUrl}]`
     });
 });
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
     console.error(err);
     res.json({
         success: false,
-        message: `${err.message}. [${req.originalUrl}]`
+        message: `${err.message}`
     });
 });
 module.exports = app;

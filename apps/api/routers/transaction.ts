@@ -7,7 +7,7 @@ import * as AuthorizationController from "../controllers/authorization";
 
 router.get("/transactions", (req, res, next) => {
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         TransactionController.find({}).then((transactions) => {
             res.json({
@@ -26,7 +26,7 @@ router.get("/transactions", (req, res, next) => {
 
 router.post("/transaction/start", (req, res, next) => {
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         // TODO ownersの型チェック
 
@@ -48,7 +48,7 @@ router.post("/transaction/start", (req, res, next) => {
 
 router.post("/transaction/:id/close", authentication4transaction, (req, res, next) => {
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         TransactionController.close(req.params.id).then((transaction) => {
             res.json({
@@ -69,7 +69,7 @@ router.post("/transaction/:id/authorize", authentication4transaction, (req, res,
     // TODO validations
 
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         AuthorizationController.create({
             transaction: req.params.id,
@@ -94,7 +94,7 @@ router.post("/transaction/:id/unauthorize", authentication4transaction, (req, re
     // TODO validations
 
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         AuthorizationController.remove({
             transaction: req.params.id,
@@ -116,7 +116,7 @@ router.post("/transaction/:id/unauthorize", authentication4transaction, (req, re
 
 router.post("/transaction/:id/update", (req, res, next) => {
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         let args = {
             _id: req.params.id,

@@ -6,7 +6,7 @@ router.post("/owner/create", (req, res, next) => {
     req.checkBody("group", "invalid group.").notEmpty();
 
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         ownerController.create(req.body.group).then((owner) => {
             res.json({
@@ -25,7 +25,7 @@ router.post("/owner/create", (req, res, next) => {
 
 router.post("/owner/:id/update", (req, res, next) => {
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         let args = {
             _id: req.params.id,

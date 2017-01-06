@@ -8,6 +8,8 @@ function importByTheaterCode(theaterCode) {
         }, (err, result) => {
             if (err)
                 return rejectAll(err);
+            if (!result)
+                return rejectAll("result not found.");
             let promises = result.list_ticket.map((ticket) => {
                 return new Promise((resolve, reject) => {
                     TicketModel.default.findOneAndUpdate({

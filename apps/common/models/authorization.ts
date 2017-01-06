@@ -4,6 +4,22 @@ import * as OwnerModel from "./owner";
 import * as PerformanceModel from "./performance";
 import * as TransactionModel from "./transaction";
 
+/** 内部資産管理 */
+export var GROUP_ASSET = "ASSET";
+/** COA座席予約資産管理 */
+export var GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
+/** GMO資産管理 */
+export var GROUP_GMO = "GMO";
+/** ムビチケ資産管理 */
+export var GROUP_MVTK = "MVTK";
+
+/** 処理待ち */
+export var PROCESS_STATUS_PENDING = "PENDING";
+/** 処理進行中 */
+export var PROCESS_STATUS_UNDERWAY = "UNDERWAY";
+/** 処理済み */
+export var PROCESS_STATUS_FINISHED = "FINISHED";
+
 /** model name */
 export var name = "Authorization";
 
@@ -133,19 +149,3 @@ schema.pre("save", function(next){
 });
 
 export default mongoose.model(name, schema);
-
-/** 内部資産管理 */
-export var GROUP_ASSET = "ASSET";
-/** COA座席予約資産管理 */
-export var GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
-/** GMO資産管理 */
-export var GROUP_GMO = "GMO";
-/** ムビチケ資産管理 */
-export var GROUP_MVTK = "MVTK";
-
-/** 処理待ち */
-export var PROCESS_STATUS_PENDING = "PENDING";
-/** 処理進行中 */
-export var PROCESS_STATUS_UNDERWAY = "UNDERWAY";
-/** 処理済み */
-export var PROCESS_STATUS_FINISHED = "FINISHED";

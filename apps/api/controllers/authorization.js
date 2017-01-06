@@ -45,7 +45,7 @@ function create4coaSeatReservation(args) {
                 }).then((authorization) => {
                     results.push({
                         success: true,
-                        message: null,
+                        message: "",
                         authorization: authorization,
                     });
                     resolve();
@@ -100,7 +100,7 @@ function create4gmo(args) {
                 }).then((authorization) => {
                     results.push({
                         success: true,
-                        message: null,
+                        message: "",
                         authorization: authorization,
                     });
                     resolve();
@@ -154,7 +154,7 @@ function remove(args) {
                     else {
                         results.push({
                             success: true,
-                            message: null,
+                            message: "",
                             authorization: authorizationId
                         });
                     }

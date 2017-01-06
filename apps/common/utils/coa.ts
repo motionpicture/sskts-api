@@ -14,7 +14,7 @@ let credentials = {
 /**
  * アクセストークンを発行する
  */
-function publishAccessToken(cb: (err: Error) => void): void {
+function publishAccessToken(cb: (err: Error | null) => void): void {
     // アクセストークン有効期限チェック
     if (credentials.access_token && Date.parse(credentials.expired_at) > Date.now()) return cb(null);
 
@@ -55,7 +55,7 @@ export namespace findTheaterInterface {
         /** 施設名称（英） */
         theater_name_kana: string
     }
-    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: Result | null) => void): void {
         publishAccessToken((err) => {
             if (err) return cb(new Error("failed in publishing access token."), null);
 
@@ -119,9 +119,9 @@ export namespace findFilmsByTheaterCodeInterface {
         /** 公演終了予定日 */
         date_end: string
     };
-    export function call(args: Args, cb: (err: Error, results: Array<Result>) => void): void {
+    export function call(args: Args, cb: (err: Error | null, results: Array<Result>) => void): void {
         publishAccessToken((err) => {
-            if (err) return cb(new Error("failed in publishing access token."), null);
+            if (err) return cb(new Error("failed in publishing access token."), []);
 
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/title/`,
@@ -129,10 +129,10 @@ export namespace findFilmsByTheaterCodeInterface {
                 json: true
             }, (error, response, body) => {
                 console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
-                if (error) return cb(error, null);
-                if (typeof body === "string")  return cb(new Error(body), null);
-                if (body.message) return cb(new Error(body.message), null);
-                if (body.status !== 0) return cb(new Error(body.status), null);
+                if (error) return cb(error, []);
+                if (typeof body === "string")  return cb(new Error(body), []);
+                if (body.message) return cb(new Error(body.message), []);
+                if (body.status !== 0) return cb(new Error(body.status), []);
 
                 cb(null, body.list_title);
             });
@@ -171,9 +171,9 @@ export namespace findScreensByTheaterCodeInterface {
             flg_spare: string
         }>
     };
-    export function call(args: Args, cb: (err: Error, results: Array<Result>) => void): void {
+    export function call(args: Args, cb: (err: Error | null, results: Array<Result>) => void): void {
         publishAccessToken((err) => {
-            if (err) return cb(new Error("failed in publishing access token."), null);
+            if (err) return cb(new Error("failed in publishing access token."), []);
 
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/screen/`,
@@ -181,10 +181,10 @@ export namespace findScreensByTheaterCodeInterface {
                 json: true
             }, (error, response, body) => {
                 console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
-                if (error) return cb(error, null);
-                if (typeof body === "string")  return cb(new Error(body), null);
-                if (body.message) return cb(new Error(body.message), null);
-                if (body.status !== 0) return cb(new Error(body.status), null);
+                if (error) return cb(error, []);
+                if (typeof body === "string")  return cb(new Error(body), []);
+                if (body.message) return cb(new Error(body.message), []);
+                if (body.status !== 0) return cb(new Error(body.status), []);
 
                 cb(null, body.list_screen);
             });
@@ -226,9 +226,9 @@ export namespace findPerformancesByTheaterCodeInterface {
         /** サービスデイ名称 */
         name_service_day: string,
     }
-    export function call(args: Args, cb: (err: Error, results: Array<Result>) => void): void {
+    export function call(args: Args, cb: (err: Error | null, results: Array<Result>) => void): void {
         publishAccessToken((err) => {
-            if (err) return cb(new Error("failed in publishing access token."), null);
+            if (err) return cb(new Error("failed in publishing access token."), []);
 
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/schedule/`,
@@ -240,10 +240,10 @@ export namespace findPerformancesByTheaterCodeInterface {
                 }
             }, (error, response, body) => {
                 console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
-                if (error) return cb(error, null);
-                if (typeof body === "string")  return cb(new Error(body), null);
-                if (body.message) return cb(new Error(body.message), null);
-                if (body.status !== 0) return cb(new Error(body.status), null);
+                if (error) return cb(error, []);
+                if (typeof body === "string")  return cb(new Error(body), []);
+                if (body.message) return cb(new Error(body.message), []);
+                if (body.status !== 0) return cb(new Error(body.status), []);
 
                 cb(null, body.list_schedule);
             });
@@ -289,7 +289,7 @@ export namespace reserveSeatsTemporarilyInterface {
             sts_tmp_reserve: string,
         }>
     }
-    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: Result | null) => void): void {
         console.log("reserveSeatsTemporarilyInterface calling...", args);
         publishAccessToken((err) => {
             if (err) return cb(new Error("failed in publishing access token."), null);
@@ -344,10 +344,10 @@ export namespace deleteTmpReserveInterface {
     }
     export interface Result {
     }
-    export function call(args: Args, cb: (err: Error, result: boolean) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: boolean) => void): void {
         console.log("deleteTmpReserveInterface calling...", args);
         publishAccessToken((err) => {
-            if (err) return cb(new Error("failed in publishing access token."), null);
+            if (err) return cb(new Error("failed in publishing access token."), false);
 
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/del_tmp_reserve/`,
@@ -363,10 +363,10 @@ export namespace deleteTmpReserveInterface {
                 useQuerystring: true
             }, (error, response, body) => {
                 console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
-                if (error) return cb(error, null);
-                if (typeof body === "string")  return cb(new Error(body), null);
-                if (body.message) return cb(new Error(body.message), null);
-                if (body.status !== 0) return cb(new Error(body.status), null);
+                if (error) return cb(error, false);
+                if (typeof body === "string")  return cb(new Error(body), false);
+                if (body.message) return cb(new Error(body.message), false);
+                if (body.status !== 0) return cb(new Error(body.status), false);
 
                 cb(null, true);
             });
@@ -406,7 +406,7 @@ export namespace getStateReserveSeatInterface {
             }>
         }>
     }
-    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: Result | null) => void): void {
         console.log("getStateReserveSeat calling...", args);
         publishAccessToken((err) => {
             if (err) return cb(new Error("failed in publishing access token."), null);
@@ -475,7 +475,7 @@ export namespace countFreeSeatInterface {
             cnt_performance: number,
         }>
     }
-    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: Result | null) => void): void {
         console.log("countFreeSeat calling...", args);
         publishAccessToken((err) => {
             if (err) return cb(new Error("failed in publishing access token."), null);
@@ -546,7 +546,7 @@ export namespace salesTicketInterface {
             ticket_note: string,
         }>
     }
-    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: Result | null) => void): void {
         console.log("salesTicket calling...", args);
         publishAccessToken((err) => {
             if (err) return cb(new Error("failed in publishing access token."), null);
@@ -598,7 +598,7 @@ export namespace ticketInterface {
             ticket_name_eng: string,
         }>
     }
-    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: Result | null) => void): void {
         console.log("ticket calling...", args);
         publishAccessToken((err) => {
             if (err) return cb(new Error("failed in publishing access token."), null);
@@ -683,7 +683,7 @@ export namespace updateReserveInterface {
             seat_qrcode: string,
         }>
     }
-    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: Result | null) => void): void {
         console.log("updateReserve calling...", args);
         publishAccessToken((err) => {
             if (err) return cb(new Error("failed in publishing access token."), null);
@@ -741,10 +741,10 @@ export namespace deleteReserveInterface {
     }
     export interface Result {
     }
-    export function call(args: Args, cb: (err: Error, result: boolean) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: boolean) => void): void {
         console.log("deleteReserve calling...", args);
         publishAccessToken((err) => {
-            if (err) return cb(new Error("failed in publishing access token."), null);
+            if (err) return cb(new Error("failed in publishing access token."), false);
 
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/del_reserve/`,
@@ -805,7 +805,7 @@ export namespace stateReserveInterface {
             ticket_count: number,
         }>
     }
-    export function call(args: Args, cb: (err: Error, result: Result) => void): void {
+    export function call(args: Args, cb: (err: Error | null, result: Result | null) => void): void {
         console.log("stateReserve calling...", args);
         publishAccessToken((err) => {
             if (err) return cb(new Error("failed in publishing access token."), null);

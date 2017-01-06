@@ -5,7 +5,7 @@ const screenController = require("../controllers/screen");
 router.get("/screen/:id", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         screenController.findById(req.params.id).then((screen) => {
             res.json({
                 success: true,

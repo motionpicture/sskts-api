@@ -125,11 +125,11 @@ app.use((req, res) => {
 });
 
 // error handlers
-app.use((err: any, req: express.Request, res: express.Response) => {
+app.use((err: any, req: express.Request, res: express.Response, next) => {
     console.error(err);
     res.json({
         success: false,
-        message: `${err.message}. [${req.originalUrl}]`
+        message: `${err.message}`
     });
 });
 

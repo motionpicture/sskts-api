@@ -4,7 +4,7 @@ let router = express.Router();
 import * as theaterController from "../controllers/theater";
 router.get("/theater/:code", (req, res, next) => {
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         theaterController.findByCode(req.params.code).then((theater) => {
             res.json({
@@ -23,7 +23,7 @@ router.get("/theater/:code", (req, res, next) => {
 
 router.get("/theater/:code/import", (req, res, next) => {
     req.getValidationResult().then((result) => {
-        if (!result.isEmpty()) return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
         theaterController.importByCode(req.params.code).then(() => {
             res.json({

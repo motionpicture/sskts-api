@@ -17,6 +17,7 @@ export function findByCode(code: string) {
             _id: code
         }, (err, theater) => {
             if (err) return reject(err);
+            if (!theater) return reject(new Error("not found."));
 
             resolve({
                 theater_code: theater.get("_id"),
@@ -37,6 +38,7 @@ export function importByCode(code: string) {
             theater_code: code
         }, (err, theater) => {
             if (err) return reject(err);
+            if (!theater) return reject(new Error("theater not found."));
 
             // あれば更新、なければ追加
             // this.logger.debug('updating sponsor...');

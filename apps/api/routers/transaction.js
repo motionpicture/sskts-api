@@ -7,7 +7,7 @@ const AuthorizationController = require("../controllers/authorization");
 router.get("/transactions", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         TransactionController.find({}).then((transactions) => {
             res.json({
                 success: true,
@@ -25,7 +25,7 @@ router.get("/transactions", (req, res, next) => {
 router.post("/transaction/start", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         TransactionController.create(req.body.owners).then((transaction) => {
             res.json({
                 success: true,
@@ -43,7 +43,7 @@ router.post("/transaction/start", (req, res, next) => {
 router.post("/transaction/:id/close", authentication4transaction_1.default, (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         TransactionController.close(req.params.id).then((transaction) => {
             res.json({
                 success: true,
@@ -61,7 +61,7 @@ router.post("/transaction/:id/close", authentication4transaction_1.default, (req
 router.post("/transaction/:id/authorize", authentication4transaction_1.default, (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         AuthorizationController.create({
             transaction: req.params.id,
             group: req.body.authorization_group,
@@ -83,7 +83,7 @@ router.post("/transaction/:id/authorize", authentication4transaction_1.default, 
 router.post("/transaction/:id/unauthorize", authentication4transaction_1.default, (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         AuthorizationController.remove({
             transaction: req.params.id,
             authorizations: req.body.authorizations,
@@ -104,7 +104,7 @@ router.post("/transaction/:id/unauthorize", authentication4transaction_1.default
 router.post("/transaction/:id/update", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         let args = {
             _id: req.params.id,
             expired_at: (req.body.expired_at) ? new Date(parseInt(req.body.expired_at) * 1000) : undefined,

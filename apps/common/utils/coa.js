@@ -65,7 +65,7 @@ var findFilmsByTheaterCodeInterface;
     function call(args, cb) {
         publishAccessToken((err) => {
             if (err)
-                return cb(new Error("failed in publishing access token."), null);
+                return cb(new Error("failed in publishing access token."), []);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/title/`,
                 auth: { bearer: credentials.access_token },
@@ -73,13 +73,13 @@ var findFilmsByTheaterCodeInterface;
             }, (error, response, body) => {
                 console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
-                    return cb(error, null);
+                    return cb(error, []);
                 if (typeof body === "string")
-                    return cb(new Error(body), null);
+                    return cb(new Error(body), []);
                 if (body.message)
-                    return cb(new Error(body.message), null);
+                    return cb(new Error(body.message), []);
                 if (body.status !== 0)
-                    return cb(new Error(body.status), null);
+                    return cb(new Error(body.status), []);
                 cb(null, body.list_title);
             });
         });
@@ -92,7 +92,7 @@ var findScreensByTheaterCodeInterface;
     function call(args, cb) {
         publishAccessToken((err) => {
             if (err)
-                return cb(new Error("failed in publishing access token."), null);
+                return cb(new Error("failed in publishing access token."), []);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/screen/`,
                 auth: { bearer: credentials.access_token },
@@ -100,13 +100,13 @@ var findScreensByTheaterCodeInterface;
             }, (error, response, body) => {
                 console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
-                    return cb(error, null);
+                    return cb(error, []);
                 if (typeof body === "string")
-                    return cb(new Error(body), null);
+                    return cb(new Error(body), []);
                 if (body.message)
-                    return cb(new Error(body.message), null);
+                    return cb(new Error(body.message), []);
                 if (body.status !== 0)
-                    return cb(new Error(body.status), null);
+                    return cb(new Error(body.status), []);
                 cb(null, body.list_screen);
             });
         });
@@ -118,7 +118,7 @@ var findPerformancesByTheaterCodeInterface;
     function call(args, cb) {
         publishAccessToken((err) => {
             if (err)
-                return cb(new Error("failed in publishing access token."), null);
+                return cb(new Error("failed in publishing access token."), []);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/schedule/`,
                 auth: { bearer: credentials.access_token },
@@ -130,13 +130,13 @@ var findPerformancesByTheaterCodeInterface;
             }, (error, response, body) => {
                 console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
-                    return cb(error, null);
+                    return cb(error, []);
                 if (typeof body === "string")
-                    return cb(new Error(body), null);
+                    return cb(new Error(body), []);
                 if (body.message)
-                    return cb(new Error(body.message), null);
+                    return cb(new Error(body.message), []);
                 if (body.status !== 0)
-                    return cb(new Error(body.status), null);
+                    return cb(new Error(body.status), []);
                 cb(null, body.list_schedule);
             });
         });
@@ -189,7 +189,7 @@ var deleteTmpReserveInterface;
         console.log("deleteTmpReserveInterface calling...", args);
         publishAccessToken((err) => {
             if (err)
-                return cb(new Error("failed in publishing access token."), null);
+                return cb(new Error("failed in publishing access token."), false);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/del_tmp_reserve/`,
                 auth: { bearer: credentials.access_token },
@@ -205,13 +205,13 @@ var deleteTmpReserveInterface;
             }, (error, response, body) => {
                 console.log("request processed.", error, (response) ? response.statusCode : undefined, body);
                 if (error)
-                    return cb(error, null);
+                    return cb(error, false);
                 if (typeof body === "string")
-                    return cb(new Error(body), null);
+                    return cb(new Error(body), false);
                 if (body.message)
-                    return cb(new Error(body.message), null);
+                    return cb(new Error(body.message), false);
                 if (body.status !== 0)
-                    return cb(new Error(body.status), null);
+                    return cb(new Error(body.status), false);
                 cb(null, true);
             });
         });
@@ -396,7 +396,7 @@ var deleteReserveInterface;
         console.log("deleteReserve calling...", args);
         publishAccessToken((err) => {
             if (err)
-                return cb(new Error("failed in publishing access token."), null);
+                return cb(new Error("failed in publishing access token."), false);
             request.get({
                 url: `${COA_URI}/api/v1/theater/${args.theater_code}/del_reserve/`,
                 auth: { bearer: credentials.access_token },

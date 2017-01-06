@@ -6,17 +6,16 @@ exports.default = (req, res, next) => {
     req.checkBody("password", "invalid transaction password.").notEmpty().isAlphanumeric();
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+            return next(new Error(result.array()[0].msg));
         TransactionController.isAvailable(req.params.id, req.body.password, (err) => {
             if (err) {
                 res.json({
                     success: false,
                     message: err.message
                 });
+                return;
             }
-            else {
-                next();
-            }
+            next();
         });
     });
 };
