@@ -57,9 +57,12 @@ app.use((req, res) => {
 });
 app.use((err, req, res, next) => {
     console.error(err);
+    if (res.headersSent)
+        return next(err);
     res.json({
         success: false,
-        message: `${err.message}`
+        message: `${err.message}`,
+        url: `${req.url}`,
     });
 });
 module.exports = app;

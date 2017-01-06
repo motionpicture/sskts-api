@@ -125,11 +125,14 @@ app.use((req, res) => {
 });
 
 // error handlers
-app.use((err: any, req: express.Request, res: express.Response, next) => {
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error(err);
+    if (res.headersSent) return next(err);
+
     res.json({
         success: false,
-        message: `${err.message}`
+        message: `${err.message}`,
+        url: `${req.url}`,
     });
 });
 
