@@ -7,15 +7,25 @@ exports.name = "Transaction";
  * 取引スキーマ
  */
 exports.schema = new mongoose.Schema({
-    password: String,
-    expired_at: Date,
-    status: String,
-    payment_no: String,
+    password: {
+        type: String,
+        required: true,
+    },
+    expired_at: {
+        type: Date,
+        required: true,
+    },
+    status: {
+        type: String,
+        required: true,
+    },
     owners: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: OwnerModel.name,
             required: true
-        }]
+        }],
+    access_id: String,
+    access_pass: String,
 }, {
     collection: "transactions",
     timestamps: {

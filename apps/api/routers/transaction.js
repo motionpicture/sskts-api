@@ -20,7 +20,7 @@ router.get("/transactions", (req, res, next) => {
         });
     });
 });
-router.all("/transaction/start", (req, res, next) => {
+router.post("/transaction/start", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
@@ -40,25 +40,7 @@ router.all("/transaction/start", (req, res, next) => {
         });
     });
 });
-router.all("/transaction/:id/publishPaymentNo", authentication4transaction_1.default, (req, res, next) => {
-    req.getValidationResult().then((result) => {
-        if (!result.isEmpty())
-            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
-        TransactionController.publishPaymentNo(req.params.id).then((paymentNo) => {
-            res.json({
-                success: true,
-                message: null,
-                payment_no: paymentNo
-            });
-        }, (err) => {
-            res.json({
-                success: false,
-                message: err.message
-            });
-        });
-    });
-});
-router.all("/transaction/:id/close", authentication4transaction_1.default, (req, res, next) => {
+router.post("/transaction/:id/close", authentication4transaction_1.default, (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
@@ -76,7 +58,7 @@ router.all("/transaction/:id/close", authentication4transaction_1.default, (req,
         });
     });
 });
-router.all("/transaction/:id/authorize", authentication4transaction_1.default, (req, res, next) => {
+router.post("/transaction/:id/authorize", authentication4transaction_1.default, (req, res, next) => {
     // TODO validations
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
@@ -99,7 +81,7 @@ router.all("/transaction/:id/authorize", authentication4transaction_1.default, (
         });
     });
 });
-router.all("/transaction/:id/unauthorize", authentication4transaction_1.default, (req, res, next) => {
+router.post("/transaction/:id/unauthorize", authentication4transaction_1.default, (req, res, next) => {
     // TODO validations
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
@@ -112,6 +94,30 @@ router.all("/transaction/:id/unauthorize", authentication4transaction_1.default,
                 success: true,
                 message: null,
                 results: results
+            });
+        }, (err) => {
+            res.json({
+                success: false,
+                message: err.message
+            });
+        });
+    });
+});
+router.post("/transaction/:id/update", (req, res, next) => {
+    req.getValidationResult().then((result) => {
+        if (!result.isEmpty())
+            return next(new Error(result.useFirstErrorOnly().array().pop().msg));
+        let args = {
+            _id: req.params.id,
+            expired_at: (req.body.expired_at) ? new Date(parseInt(req.body.expired_at) * 1000) : undefined,
+            access_id: (req.body.access_id) ? req.body.access_id : undefined,
+            access_pass: (req.body.access_pass) ? req.body.access_pass : undefined,
+        };
+        TransactionController.update(args).then((transaction) => {
+            res.json({
+                success: true,
+                message: null,
+                transaction: transaction
             });
         }, (err) => {
             res.json({

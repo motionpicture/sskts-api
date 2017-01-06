@@ -118,16 +118,28 @@ export function close(id: string) {
 }
 
 /**
- * 購入番号発行
+ * 取引更新
  */
-export function publishPaymentNo(id: string) {
-    return new Promise((resolve: (result: string) => void, reject: (err: Error) => void) => {
-        // COA本予約で購入番号取得
-        // 取引に番号を登録
+export function update(args: {
+    _id: string,
+    expired_at?: Date,
+    access_id?: string,
+    access_pass?: string,
+}) {
+    interface Result {
+        _id: string,
+        expired_at: string,
+        status: string,
+    }
+    return new Promise((resolve: (result: Result) => void, reject: (err: Error) => void) => {
         TransactionModel.default.findOneAndUpdate({
-            _id: id,
+            _id: args._id
         }, {
-            $set: {payment_no: "12345"}
+            $set: {
+                expired_at: args.expired_at,
+                access_id: args.access_id,
+                access_pass: args.access_pass,
+            }
         }, {
             new: true,
             upsert: false
@@ -135,7 +147,11 @@ export function publishPaymentNo(id: string) {
             if (err) return reject(err);
             if (!transaction) return reject(new Error("transaction not found."));
 
-            resolve("12345");
+            resolve({
+                _id: transaction.get("_id"),
+                expired_at: transaction.get("expired_at"),
+                status: transaction.get("status"),
+            });
         }));
     });
 }

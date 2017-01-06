@@ -1,4 +1,5 @@
 import request = require("request");
+import moment = require("moment");
 
 let options: request.Options;
 
@@ -27,53 +28,53 @@ let options: request.Options;
 //     json: true
 // };
 
-options = {
-    url: "http://localhost:8080/transaction/586d8cc2fe0c971cd4b714f2/authorize",
-    body: {
-        password: "password",
-        authorization_group: "COA_SEAT_RESERVATION",
-        authorizations: [
-            {
-                coa_tmp_reserve_num: "999",
-                performance: "001201701018513021010",
-                section: "0",
-                seat_code: "HC",
-                ticket_code: "10",
-                ticket_name_ja: "一般",
-                ticket_name_en: "",
-                ticket_name_kana: "",
-                std_price: 1000,
-                add_price: 200,
-                dis_price: 0,
-                price: 1200,
-            },
-            {
-                coa_tmp_reserve_num: "999",
-                performance: "001201701018513021010",
-                section: "0",
-                seat_code: "Ｃ－１０",
-                ticket_code: "10",
-                ticket_name_ja: "一般",
-                ticket_name_en: "",
-                ticket_name_kana: "",
-                std_price: 1000,
-                add_price: 200,
-                dis_price: 0,
-                price: 1200,
-            }
-        ],
-    },
-    json: true
-};
+// options = {
+//     url: "http://localhost:8080/transaction/586d8cc2fe0c971cd4b714f2/authorize",
+//     body: {
+//         password: "password",
+//         authorization_group: "COA_SEAT_RESERVATION",
+//         authorizations: [
+//             {
+//                 coa_tmp_reserve_num: "999",
+//                 performance: "001201701018513021010",
+//                 section: "0",
+//                 seat_code: "HC",
+//                 ticket_code: "10",
+//                 ticket_name_ja: "一般",
+//                 ticket_name_en: "",
+//                 ticket_name_kana: "",
+//                 std_price: 1000,
+//                 add_price: 200,
+//                 dis_price: 0,
+//                 price: 1200,
+//             },
+//             {
+//                 coa_tmp_reserve_num: "999",
+//                 performance: "001201701018513021010",
+//                 section: "0",
+//                 seat_code: "Ｃ－１０",
+//                 ticket_code: "10",
+//                 ticket_name_ja: "一般",
+//                 ticket_name_en: "",
+//                 ticket_name_kana: "",
+//                 std_price: 1000,
+//                 add_price: 200,
+//                 dis_price: 0,
+//                 price: 1200,
+//             }
+//         ],
+//     },
+//     json: true
+// };
 
-options = {
-    url: "http://localhost:8080/transaction/586d8cc2fe0c971cd4b714f2/unauthorize",
-    body: {
-        password: "password",
-        authorizations: ["586d9190ffe1bd0f9c2281cb", "586d9190ffe1bd0f9c2281cc"],
-    },
-    json: true
-};
+// options = {
+//     url: "http://localhost:8080/transaction/586d8cc2fe0c971cd4b714f2/unauthorize",
+//     body: {
+//         password: "password",
+//         authorizations: ["586d9190ffe1bd0f9c2281cb", "586d9190ffe1bd0f9c2281cc"],
+//     },
+//     json: true
+// };
 
 // options = {
 //     url: "http://localhost:8080/transaction/586c8710c4dfe7189814a630/close",
@@ -82,6 +83,15 @@ options = {
 //     },
 //     json: true
 // };
+
+options = {
+    url: "http://localhost:8080/transaction/586ee23af94ed12254c284fd/update",
+    body: {
+        password: "password",
+        expired_at: moment().add(+30, 'minutes').unix()
+    },
+    json: true
+};
 
 request.post(options, (error, response, body) => {
     console.log(body);

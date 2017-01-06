@@ -21,7 +21,7 @@ router.post("/owner/create", (req, res, next) => {
         });
     });
 });
-router.all("/owner/:id/update", (req, res, next) => {
+router.post("/owner/:id/update", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
             return next(new Error(result.useFirstErrorOnly().array().pop().msg));
