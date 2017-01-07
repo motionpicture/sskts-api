@@ -2,7 +2,7 @@
 let startTime = process.hrtime();
 const app = require("./apps/api/app");
 const http = require("http");
-let port = normalizePort(process.env.npm_config_port);
+let port = normalizePort(process.env.PORT || process.env.npm_config_port);
 app.set("port", port);
 let server = http.createServer(app);
 server.listen(port);
