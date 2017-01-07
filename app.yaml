@@ -25,3 +25,4 @@ skip_files:
 
 env_variables:
   NODE_ENV: 'dev'
+  NPM_TOKEN: '730c4855-ef65-4901-a8ac-d26c5ba117c9'
