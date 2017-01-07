@@ -31,6 +31,11 @@ i18n.configure({
 app.use(i18n.init);
 let MONGOLAB_URI = config.get("mongolab_uri");
 mongoose.connect(MONGOLAB_URI, {});
+const COA = require("@motionpicture/coa-service");
+COA.initialize({
+    endpoint: config.get("coa_api_endpoint"),
+    refresh_token: config.get("coa_api_refresh_token")
+});
 const dev_1 = require("./routers/dev");
 const film_1 = require("./routers/film");
 const performance_1 = require("./routers/performance");

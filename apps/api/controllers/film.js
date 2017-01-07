@@ -1,6 +1,6 @@
 "use strict";
 const FilmModel = require("../../common/models/film");
-const COA = require("../../common/utils/coa");
+const COA = require("@motionpicture/coa-service");
 function findById(id) {
     return new Promise((resolve, reject) => {
         FilmModel.default.findOne({

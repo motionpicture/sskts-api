@@ -8,6 +8,11 @@ const TicketController = require("../apps/api/controllers/ticket");
 const config = require("config");
 const mongoose = require("mongoose");
 let MONGOLAB_URI = config.get("mongolab_uri");
+const COA = require("@motionpicture/coa-service");
+COA.initialize({
+    endpoint: config.get("coa_api_endpoint"),
+    refresh_token: config.get("coa_api_refresh_token")
+});
 program
     .version("0.0.1");
 program

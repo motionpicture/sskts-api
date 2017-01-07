@@ -96,6 +96,16 @@ mongoose.connect(MONGOLAB_URI, {
 //     });
 // }
 
+
+
+import COA = require("@motionpicture/coa-service");
+COA.initialize({
+    endpoint: config.get<string>("coa_api_endpoint"),
+    refresh_token: config.get<string>("coa_api_refresh_token")
+});
+
+
+
 // routers
 import devRouter from "./routers/dev";
 import filmRouter from "./routers/film";

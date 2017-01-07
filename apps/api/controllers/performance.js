@@ -1,5 +1,5 @@
 "use strict";
-const COA = require("../../common/utils/coa");
+const COA = require("@motionpicture/coa-service");
 const PerformanceModel = require("../../common/models/performance");
 const ScreenModel = require("../../common/models/screen");
 function findById(id) {
@@ -120,6 +120,8 @@ function importSeatAvailability(theaterCode, start, end) {
         }, (err, result) => {
             if (err)
                 return reject(err);
+            if (!result)
+                return reject(new Error("result not found."));
             resolve(result);
         });
     });

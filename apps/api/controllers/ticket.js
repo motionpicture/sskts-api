@@ -1,5 +1,5 @@
 "use strict";
-const COA = require("../../common/utils/coa");
+const COA = require("@motionpicture/coa-service");
 const TicketModel = require("../../common/models/ticket");
 function importByTheaterCode(theaterCode) {
     return new Promise((resolveAll, rejectAll) => {

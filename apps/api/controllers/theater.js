@@ -1,5 +1,5 @@
 "use strict";
-const COA = require("../../common/utils/coa");
+const COA = require("@motionpicture/coa-service");
 const TheaterModel = require("../../common/models/theater");
 function findByCode(code) {
     return new Promise((resolve, reject) => {

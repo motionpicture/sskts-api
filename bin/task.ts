@@ -11,6 +11,14 @@ let MONGOLAB_URI = config.get<string>("mongolab_uri");
 
 // let env = process.env.NODE_ENV || "dev";
 
+
+import COA = require("@motionpicture/coa-service");
+COA.initialize({
+    endpoint: config.get<string>("coa_api_endpoint"),
+    refresh_token: config.get<string>("coa_api_refresh_token")
+});
+
+
 program
     .version("0.0.1")
 

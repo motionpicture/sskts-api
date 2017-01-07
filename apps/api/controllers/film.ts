@@ -1,5 +1,5 @@
 import * as FilmModel from "../../common/models/film";
-import * as COA from "../../common/utils/coa";
+import COA = require("@motionpicture/coa-service");
 
 /**
  * 作品詳細

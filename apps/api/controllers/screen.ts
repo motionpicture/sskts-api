@@ -1,4 +1,4 @@
-import * as COA from "../../common/utils/coa";
+import COA = require("@motionpicture/coa-service");
 import * as ScreenModel from "../../common/models/screen";
 
 /**

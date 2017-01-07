@@ -1,5 +1,5 @@
 "use strict";
-const COA = require("../../common/utils/coa");
+const COA = require("@motionpicture/coa-service");
 const ScreenModel = require("../../common/models/screen");
 function findById(id) {
     return new Promise((resolve, reject) => {

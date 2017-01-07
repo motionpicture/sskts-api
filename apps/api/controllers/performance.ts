@@ -1,4 +1,4 @@
-import * as COA from "../../common/utils/coa";
+import COA = require("@motionpicture/coa-service");
 import * as PerformanceModel from "../../common/models/performance";
 import * as ScreenModel from "../../common/models/screen";
 
@@ -197,6 +197,7 @@ export function importSeatAvailability(theaterCode: string, start: string, end: 
             end: end,
         }, (err, result) => {
             if (err) return reject(err);
+            if (!result) return reject(new Error("result not found."));
 
             // TODO どこかにインポートする
 
