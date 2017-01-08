@@ -105,6 +105,12 @@ COA.initialize({
 });
 
 
+import GMO = require("@motionpicture/gmo-service")
+GMO.initialize({
+    endpoint: "https://pt01.mul-pay.jp",
+});
+
+
 
 // routers
 import devRouter from "./routers/dev";
@@ -130,19 +136,18 @@ app.use("/", [
 app.use((req, res) => {
     res.json({
         success: false,
-        message: `not found. [${req.originalUrl}]`
+        message: `router for [${req.originalUrl}] not found.`
     });
 });
 
 // error handlers
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(err);
+    console.error(req.originalUrl, req.query, req.params, req.body, err);
     if (res.headersSent) return next(err);
 
     res.json({
         success: false,
-        message: `${err.message}`,
-        url: `${req.url}`,
+        message: `${err.message}`
     });
 });
 

@@ -35,14 +35,13 @@
         "strictNullChecks": true,
         "stripInternal": false,
         "suppressExcessPropertyErrors": false,
-        "suppressImplicitAnyIndexErrors": true,
+        "suppressImplicitAnyIndexErrors": false,
         "target": "es6",
         "watch": false
     },
     "exclude": [
         "config",
         "data",
-        "definitions",
         "locales",
         "logs",
         "node_modules",

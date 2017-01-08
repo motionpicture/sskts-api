@@ -36,6 +36,10 @@ COA.initialize({
     endpoint: config.get("coa_api_endpoint"),
     refresh_token: config.get("coa_api_refresh_token")
 });
+const GMO = require("@motionpicture/gmo-service");
+GMO.initialize({
+    endpoint: "https://pt01.mul-pay.jp",
+});
 const dev_1 = require("./routers/dev");
 const film_1 = require("./routers/film");
 const performance_1 = require("./routers/performance");
@@ -57,17 +61,16 @@ app.use("/", [
 app.use((req, res) => {
     res.json({
         success: false,
-        message: `not found. [${req.originalUrl}]`
+        message: `router for [${req.originalUrl}] not found.`
     });
 });
 app.use((err, req, res, next) => {
-    console.error(err);
+    console.error(req.originalUrl, req.query, req.params, req.body, err);
     if (res.headersSent)
         return next(err);
     res.json({
         success: false,
-        message: `${err.message}`,
-        url: `${req.url}`,
+        message: `${err.message}`
     });
 });
 module.exports = app;
