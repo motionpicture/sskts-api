@@ -4,7 +4,7 @@ import * as screenModel from "./screen";
 import * as filmModel from "./film";
 
 /** model name */
-export var name = "Performance";
+export const NAME = "Performance";
 
 /**
  * パフォーマンススキーマ
@@ -16,7 +16,7 @@ export var schema = new mongoose.Schema({
     },
     theater: { 
         type: String,
-        ref: theaterModel.name,
+        ref: theaterModel.NAME,
         required: true
     },
     theater_name: {
@@ -25,7 +25,7 @@ export var schema = new mongoose.Schema({
     },
     screen: { 
         type: String,
-        ref: screenModel.name,
+        ref: screenModel.NAME,
         required: true
     },
     screen_name: {
@@ -34,7 +34,7 @@ export var schema = new mongoose.Schema({
     },
     film: { 
         type: String,
-        ref: filmModel.name,
+        ref: filmModel.NAME,
         required: true
     },
     film_name: {
@@ -97,4 +97,4 @@ schema.index(
     }
 );
 
-export default mongoose.model(name, schema);
+export default mongoose.model(NAME, schema);

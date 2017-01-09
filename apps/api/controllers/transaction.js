@@ -24,7 +24,7 @@ function create(owners) {
         TransactionModel.default.create({
             password: password,
             expired_at: moment().add(+30, 'minutes'),
-            status: TransactionModel.STATUS_PROCSSING,
+            status: 0,
             owners: owners
         }).then((transaction) => {
             resolve({
@@ -44,7 +44,7 @@ function isAvailable(id, password, cb) {
     TransactionModel.default.findOne({
         _id: id,
         password: password,
-        status: TransactionModel.STATUS_PROCSSING,
+        status: 0,
     }, "expired_at", (err, transaction) => {
         if (err)
             return cb(err, false);
@@ -61,7 +61,7 @@ function close(id) {
         TransactionModel.default.findOneAndUpdate({
             _id: id
         }, {
-            $set: { status: TransactionModel.STATUS_CLOSED }
+            $set: { status: 1 }
         }, {
             new: true,
             upsert: false

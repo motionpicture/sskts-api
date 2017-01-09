@@ -2,20 +2,20 @@
 const mongoose = require("mongoose");
 const OwnerModel = require("./owner");
 const TransactionModel = require("./transaction");
-exports.name = "Asset";
+exports.NAME = "Asset";
 exports.schema = new mongoose.Schema({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.name,
+        ref: OwnerModel.NAME,
         required: true
     },
     transactions: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: TransactionModel.name
+            ref: TransactionModel.NAME
         }
     ],
-    group: String,
+    group: Number,
     price: Number,
 }, {
     collection: "assets",
@@ -25,5 +25,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model(exports.name, exports.schema);
-exports.GROUP_SEAT_RESERVATION = "SEAT_RESERVATION";
+exports.default = mongoose.model(exports.NAME, exports.schema);

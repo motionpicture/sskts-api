@@ -4,7 +4,7 @@ export function create(args: {
     /** 取引ID */
     transaction: string,
     /** 承認グループ */
-    group: string,
+    group: number,
     /** 承認リスト */
     authorizations: Array<any>
 }) {
@@ -16,7 +16,7 @@ export function create(args: {
 
     return new Promise((resolve: (results: Array<Result>) => void, reject: (err: Error) => void) => {
         switch (args.group) {
-            case AuthorizationModel.GROUP_COA_SEAT_RESERVATION:
+            case AuthorizationModel.GROUP.COA_SEAT_RESERVATION:
                 create4coaSeatReservation({
                     transaction: args.transaction,
                     authorizations: args.authorizations,
@@ -176,7 +176,7 @@ export function create4coaSeatReservation(args: {
                     add_price: authorizationArg.add_price,
                     dis_price: authorizationArg.dis_price,
                     price: authorizationArg.price,
-                    group: AuthorizationModel.GROUP_COA_SEAT_RESERVATION,
+                    group: AuthorizationModel.GROUP.COA_SEAT_RESERVATION,
                     owner: "5868e16789cc75249cdbfa4b", // TODO 運営者ID管理
                     active: true,
                 }).then((authorization) => {
@@ -269,7 +269,7 @@ export function create4gmo(args: {
                     gmo_payment_term: authorizationArg.gmo_payment_term,
                     price: authorizationArg.price,
                     owner: authorizationArg.owner,
-                    group: AuthorizationModel.GROUP_GMO,
+                    group: AuthorizationModel.GROUP.GMO,
                     active: true,
                 }).then((authorization) => {
                     results.push({

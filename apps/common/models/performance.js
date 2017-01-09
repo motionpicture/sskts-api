@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const theaterModel = require("./theater");
 const screenModel = require("./screen");
 const filmModel = require("./film");
-exports.name = "Performance";
+exports.NAME = "Performance";
 exports.schema = new mongoose.Schema({
     _id: {
         type: String,
@@ -11,7 +11,7 @@ exports.schema = new mongoose.Schema({
     },
     theater: {
         type: String,
-        ref: theaterModel.name,
+        ref: theaterModel.NAME,
         required: true
     },
     theater_name: {
@@ -20,7 +20,7 @@ exports.schema = new mongoose.Schema({
     },
     screen: {
         type: String,
-        ref: screenModel.name,
+        ref: screenModel.NAME,
         required: true
     },
     screen_name: {
@@ -29,7 +29,7 @@ exports.schema = new mongoose.Schema({
     },
     film: {
         type: String,
-        ref: filmModel.name,
+        ref: filmModel.NAME,
         required: true
     },
     film_name: {
@@ -53,4 +53,4 @@ exports.schema.index({
     time_start: 1
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model(exports.name, exports.schema);
+exports.default = mongoose.model(exports.NAME, exports.schema);

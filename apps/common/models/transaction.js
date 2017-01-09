@@ -1,7 +1,7 @@
 "use strict";
 const mongoose = require("mongoose");
 const OwnerModel = require("./owner");
-exports.name = "Transaction";
+exports.NAME = "Transaction";
 exports.schema = new mongoose.Schema({
     password: {
         type: String,
@@ -12,12 +12,12 @@ exports.schema = new mongoose.Schema({
         required: true,
     },
     status: {
-        type: String,
+        type: Number,
         required: true,
     },
     owners: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: OwnerModel.name,
+            ref: OwnerModel.NAME,
             required: true
         }],
     access_id: String,
@@ -30,8 +30,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model(exports.name, exports.schema);
-exports.STATUS_PROCSSING = "PROCESSING";
-exports.STATUS_CLOSED = "CLOSED";
-exports.STATUS_EXPIRED = "EXPIRED";
-exports.STATUS_CANCELED = "CANCELED";
+exports.default = mongoose.model(exports.NAME, exports.schema);

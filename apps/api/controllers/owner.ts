@@ -3,7 +3,7 @@ import * as OwnerModel from "../../common/models/owner";
 /**
  * 所有者作成
  */
-export function create(group: string) {
+export function create(group: number) {
     interface owner {
         _id: string,
         group: string,

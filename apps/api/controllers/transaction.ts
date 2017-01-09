@@ -54,7 +54,7 @@ export function create(owners: Array<string>) {
         TransactionModel.default.create({
             password: password,
             expired_at: moment().add(+30, 'minutes'),
-            status: TransactionModel.STATUS_PROCSSING,
+            status: TransactionModel.STATUS.PROCESSING,
             owners: owners
         }).then((transaction) => {
             resolve({
@@ -77,7 +77,7 @@ export function isAvailable(id: string, password: string, cb: (err: Error | null
     TransactionModel.default.findOne({
         _id: id,
         password: password,
-        status: TransactionModel.STATUS_PROCSSING,
+        status: TransactionModel.STATUS.PROCESSING,
     }, "expired_at", (err, transaction) => {
         if (err) return cb(err, false);
         if (!transaction) return cb(new Error("transaction for a given id and password not found."), false);
@@ -100,7 +100,7 @@ export function close(id: string) {
         TransactionModel.default.findOneAndUpdate({
             _id: id
         }, {
-            $set: {status: TransactionModel.STATUS_CLOSED}
+            $set: {status: TransactionModel.STATUS.CLOSED}
         }, {
             new: true,
             upsert: false

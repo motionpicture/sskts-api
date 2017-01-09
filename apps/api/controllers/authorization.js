@@ -3,7 +3,7 @@ const AuthorizationModel = require("../../common/models/authorization");
 function create(args) {
     return new Promise((resolve, reject) => {
         switch (args.group) {
-            case AuthorizationModel.GROUP_COA_SEAT_RESERVATION:
+            case 2:
                 create4coaSeatReservation({
                     transaction: args.transaction,
                     authorizations: args.authorizations,
@@ -39,7 +39,7 @@ function create4coaSeatReservation(args) {
                     add_price: authorizationArg.add_price,
                     dis_price: authorizationArg.dis_price,
                     price: authorizationArg.price,
-                    group: AuthorizationModel.GROUP_COA_SEAT_RESERVATION,
+                    group: 2,
                     owner: "5868e16789cc75249cdbfa4b",
                     active: true,
                 }).then((authorization) => {
@@ -95,7 +95,7 @@ function create4gmo(args) {
                     gmo_payment_term: authorizationArg.gmo_payment_term,
                     price: authorizationArg.price,
                     owner: authorizationArg.owner,
-                    group: AuthorizationModel.GROUP_GMO,
+                    group: 3,
                     active: true,
                 }).then((authorization) => {
                     results.push({

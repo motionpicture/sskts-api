@@ -4,24 +4,28 @@ import * as OwnerModel from "./owner";
 import * as PerformanceModel from "./performance";
 import * as TransactionModel from "./transaction";
 
-/** 内部資産管理 */
-export var GROUP_ASSET = "ASSET";
-/** COA座席予約資産管理 */
-export var GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
-/** GMO資産管理 */
-export var GROUP_GMO = "GMO";
-/** ムビチケ資産管理 */
-export var GROUP_MVTK = "MVTK";
+export const enum GROUP {
+    /** 内部資産管理 */
+    ASSET = 1,
+    /** COA座席予約資産管理 */
+    COA_SEAT_RESERVATION = 2,
+    /** GMO資産管理 */
+    GMO = 3,
+    /** ムビチケ資産管理 */
+    MVTK = 4,
+}
 
-/** 処理待ち */
-export var PROCESS_STATUS_PENDING = "PENDING";
-/** 処理進行中 */
-export var PROCESS_STATUS_UNDERWAY = "UNDERWAY";
-/** 処理済み */
-export var PROCESS_STATUS_FINISHED = "FINISHED";
+export const enum PROCESS_STATUS {
+    /** 処理待ち */
+    PENDING = 0,
+    /** 処理進行中 */
+    UNDERWAY = 1,
+    /** 処理済み */
+    FINISHED = 2,
+}
 
 /** model name */
-export var name = "Authorization";
+export const NAME = "Authorization";
 
 /**
  * 承認スキーマ
@@ -29,12 +33,12 @@ export var name = "Authorization";
 export var schema = new mongoose.Schema({
     transaction: { // 取引
         type: mongoose.Schema.Types.ObjectId,
-        ref: TransactionModel.name,
+        ref: TransactionModel.NAME,
         required: true
     },
     owner: { // 所有者
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.name,
+        ref: OwnerModel.NAME,
         required: true
     },
     active: { // 有効な承認かどうか
@@ -46,13 +50,13 @@ export var schema = new mongoose.Schema({
         required: true
     },
     group: { // 承認グループ
-        type: String,
+        type: Number,
         required: true,
     },
     process_status: { // TODO 処理ステータス管理
-        type: String,
+        type: Number,
         required: true,
-        default: PROCESS_STATUS_PENDING
+        default: PROCESS_STATUS.PENDING
     },
 
 
@@ -60,7 +64,7 @@ export var schema = new mongoose.Schema({
     /** GROUP_ASSETの場合 */
     asset: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: AssetModel.name,
+        ref: AssetModel.NAME,
     },
 
 
@@ -72,7 +76,7 @@ export var schema = new mongoose.Schema({
     coa_tmp_reserve_num: String, // COA仮予約番号
     performance: {
         type: String,
-        ref: PerformanceModel.name,
+        ref: PerformanceModel.NAME,
     },
     section: String, // 座席セクション
     seat_code: String, // 座席コード
@@ -120,7 +124,7 @@ export var schema = new mongoose.Schema({
 
 schema.pre("save", function(next){
     switch (this.group) {
-        case GROUP_COA_SEAT_RESERVATION:
+        case GROUP.COA_SEAT_RESERVATION:
             if (!this.coa_tmp_reserve_num) return next(new Error("coa_tmp_reserve_num required."));
             if (!this.performance) return next(new Error("performance required."));
             if (!this.section) return next(new Error("section required."));
@@ -133,7 +137,7 @@ schema.pre("save", function(next){
             if (this.add_price !== 0 && !this.add_price) return next(new Error("add_price required."));
             if (this.dis_price !== 0 && !this.dis_price) return next(new Error("dis_price required."));
 
-        case GROUP_GMO:
+        case GROUP.GMO:
             if (!this.gmo_shop_id) return next(new Error("gmo_shop_id required."));
             if (!this.gmo_shop_pass) return next(new Error("gmo_shop_pass required."));
             if (!this.gmo_access_id) return next(new Error("gmo_access_id required."));
@@ -148,4 +152,4 @@ schema.pre("save", function(next){
     next();
 });
 
-export default mongoose.model(name, schema);
+export default mongoose.model(NAME, schema);

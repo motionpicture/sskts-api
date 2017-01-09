@@ -2,7 +2,7 @@ import mongoose = require("mongoose");
 import * as OwnerModel from "./owner";
 
 /** model name */
-export var name = "Transaction";
+export const NAME = "Transaction";
 
 /**
  * 取引スキーマ
@@ -17,12 +17,12 @@ export var schema = new mongoose.Schema({
         required: true,
     },
     status: {
-        type: String,
+        type: Number,
         required: true,
     },
     owners: [{ // 取引の対象所有者リスト
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.name,
+        ref: OwnerModel.NAME,
         required: true
     }],
     access_id: String, // 照会ID
@@ -35,13 +35,15 @@ export var schema = new mongoose.Schema({
     }
 });
 
-export default mongoose.model(name, schema);
+export default mongoose.model(NAME, schema);
 
-/** 進行中 */
-export var STATUS_PROCSSING = "PROCESSING";
-/** 成立済み */
-export var STATUS_CLOSED = "CLOSED";
-/** 期限切れ */
-export var STATUS_EXPIRED = "EXPIRED";
-/** 取消済み */
-export var STATUS_CANCELED = "CANCELED";
+export const enum STATUS {
+    /** 進行中 */
+    PROCESSING = 0,
+    /** 成立済み */
+    CLOSED = 1,
+    /** 期限切れ */
+    EXPIRED = 2,
+    /** 取消済み */
+    CANCELED = 3,
+}

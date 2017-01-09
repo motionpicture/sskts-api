@@ -3,7 +3,7 @@ import * as OwnerModel from "./owner";
 import * as TransactionModel from "./transaction";
 
 /** model name */
-export var name = "Asset";
+export const NAME = "Asset";
 
 /**
  * 資産スキーマ
@@ -11,17 +11,17 @@ export var name = "Asset";
 export var schema = new mongoose.Schema({
     owner: { // 所有者
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.name,
+        ref: OwnerModel.NAME,
         required: true
     },
     transactions: [ // 承認リスト
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: TransactionModel.name
+            ref: TransactionModel.NAME
         }
     ],
 
-    group: String, // 資産グループ
+    group: Number, // 資産グループ
     price: Number, // 金額
 
 
@@ -33,7 +33,9 @@ export var schema = new mongoose.Schema({
     }
 });
 
-export default mongoose.model(name, schema);
+export default mongoose.model(NAME, schema);
 
-/** 座席予約グループ */
-export var GROUP_SEAT_RESERVATION = "SEAT_RESERVATION";
+export const enum GROUP {
+    /** 座席予約グループ */
+    SEAT_RESERVATION = 1
+}

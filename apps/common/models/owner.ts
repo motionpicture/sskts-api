@@ -1,7 +1,7 @@
 import mongoose = require("mongoose");
 
 /** model name */
-export var name = "Owner";
+export const NAME = "Owner";
 
 /**
  * 所有者スキーマ
@@ -11,7 +11,7 @@ export var schema = new mongoose.Schema({
         ja: String,
         en: String
     },
-    group: String,
+    group: Number,
     email: String,
     tel: String,
 },{
@@ -22,22 +22,24 @@ export var schema = new mongoose.Schema({
     }
 });
 
-export default mongoose.model(name, schema);
+export default mongoose.model(NAME, schema);
 
-/** 運営者グループ */
-export var GROUP_ADMINISTRATOR = "ADMINISTRATOR";
-/** 匿名グループ */
-export var GROUP_ANONYMOUS = "ANONYMOUS";
-/** 会員グループ */
-export var GROUP_MEMBER = "MEMBER";
+export const enum GROUP {
+    /** 匿名グループ */
+    ANONYMOUS = 0,
+    /** 運営者グループ */
+    ADMINISTRATOR = 1,
+    /** 会員グループ */
+    MEMBER = 2
+}
 
 /**
  * 利用可能なグループ名かどうか
  */
-export function isAvailableGroup(group: string) {
+export function isAvailableGroup(group: number) {
     return (
-           group === GROUP_ADMINISTRATOR
-        || group === GROUP_ANONYMOUS
-        || group === GROUP_MEMBER
+           group === GROUP.ANONYMOUS
+        || group === GROUP.ADMINISTRATOR
+        || group === GROUP.MEMBER
     );
 }

@@ -4,23 +4,16 @@ const AssetModel = require("./asset");
 const OwnerModel = require("./owner");
 const PerformanceModel = require("./performance");
 const TransactionModel = require("./transaction");
-exports.GROUP_ASSET = "ASSET";
-exports.GROUP_COA_SEAT_RESERVATION = "COA_SEAT_RESERVATION";
-exports.GROUP_GMO = "GMO";
-exports.GROUP_MVTK = "MVTK";
-exports.PROCESS_STATUS_PENDING = "PENDING";
-exports.PROCESS_STATUS_UNDERWAY = "UNDERWAY";
-exports.PROCESS_STATUS_FINISHED = "FINISHED";
-exports.name = "Authorization";
+exports.NAME = "Authorization";
 exports.schema = new mongoose.Schema({
     transaction: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: TransactionModel.name,
+        ref: TransactionModel.NAME,
         required: true
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.name,
+        ref: OwnerModel.NAME,
         required: true
     },
     active: {
@@ -32,22 +25,22 @@ exports.schema = new mongoose.Schema({
         required: true
     },
     group: {
-        type: String,
+        type: Number,
         required: true,
     },
     process_status: {
-        type: String,
+        type: Number,
         required: true,
-        default: exports.PROCESS_STATUS_PENDING
+        default: 0
     },
     asset: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: AssetModel.name,
+        ref: AssetModel.NAME,
     },
     coa_tmp_reserve_num: String,
     performance: {
         type: String,
-        ref: PerformanceModel.name,
+        ref: PerformanceModel.NAME,
     },
     section: String,
     seat_code: String,
@@ -85,7 +78,7 @@ exports.schema = new mongoose.Schema({
 });
 exports.schema.pre("save", function (next) {
     switch (this.group) {
-        case exports.GROUP_COA_SEAT_RESERVATION:
+        case 2:
             if (!this.coa_tmp_reserve_num)
                 return next(new Error("coa_tmp_reserve_num required."));
             if (!this.performance)
@@ -104,7 +97,7 @@ exports.schema.pre("save", function (next) {
                 return next(new Error("add_price required."));
             if (this.dis_price !== 0 && !this.dis_price)
                 return next(new Error("dis_price required."));
-        case exports.GROUP_GMO:
+        case 3:
             if (!this.gmo_shop_id)
                 return next(new Error("gmo_shop_id required."));
             if (!this.gmo_shop_pass)
@@ -122,4 +115,4 @@ exports.schema.pre("save", function (next) {
     next();
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model(exports.name, exports.schema);
+exports.default = mongoose.model(exports.NAME, exports.schema);

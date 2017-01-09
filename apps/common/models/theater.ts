@@ -1,7 +1,7 @@
 import mongoose = require("mongoose");
 
 /** model name */
-export var name = "Theater";
+export const NAME = "Theater";
 
 /**
  * 劇場スキーマ
@@ -68,4 +68,4 @@ export var schema = new mongoose.Schema({
 //     );
 // });
 
-export default mongoose.model(name, schema);
+export default mongoose.model(NAME, schema);
