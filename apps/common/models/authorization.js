@@ -97,6 +97,7 @@ exports.schema.pre("save", function (next) {
                 return next(new Error("add_price required."));
             if (this.dis_price !== 0 && !this.dis_price)
                 return next(new Error("dis_price required."));
+            break;
         case 3:
             if (!this.gmo_shop_id)
                 return next(new Error("gmo_shop_id required."));

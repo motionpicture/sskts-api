@@ -122,7 +122,7 @@ export var schema = new mongoose.Schema({
     }
 });
 
-schema.pre("save", function(next){
+schema.pre("save", function(this: any, next){
     switch (this.group) {
         case GROUP.COA_SEAT_RESERVATION:
             if (!this.coa_tmp_reserve_num) return next(new Error("coa_tmp_reserve_num required."));
@@ -137,6 +137,7 @@ schema.pre("save", function(next){
             if (this.add_price !== 0 && !this.add_price) return next(new Error("add_price required."));
             if (this.dis_price !== 0 && !this.dis_price) return next(new Error("dis_price required."));
 
+            break;
         case GROUP.GMO:
             if (!this.gmo_shop_id) return next(new Error("gmo_shop_id required."));
             if (!this.gmo_shop_pass) return next(new Error("gmo_shop_pass required."));

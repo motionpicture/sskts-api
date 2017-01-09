@@ -29,10 +29,10 @@ options = {
 };
 
 options = {
-    url: "http://localhost:8080/transaction/586f268fca544619b8673a5c/authorize",
+    url: "http://localhost:8080/transaction/5872f826ce42e626d8bd51ca/authorize",
     body: {
         password: "password",
-        authorization_group: "COA_SEAT_RESERVATION",
+        authorization_group: 2,
         authorizations: [
             {
                 coa_tmp_reserve_num: "999",
