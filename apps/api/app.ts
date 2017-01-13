@@ -114,22 +114,22 @@ GMO.initialize({
 
 // routers
 import devRouter from "./routers/dev";
-import filmRouter from "./routers/film";
-import performanceRouter from "./routers/performance";
-import screenRouter from "./routers/screen";
 import theaterRouter from "./routers/theater";
-import transactionRouter from "./routers/transaction";
-import authorizationRouter from "./routers/authorization";
-import ownerRouter from "./routers/owner";
+// import filmRouter from "./routers/film";
+// import performanceRouter from "./routers/performance";
+// import screenRouter from "./routers/screen";
+// import transactionRouter from "./routers/transaction";
+// import authorizationRouter from "./routers/authorization";
+// import ownerRouter from "./routers/owner";
 app.use("/dev", devRouter);
 app.use("/", [
-    filmRouter,
-    performanceRouter,
     theaterRouter,
-    screenRouter,
-    transactionRouter,
-    authorizationRouter,
-    ownerRouter,
+    // filmRouter,
+    // performanceRouter,
+    // screenRouter,
+    // transactionRouter,
+    // authorizationRouter,
+    // ownerRouter,
 ]);
 
 // 404

@@ -36,14 +36,3 @@ export var schema = new mongoose.Schema({
 });
 
 export default mongoose.model(NAME, schema);
-
-export const enum STATUS {
-    /** 進行中 */
-    PROCESSING = 0,
-    /** 成立済み */
-    CLOSED = 1,
-    /** 期限切れ */
-    EXPIRED = 2,
-    /** 取消済み */
-    CANCELED = 3,
-}

@@ -41,22 +41,10 @@ GMO.initialize({
     endpoint: "https://pt01.mul-pay.jp",
 });
 const dev_1 = require("./routers/dev");
-const film_1 = require("./routers/film");
-const performance_1 = require("./routers/performance");
-const screen_1 = require("./routers/screen");
 const theater_1 = require("./routers/theater");
-const transaction_1 = require("./routers/transaction");
-const authorization_1 = require("./routers/authorization");
-const owner_1 = require("./routers/owner");
 app.use("/dev", dev_1.default);
 app.use("/", [
-    film_1.default,
-    performance_1.default,
     theater_1.default,
-    screen_1.default,
-    transaction_1.default,
-    authorization_1.default,
-    owner_1.default,
 ]);
 app.use((req, res) => {
     res.json({

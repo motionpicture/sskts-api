@@ -31,7 +31,6 @@ exports.schema = new mongoose.Schema({
     process_status: {
         type: Number,
         required: true,
-        default: 0
     },
     asset: {
         type: mongoose.Schema.Types.ObjectId,
@@ -77,42 +76,6 @@ exports.schema = new mongoose.Schema({
     }
 });
 exports.schema.pre("save", function (next) {
-    switch (this.group) {
-        case 2:
-            if (!this.coa_tmp_reserve_num)
-                return next(new Error("coa_tmp_reserve_num required."));
-            if (!this.performance)
-                return next(new Error("performance required."));
-            if (!this.section)
-                return next(new Error("section required."));
-            if (!this.seat_code)
-                return next(new Error("seat_code required."));
-            if (!this.ticket_code)
-                return next(new Error("ticket_code required."));
-            if (!this.ticket_name_ja)
-                return next(new Error("ticket_name_ja required."));
-            if (this.std_price !== 0 && !this.std_price)
-                return next(new Error("std_price required."));
-            if (this.add_price !== 0 && !this.add_price)
-                return next(new Error("add_price required."));
-            if (this.dis_price !== 0 && !this.dis_price)
-                return next(new Error("dis_price required."));
-            break;
-        case 3:
-            if (!this.gmo_shop_id)
-                return next(new Error("gmo_shop_id required."));
-            if (!this.gmo_shop_pass)
-                return next(new Error("gmo_shop_pass required."));
-            if (!this.gmo_access_id)
-                return next(new Error("gmo_access_id required."));
-            if (!this.gmo_access_pass)
-                return next(new Error("gmo_access_pass required."));
-            if (this.gmo_amount !== 0 && !this.gmo_amount)
-                return next(new Error("gmo_amount required."));
-            break;
-        default:
-            break;
-    }
     next();
 });
 Object.defineProperty(exports, "__esModule", { value: true });

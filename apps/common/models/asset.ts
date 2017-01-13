@@ -34,8 +34,3 @@ export var schema = new mongoose.Schema({
 });
 
 export default mongoose.model(NAME, schema);
-
-export const enum GROUP {
-    /** 座席予約グループ */
-    SEAT_RESERVATION = 1
-}

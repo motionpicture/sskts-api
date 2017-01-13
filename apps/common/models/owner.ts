@@ -23,23 +23,3 @@ export var schema = new mongoose.Schema({
 });
 
 export default mongoose.model(NAME, schema);
-
-export const enum GROUP {
-    /** 匿名グループ */
-    ANONYMOUS = 0,
-    /** 運営者グループ */
-    ADMINISTRATOR = 1,
-    /** 会員グループ */
-    MEMBER = 2
-}
-
-/**
- * 利用可能なグループ名かどうか
- */
-export function isAvailableGroup(group: number) {
-    return (
-           group === GROUP.ANONYMOUS
-        || group === GROUP.ADMINISTRATOR
-        || group === GROUP.MEMBER
-    );
-}

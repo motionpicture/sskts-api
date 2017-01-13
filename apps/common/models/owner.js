@@ -18,9 +18,3 @@ exports.schema = new mongoose.Schema({
 });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = mongoose.model(exports.NAME, exports.schema);
-function isAvailableGroup(group) {
-    return (group === 0
-        || group === 1
-        || group === 2);
-}
-exports.isAvailableGroup = isAvailableGroup;
