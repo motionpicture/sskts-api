@@ -1,7 +1,10 @@
 "use strict";
 const program = require("commander");
-const Tasks = require("./tasks");
+const master_1 = require("../apps/domain/service/interpreter/master");
+const theater_1 = require("../apps/domain/repository/interpreter/theater");
 const config = require("config");
+const mongoose = require("mongoose");
+let MONGOLAB_URI = config.get("mongolab_uri");
 const COA = require("@motionpicture/coa-service");
 COA.initialize({
     endpoint: config.get("coa_api_endpoint"),
@@ -13,7 +16,13 @@ program
     .command("importTheater <code>")
     .description("import theater from COA.")
     .action((code) => {
-    Tasks.importTheater(code);
+    mongoose.connect(MONGOLAB_URI);
+    master_1.default.importTheater(code)(theater_1.default).then(() => {
+        mongoose.disconnect();
+    }, (err) => {
+        console.error(err);
+        mongoose.disconnect();
+    });
 });
 program
     .command("*")

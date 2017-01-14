@@ -1,13 +1,14 @@
 import program = require("commander");
-// import ScreenRepository from "../apps/common/infrastructure/persistence/mongoose/repositories/screen";
-// import FilmRepository from "../apps/common/infrastructure/persistence/mongoose/repositories/film";
-// import PerformanceRepository from "../apps/common/infrastructure/persistence/mongoose/repositories/performance";
-// import TicketRepository from "../apps/common/infrastructure/persistence/mongoose/repositories/ticket";
-import * as Tasks from "./tasks";
+import MasterService from "../apps/domain/service/interpreter/master";
+import TheaterRepository from "../apps/domain/repository/interpreter/theater";
 
 // let env = process.env.NODE_ENV || "dev";
 
 import config = require("config");
+
+import mongoose = require("mongoose");
+let MONGOLAB_URI = config.get<string>("mongolab_uri");
+
 import COA = require("@motionpicture/coa-service");
 COA.initialize({
     endpoint: config.get<string>("coa_api_endpoint"),
@@ -22,7 +23,13 @@ program
     .command("importTheater <code>")
     .description("import theater from COA.")
     .action((code) => {
-        Tasks.importTheater(code);
+        mongoose.connect(MONGOLAB_URI);
+        MasterService.importTheater(code)(TheaterRepository).then(() => {
+            mongoose.disconnect();
+        }, (err) => {
+            console.error(err);
+            mongoose.disconnect();
+        });
     });
 
 // program
