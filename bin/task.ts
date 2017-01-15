@@ -1,5 +1,7 @@
 import program = require("commander");
 import MasterService from "../apps/domain/service/interpreter/master";
+import FilmRepository from "../apps/domain/repository/interpreter/film";
+import ScreenRepository from "../apps/domain/repository/interpreter/screen";
 import TheaterRepository from "../apps/domain/repository/interpreter/theater";
 
 // let env = process.env.NODE_ENV || "dev";
@@ -32,35 +34,35 @@ program
         });
     });
 
-// program
-//     .command("importFilmsByTheaterCode <theaterCode>")
-//     .description("import films from COA.")
-//     .action((theaterCode) => {
-//         mongoose.connect(MONGOLAB_URI);
+program
+    .command("importFilms <theaterCode>")
+    .description("import films from COA.")
+    .action((theaterCode) => {
+        mongoose.connect(MONGOLAB_URI);
 
-//         FilmRepository.importByTheaterCode(theaterCode).then(() => {
-//             console.log("importByTheaterCode processed.");
-//             mongoose.disconnect();
-//         }, (err) => {
-//             console.log("importByTheaterCode processed.", err);
-//             mongoose.disconnect();
-//         });
-//     });
+        MasterService.importFilms(theaterCode)(FilmRepository).then(() => {
+            console.log("importFilms processed.");
+            mongoose.disconnect();
+        }, (err) => {
+            console.log("importFilms processed.", err);
+            mongoose.disconnect();
+        });
+    });
 
-// program
-//     .command("importScreensByTheaterCode <theaterCode>")
-//     .description("import screens from COA.")
-//     .action((theaterCode) => {
-//         mongoose.connect(MONGOLAB_URI);
+program
+    .command("importScreens <theaterCode>")
+    .description("import screens from COA.")
+    .action((theaterCode) => {
+        mongoose.connect(MONGOLAB_URI);
 
-//         ScreenRepository.importByTheaterCode(theaterCode).then(() => {
-//             console.log("importScreensByTheaterCode processed.");
-//             mongoose.disconnect();
-//         }, (err) => {
-//             console.log("importScreensByTheaterCode processed.", err);
-//             mongoose.disconnect();
-//         });
-//     });
+        MasterService.importScreens(theaterCode)(ScreenRepository).then(() => {
+            console.log("importScreens processed.");
+            mongoose.disconnect();
+        }, (err) => {
+            console.log("importScreens processed.", err);
+            mongoose.disconnect();
+        });
+    });
 
 // program
 //     .command("importPerformancesByTheaterCode <theaterCode> <day_start> <day_end>")

@@ -2,7 +2,7 @@
 const TheaterModel = require("../../../common/models/theater");
 var interpreter;
 (function (interpreter) {
-    function find(id) {
+    function findById(id) {
         return new Promise((resolve, reject) => {
             TheaterModel.default.findOne({
                 _id: id
@@ -15,7 +15,7 @@ var interpreter;
             });
         });
     }
-    interpreter.find = find;
+    interpreter.findById = findById;
     function store(theater) {
         return new Promise((resolve, reject) => {
             console.log("updating theater...");

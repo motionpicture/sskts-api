@@ -42,7 +42,7 @@ export var schema = new mongoose.Schema({
         en: String,
     },
     day: String, // 上映日(※日付は西暦8桁 "YYYYMMDD")
-    time_open: String, // 開演時刻
+    // time_open: String, // 開演時刻
     time_start: String, // 上映開始時刻
     time_end: String, // 上映終了時刻
     // trailer_time: String, // トレーラー時間(トレーラー含む本編以外の時間（分）)

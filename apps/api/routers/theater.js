@@ -6,7 +6,7 @@ router.get("/theater/:code", (req, res, next) => {
     req.getValidationResult().then((result) => {
         if (!result.isEmpty())
             return next(new Error(result.array()[0].msg));
-        theater_1.default.find(req.params.code).then((theater) => {
+        theater_1.default.findById(req.params.code).then((theater) => {
             res.json({
                 success: true,
                 message: null,

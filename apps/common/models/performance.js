@@ -37,7 +37,6 @@ exports.schema = new mongoose.Schema({
         en: String,
     },
     day: String,
-    time_open: String,
     time_start: String,
     time_end: String,
     canceled: Boolean

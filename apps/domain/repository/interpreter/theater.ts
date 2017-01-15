@@ -3,7 +3,7 @@ import TheaterRepository from "../theater";
 import * as TheaterModel from "../../../common/models/theater";
 
 namespace interpreter {
-    export function find(id: string) {
+    export function findById(id: string) {
         return new Promise<Theater>((resolve: (result: Theater) => void, reject: (err: Error) => void) => {
             TheaterModel.default.findOne({
                 _id: id

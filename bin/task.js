@@ -1,6 +1,8 @@
 "use strict";
 const program = require("commander");
 const master_1 = require("../apps/domain/service/interpreter/master");
+const film_1 = require("../apps/domain/repository/interpreter/film");
+const screen_1 = require("../apps/domain/repository/interpreter/screen");
 const theater_1 = require("../apps/domain/repository/interpreter/theater");
 const config = require("config");
 const mongoose = require("mongoose");
@@ -21,6 +23,32 @@ program
         mongoose.disconnect();
     }, (err) => {
         console.error(err);
+        mongoose.disconnect();
+    });
+});
+program
+    .command("importFilms <theaterCode>")
+    .description("import films from COA.")
+    .action((theaterCode) => {
+    mongoose.connect(MONGOLAB_URI);
+    master_1.default.importFilms(theaterCode)(film_1.default).then(() => {
+        console.log("importFilms processed.");
+        mongoose.disconnect();
+    }, (err) => {
+        console.log("importFilms processed.", err);
+        mongoose.disconnect();
+    });
+});
+program
+    .command("importScreens <theaterCode>")
+    .description("import screens from COA.")
+    .action((theaterCode) => {
+    mongoose.connect(MONGOLAB_URI);
+    master_1.default.importScreens(theaterCode)(screen_1.default).then(() => {
+        console.log("importScreens processed.");
+        mongoose.disconnect();
+    }, (err) => {
+        console.log("importScreens processed.", err);
         mongoose.disconnect();
     });
 });
