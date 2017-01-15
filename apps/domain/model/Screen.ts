@@ -1,17 +1,21 @@
 import MultilingualString from "./MultilingualString";
-
-interface Screen {
-    _id: string,
-    theater: string,
-    coa_screen_code: string,
+interface Seat {
+    code: string
+}
+interface Section {
+    code: string,
     name: MultilingualString,
-    sections: Array<{
-        code: string,
-        name: MultilingualString,
-        seats: Array<{
-            code: string
-        }>
-    }>
+    seats: Array<Seat>
 }
 
-export default Screen;
+export default class Screen {
+    constructor(
+        readonly _id: string,
+        readonly theater: string,
+        readonly coa_screen_code: string,
+        readonly name: MultilingualString,
+        readonly sections: Array<Section>
+    ) {
+        // TODO validation
+    }
+}

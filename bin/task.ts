@@ -3,6 +3,7 @@ import MasterService from "../apps/domain/service/interpreter/master";
 import FilmRepository from "../apps/domain/repository/interpreter/film";
 import ScreenRepository from "../apps/domain/repository/interpreter/screen";
 import TheaterRepository from "../apps/domain/repository/interpreter/theater";
+import PerformanceRepository from "../apps/domain/repository/interpreter/performance";
 
 // let env = process.env.NODE_ENV || "dev";
 
@@ -64,20 +65,22 @@ program
         });
     });
 
-// program
-//     .command("importPerformancesByTheaterCode <theaterCode> <day_start> <day_end>")
-//     .description("import performances from COA.")
-//     .action((theaterCode, start, end) => {
-//         mongoose.connect(MONGOLAB_URI);
+program
+    .command("importPerformances <theaterCode> <day_start> <day_end>")
+    .description("import performances from COA.")
+    .action((theaterCode, start, end) => {
+        mongoose.connect(MONGOLAB_URI);
 
-//         PerformanceRepository.importByTheaterCode(theaterCode, start, end).then(() => {
-//             console.log("importPerformancesByTheaterCode processed.");
-//             mongoose.disconnect();
-//         }, (err) => {
-//             console.log("importPerformancesByTheaterCode processed.", err);
-//             mongoose.disconnect();
-//         });
-//     });
+        MasterService.importPerformances(theaterCode, start, end)(
+            TheaterRepository, ScreenRepository, PerformanceRepository
+        ).then(() => {
+            console.log("importPerformances processed.");
+            mongoose.disconnect();
+        }, (err) => {
+            console.log("importPerformances processed.", err);
+            mongoose.disconnect();
+        });
+    });
 
 // program
 //     .command("importSeatAvailability <theaterCode> <day_start> <day_end>")

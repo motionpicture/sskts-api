@@ -1,9 +1,6 @@
 import mongoose = require("mongoose");
 import * as theaterModel from "./theater";
 
-/** model name */
-export const NAME = "Screen";
-
 /**
  * スクリーンスキーマ
  */
@@ -14,7 +11,7 @@ export var schema = new mongoose.Schema({
     },
     theater: { 
         type: String,
-        ref: theaterModel.NAME,
+        ref: theaterModel.default.modelName,
         required: true
     },
     coa_screen_code: {
@@ -66,4 +63,4 @@ export var schema = new mongoose.Schema({
     }
 });
 
-export default mongoose.model(NAME, schema);
+export default mongoose.model("Screen", schema);

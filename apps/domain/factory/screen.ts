@@ -31,14 +31,14 @@ export function createByCOA(theaterCode: string, screenByCOA: COA.findScreensByT
         });
     });
 
-    return {
-        _id: `${theaterCode}${screenByCOA.screen_code}`,
-        theater: theaterCode,
-        coa_screen_code: screenByCOA.screen_code,
-        name: {
+    return new Screen(
+        `${theaterCode}${screenByCOA.screen_code}`,
+        theaterCode,
+        screenByCOA.screen_code,
+        {
             ja: screenByCOA.screen_name,
             en: screenByCOA.screen_name_eng
         },
-        sections: sections
-    }
+        sections
+    );
 }

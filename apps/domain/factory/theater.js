@@ -1,4 +1,5 @@
 "use strict";
+const Theater_1 = require("../model/Theater");
 function create(args) {
     return {
         _id: args._id,
@@ -15,17 +16,12 @@ function create(args) {
 }
 exports.create = create;
 function createByCOA(theaterByCOA) {
-    return {
-        _id: theaterByCOA.theater_code,
-        name: {
-            ja: theaterByCOA.theater_name,
-            en: theaterByCOA.theater_name_eng,
-        },
-        name_kana: theaterByCOA.theater_name_kana,
-        address: {
-            ja: "",
-            en: "",
-        },
-    };
+    return new Theater_1.default(theaterByCOA.theater_code, {
+        ja: theaterByCOA.theater_name,
+        en: theaterByCOA.theater_name_eng,
+    }, theaterByCOA.theater_name_kana, {
+        ja: "",
+        en: "",
+    });
 }
 exports.createByCOA = createByCOA;

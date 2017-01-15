@@ -10,21 +10,27 @@ var interpreter;
     interpreter.find = find;
     function findByTheater(theaterCode) {
         return new Promise((resolve, reject) => {
-            reject(new Error("now coding..."));
+            ScreenModel.default.find({
+                theater: theaterCode
+            }).lean().exec().then((screens) => {
+                resolve(screens);
+            }, (err) => {
+                reject(err);
+            });
         });
     }
     interpreter.findByTheater = findByTheater;
     function store(screen) {
         return new Promise((resolve, reject) => {
             console.log("updating screen...");
-            ScreenModel.default.findOneAndUpdate({
-                _id: screen._id
-            }, screen, {
+            ScreenModel.default.findOneAndUpdate({ _id: screen._id }, screen, {
                 new: true,
                 upsert: true
-            }, (err, screen) => {
-                console.log("screen updated.", screen);
-                (err) ? reject(err) : resolve();
+            }).lean().exec().then(() => {
+                console.log("screen updated.");
+                resolve();
+            }).catch((err) => {
+                reject(err);
             });
         });
     }

@@ -1,8 +1,5 @@
 import mongoose = require("mongoose");
 
-/** model name */
-export const NAME = "Owner";
-
 /**
  * 所有者スキーマ
  */
@@ -22,4 +19,4 @@ export var schema = new mongoose.Schema({
     }
 });
 
-export default mongoose.model(NAME, schema);
+export default mongoose.model("Owner", schema);

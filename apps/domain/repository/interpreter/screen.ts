@@ -11,7 +11,13 @@ namespace interpreter {
 
     export function findByTheater(theaterCode: string) {
         return new Promise<Array<Screen>>((resolve, reject) => {
-            reject(new Error("now coding..."));
+            ScreenModel.default.find({
+                theater: theaterCode
+            }).lean().exec().then((screens: Array<Screen>) => {
+                resolve(screens);
+            }, (err) => {
+                reject(err);
+            });
         });
     }
 
@@ -19,20 +25,15 @@ namespace interpreter {
         return new Promise<void>((resolve, reject) => {
             // あれば更新、なければ追加
             console.log("updating screen...");
-            ScreenModel.default.findOneAndUpdate(
-                {
-                    _id: screen._id
-                },
-                screen,
-                {
-                    new: true,
-                    upsert: true
-                },
-                (err, screen) => {
-                    console.log("screen updated.", screen);
-                    (err) ? reject(err) : resolve();
-                }
-            );
+            ScreenModel.default.findOneAndUpdate({ _id: screen._id }, screen, {
+                new: true,
+                upsert: true
+            }).lean().exec().then(() => {
+                console.log("screen updated.");
+                resolve();
+            }).catch((err) => {
+                reject(err)
+            });
         });
     }
 }

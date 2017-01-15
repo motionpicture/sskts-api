@@ -1,7 +1,6 @@
 "use strict";
 const mongoose = require("mongoose");
 const theaterModel = require("./theater");
-exports.NAME = "Screen";
 exports.schema = new mongoose.Schema({
     _id: {
         type: String,
@@ -9,7 +8,7 @@ exports.schema = new mongoose.Schema({
     },
     theater: {
         type: String,
-        ref: theaterModel.NAME,
+        ref: theaterModel.default.modelName,
         required: true
     },
     coa_screen_code: {
@@ -61,4 +60,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model(exports.NAME, exports.schema);
+exports.default = mongoose.model("Screen", exports.schema);

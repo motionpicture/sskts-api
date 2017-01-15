@@ -2,17 +2,16 @@
 const mongoose = require("mongoose");
 const OwnerModel = require("./owner");
 const TransactionModel = require("./transaction");
-exports.NAME = "Asset";
 exports.schema = new mongoose.Schema({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.NAME,
+        ref: OwnerModel.default.modelName,
         required: true
     },
     transactions: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: TransactionModel.NAME
+            ref: TransactionModel.default.modelName,
         }
     ],
     group: Number,
@@ -25,4 +24,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model(exports.NAME, exports.schema);
+exports.default = mongoose.model("Asset", exports.schema);

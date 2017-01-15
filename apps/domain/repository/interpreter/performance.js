@@ -1,23 +1,21 @@
 "use strict";
-const FilmModel = require("../../../common/models/film");
+const PerformanceModel = require("../../../common/models/performance");
 var interpreter;
 (function (interpreter) {
-    function find(id) {
+    function findById(id) {
         return new Promise((resolve, reject) => {
             reject(new Error("now coding..."));
         });
     }
-    interpreter.find = find;
-    function store(film) {
+    interpreter.findById = findById;
+    function store(performance) {
         return new Promise((resolve, reject) => {
-            console.log("updating film...");
-            FilmModel.default.findOneAndUpdate({
-                _id: film._id
-            }, film, {
+            console.log("updating performance...");
+            PerformanceModel.default.findOneAndUpdate({ _id: performance._id }, performance, {
                 new: true,
-                upsert: true
+                upsert: true,
             }).lean().exec().then(() => {
-                console.log("screen updated.");
+                console.log("performance updated.");
                 resolve();
             }).catch((err) => {
                 reject(err);

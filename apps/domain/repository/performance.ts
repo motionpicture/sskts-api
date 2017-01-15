@@ -1,7 +1,7 @@
 import Performance from "../model/Performance";
 
 interface PerformanceRepository {
-    find(id: string): Promise<Performance>;
+    findById(id: string): Promise<Performance>;
     store(performance: Performance): Promise<void>;
 }
 

@@ -22,16 +22,16 @@ export function create(args: {
 }
 
 export function createByCOA(theaterByCOA: COA.findTheaterInterface.Result): Theater {
-    return {
-        _id: theaterByCOA.theater_code,
-        name: {
+    return new Theater(
+        theaterByCOA.theater_code,
+        {
             ja: theaterByCOA.theater_name,
             en: theaterByCOA.theater_name_eng,
         },
-        name_kana: theaterByCOA.theater_name_kana,
-        address: {
+        theaterByCOA.theater_name_kana,
+        {
             ja: "",
             en: "",
-        },
-    }
+        }
+    );
 }

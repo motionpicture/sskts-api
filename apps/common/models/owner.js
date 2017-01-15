@@ -1,6 +1,5 @@
 "use strict";
 const mongoose = require("mongoose");
-exports.NAME = "Owner";
 exports.schema = new mongoose.Schema({
     name: {
         ja: String,
@@ -17,4 +16,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model(exports.NAME, exports.schema);
+exports.default = mongoose.model("Owner", exports.schema);

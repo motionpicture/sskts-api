@@ -4,6 +4,7 @@ const master_1 = require("../apps/domain/service/interpreter/master");
 const film_1 = require("../apps/domain/repository/interpreter/film");
 const screen_1 = require("../apps/domain/repository/interpreter/screen");
 const theater_1 = require("../apps/domain/repository/interpreter/theater");
+const performance_1 = require("../apps/domain/repository/interpreter/performance");
 const config = require("config");
 const mongoose = require("mongoose");
 let MONGOLAB_URI = config.get("mongolab_uri");
@@ -49,6 +50,19 @@ program
         mongoose.disconnect();
     }, (err) => {
         console.log("importScreens processed.", err);
+        mongoose.disconnect();
+    });
+});
+program
+    .command("importPerformances <theaterCode> <day_start> <day_end>")
+    .description("import performances from COA.")
+    .action((theaterCode, start, end) => {
+    mongoose.connect(MONGOLAB_URI);
+    master_1.default.importPerformances(theaterCode, start, end)(theater_1.default, screen_1.default, performance_1.default).then(() => {
+        console.log("importPerformances processed.");
+        mongoose.disconnect();
+    }, (err) => {
+        console.log("importPerformances processed.", err);
         mongoose.disconnect();
     });
 });

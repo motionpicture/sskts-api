@@ -8,23 +8,16 @@ export function createByCOA(performanceByCOA: COA.findPerformancesByTheaterCodeI
     let screenCode = `${theater._id}${performanceByCOA.screen_code}`;
     let filmCode = `${theater._id}${performanceByCOA.title_code}${performanceByCOA.title_branch_num}`;
 
-    // 劇場とスクリーン名称を追加
-    // TODO 存在check?
-    // let _screen = screens.find((screen) => {
-    //     return (screen.get("_id").toString() === screenCode);
-    // });
-    // if (!_screen) return reject("no screen.");
-
-    return {
-        _id: id,
-        screen: screenCode,
-        screen_name: screen.name,
-        theater: theater._id,
-        theater_name: theater.name,
-        film: filmCode,
-        day: performanceByCOA.date_jouei,
-        time_start: performanceByCOA.time_begin,
-        time_end: performanceByCOA.time_end,
-        canceled: false
-    }
+    return new Performance(
+        id,
+        screenCode,
+        screen.name,
+        theater._id,
+        theater.name,
+        filmCode,
+        performanceByCOA.date_jouei,
+        performanceByCOA.time_begin,
+        performanceByCOA.time_end,
+        false
+    );
 }

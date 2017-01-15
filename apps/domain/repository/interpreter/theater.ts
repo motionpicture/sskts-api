@@ -28,12 +28,12 @@ namespace interpreter {
                 {
                     new: true,
                     upsert: true
-                },
-                (err, theater) => {
-                    console.log("theater updated.", theater);
-                    (err) ? reject(err) : resolve();
-                }
-            );
+                }).lean().exec().then(() => {
+                    console.log("screen updated.");
+                    resolve();
+                }).catch((err) => {
+                    reject(err)
+                });
         });
     }
 }

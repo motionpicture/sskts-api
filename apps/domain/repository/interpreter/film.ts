@@ -21,12 +21,12 @@ namespace interpreter {
                 {
                     new: true,
                     upsert: true
-                },
-                (err, film) => {
-                    console.log("film updated.", film);
-                    (err) ? reject(err) : resolve();
-                }
-            );
+                }).lean().exec().then(() => {
+                    console.log("screen updated.");
+                    resolve();
+                }).catch((err) => {
+                    reject(err)
+                });
         });
     }
 }

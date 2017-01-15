@@ -1,9 +1,6 @@
 import mongoose = require("mongoose");
 import * as OwnerModel from "./owner";
 
-/** model name */
-export const NAME = "Transaction";
-
 /**
  * 取引スキーマ
  */
@@ -22,7 +19,7 @@ export var schema = new mongoose.Schema({
     },
     owners: [{ // 取引の対象所有者リスト
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.NAME,
+        ref: OwnerModel.default.modelName,
         required: true
     }],
     access_id: String, // 照会ID
@@ -35,4 +32,4 @@ export var schema = new mongoose.Schema({
     }
 });
 
-export default mongoose.model(NAME, schema);
+export default mongoose.model("Transaction", schema);

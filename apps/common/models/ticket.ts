@@ -1,9 +1,6 @@
 import mongoose = require("mongoose");
 import * as TheaterModel from "./theater";
 
-/** model name */
-export const NAME = "Ticket";
-
 /**
  * 券種スキーマ
  */
@@ -14,7 +11,7 @@ export var schema = new mongoose.Schema({
     },
     theater: {
         type: String,
-        ref: TheaterModel.NAME,
+        ref: TheaterModel.default.modelName,
         required: true
     },
     code: String, // チケットコード
@@ -33,4 +30,4 @@ export var schema = new mongoose.Schema({
     }
 });
 
-export default mongoose.model(NAME, schema);
+export default mongoose.model("Ticket", schema);

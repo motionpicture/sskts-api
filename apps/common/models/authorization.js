@@ -4,16 +4,15 @@ const AssetModel = require("./asset");
 const OwnerModel = require("./owner");
 const PerformanceModel = require("./performance");
 const TransactionModel = require("./transaction");
-exports.NAME = "Authorization";
 exports.schema = new mongoose.Schema({
     transaction: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: TransactionModel.NAME,
+        ref: TransactionModel.default.modelName,
         required: true
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.NAME,
+        ref: OwnerModel.default.modelName,
         required: true
     },
     active: {
@@ -34,12 +33,12 @@ exports.schema = new mongoose.Schema({
     },
     asset: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: AssetModel.NAME,
+        ref: AssetModel.default.modelName,
     },
     coa_tmp_reserve_num: String,
     performance: {
         type: String,
-        ref: PerformanceModel.NAME,
+        ref: PerformanceModel.default.modelName,
     },
     section: String,
     seat_code: String,
@@ -79,4 +78,4 @@ exports.schema.pre("save", function (next) {
     next();
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model(exports.NAME, exports.schema);
+exports.default = mongoose.model("Authorization", exports.schema);

@@ -2,22 +2,19 @@ import mongoose = require("mongoose");
 import * as OwnerModel from "./owner";
 import * as TransactionModel from "./transaction";
 
-/** model name */
-export const NAME = "Asset";
-
 /**
  * 資産スキーマ
  */
 export var schema = new mongoose.Schema({
     owner: { // 所有者
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.NAME,
+        ref: OwnerModel.default.modelName,
         required: true
     },
     transactions: [ // 承認リスト
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: TransactionModel.NAME
+            ref: TransactionModel.default.modelName,
         }
     ],
 
@@ -33,4 +30,4 @@ export var schema = new mongoose.Schema({
     }
 });
 
-export default mongoose.model(NAME, schema);
+export default mongoose.model("Asset", schema);

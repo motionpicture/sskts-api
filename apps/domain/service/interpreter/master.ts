@@ -107,7 +107,6 @@ namespace interpreter {
 
                     theaterRepository.findById(theaterCode).then((theater) => {
                         screenRepository.findByTheater(theaterCode).then((screens) => {
-
                             // あれば更新、なければ追加
                             let promises = performances.map((performanceByCOA) => {
                                 return new Promise((resolve, reject) => {
@@ -116,9 +115,8 @@ namespace interpreter {
                                     // if (!performanceByCOA.title_branch_num) return resolve();
                                     // if (!performanceByCOA.screen_code) return resolve();
 
-                                    let screenCode = `${theaterCode}${performanceByCOA.screen_code}`;
                                     let _screen = screens.find((screen) => {
-                                        return (screen._id === screenCode);
+                                        return (screen._id === `${theaterCode}${performanceByCOA.screen_code}`);
                                     });
                                     if (!_screen) return reject("no screen.");
 

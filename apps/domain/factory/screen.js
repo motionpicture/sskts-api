@@ -1,4 +1,5 @@
 "use strict";
+const Screen_1 = require("../model/Screen");
 function createByCOA(theaterCode, screenByCOA) {
     let sections = [];
     let sectionCodes = [];
@@ -18,15 +19,9 @@ function createByCOA(theaterCode, screenByCOA) {
             code: seat.seat_num
         });
     });
-    return {
-        _id: `${theaterCode}${screenByCOA.screen_code}`,
-        theater: theaterCode,
-        coa_screen_code: screenByCOA.screen_code,
-        name: {
-            ja: screenByCOA.screen_name,
-            en: screenByCOA.screen_name_eng
-        },
-        sections: sections
-    };
+    return new Screen_1.default(`${theaterCode}${screenByCOA.screen_code}`, theaterCode, screenByCOA.screen_code, {
+        ja: screenByCOA.screen_name,
+        en: screenByCOA.screen_name_eng
+    }, sections);
 }
 exports.createByCOA = createByCOA;

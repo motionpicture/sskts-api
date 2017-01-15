@@ -1,10 +1,12 @@
 import MultilingualString from "./MultilingualString";
 
-interface Theater {
-    _id: string,
-    name: MultilingualString,
-    name_kana: string,
-    address: MultilingualString
+export default class Theater {
+    constructor(
+        readonly _id: string,
+        readonly name: MultilingualString,
+        readonly name_kana: string,
+        readonly address: MultilingualString
+    ) {
+        // TODO validation
+    }
 }
-
-export default Theater;
