@@ -1,29 +1,19 @@
 import mongoose = require("mongoose");
-import * as theaterModel from "./theater";
+import TheaterModel from "./theater";
 
 /**
  * スクリーンスキーマ
  */
-export var schema = new mongoose.Schema({
-    _id: {
-        type: String,
-        required: true
-    },
+let schema = new mongoose.Schema({
+    _id: String,
     theater: { 
         type: String,
-        ref: theaterModel.default.modelName,
-        required: true
+        ref: TheaterModel.modelName,
     },
-    coa_screen_code: {
-        type: String,
-        required: true
-    },
+    coa_screen_code: String,
     name: {
-        type: {
-            ja: String,
-            en: String
-        },
-        required: true
+        ja: String,
+        en: String
     },
     seats_number: Number, // 座席合計数
     seats_numbers_by_seat_grade: [{ // 座席グレードごとの座席数

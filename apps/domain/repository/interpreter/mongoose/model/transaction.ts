@@ -1,10 +1,10 @@
 import mongoose = require("mongoose");
-import * as OwnerModel from "./owner";
+import OwnerModel from "./owner";
 
 /**
  * 取引スキーマ
  */
-export var schema = new mongoose.Schema({
+let schema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
@@ -19,7 +19,7 @@ export var schema = new mongoose.Schema({
     },
     owners: [{ // 取引の対象所有者リスト
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.default.modelName,
+        ref: OwnerModel.modelName,
         required: true
     }],
     access_id: String, // 照会ID

@@ -1,17 +1,13 @@
 "use strict";
 const mongoose = require("mongoose");
-const theaterModel = require("./theater");
-const screenModel = require("./screen");
-const filmModel = require("./film");
-exports.schema = new mongoose.Schema({
-    _id: {
-        type: String,
-        required: true
-    },
+const theater_1 = require("./theater");
+const screen_1 = require("./screen");
+const film_1 = require("./film");
+let schema = new mongoose.Schema({
+    _id: String,
     theater: {
         type: String,
-        ref: theaterModel.default.modelName,
-        required: true
+        ref: theater_1.default.modelName,
     },
     theater_name: {
         ja: String,
@@ -19,8 +15,7 @@ exports.schema = new mongoose.Schema({
     },
     screen: {
         type: String,
-        ref: screenModel.default.modelName,
-        required: true
+        ref: screen_1.default.modelName,
     },
     screen_name: {
         ja: String,
@@ -28,8 +23,7 @@ exports.schema = new mongoose.Schema({
     },
     film: {
         type: String,
-        ref: filmModel.default.modelName,
-        required: true
+        ref: film_1.default.modelName,
     },
     film_name: {
         ja: String,
@@ -46,9 +40,9 @@ exports.schema = new mongoose.Schema({
         updatedAt: "updated_at",
     }
 });
-exports.schema.index({
+schema.index({
     day: 1,
     time_start: 1
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model("Performance", exports.schema);
+exports.default = mongoose.model("Performance", schema);

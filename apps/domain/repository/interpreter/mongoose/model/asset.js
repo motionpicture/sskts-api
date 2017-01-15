@@ -1,17 +1,17 @@
 "use strict";
 const mongoose = require("mongoose");
-const OwnerModel = require("./owner");
-const TransactionModel = require("./transaction");
-exports.schema = new mongoose.Schema({
+const owner_1 = require("./owner");
+const transaction_1 = require("./transaction");
+let schema = new mongoose.Schema({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.default.modelName,
+        ref: owner_1.default.modelName,
         required: true
     },
     transactions: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: TransactionModel.default.modelName,
+            ref: transaction_1.default.modelName,
         }
     ],
     group: Number,
@@ -24,4 +24,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model("Asset", exports.schema);
+exports.default = mongoose.model("Asset", schema);

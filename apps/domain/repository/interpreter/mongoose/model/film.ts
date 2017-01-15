@@ -1,25 +1,18 @@
 import mongoose = require("mongoose");
-import * as theaterModel from "./theater";
+import theaterModel from "./theater";
 
 /**
  * 作品スキーマ
  */
-export var schema = new mongoose.Schema({
-    _id: {
+let schema = new mongoose.Schema({
+    _id: String,
+    theater: {
         type: String,
-        required: true
-    },
-    theater: { 
-        type: String,
-        ref: theaterModel.default.modelName,
-        required: true
+        ref: theaterModel.modelName,
     },
     name: {
-        type: {
-            ja: String,
-            en: String
-        },
-        required: true
+        ja: String,
+        en: String
     },
     name_kana: String, // 作品タイトル名（カナ）
     name_short: String, // 作品タイトル名省略
@@ -32,17 +25,11 @@ export var schema = new mongoose.Schema({
     kbn_joueihousiki: String, // 上映方式区分(ＩＭＡＸ，４ＤＸ等)
     kbn_jimakufukikae: String, // 字幕吹替区分(字幕、吹き替え)
     copyright: String, // コピーライト
-    coa_title_code: {
-        type: String,
-        required: true
-    },
-    coa_title_branch_num: {
-        type: String,
-        required: true
-    },
-},{
+    coa_title_code: String,
+    coa_title_branch_num: String,
+}, {
     collection: "films",
-    timestamps: { 
+    timestamps: {
         createdAt: "created_at",
         updatedAt: "updated_at",
     }

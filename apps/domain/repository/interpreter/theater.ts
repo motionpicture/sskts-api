@@ -1,18 +1,15 @@
 import Theater from "../../model/Theater";
 import TheaterRepository from "../theater";
-import * as TheaterModel from "../../../common/models/theater";
+import TheaterModel from "./mongoose/model/theater";
 
 namespace interpreter {
     export function findById(id: string) {
         return new Promise<Theater>((resolve: (result: Theater) => void, reject: (err: Error) => void) => {
-            TheaterModel.default.findOne({
-                _id: id
-            }).lean().exec((err, theater: Theater) => {
-                if (err) return reject(err);
-                if (!theater) return reject(new Error("not found."));
-
+            TheaterModel.findOne({ _id: id }).lean().exec().then((theater: Theater) => {
                 resolve(theater);
-            })
+            }).catch((err) => {
+                reject(err);
+            });
         });
     }
 
@@ -20,7 +17,7 @@ namespace interpreter {
         return new Promise<void>((resolve, reject) => {
             // あれば更新、なければ追加
             console.log("updating theater...");
-            TheaterModel.default.findOneAndUpdate(
+            TheaterModel.findOneAndUpdate(
                 {
                     _id: theater._id
                 },

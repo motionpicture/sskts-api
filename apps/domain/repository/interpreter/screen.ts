@@ -1,17 +1,21 @@
 import Screen from "../../model/Screen";
 import ScreenRepository from "../screen";
-import * as ScreenModel from "../../../common/models/screen";
+import ScreenModel from "./mongoose/model/screen";
 
 namespace interpreter {
-    export function find(id: string) {
+    export function findById(id: string) {
         return new Promise<Screen>((resolve, reject) => {
-            reject(new Error("now coding..."));
+            ScreenModel.findOne({ _id: id }).lean().exec().then((screen: Screen) => {
+                resolve(screen);
+            }).catch((err) => {
+                reject(err);
+            });
         });
     }
 
     export function findByTheater(theaterCode: string) {
         return new Promise<Array<Screen>>((resolve, reject) => {
-            ScreenModel.default.find({
+            ScreenModel.find({
                 theater: theaterCode
             }).lean().exec().then((screens: Array<Screen>) => {
                 resolve(screens);
@@ -25,7 +29,7 @@ namespace interpreter {
         return new Promise<void>((resolve, reject) => {
             // あれば更新、なければ追加
             console.log("updating screen...");
-            ScreenModel.default.findOneAndUpdate({ _id: screen._id }, screen, {
+            ScreenModel.findOneAndUpdate({ _id: screen._id }, screen, {
                 new: true,
                 upsert: true
             }).lean().exec().then(() => {

@@ -1,20 +1,16 @@
 import mongoose = require("mongoose");
-import * as theaterModel from "./theater";
-import * as screenModel from "./screen";
-import * as filmModel from "./film";
+import TheaterModel from "./theater";
+import ScreenModel from "./screen";
+import FilmModel from "./film";
 
 /**
  * パフォーマンススキーマ
  */
-export var schema = new mongoose.Schema({
-    _id: {
-        type: String,
-        required: true
-    },
+let schema = new mongoose.Schema({
+    _id: String,
     theater: { 
         type: String,
-        ref: theaterModel.default.modelName,
-        required: true
+        ref: TheaterModel.modelName,
     },
     theater_name: {
         ja: String,
@@ -22,8 +18,7 @@ export var schema = new mongoose.Schema({
     },
     screen: { 
         type: String,
-        ref: screenModel.default.modelName,
-        required: true
+        ref: ScreenModel.modelName,
     },
     screen_name: {
         ja: String,
@@ -31,8 +26,7 @@ export var schema = new mongoose.Schema({
     },
     film: { 
         type: String,
-        ref: filmModel.default.modelName,
-        required: true
+        ref: FilmModel.modelName,
     },
     film_name: {
         ja: String,

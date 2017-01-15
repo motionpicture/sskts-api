@@ -1,16 +1,10 @@
 "use strict";
 const mongoose = require("mongoose");
-exports.schema = new mongoose.Schema({
-    _id: {
-        type: String,
-        required: true
-    },
+let schema = new mongoose.Schema({
+    _id: String,
     name: {
-        type: {
-            ja: String,
-            en: String
-        },
-        required: true
+        ja: String,
+        en: String
     },
     name_kana: String,
     address: {
@@ -25,4 +19,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model("Theater", exports.schema);
+exports.default = mongoose.model("Theater", schema);

@@ -1,17 +1,13 @@
 "use strict";
-const TheaterModel = require("../../../common/models/theater");
+const theater_1 = require("./mongoose/model/theater");
 var interpreter;
 (function (interpreter) {
     function findById(id) {
         return new Promise((resolve, reject) => {
-            TheaterModel.default.findOne({
-                _id: id
-            }).lean().exec((err, theater) => {
-                if (err)
-                    return reject(err);
-                if (!theater)
-                    return reject(new Error("not found."));
+            theater_1.default.findOne({ _id: id }).lean().exec().then((theater) => {
                 resolve(theater);
+            }).catch((err) => {
+                reject(err);
             });
         });
     }
@@ -19,7 +15,7 @@ var interpreter;
     function store(theater) {
         return new Promise((resolve, reject) => {
             console.log("updating theater...");
-            TheaterModel.default.findOneAndUpdate({
+            theater_1.default.findOneAndUpdate({
                 _id: theater._id
             }, theater, {
                 new: true,

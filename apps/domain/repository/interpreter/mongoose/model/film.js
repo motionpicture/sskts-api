@@ -1,22 +1,15 @@
 "use strict";
 const mongoose = require("mongoose");
-const theaterModel = require("./theater");
-exports.schema = new mongoose.Schema({
-    _id: {
-        type: String,
-        required: true
-    },
+const theater_1 = require("./theater");
+let schema = new mongoose.Schema({
+    _id: String,
     theater: {
         type: String,
-        ref: theaterModel.default.modelName,
-        required: true
+        ref: theater_1.default.modelName,
     },
     name: {
-        type: {
-            ja: String,
-            en: String
-        },
-        required: true
+        ja: String,
+        en: String
     },
     name_kana: String,
     name_short: String,
@@ -29,14 +22,8 @@ exports.schema = new mongoose.Schema({
     kbn_joueihousiki: String,
     kbn_jimakufukikae: String,
     copyright: String,
-    coa_title_code: {
-        type: String,
-        required: true
-    },
-    coa_title_branch_num: {
-        type: String,
-        required: true
-    },
+    coa_title_code: String,
+    coa_title_branch_num: String,
 }, {
     collection: "films",
     timestamps: {
@@ -45,4 +32,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model("Film", exports.schema);
+exports.default = mongoose.model("Film", schema);

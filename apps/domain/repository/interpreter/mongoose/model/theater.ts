@@ -3,17 +3,11 @@ import mongoose = require("mongoose");
 /**
  * 劇場スキーマ
  */
-export var schema = new mongoose.Schema({
-    _id: {
-        type: String,
-        required: true
-    },
+let schema = new mongoose.Schema({
+    _id: String,
     name: {
-        type: {
-            ja: String,
-            en: String
-        },
-        required: true
+        ja: String,
+        en: String
     },
     name_kana: String,
     address: {

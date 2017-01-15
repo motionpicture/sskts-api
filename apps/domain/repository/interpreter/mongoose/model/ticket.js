@@ -1,14 +1,14 @@
 "use strict";
 const mongoose = require("mongoose");
-const TheaterModel = require("./theater");
-exports.schema = new mongoose.Schema({
+const theater_1 = require("./theater");
+let schema = new mongoose.Schema({
     _id: {
         type: String,
         required: true
     },
     theater: {
         type: String,
-        ref: TheaterModel.default.modelName,
+        ref: theater_1.default.modelName,
         required: true
     },
     code: String,
@@ -27,4 +27,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model("Ticket", exports.schema);
+exports.default = mongoose.model("Ticket", schema);

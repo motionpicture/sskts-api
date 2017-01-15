@@ -1,20 +1,20 @@
 import mongoose = require("mongoose");
-import * as OwnerModel from "./owner";
-import * as TransactionModel from "./transaction";
+import OwnerModel from "./owner";
+import TransactionModel from "./transaction";
 
 /**
  * 資産スキーマ
  */
-export var schema = new mongoose.Schema({
+let schema = new mongoose.Schema({
     owner: { // 所有者
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.default.modelName,
+        ref: OwnerModel.modelName,
         required: true
     },
     transactions: [ // 承認リスト
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: TransactionModel.default.modelName,
+            ref: TransactionModel.modelName,
         }
     ],
 

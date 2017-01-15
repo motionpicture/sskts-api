@@ -3,7 +3,7 @@ import mongoose = require("mongoose");
 /**
  * 所有者スキーマ
  */
-export var schema = new mongoose.Schema({
+let schema = new mongoose.Schema({
     name: {
         ja: String,
         en: String

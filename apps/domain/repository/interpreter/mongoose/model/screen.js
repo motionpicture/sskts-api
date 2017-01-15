@@ -1,26 +1,16 @@
 "use strict";
 const mongoose = require("mongoose");
-const theaterModel = require("./theater");
-exports.schema = new mongoose.Schema({
-    _id: {
-        type: String,
-        required: true
-    },
+const theater_1 = require("./theater");
+let schema = new mongoose.Schema({
+    _id: String,
     theater: {
         type: String,
-        ref: theaterModel.default.modelName,
-        required: true
+        ref: theater_1.default.modelName,
     },
-    coa_screen_code: {
-        type: String,
-        required: true
-    },
+    coa_screen_code: String,
     name: {
-        type: {
-            ja: String,
-            en: String
-        },
-        required: true
+        ja: String,
+        en: String
     },
     seats_number: Number,
     seats_numbers_by_seat_grade: [{
@@ -60,4 +50,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model("Screen", exports.schema);
+exports.default = mongoose.model("Screen", schema);

@@ -1,16 +1,20 @@
 "use strict";
-const ScreenModel = require("../../../common/models/screen");
+const screen_1 = require("./mongoose/model/screen");
 var interpreter;
 (function (interpreter) {
-    function find(id) {
+    function findById(id) {
         return new Promise((resolve, reject) => {
-            reject(new Error("now coding..."));
+            screen_1.default.findOne({ _id: id }).lean().exec().then((screen) => {
+                resolve(screen);
+            }).catch((err) => {
+                reject(err);
+            });
         });
     }
-    interpreter.find = find;
+    interpreter.findById = findById;
     function findByTheater(theaterCode) {
         return new Promise((resolve, reject) => {
-            ScreenModel.default.find({
+            screen_1.default.find({
                 theater: theaterCode
             }).lean().exec().then((screens) => {
                 resolve(screens);
@@ -23,7 +27,7 @@ var interpreter;
     function store(screen) {
         return new Promise((resolve, reject) => {
             console.log("updating screen...");
-            ScreenModel.default.findOneAndUpdate({ _id: screen._id }, screen, {
+            screen_1.default.findOneAndUpdate({ _id: screen._id }, screen, {
                 new: true,
                 upsert: true
             }).lean().exec().then(() => {

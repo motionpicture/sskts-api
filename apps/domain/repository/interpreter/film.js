@@ -1,17 +1,21 @@
 "use strict";
-const FilmModel = require("../../../common/models/film");
+const film_1 = require("./mongoose/model/film");
 var interpreter;
 (function (interpreter) {
-    function find(id) {
+    function findById(id) {
         return new Promise((resolve, reject) => {
-            reject(new Error("now coding..."));
+            film_1.default.findOne({ _id: id }).lean().exec().then((film) => {
+                resolve(film);
+            }).catch((err) => {
+                reject(err);
+            });
         });
     }
-    interpreter.find = find;
+    interpreter.findById = findById;
     function store(film) {
         return new Promise((resolve, reject) => {
             console.log("updating film...");
-            FilmModel.default.findOneAndUpdate({
+            film_1.default.findOneAndUpdate({
                 _id: film._id
             }, film, {
                 new: true,

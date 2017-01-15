@@ -1,21 +1,21 @@
 import mongoose = require("mongoose");
-import * as AssetModel from "./asset";
-import * as OwnerModel from "./owner";
-import * as PerformanceModel from "./performance";
-import * as TransactionModel from "./transaction";
+import AssetModel from "./asset";
+import OwnerModel from "./owner";
+import PerformanceModel from "./performance";
+import TransactionModel from "./transaction";
 
 /**
  * 承認スキーマ
  */
-export var schema = new mongoose.Schema({
+let schema = new mongoose.Schema({
     transaction: { // 取引
         type: mongoose.Schema.Types.ObjectId,
-        ref: TransactionModel.default.modelName,
+        ref: TransactionModel.modelName,
         required: true
     },
     owner: { // 所有者
         type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.default.modelName,
+        ref: OwnerModel.modelName,
         required: true
     },
     active: { // 有効な承認かどうか
@@ -40,7 +40,7 @@ export var schema = new mongoose.Schema({
     /** GROUP_ASSETの場合 */
     asset: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: AssetModel.default.modelName,
+        ref: AssetModel.modelName,
     },
 
 
@@ -52,7 +52,7 @@ export var schema = new mongoose.Schema({
     coa_tmp_reserve_num: String, // COA仮予約番号
     performance: {
         type: String,
-        ref: PerformanceModel.default.modelName,
+        ref: PerformanceModel.modelName,
     },
     section: String, // 座席セクション
     seat_code: String, // 座席コード

@@ -1,5 +1,5 @@
-import express = require('express')
-let router = express.Router();
+import {Router} from "express";
+let router = Router();
 import TheaterRepository from "../../domain/repository/interpreter/theater";
 
 router.get("/theater/:code", (req, res, next) => {
@@ -9,10 +9,10 @@ router.get("/theater/:code", (req, res, next) => {
         TheaterRepository.findById(req.params.code).then((theater) => {
             res.json({
                 success: true,
-                message: null,
+                message: "",
                 theater: theater
             });
-        }, (err) => {
+        }).catch((err) => {
             res.json({
                 success: false,
                 message: err.message

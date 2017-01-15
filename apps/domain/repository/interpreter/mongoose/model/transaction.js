@@ -1,7 +1,7 @@
 "use strict";
 const mongoose = require("mongoose");
-const OwnerModel = require("./owner");
-exports.schema = new mongoose.Schema({
+const owner_1 = require("./owner");
+let schema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
@@ -16,7 +16,7 @@ exports.schema = new mongoose.Schema({
     },
     owners: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: OwnerModel.default.modelName,
+            ref: owner_1.default.modelName,
             required: true
         }],
     access_id: String,
@@ -29,4 +29,4 @@ exports.schema = new mongoose.Schema({
     }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = mongoose.model("Transaction", exports.schema);
+exports.default = mongoose.model("Transaction", schema);

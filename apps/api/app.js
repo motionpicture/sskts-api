@@ -42,9 +42,15 @@ GMO.initialize({
 });
 const dev_1 = require("./routers/dev");
 const theater_1 = require("./routers/theater");
+const film_1 = require("./routers/film");
+const performance_1 = require("./routers/performance");
+const screen_1 = require("./routers/screen");
 app.use("/dev", dev_1.default);
 app.use("/", [
     theater_1.default,
+    film_1.default,
+    performance_1.default,
+    screen_1.default,
 ]);
 app.use((req, res) => {
     res.json({

@@ -1,17 +1,21 @@
 "use strict";
-const PerformanceModel = require("../../../common/models/performance");
+const performance_1 = require("./mongoose/model/performance");
 var interpreter;
 (function (interpreter) {
     function findById(id) {
         return new Promise((resolve, reject) => {
-            reject(new Error("now coding..."));
+            performance_1.default.findOne({ _id: id }).lean().exec().then((performance) => {
+                resolve(performance);
+            }).catch((err) => {
+                reject(err);
+            });
         });
     }
     interpreter.findById = findById;
     function store(performance) {
         return new Promise((resolve, reject) => {
             console.log("updating performance...");
-            PerformanceModel.default.findOneAndUpdate({ _id: performance._id }, performance, {
+            performance_1.default.findOneAndUpdate({ _id: performance._id }, performance, {
                 new: true,
                 upsert: true,
             }).lean().exec().then(() => {

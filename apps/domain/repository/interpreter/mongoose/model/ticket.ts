@@ -1,17 +1,17 @@
 import mongoose = require("mongoose");
-import * as TheaterModel from "./theater";
+import TheaterModel from "./theater";
 
 /**
  * 券種スキーマ
  */
-export var schema = new mongoose.Schema({
+let schema = new mongoose.Schema({
     _id: {
         type: String,
         required: true
     },
     theater: {
         type: String,
-        ref: TheaterModel.default.modelName,
+        ref: TheaterModel.modelName,
         required: true
     },
     code: String, // チケットコード
