@@ -1,11 +1,15 @@
 "use strict";
+const monapt = require("monapt");
+const Theater_1 = require("../../model/Theater");
 const theater_1 = require("./mongoose/model/theater");
 var interpreter;
 (function (interpreter) {
     function findById(id) {
         return new Promise((resolve, reject) => {
-            theater_1.default.findOne({ _id: id }).lean().exec().then((theater) => {
-                resolve(theater);
+            theater_1.default.findOne({ _id: id }).exec().then((theater) => {
+                if (!theater)
+                    return resolve(monapt.None);
+                resolve(monapt.Option(new Theater_1.default(theater.get("_id"), theater.get("name"), theater.get("name_kana"), theater.get("address"))));
             }).catch((err) => {
                 reject(err);
             });

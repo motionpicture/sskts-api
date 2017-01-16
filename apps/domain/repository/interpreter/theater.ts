@@ -1,12 +1,20 @@
+import monapt = require("monapt");
 import Theater from "../../model/Theater";
 import TheaterRepository from "../theater";
 import TheaterModel from "./mongoose/model/theater";
 
 namespace interpreter {
     export function findById(id: string) {
-        return new Promise<Theater>((resolve: (result: Theater) => void, reject: (err: Error) => void) => {
-            TheaterModel.findOne({ _id: id }).lean().exec().then((theater: Theater) => {
-                resolve(theater);
+        return new Promise<monapt.Option<Theater>>((resolve, reject) => {
+            TheaterModel.findOne({ _id: id }).exec().then((theater) => {
+                if (!theater) return resolve(monapt.None);
+
+                resolve(monapt.Option(new Theater(
+                    theater.get("_id"),
+                    theater.get("name"),
+                    theater.get("name_kana"),
+                    theater.get("address"),
+                )));
             }).catch((err) => {
                 reject(err);
             });

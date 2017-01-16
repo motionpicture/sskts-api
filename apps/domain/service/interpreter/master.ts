@@ -105,35 +105,42 @@ namespace interpreter {
                 }, (err, performances) => {
                     if (err) return rejectAll(err);
 
-                    theaterRepository.findById(theaterCode).then((theater) => {
-                        screenRepository.findByTheater(theaterCode).then((screens) => {
-                            // あれば更新、なければ追加
-                            let promises = performances.map((performanceByCOA) => {
-                                return new Promise((resolve, reject) => {
-                                    // TODO validation
-                                    // if (!performanceByCOA.title_code) return resolve();
-                                    // if (!performanceByCOA.title_branch_num) return resolve();
-                                    // if (!performanceByCOA.screen_code) return resolve();
+                    theaterRepository.findById(theaterCode).then((optionTheater) => {
+                        optionTheater.match({
+                            None: () => {
+                                rejectAll(new Error("theater not found."))
+                            },
+                            Some: (theater)  => {
+                                screenRepository.findByTheater(theaterCode).then((screens) => {
+                                    // あれば更新、なければ追加
+                                    let promises = performances.map((performanceByCOA) => {
+                                        return new Promise((resolve, reject) => {
+                                            // TODO validation
+                                            // if (!performanceByCOA.title_code) return resolve();
+                                            // if (!performanceByCOA.title_branch_num) return resolve();
+                                            // if (!performanceByCOA.screen_code) return resolve();
 
-                                    let _screen = screens.find((screen) => {
-                                        return (screen._id === `${theaterCode}${performanceByCOA.screen_code}`);
+                                            let _screen = screens.find((screen) => {
+                                                return (screen._id === `${theaterCode}${performanceByCOA.screen_code}`);
+                                            });
+                                            if (!_screen) return reject("no screen.");
+
+                                            let performance = PerformanceFactory.createByCOA(performanceByCOA, _screen, theater);
+                                            performanceRepository.store(performance).then(() => {
+                                                resolve();
+                                            }, (err) => {
+                                                reject(err);
+                                            });
+                                        });
                                     });
-                                    if (!_screen) return reject("no screen.");
 
-                                    let performance = PerformanceFactory.createByCOA(performanceByCOA, _screen, theater);
-                                    performanceRepository.store(performance).then(() => {
-                                        resolve();
+                                    Promise.all(promises).then(() => {
+                                        resolveAll();
                                     }, (err) => {
-                                        reject(err);
+                                        rejectAll(err);
                                     });
                                 });
-                            });
-
-                            Promise.all(promises).then(() => {
-                                resolveAll();
-                            }, (err) => {
-                                rejectAll(err);
-                            });
+                            },
                         });
                     });
                 });

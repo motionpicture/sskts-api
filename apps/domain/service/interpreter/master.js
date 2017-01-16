@@ -99,28 +99,35 @@ var interpreter;
                 }, (err, performances) => {
                     if (err)
                         return rejectAll(err);
-                    theaterRepository.findById(theaterCode).then((theater) => {
-                        screenRepository.findByTheater(theaterCode).then((screens) => {
-                            let promises = performances.map((performanceByCOA) => {
-                                return new Promise((resolve, reject) => {
-                                    let _screen = screens.find((screen) => {
-                                        return (screen._id === `${theaterCode}${performanceByCOA.screen_code}`);
+                    theaterRepository.findById(theaterCode).then((optionTheater) => {
+                        optionTheater.match({
+                            None: () => {
+                                rejectAll(new Error("theater not found."));
+                            },
+                            Some: (theater) => {
+                                screenRepository.findByTheater(theaterCode).then((screens) => {
+                                    let promises = performances.map((performanceByCOA) => {
+                                        return new Promise((resolve, reject) => {
+                                            let _screen = screens.find((screen) => {
+                                                return (screen._id === `${theaterCode}${performanceByCOA.screen_code}`);
+                                            });
+                                            if (!_screen)
+                                                return reject("no screen.");
+                                            let performance = PerformanceFactory.createByCOA(performanceByCOA, _screen, theater);
+                                            performanceRepository.store(performance).then(() => {
+                                                resolve();
+                                            }, (err) => {
+                                                reject(err);
+                                            });
+                                        });
                                     });
-                                    if (!_screen)
-                                        return reject("no screen.");
-                                    let performance = PerformanceFactory.createByCOA(performanceByCOA, _screen, theater);
-                                    performanceRepository.store(performance).then(() => {
-                                        resolve();
+                                    Promise.all(promises).then(() => {
+                                        resolveAll();
                                     }, (err) => {
-                                        reject(err);
+                                        rejectAll(err);
                                     });
                                 });
-                            });
-                            Promise.all(promises).then(() => {
-                                resolveAll();
-                            }, (err) => {
-                                rejectAll(err);
-                            });
+                            },
                         });
                     });
                 });
