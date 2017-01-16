@@ -1,41 +1,45 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments)).next());
+    });
+};
+const monapt = require("monapt");
+const Screen_1 = require("../../model/Screen");
 const screen_1 = require("./mongoose/model/screen");
 var interpreter;
 (function (interpreter) {
+    function createFromDocument(doc) {
+        return new Screen_1.default(doc.get("_id"), doc.get("theater"), doc.get("coa_screen_code"), doc.get("name"), doc.get("sections"));
+    }
+    interpreter.createFromDocument = createFromDocument;
     function findById(id) {
-        return new Promise((resolve, reject) => {
-            screen_1.default.findOne({ _id: id }).lean().exec().then((screen) => {
-                resolve(screen);
-            }).catch((err) => {
-                reject(err);
-            });
+        return __awaiter(this, void 0, void 0, function* () {
+            let screen = yield screen_1.default.findOne({ _id: id }).exec();
+            if (!screen)
+                return monapt.None;
+            return monapt.Option(createFromDocument(screen));
         });
     }
     interpreter.findById = findById;
     function findByTheater(theaterCode) {
-        return new Promise((resolve, reject) => {
-            screen_1.default.find({
-                theater: theaterCode
-            }).lean().exec().then((screens) => {
-                resolve(screens);
-            }, (err) => {
-                reject(err);
+        return __awaiter(this, void 0, void 0, function* () {
+            let screens = yield screen_1.default.find({ theater: theaterCode }).exec();
+            return screens.map((screen) => {
+                return createFromDocument(screen);
             });
         });
     }
     interpreter.findByTheater = findByTheater;
     function store(screen) {
-        return new Promise((resolve, reject) => {
-            console.log("updating screen...");
-            screen_1.default.findOneAndUpdate({ _id: screen._id }, screen, {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield screen_1.default.findOneAndUpdate({ _id: screen._id }, screen, {
                 new: true,
                 upsert: true
-            }).lean().exec().then(() => {
-                console.log("screen updated.");
-                resolve();
-            }).catch((err) => {
-                reject(err);
-            });
+            }).lean().exec();
         });
     }
     interpreter.store = store;

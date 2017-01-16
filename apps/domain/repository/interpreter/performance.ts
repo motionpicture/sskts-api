@@ -1,31 +1,37 @@
+import mongoose = require("mongoose");
+import monapt = require("monapt");
 import Performance from "../../model/Performance";
 import PerformanceRepository from "../performance";
 import PerformanceModel from "./mongoose/model/performance";
 
 namespace interpreter {
-    export function findById(id: string) {
-        return new Promise<Performance>((resolve, reject) => {
-            PerformanceModel.findOne({ _id: id }).lean().exec().then((performance: Performance) => {
-                resolve(performance);
-            }).catch((err) => {
-                reject(err);
-            });
-        });
+    export function createFromDocument(doc: mongoose.Document): Performance {
+        return new Performance(
+            doc.get("_id"),
+            doc.get("theater"),
+            doc.get("theater_name"),
+            doc.get("screen"),
+            doc.get("screen_name"),
+            doc.get("film"),
+            doc.get("day"),
+            doc.get("time_start"),
+            doc.get("time_end"),
+            doc.get("canceled")
+        );
     }
 
-    export function store(performance: Performance) {
-        return new Promise<void>((resolve, reject) => {
-            console.log("updating performance...");
-            PerformanceModel.findOneAndUpdate({_id: performance._id}, performance, {
-                new: true,
-                upsert: true,
-            }).lean().exec().then(() => {
-                console.log("performance updated.");
-                resolve();
-            }).catch((err) => {
-                reject(err)
-            });
-        });
+    export async function findById(id: string) {
+        let performance = await PerformanceModel.findOne({ _id: id }).exec();
+        if (!performance) return monapt.None;
+
+        return monapt.Option(createFromDocument(performance));
+    }
+
+    export async function store(performance: Performance) {
+        await PerformanceModel.findOneAndUpdate({ _id: performance._id }, performance, {
+            new: true,
+            upsert: true
+        }).lean().exec();
     }
 }
 

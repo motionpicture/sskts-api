@@ -1,35 +1,36 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments)).next());
+    });
+};
 const monapt = require("monapt");
 const Theater_1 = require("../../model/Theater");
 const theater_1 = require("./mongoose/model/theater");
 var interpreter;
 (function (interpreter) {
+    function createFromDocument(doc) {
+        return new Theater_1.default(doc.get("_id"), doc.get("name"), doc.get("name_kana"), doc.get("address"));
+    }
+    interpreter.createFromDocument = createFromDocument;
     function findById(id) {
-        return new Promise((resolve, reject) => {
-            theater_1.default.findOne({ _id: id }).exec().then((theater) => {
-                if (!theater)
-                    return resolve(monapt.None);
-                resolve(monapt.Option(new Theater_1.default(theater.get("_id"), theater.get("name"), theater.get("name_kana"), theater.get("address"))));
-            }).catch((err) => {
-                reject(err);
-            });
+        return __awaiter(this, void 0, void 0, function* () {
+            let theater = yield theater_1.default.findOne({ _id: id }).exec();
+            if (!theater)
+                return monapt.None;
+            return monapt.Option(createFromDocument(theater));
         });
     }
     interpreter.findById = findById;
     function store(theater) {
-        return new Promise((resolve, reject) => {
-            console.log("updating theater...");
-            theater_1.default.findOneAndUpdate({
-                _id: theater._id
-            }, theater, {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield theater_1.default.findOneAndUpdate({ _id: theater._id }, theater, {
                 new: true,
                 upsert: true
-            }).lean().exec().then(() => {
-                console.log("screen updated.");
-                resolve();
-            }).catch((err) => {
-                reject(err);
-            });
+            }).lean().exec();
         });
     }
     interpreter.store = store;
