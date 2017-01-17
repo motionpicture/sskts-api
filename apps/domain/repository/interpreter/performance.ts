@@ -20,8 +20,12 @@ namespace interpreter {
     //     );
     // }
 
-    export async function find() {
-        let performances = await PerformanceModel.find({}).exec();
+    export async function find(conditions: Object) {
+        let performances = await PerformanceModel.find(conditions)
+            .populate("film")
+            .populate("theater")
+            .populate("screen")
+            .exec();
 
         return performances.map((performance) => {
             return new Performance(
@@ -33,16 +37,16 @@ namespace interpreter {
                 performance.get("time_start"),
                 performance.get("time_end"),
                 performance.get("canceled")
-            ) 
+            )
         });
     }
 
     export async function findById(id: string) {
         let performance = await PerformanceModel.findOne({ _id: id })
-        .populate("film")
-        .populate("theater", "_id name")
-        .populate("screen", "_id name")
-        .exec();
+            .populate("film")
+            .populate("theater")
+            .populate("screen")
+            .exec();
         if (!performance) return monapt.None;
 
         return monapt.Option(new Performance(

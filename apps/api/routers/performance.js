@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const express_1 = require("express");
 let router = express_1.Router();
 const performance_1 = require("../../domain/repository/interpreter/performance");
+const performance_2 = require("../../domain/service/interpreter/performance");
 router.get("/performance/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
@@ -43,9 +44,13 @@ router.get("/performances", (req, res, next) => __awaiter(this, void 0, void 0, 
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let performances = yield performance_1.default.find();
+        let performances = yield performance_2.default.search({
+            day: req.query.day,
+            theater: req.query.theater,
+        })(performance_1.default);
         res.json({
             success: true,
+            message: "",
             performances: performances
         });
     }

@@ -12,9 +12,13 @@ const Performance_1 = require("../../model/Performance");
 const performance_1 = require("./mongoose/model/performance");
 var interpreter;
 (function (interpreter) {
-    function find() {
+    function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let performances = yield performance_1.default.find({}).exec();
+            let performances = yield performance_1.default.find(conditions)
+                .populate("film")
+                .populate("theater")
+                .populate("screen")
+                .exec();
             return performances.map((performance) => {
                 return new Performance_1.default(performance.get("_id"), performance.get("theater"), performance.get("screen"), performance.get("film"), performance.get("day"), performance.get("time_start"), performance.get("time_end"), performance.get("canceled"));
             });
@@ -25,8 +29,8 @@ var interpreter;
         return __awaiter(this, void 0, void 0, function* () {
             let performance = yield performance_1.default.findOne({ _id: id })
                 .populate("film")
-                .populate("theater", "_id name")
-                .populate("screen", "_id name")
+                .populate("theater")
+                .populate("screen")
                 .exec();
             if (!performance)
                 return monapt.None;

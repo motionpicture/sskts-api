@@ -1,6 +1,7 @@
 import { Router } from "express";
 let router = Router();
 import PerformanceRepository from "../../domain/repository/interpreter/performance";
+import PerformanceService from "../../domain/service/interpreter/performance";
 
 router.get("/performance/:id", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
@@ -35,9 +36,14 @@ router.get("/performances", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let performances = await PerformanceRepository.find();
+        let performances = await PerformanceService.search({
+            day: req.query.day,
+            theater: req.query.theater,
+        })(PerformanceRepository);
+
         res.json({
             success: true,
+            message: "",
             performances: performances
         });
     } catch (error) {
