@@ -15,7 +15,6 @@ var interpreter;
     function createFromDocument(doc) {
         return new Theater_1.default(doc.get("_id"), doc.get("name"), doc.get("name_kana"), doc.get("address"));
     }
-    interpreter.createFromDocument = createFromDocument;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let theater = yield theater_1.default.findOne({ _id: id }).exec();
@@ -34,6 +33,18 @@ var interpreter;
         });
     }
     interpreter.store = store;
+    function storeFromCOA(theaterByCOA) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield store(new Theater_1.default(theaterByCOA.theater_code, {
+                ja: theaterByCOA.theater_name,
+                en: theaterByCOA.theater_name_eng,
+            }, theaterByCOA.theater_name_kana, {
+                ja: "",
+                en: "",
+            }));
+        });
+    }
+    interpreter.storeFromCOA = storeFromCOA;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

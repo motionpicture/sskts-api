@@ -118,18 +118,18 @@ import theaterRouter from "./routers/theater";
 import filmRouter from "./routers/film";
 import performanceRouter from "./routers/performance";
 import screenRouter from "./routers/screen";
+import ownerRouter from "./routers/owner";
 // import transactionRouter from "./routers/transaction";
 // import authorizationRouter from "./routers/authorization";
-// import ownerRouter from "./routers/owner";
 app.use("/dev", devRouter);
 app.use("/", [
     theaterRouter,
     filmRouter,
     performanceRouter,
     screenRouter,
+    ownerRouter,
     // transactionRouter,
     // authorizationRouter,
-    // ownerRouter,
 ]);
 
 // 404

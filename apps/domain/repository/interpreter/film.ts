@@ -1,8 +1,10 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Film from "../../model/Film";
+import Theater from "../../model/Theater";
 import FilmRepository from "../film";
 import FilmModel from "./mongoose/model/film";
+import COA = require("@motionpicture/coa-service");
 
 namespace interpreter {
     export function createFromDocument(doc: mongoose.Document): Film {
@@ -37,6 +39,32 @@ namespace interpreter {
             new: true,
             upsert: true
         }).lean().exec();
+    }
+
+    export function storeFromCOA(filmByCOA: COA.findFilmsByTheaterCodeInterface.Result) {
+        return async (theater: Theater) => {
+            await store(new Film(
+                // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
+                `${theater._id}${filmByCOA.title_code}${filmByCOA.title_branch_num}`,
+                filmByCOA.title_code,
+                filmByCOA.title_branch_num,
+                theater,
+                {
+                    ja: filmByCOA.title_name,
+                    en: filmByCOA.title_name_eng
+                },
+                filmByCOA.title_name_kana,
+                filmByCOA.title_name_short,
+                filmByCOA.title_name_orig,
+                filmByCOA.show_time,
+                filmByCOA.date_begin,
+                filmByCOA.date_end,
+                filmByCOA.kbn_eirin,
+                filmByCOA.kbn_eizou,
+                filmByCOA.kbn_joueihousiki,
+                filmByCOA.kbn_jimakufukikae
+            ));
+        }
     }
 }
 

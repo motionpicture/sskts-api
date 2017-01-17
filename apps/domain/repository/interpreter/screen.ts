@@ -1,8 +1,10 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Screen from "../../model/Screen";
+import Theater from "../../model/Theater";
 import ScreenRepository from "../screen";
 import ScreenModel from "./mongoose/model/screen";
+import COA = require("@motionpicture/coa-service");
 
 namespace interpreter {
     export function createFromDocument(doc: mongoose.Document): Screen {
@@ -34,6 +36,50 @@ namespace interpreter {
             new: true,
             upsert: true
         }).lean().exec();
+    }
+
+    export function storeFromCOA(screenByCOA: COA.findScreensByTheaterCodeInterface.Result) {
+        return async (theater: Theater) => {
+            let sections: Array<{
+                code: string,
+                name: {
+                    ja: string,
+                    en: string,
+                },
+                seats: Array<{
+                    code: string
+                }>
+            }> = [];
+            let sectionCodes: Array<string> = [];
+            screenByCOA.list_seat.forEach((seat) => {
+                if (sectionCodes.indexOf(seat.seat_section) < 0) {
+                    sectionCodes.push(seat.seat_section);
+                    sections.push({
+                        code: seat.seat_section,
+                        name: {
+                            ja: `セクション${seat.seat_section}`,
+                            en: `section${seat.seat_section}`,
+                        },
+                        seats: []
+                    });
+                }
+
+                sections[sectionCodes.indexOf(seat.seat_section)].seats.push({
+                    code: seat.seat_num
+                });
+            });
+
+            await store(new Screen(
+                `${theater._id}${screenByCOA.screen_code}`,
+                theater,
+                screenByCOA.screen_code,
+                {
+                    ja: screenByCOA.screen_name,
+                    en: screenByCOA.screen_name_eng
+                },
+                sections
+            ));
+        }
     }
 }
 

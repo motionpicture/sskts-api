@@ -25,61 +25,63 @@ program
 program
     .command("importTheater <code>")
     .description("import theater from COA.")
-    .action((code) => {
+    .action(async (code) => {
         mongoose.connect(MONGOLAB_URI);
-        MasterService.importTheater(code)(TheaterRepository).then(() => {
-            mongoose.disconnect();
-        }, (err) => {
-            console.error(err);
-            mongoose.disconnect();
-        });
+
+        try {
+            await MasterService.importTheater(code)(TheaterRepository);
+        } catch (error) {
+            console.error(error);
+        }
+
+        mongoose.disconnect();
     });
 
 program
     .command("importFilms <theaterCode>")
     .description("import films from COA.")
-    .action((theaterCode) => {
+    .action(async (theaterCode) => {
         mongoose.connect(MONGOLAB_URI);
 
-        MasterService.importFilms(theaterCode)(FilmRepository).then(() => {
-            console.log("importFilms processed.");
-            mongoose.disconnect();
-        }, (err) => {
-            console.log("importFilms processed.", err);
-            mongoose.disconnect();
-        });
+        try {
+            await MasterService.importFilms(theaterCode)(TheaterRepository, FilmRepository);
+        } catch (error) {
+            console.error(error);
+        }
+
+        mongoose.disconnect();
     });
 
 program
     .command("importScreens <theaterCode>")
     .description("import screens from COA.")
-    .action((theaterCode) => {
+    .action(async (theaterCode) => {
         mongoose.connect(MONGOLAB_URI);
 
-        MasterService.importScreens(theaterCode)(ScreenRepository).then(() => {
-            console.log("importScreens processed.");
-            mongoose.disconnect();
-        }, (err) => {
-            console.log("importScreens processed.", err);
-            mongoose.disconnect();
-        });
+        try {
+            await MasterService.importScreens(theaterCode)(TheaterRepository, ScreenRepository);
+        } catch (error) {
+            console.error(error);
+        }
+
+        mongoose.disconnect();
     });
 
 program
     .command("importPerformances <theaterCode> <day_start> <day_end>")
     .description("import performances from COA.")
-    .action((theaterCode, start, end) => {
+    .action(async (theaterCode, start, end) => {
         mongoose.connect(MONGOLAB_URI);
 
-        MasterService.importPerformances(theaterCode, start, end)(
-            FilmRepository, TheaterRepository, ScreenRepository, PerformanceRepository
-        ).then(() => {
-            console.log("importPerformances processed.");
-            mongoose.disconnect();
-        }, (err) => {
-            console.log("importPerformances processed.", err);
-            mongoose.disconnect();
-        });
+        try {
+            await MasterService.importPerformances(theaterCode, start, end)(
+                FilmRepository, ScreenRepository, PerformanceRepository
+            );
+        } catch (error) {
+            console.error(error);
+        }
+
+        mongoose.disconnect();
     });
 
 // program

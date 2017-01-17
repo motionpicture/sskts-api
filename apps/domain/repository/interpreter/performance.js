@@ -47,6 +47,13 @@ var interpreter;
         });
     }
     interpreter.store = store;
+    function storeFromCOA(performanceByCOA) {
+        return (screen, film) => __awaiter(this, void 0, void 0, function* () {
+            let id = `${screen.theater._id}${performanceByCOA.date_jouei}${performanceByCOA.title_code}${performanceByCOA.title_branch_num}${performanceByCOA.screen_code}${performanceByCOA.time_begin}`;
+            yield store(new Performance_1.default(id, screen.theater, screen, film, performanceByCOA.date_jouei, performanceByCOA.time_begin, performanceByCOA.time_end, false));
+        });
+    }
+    interpreter.storeFromCOA = storeFromCOA;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

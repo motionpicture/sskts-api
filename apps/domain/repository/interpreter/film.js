@@ -34,6 +34,15 @@ var interpreter;
         });
     }
     interpreter.store = store;
+    function storeFromCOA(filmByCOA) {
+        return (theater) => __awaiter(this, void 0, void 0, function* () {
+            yield store(new Film_1.default(`${theater._id}${filmByCOA.title_code}${filmByCOA.title_branch_num}`, filmByCOA.title_code, filmByCOA.title_branch_num, theater, {
+                ja: filmByCOA.title_name,
+                en: filmByCOA.title_name_eng
+            }, filmByCOA.title_name_kana, filmByCOA.title_name_short, filmByCOA.title_name_orig, filmByCOA.show_time, filmByCOA.date_begin, filmByCOA.date_end, filmByCOA.kbn_eirin, filmByCOA.kbn_eizou, filmByCOA.kbn_joueihousiki, filmByCOA.kbn_jimakufukikae));
+        });
+    }
+    interpreter.storeFromCOA = storeFromCOA;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

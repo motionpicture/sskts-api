@@ -1,3 +1,4 @@
+import Theater from "./Theater";
 import MultilingualString from "./MultilingualString";
 
 export default class Film {
@@ -5,7 +6,7 @@ export default class Film {
         readonly _id: string,
         readonly coa_title_code: string,
         readonly coa_title_branch_num: string,
-        readonly theater: string,
+        readonly theater: Theater,
         readonly name: MultilingualString,
         readonly name_kana: string, // 作品タイトル名（カナ）
         readonly name_short: string, // 作品タイトル名省略
