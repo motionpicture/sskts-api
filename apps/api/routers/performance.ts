@@ -30,25 +30,19 @@ router.get("/performance/:id", async (req, res, next) => {
     }
 });
 
-// router.get("/performances", (req, res, next) => {
-//     req.getValidationResult().then((result) => {
-//         if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
+router.get("/performances", async (req, res, next) => {
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
-//         PerformanceRepository.find({
-//             day: req.query.day,
-//             theater: req.query.theater,
-//         }).then((performances) => {
-//             res.json({
-//                 success: true,
-//                 performances: performances
-//             });
-//         }, (err) => {
-//             res.json({
-//                 success: false,
-//                 message: err.message
-//             });
-//         });
-//     });
-// });
+    try {
+        let performances = await PerformanceRepository.find();
+        res.json({
+            success: true,
+            performances: performances
+        });
+    } catch (error) {
+        next(error);
+    }
+});
 
 export default router;

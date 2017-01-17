@@ -4,7 +4,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
         function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 const monapt = require("monapt");
@@ -12,16 +12,25 @@ const Performance_1 = require("../../model/Performance");
 const performance_1 = require("./mongoose/model/performance");
 var interpreter;
 (function (interpreter) {
-    function createFromDocument(doc) {
-        return new Performance_1.default(doc.get("_id"), doc.get("theater"), doc.get("theater_name"), doc.get("screen"), doc.get("screen_name"), doc.get("film"), doc.get("day"), doc.get("time_start"), doc.get("time_end"), doc.get("canceled"));
+    function find() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let performances = yield performance_1.default.find({}).exec();
+            return performances.map((performance) => {
+                return new Performance_1.default(performance.get("_id"), performance.get("theater"), performance.get("screen"), performance.get("film"), performance.get("day"), performance.get("time_start"), performance.get("time_end"), performance.get("canceled"));
+            });
+        });
     }
-    interpreter.createFromDocument = createFromDocument;
+    interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let performance = yield performance_1.default.findOne({ _id: id }).exec();
+            let performance = yield performance_1.default.findOne({ _id: id })
+                .populate("film")
+                .populate("theater", "_id name")
+                .populate("screen", "_id name")
+                .exec();
             if (!performance)
                 return monapt.None;
-            return monapt.Option(createFromDocument(performance));
+            return monapt.Option(new Performance_1.default(performance.get("_id"), performance.get("theater"), performance.get("screen"), performance.get("film"), performance.get("day"), performance.get("time_start"), performance.get("time_end"), performance.get("canceled")));
         });
     }
     interpreter.findById = findById;

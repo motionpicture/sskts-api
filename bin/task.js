@@ -58,7 +58,7 @@ program
     .description("import performances from COA.")
     .action((theaterCode, start, end) => {
     mongoose.connect(MONGOLAB_URI);
-    master_1.default.importPerformances(theaterCode, start, end)(theater_1.default, screen_1.default, performance_1.default).then(() => {
+    master_1.default.importPerformances(theaterCode, start, end)(film_1.default, theater_1.default, screen_1.default, performance_1.default).then(() => {
         console.log("importPerformances processed.");
         mongoose.disconnect();
     }, (err) => {

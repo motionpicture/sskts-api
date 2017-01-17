@@ -4,7 +4,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
         function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 const express_1 = require("express");
@@ -32,6 +32,21 @@ router.get("/performance/:id", (req, res, next) => __awaiter(this, void 0, void 
                     performance: null
                 });
             }
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+router.get("/performances", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    let validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty())
+        return next(new Error(validatorResult.array()[0].msg));
+    try {
+        let performances = yield performance_1.default.find();
+        res.json({
+            success: true,
+            performances: performances
         });
     }
     catch (error) {

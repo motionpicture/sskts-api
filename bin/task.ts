@@ -72,7 +72,7 @@ program
         mongoose.connect(MONGOLAB_URI);
 
         MasterService.importPerformances(theaterCode, start, end)(
-            TheaterRepository, ScreenRepository, PerformanceRepository
+            FilmRepository, TheaterRepository, ScreenRepository, PerformanceRepository
         ).then(() => {
             console.log("importPerformances processed.");
             mongoose.disconnect();
