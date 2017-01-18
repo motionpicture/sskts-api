@@ -27,7 +27,7 @@ let schema = new mongoose.Schema({
         required: true
     },
     group: { // 承認グループ
-        type: Number,
+        type: String,
         required: true,
     },
     process_status: { // TODO 処理ステータス管理

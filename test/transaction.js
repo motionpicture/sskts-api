@@ -16,8 +16,11 @@ function main() {
             body: {
                 group: "ANONYMOUS",
             },
-            json: true
+            json: true,
+            simple: false,
         });
+        if (!body.success)
+            throw new Error(body.message);
         let owner = body.owner;
         console.log("owner:", owner);
         body = yield request.post({
@@ -25,8 +28,11 @@ function main() {
             body: {
                 owners: ["5868e16789cc75249cdbfa4b", owner._id]
             },
-            json: true
+            json: true,
+            simple: false,
         });
+        if (!body.success)
+            throw new Error(body.message);
         let transaction = body.transaction;
         console.log("transaction:", transaction);
         body = yield request.post({
@@ -44,9 +50,16 @@ function main() {
             body: {
                 password: "password"
             },
-            json: true
+            json: true,
+            simple: false,
         });
+        if (!body.success)
+            throw new Error(body.message);
         console.log("close result:", body);
     });
 }
-main();
+main().then(() => {
+    console.log("main processed.");
+}).catch((err) => {
+    console.error(err.message);
+});

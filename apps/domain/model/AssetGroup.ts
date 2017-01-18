@@ -1,6 +1,10 @@
-const enum GROUP {
+type AssetGroup =
+    "SEAT_RESERVATION"
+    ;
+
+namespace AssetGroup {
     /** 座席予約グループ */
-    SEAT_RESERVATION = 1
+    export const SEAT_RESERVATION = "SEAT_RESERVATION";
 }
 
-export default GROUP;
+export default AssetGroup;

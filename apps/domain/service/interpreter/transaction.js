@@ -10,6 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const mongoose = require("mongoose");
 const Transaction_1 = require("../../model/Transaction");
 const TransactionEvent_1 = require("../../model/TransactionEvent");
+const TransactionEventGroup_1 = require("../../model/TransactionEventGroup");
+const TransactionStatus_1 = require("../../model/TransactionStatus");
 var interpreter;
 (function (interpreter) {
     function start(expired_at, ownerIds) {
@@ -22,8 +24,8 @@ var interpreter;
                 owners.push(option.get());
             }));
             yield Promise.all(promises);
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), 1, null);
-            let transaction = new Transaction_1.default(mongoose.Types.ObjectId().toString(), "password", 0, [event], owners, expired_at, "", "");
+            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.START, null);
+            let transaction = new Transaction_1.default(mongoose.Types.ObjectId().toString(), "password", TransactionStatus_1.default.PROCESSING, [event], owners, expired_at, "", "");
             yield transactionRepository.store(transaction);
             return transaction;
         });
@@ -31,10 +33,10 @@ var interpreter;
     interpreter.start = start;
     function addAssetAuthorization(id, authorization) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), 1, authorization);
+            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.START, authorization);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: 0
+                status: TransactionStatus_1.default.PROCESSING
             }, {
                 $set: {},
                 $push: {
@@ -48,10 +50,10 @@ var interpreter;
     interpreter.addAssetAuthorization = addAssetAuthorization;
     function addGMOAuthorization(id, authorization) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), 1, authorization);
+            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.START, authorization);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: 0
+                status: TransactionStatus_1.default.PROCESSING
             }, {
                 $set: {},
                 $push: {
@@ -65,10 +67,10 @@ var interpreter;
     interpreter.addGMOAuthorization = addGMOAuthorization;
     function addCOAAuthorization(id, authorization) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), 1, authorization);
+            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.START, authorization);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: 0
+                status: TransactionStatus_1.default.PROCESSING
             }, {
                 $set: {},
                 $push: {
@@ -82,13 +84,13 @@ var interpreter;
     interpreter.addCOAAuthorization = addCOAAuthorization;
     function close(id) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), 2, null);
+            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.CLOSE, null);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: 0
+                status: TransactionStatus_1.default.PROCESSING
             }, {
                 $set: {
-                    status: 1
+                    status: TransactionStatus_1.default.CLOSED
                 },
                 $push: {
                     events: event
@@ -101,13 +103,13 @@ var interpreter;
     interpreter.close = close;
     function expire(id) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), 3, null);
+            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.EXPIRE, null);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: 0
+                status: TransactionStatus_1.default.PROCESSING
             }, {
                 $set: {
-                    status: 2
+                    status: TransactionStatus_1.default.EXPIRED
                 },
                 $push: {
                     events: event
@@ -120,13 +122,13 @@ var interpreter;
     interpreter.expire = expire;
     function cancel(id) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), 4, null);
+            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.CANCEL, null);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: 1
+                status: TransactionStatus_1.default.CLOSED
             }, {
                 $set: {
-                    status: 3
+                    status: TransactionStatus_1.default.CANCELED
                 },
                 $push: {
                     events: event

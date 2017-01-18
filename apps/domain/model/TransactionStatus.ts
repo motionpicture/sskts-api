@@ -1,12 +1,19 @@
-const enum STATUS {
+type TransactionStatus =
+    "PROCESSING"
+    | "CLOSED"
+    | "EXPIRED"
+    | "CANCELED"
+    ;
+
+namespace TransactionStatus {
     /** 進行中 */
-    PROCESSING = 0,
+    export const PROCESSING = "PROCESSING";
     /** 成立済み */
-    CLOSED = 1,
+    export const CLOSED = "CLOSED";
     /** 期限切れ */
-    EXPIRED = 2,
+    export const EXPIRED = "EXPIRED";
     /** 取消済み */
-    CANCELED = 3,
+    export const CANCELED = "CANCELED";
 }
 
-export default STATUS;
+export default TransactionStatus;

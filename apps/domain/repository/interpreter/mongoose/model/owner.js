@@ -5,7 +5,7 @@ let schema = new mongoose.Schema({
         ja: String,
         en: String
     },
-    group: Number,
+    group: String,
     email: String,
     tel: String,
 }, {

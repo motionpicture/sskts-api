@@ -1,10 +1,16 @@
-const enum GROUP {
+type OwnerGroup =
+    "ANONYMOUS"
+    | "ADMINISTRATOR"
+    | "MEMBER"
+    ;
+
+namespace OwnerGroup {
     /** 匿名グループ */
-    ANONYMOUS = 0,
+    export const ANONYMOUS = "ANONYMOUS";
     /** 運営者グループ */
-    ADMINISTRATOR = 1,
+    export const ADMINISTRATOR = "ANONYMOUS";
     /** 会員グループ */
-    MEMBER = 2
+    export const MEMBER = "MEMBER";
 }
 
-export default GROUP;
+export default OwnerGroup;

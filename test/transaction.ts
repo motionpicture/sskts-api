@@ -11,8 +11,10 @@ async function main() {
         body: {
             group: "ANONYMOUS",
         },
-        json: true
+        json: true,
+        simple: false,
     });
+    if (!body.success) throw new Error(body.message); 
     let owner = body.owner;
     console.log("owner:", owner);
 
@@ -23,8 +25,10 @@ async function main() {
         body: {
             owners: ["5868e16789cc75249cdbfa4b", owner._id]
         },
-        json: true
+        json: true,
+        simple: false,
     });
+    if (!body.success) throw new Error(body.message); 
     let transaction = body.transaction;
     console.log("transaction:", transaction);
 
@@ -37,7 +41,7 @@ async function main() {
         },
         json: true
     });
-    if (!body.success) throw new Error("fail in addGMOAuthorization."); 
+    if (!body.success) throw new Error("fail in addGMOAuthorization.");
     console.log("addGMOAuthorization result:", body);
 
 
@@ -47,8 +51,10 @@ async function main() {
         body: {
             password: "password"
         },
-        json: true
+        json: true,
+        simple: false,
     });
+    if (!body.success) throw new Error(body.message); 
     // let owner = body.owner;
     console.log("close result:", body);
 }
@@ -72,5 +78,8 @@ async function main() {
 //     json: true
 // };
 
-
-main();
+main().then(() => {
+    console.log("main processed.");
+}).catch((err) => {
+    console.error(err.message);
+});

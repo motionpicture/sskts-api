@@ -24,7 +24,7 @@ let schema = new mongoose.Schema({
         required: true
     },
     group: {
-        type: Number,
+        type: String,
         required: true,
     },
     process_status: {

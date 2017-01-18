@@ -9,12 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const monapt = require("monapt");
 const Owner_1 = require("../../../model/Owner");
+const OwnerGroup_1 = require("../../../model/OwnerGroup");
 const owner_1 = require("../mongoose/model/owner");
 var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield owner_1.default.find({ $and: [conditions, { group: 0 }] }).exec();
+            let docs = yield owner_1.default.find({ $and: [conditions, { group: OwnerGroup_1.default.ANONYMOUS }] }).exec();
             return docs.map((doc) => {
                 return new Owner_1.Anonymous(doc.get("_id"), doc.get("name_first"), doc.get("name_last"), doc.get("email"), doc.get("tel"));
             });
@@ -23,7 +24,7 @@ var interpreter;
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield owner_1.default.findOne({ _id: id, group: 0 }).exec();
+            let doc = yield owner_1.default.findOne({ _id: id, group: OwnerGroup_1.default.ANONYMOUS }).exec();
             if (!doc)
                 return monapt.None;
             return monapt.Option(new Owner_1.Anonymous(doc.get("_id"), doc.get("name_first"), doc.get("name_last"), doc.get("email"), doc.get("tel")));
@@ -32,7 +33,7 @@ var interpreter;
     interpreter.findById = findById;
     function findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield owner_1.default.findOneAndUpdate({ $and: [conditions, { group: 0 }] }, update, {
+            let doc = yield owner_1.default.findOneAndUpdate({ $and: [conditions, { group: OwnerGroup_1.default.ANONYMOUS }] }, update, {
                 new: true,
                 upsert: false
             }).exec();
@@ -44,7 +45,7 @@ var interpreter;
     interpreter.findOneAndUpdate = findOneAndUpdate;
     function store(owner) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield owner_1.default.findOneAndUpdate({ _id: owner._id, group: 0 }, owner, {
+            yield owner_1.default.findOneAndUpdate({ _id: owner._id, group: OwnerGroup_1.default.ANONYMOUS }, owner, {
                 new: true,
                 upsert: true
             }).lean().exec();

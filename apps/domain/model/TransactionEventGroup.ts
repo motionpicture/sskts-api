@@ -1,8 +1,15 @@
-const enum GROUP {
-    START = 1,
-    CLOSE = 2,
-    EXPIRE = 3,
-    CANCEL = 4,
+type TransactionEventGroup =
+    "START"
+    | "CLOSE"
+    | "EXPIRE"
+    | "CANCEL"
+    ;
+
+namespace TransactionEventGroup {
+    export const START = "START";
+    export const CLOSE = "CLOSE";
+    export const EXPIRE = "EXPIRE";
+    export const CANCEL = "CANCEL";
 }
 
-export default GROUP;
+export default TransactionEventGroup;
