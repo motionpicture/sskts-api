@@ -1,4 +1,4 @@
-import MultilingualString from "../model/MultilingualString";
+import MultilingualString from "../model/multilingualString";
 import PerformanceRepository from "../repository/performance";
 type PerformanceOperation<T> = (repository: PerformanceRepository) => Promise<T>;
 interface SearchConditions {

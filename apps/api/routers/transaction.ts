@@ -47,7 +47,7 @@ router.post("/transaction/:id/addGMOAuthorization", authentication4transaction, 
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        await TransactionService.addGMOAuthorization({
+        let authorization = await TransactionService.addGMOAuthorization({
             transaction_id: req.params.id,
             transaction_password: req.body.transaction_password,
             owner_id: req.body.owner_id,
@@ -64,6 +64,7 @@ router.post("/transaction/:id/addGMOAuthorization", authentication4transaction, 
         res.json({
             success: true,
             message: null,
+            authorization: authorization
         });
     } catch (error) {
         next(error);
@@ -76,12 +77,34 @@ router.post("/transaction/:id/addCOAAuthorization", authentication4transaction, 
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        await TransactionService.addCOAAuthorization({
+        let authorization = await TransactionService.addCOAAuthorization({
             transaction_id: req.params.id,
             transaction_password: req.body.transaction_password,
             owner_id: req.body.owner_id,
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
             seats: req.body.seats,
+        })(TransactionRepository);
+
+        res.json({
+            success: true,
+            message: null,
+            authorization: authorization
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.post("/transaction/:id/removeAuthorization", authentication4transaction, async (req, res, next) => {
+    // TODO validations
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        await TransactionService.removeAuthorization({
+            transaction_id: req.params.id,
+            transaction_password: req.body.transaction_password,
+            authorization_id: req.body.authorization_id
         })(TransactionRepository);
 
         res.json({

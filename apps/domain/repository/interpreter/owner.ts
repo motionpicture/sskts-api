@@ -1,5 +1,5 @@
 import monapt = require("monapt");
-import { default as Owner } from "../../model/Owner";
+import { default as Owner } from "../../model/owner";
 import OwnerRepository from "../owner";
 import OwnerModel from "./mongoose/model/owner";
 

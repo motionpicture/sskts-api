@@ -1,6 +1,6 @@
 import monapt = require("monapt");
-import Film from "../model/Film";
-import Theater from "../model/Theater";
+import Film from "../model/film";
+import Theater from "../model/theater";
 import COA = require("@motionpicture/coa-service");
 
 interface FilmRepository {

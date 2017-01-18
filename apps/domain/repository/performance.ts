@@ -1,7 +1,7 @@
 import monapt = require("monapt");
-import Screen from "../model/Screen";
-import Film from "../model/Film";
-import Performance from "../model/Performance";
+import Screen from "../model/screen";
+import Film from "../model/film";
+import Performance from "../model/performance";
 import COA = require("@motionpicture/coa-service");
 
 interface PerformanceRepository {

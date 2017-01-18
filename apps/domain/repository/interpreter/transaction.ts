@@ -1,5 +1,5 @@
 import monapt = require("monapt");
-import Transaction from "../../model/Transaction";
+import Transaction from "../../model/transaction";
 import TransactionRepository from "../transaction";
 import TheaterModel from "./mongoose/model/transaction";
 
@@ -31,6 +31,7 @@ namespace interpreter {
             doc.get("status"),
             doc.get("events"),
             doc.get("owners"),
+            doc.get("authorizations"),
             doc.get("expired_at"),
             doc.get("access_id"),
             doc.get("access_pass"),

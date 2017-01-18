@@ -1,4 +1,4 @@
-import MultilingualString from "../../model/MultilingualString";
+import MultilingualString from "../../model/multilingualString";
 import PerformanceService from "../performance";
 import PerformanceRepository from "../../repository/performance";
 interface SearchConditions {

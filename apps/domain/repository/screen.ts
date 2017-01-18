@@ -1,6 +1,6 @@
 import monapt = require("monapt");
-import Theater from "../model/Theater";
-import Screen from "../model/Screen";
+import Theater from "../model/theater";
+import Screen from "../model/screen";
 import COA = require("@motionpicture/coa-service");
 
 interface ScreenRepository {

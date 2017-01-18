@@ -1,10 +1,10 @@
 import mongoose = require("mongoose");
-import Owner from "../../model/Owner";
-import Transaction from "../../model/Transaction";
-import TransactionEvent from "../../model/TransactionEvent";
-import TransactionEventGroup from "../../model/TransactionEventGroup";
-import TransactionStatus from "../../model/TransactionStatus";
-import * as Authorization from "../../model/Authorization";
+import Owner from "../../model/owner";
+import Transaction from "../../model/transaction";
+import { default as TransactionEvent, Authorize as AuthorizeTransactionEvent, Unauthoriza as UnauthorizeTransactionEvent } from "../../model/transactionEvent";
+import TransactionEventGroup from "../../model/transactionEventGroup";
+import TransactionStatus from "../../model/transactionStatus";
+import { default as Authorization, ASSET as AssetAuthorization, GMO as GMOAuthorization, COA as COAAuthorization } from "../../model/authorization";
 import TransactionService from "../transaction";
 import TransactionRepository from "../../repository/transaction";
 import OwnerRepository from "../../repository/owner";
@@ -24,15 +24,15 @@ namespace interpreter {
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
                 TransactionEventGroup.START,
-                null
             );
 
             let transaction = new Transaction(
                 mongoose.Types.ObjectId().toString(),
-                "password", // TODO
+                "password", // TODO 自動生成
                 TransactionStatus.PROCESSING,
                 [event],
                 owners,
+                [], // オーソリリスト初期化
                 expired_at,
                 "",
                 "",
@@ -44,12 +44,18 @@ namespace interpreter {
         }
     }
 
-    function pushEvent(args: {
+    function pushAuthorization(args: {
         transaction_id: string,
         transaction_password: string,
-        event: TransactionEvent
+        authorization: Authorization
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // 取引イベント作成
+            let event = new AuthorizeTransactionEvent(
+                mongoose.Types.ObjectId().toString(),
+                args.authorization
+            );
+
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
@@ -59,7 +65,8 @@ namespace interpreter {
                     $set: {
                     },
                     $push: {
-                        events: args.event
+                        events: event,
+                        authorizations: args.authorization,
                     }
                 });
             if (option.isEmpty) throw new Error("processing transaction with given password not found.");
@@ -67,11 +74,10 @@ namespace interpreter {
     }
 
     /** 内部資産承認 */
-    export function addAssetAuthorization(id: string, authorization: Authorization.ASSET) {
+    export function addAssetAuthorization(id: string, authorization: AssetAuthorization) {
         return async (transactionRepository: TransactionRepository) => {
-            let event = new TransactionEvent(
+            let event = new AuthorizeTransactionEvent(
                 mongoose.Types.ObjectId().toString(),
-                TransactionEventGroup.START,
                 authorization
             );
 
@@ -108,24 +114,19 @@ namespace interpreter {
             // TODO 所有者チェック
 
             // GMO承認を作成
-            let authorization = new Authorization.GMO(
+            let authorization = new GMOAuthorization(
                 mongoose.Types.ObjectId().toString(),
                 args.gmo_order_id
             );
 
-            // 取引イベント作成
-            let event = new TransactionEvent(
-                mongoose.Types.ObjectId().toString(),
-                TransactionEventGroup.AUTHORIZE,
-                authorization
-            );
-
             // 永続化
-            await pushEvent({
+            await pushAuthorization({
                 transaction_id: args.transaction_id,
                 transaction_password: args.transaction_password,
-                event: event
+                authorization: authorization
             })(transactionRepository);
+
+            return authorization;
         }
     }
 
@@ -153,35 +154,64 @@ namespace interpreter {
             // TODO 所有者チェック
 
             // GMO承認を作成
-            let authorization = new Authorization.COA(
+            let authorization = new COAAuthorization(
                 mongoose.Types.ObjectId().toString(),
                 args.coa_tmp_reserve_num
             );
 
+            // 永続化
+            await pushAuthorization({
+                transaction_id: args.transaction_id,
+                transaction_password: args.transaction_password,
+                authorization: authorization
+            })(transactionRepository);
+
+            return authorization;
+        }
+    }
+
+    /** 資産承認解除 */
+    export function removeAuthorization(args: {
+        transaction_id: string,
+        transaction_password: string,
+        authorization_id: string,
+    }) {
+        return async (transactionRepository: TransactionRepository) => {
+            // TODO 承認存在チェック
+
             // 取引イベント作成
-            let event = new TransactionEvent(
+            let event = new UnauthorizeTransactionEvent(
                 mongoose.Types.ObjectId().toString(),
-                TransactionEventGroup.AUTHORIZE,
-                authorization
+                args.authorization_id
             );
 
             // 永続化
-            await pushEvent({
-                transaction_id: args.transaction_id,
-                transaction_password: args.transaction_password,
-                event: event
-            })(transactionRepository);
+            let option = await transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                password: args.transaction_password,
+                status: TransactionStatus.PROCESSING
+            }, {
+                    $set: {
+                    },
+                    $push: {
+                        events: event,
+                    },
+                    $pull: {
+                        authorizations: {
+                            _id: args.authorization_id
+                        },
+                    }
+                });
+            if (option.isEmpty) throw new Error("processing transaction with given password not found.");
         }
     }
-    /** 資産承認解除 */
-    // unauthorizeAsset(id: string): AssetAndTransactionOperation<void>;
+
     /** 取引成立 */
     export function close(id: string) {
         return async (transactionRepository: TransactionRepository) => {
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
                 TransactionEventGroup.CLOSE,
-                null
             );
 
             let option = await transactionRepository.findOneAndUpdate({
@@ -198,13 +228,13 @@ namespace interpreter {
             if (option.isEmpty) throw new Error("processing transaction not found.");
         }
     }
+
     /** 取引期限切れ */
     export function expire(id: string) {
         return async (transactionRepository: TransactionRepository) => {
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
                 TransactionEventGroup.EXPIRE,
-                null
             );
 
             let option = await transactionRepository.findOneAndUpdate({
@@ -221,13 +251,13 @@ namespace interpreter {
             if (option.isEmpty) throw new Error("processing transaction not found.");
         }
     }
+
     /** 取引取消 */
     export function cancel(id: string) {
         return async (transactionRepository: TransactionRepository) => {
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
                 TransactionEventGroup.CANCEL,
-                null
             );
 
             let option = await transactionRepository.findOneAndUpdate({

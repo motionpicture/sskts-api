@@ -1,5 +1,5 @@
 "use strict";
-const Theater_1 = require("../model/Theater");
+const theater_1 = require("../model/theater");
 function create(args) {
     return {
         _id: args._id,
@@ -16,7 +16,7 @@ function create(args) {
 }
 exports.create = create;
 function createByCOA(theaterByCOA) {
-    return new Theater_1.default(theaterByCOA.theater_code, {
+    return new theater_1.default(theaterByCOA.theater_code, {
         ja: theaterByCOA.theater_name,
         en: theaterByCOA.theater_name_eng,
     }, theaterByCOA.theater_name_kana, {

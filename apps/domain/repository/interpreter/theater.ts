@@ -1,6 +1,6 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
-import Theater from "../../model/Theater";
+import Theater from "../../model/theater";
 import TheaterRepository from "../theater";
 import TheaterModel from "./mongoose/model/theater";
 import COA = require("@motionpicture/coa-service");

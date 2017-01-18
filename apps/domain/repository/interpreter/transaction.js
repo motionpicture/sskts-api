@@ -8,13 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const Transaction_1 = require("../../model/Transaction");
-const transaction_1 = require("./mongoose/model/transaction");
+const transaction_1 = require("../../model/transaction");
+const transaction_2 = require("./mongoose/model/transaction");
 var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield transaction_1.default.find(conditions).exec();
+            let docs = yield transaction_2.default.find(conditions).exec();
             yield docs.map((doc) => {
                 console.log(doc);
             });
@@ -24,7 +24,7 @@ var interpreter;
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield transaction_1.default.findOne({ _id: id }).exec();
+            let doc = yield transaction_2.default.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
             return monapt.None;
@@ -33,19 +33,19 @@ var interpreter;
     interpreter.findById = findById;
     function findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield transaction_1.default.findOneAndUpdate(conditions, update, {
+            let doc = yield transaction_2.default.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).exec();
             if (!doc)
                 return monapt.None;
-            return monapt.Option(new Transaction_1.default(doc.get("_id"), doc.get("password"), doc.get("status"), doc.get("events"), doc.get("owners"), doc.get("expired_at"), doc.get("access_id"), doc.get("access_pass")));
+            return monapt.Option(new transaction_1.default(doc.get("_id"), doc.get("password"), doc.get("status"), doc.get("events"), doc.get("owners"), doc.get("authorizations"), doc.get("expired_at"), doc.get("access_id"), doc.get("access_pass")));
         });
     }
     interpreter.findOneAndUpdate = findOneAndUpdate;
     function store(transaction) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield transaction_1.default.findOneAndUpdate({ _id: transaction._id }, transaction, {
+            yield transaction_2.default.findOneAndUpdate({ _id: transaction._id }, transaction, {
                 new: true,
                 upsert: true
             }).lean().exec();

@@ -1,4 +1,4 @@
-import Theater from "../model/Theater";
+import Theater from "../model/theater";
 import COA = require("@motionpicture/coa-service");
 
 export function create(args: {

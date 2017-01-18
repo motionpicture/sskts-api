@@ -98,7 +98,23 @@ async function main() {
         simple: false,
     });
     if (!body.success) throw new Error(body.message);
-    console.log("addCOAAuthorization result:", body);
+    let coaAuthorization = body.authorization;
+    console.log("coaAuthorization:", coaAuthorization);
+
+
+    // COAオーソリ削除
+    body = await request.post({
+        url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
+        body: {
+            transaction_password: "password",
+            owner_id: ownerId4administrator,
+            authorization_id: coaAuthorization._id
+        },
+        json: true,
+        simple: false,
+    });
+    if (!body.success) throw new Error(body.message);
+    console.log("removeAuthorization result:", body);
 
 
     // GMOオーソリ取得
@@ -141,7 +157,23 @@ async function main() {
         json: true
     });
     if (!body.success) throw new Error(body.message);
-    console.log("addGMOAuthorization result:", body);
+    let gmoAuthorization = body.authorization;
+    console.log("gmoAuthorization:", gmoAuthorization);
+
+
+    // GMOオーソリ削除
+    body = await request.post({
+        url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
+        body: {
+            transaction_password: "password",
+            owner_id: ownerId4administrator,
+            authorization_id: gmoAuthorization._id
+        },
+        json: true,
+        simple: false,
+    });
+    if (!body.success) throw new Error(body.message);
+    console.log("removeAuthorization result:", body);
 
 
     // 取引成立

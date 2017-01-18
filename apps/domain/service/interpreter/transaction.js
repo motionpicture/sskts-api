@@ -8,11 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const mongoose = require("mongoose");
-const Transaction_1 = require("../../model/Transaction");
-const TransactionEvent_1 = require("../../model/TransactionEvent");
-const TransactionEventGroup_1 = require("../../model/TransactionEventGroup");
-const TransactionStatus_1 = require("../../model/TransactionStatus");
-const Authorization = require("../../model/Authorization");
+const transaction_1 = require("../../model/transaction");
+const transactionEvent_1 = require("../../model/transactionEvent");
+const transactionEventGroup_1 = require("../../model/transactionEventGroup");
+const transactionStatus_1 = require("../../model/transactionStatus");
+const authorization_1 = require("../../model/authorization");
 var interpreter;
 (function (interpreter) {
     function start(expired_at, ownerIds) {
@@ -25,23 +25,25 @@ var interpreter;
                 owners.push(option.get());
             }));
             yield Promise.all(promises);
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.START, null);
-            let transaction = new Transaction_1.default(mongoose.Types.ObjectId().toString(), "password", TransactionStatus_1.default.PROCESSING, [event], owners, expired_at, "", "");
+            let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.START);
+            let transaction = new transaction_1.default(mongoose.Types.ObjectId().toString(), "password", transactionStatus_1.default.PROCESSING, [event], owners, [], expired_at, "", "");
             yield transactionRepository.store(transaction);
             return transaction;
         });
     }
     interpreter.start = start;
-    function pushEvent(args) {
+    function pushAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let event = new transactionEvent_1.Authorize(mongoose.Types.ObjectId().toString(), args.authorization);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 password: args.transaction_password,
-                status: TransactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {},
                 $push: {
-                    events: args.event
+                    events: event,
+                    authorizations: args.authorization,
                 }
             });
             if (option.isEmpty)
@@ -50,10 +52,10 @@ var interpreter;
     }
     function addAssetAuthorization(id, authorization) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.START, authorization);
+            let event = new transactionEvent_1.Authorize(mongoose.Types.ObjectId().toString(), authorization);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: TransactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {},
                 $push: {
@@ -67,37 +69,60 @@ var interpreter;
     interpreter.addAssetAuthorization = addAssetAuthorization;
     function addGMOAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let authorization = new Authorization.GMO(mongoose.Types.ObjectId().toString(), args.gmo_order_id);
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.AUTHORIZE, authorization);
-            yield pushEvent({
+            let authorization = new authorization_1.GMO(mongoose.Types.ObjectId().toString(), args.gmo_order_id);
+            yield pushAuthorization({
                 transaction_id: args.transaction_id,
                 transaction_password: args.transaction_password,
-                event: event
+                authorization: authorization
             })(transactionRepository);
+            return authorization;
         });
     }
     interpreter.addGMOAuthorization = addGMOAuthorization;
     function addCOAAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let authorization = new Authorization.COA(mongoose.Types.ObjectId().toString(), args.coa_tmp_reserve_num);
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.AUTHORIZE, authorization);
-            yield pushEvent({
+            let authorization = new authorization_1.COA(mongoose.Types.ObjectId().toString(), args.coa_tmp_reserve_num);
+            yield pushAuthorization({
                 transaction_id: args.transaction_id,
                 transaction_password: args.transaction_password,
-                event: event
+                authorization: authorization
             })(transactionRepository);
+            return authorization;
         });
     }
     interpreter.addCOAAuthorization = addCOAAuthorization;
+    function removeAuthorization(args) {
+        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let event = new transactionEvent_1.Unauthoriza(mongoose.Types.ObjectId().toString(), args.authorization_id);
+            let option = yield transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                password: args.transaction_password,
+                status: transactionStatus_1.default.PROCESSING
+            }, {
+                $set: {},
+                $push: {
+                    events: event,
+                },
+                $pull: {
+                    authorizations: {
+                        _id: args.authorization_id
+                    },
+                }
+            });
+            if (option.isEmpty)
+                throw new Error("processing transaction with given password not found.");
+        });
+    }
+    interpreter.removeAuthorization = removeAuthorization;
     function close(id) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.CLOSE, null);
+            let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.CLOSE);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: TransactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {
-                    status: TransactionStatus_1.default.CLOSED
+                    status: transactionStatus_1.default.CLOSED
                 },
                 $push: {
                     events: event
@@ -110,13 +135,13 @@ var interpreter;
     interpreter.close = close;
     function expire(id) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.EXPIRE, null);
+            let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.EXPIRE);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: TransactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {
-                    status: TransactionStatus_1.default.EXPIRED
+                    status: transactionStatus_1.default.EXPIRED
                 },
                 $push: {
                     events: event
@@ -129,13 +154,13 @@ var interpreter;
     interpreter.expire = expire;
     function cancel(id) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new TransactionEvent_1.default(mongoose.Types.ObjectId().toString(), TransactionEventGroup_1.default.CANCEL, null);
+            let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.CANCEL);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
-                status: TransactionStatus_1.default.CLOSED
+                status: transactionStatus_1.default.CLOSED
             }, {
                 $set: {
-                    status: TransactionStatus_1.default.CANCELED
+                    status: transactionStatus_1.default.CANCELED
                 },
                 $push: {
                     events: event

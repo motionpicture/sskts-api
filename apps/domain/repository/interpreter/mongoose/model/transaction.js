@@ -20,6 +20,7 @@ let schema = new mongoose.Schema({
             ref: owner_1.default.modelName,
             required: true
         }],
+    authorizations: [],
     access_id: String,
     access_pass: String,
 }, {

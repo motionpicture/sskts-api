@@ -30,7 +30,7 @@ router.post("/transaction/:id/addGMOAuthorization", authentication4transaction_1
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        yield transaction_2.default.addGMOAuthorization({
+        let authorization = yield transaction_2.default.addGMOAuthorization({
             transaction_id: req.params.id,
             transaction_password: req.body.transaction_password,
             owner_id: req.body.owner_id,
@@ -46,6 +46,7 @@ router.post("/transaction/:id/addGMOAuthorization", authentication4transaction_1
         res.json({
             success: true,
             message: null,
+            authorization: authorization
         });
     }
     catch (error) {
@@ -57,12 +58,32 @@ router.post("/transaction/:id/addCOAAuthorization", authentication4transaction_1
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        yield transaction_2.default.addCOAAuthorization({
+        let authorization = yield transaction_2.default.addCOAAuthorization({
             transaction_id: req.params.id,
             transaction_password: req.body.transaction_password,
             owner_id: req.body.owner_id,
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
             seats: req.body.seats,
+        })(transaction_1.default);
+        res.json({
+            success: true,
+            message: null,
+            authorization: authorization
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+router.post("/transaction/:id/removeAuthorization", authentication4transaction_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    let validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty())
+        return next(new Error(validatorResult.array()[0].msg));
+    try {
+        yield transaction_2.default.removeAuthorization({
+            transaction_id: req.params.id,
+            transaction_password: req.body.transaction_password,
+            authorization_id: req.body.authorization_id
         })(transaction_1.default);
         res.json({
             success: true,

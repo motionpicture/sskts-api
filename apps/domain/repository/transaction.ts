@@ -1,5 +1,5 @@
 import monapt = require("monapt");
-import Transaction from "../model/Transaction";
+import Transaction from "../model/transaction";
 
 interface TransactionRepository {
     find(conditions: Object): Promise<Array<Transaction>>;

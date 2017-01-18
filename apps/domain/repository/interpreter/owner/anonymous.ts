@@ -1,6 +1,6 @@
 import monapt = require("monapt");
-import { Anonymous as AnonymousOwner } from "../../../model/Owner";
-import OwnerGroup from "../../../model/OwnerGroup";
+import { Anonymous as AnonymousOwner } from "../../../model/owner";
+import OwnerGroup from "../../../model/ownerGroup";
 import AnonymousOwnerRepository from "../../owner/anonymous";
 import OwnerModel from "../mongoose/model/owner";
 

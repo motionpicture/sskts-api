@@ -8,17 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const Screen_1 = require("../../model/Screen");
-const screen_1 = require("./mongoose/model/screen");
+const screen_1 = require("../../model/screen");
+const screen_2 = require("./mongoose/model/screen");
 var interpreter;
 (function (interpreter) {
     function createFromDocument(doc) {
-        return new Screen_1.default(doc.get("_id"), doc.get("theater"), doc.get("coa_screen_code"), doc.get("name"), doc.get("sections"));
+        return new screen_1.default(doc.get("_id"), doc.get("theater"), doc.get("coa_screen_code"), doc.get("name"), doc.get("sections"));
     }
     interpreter.createFromDocument = createFromDocument;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let screen = yield screen_1.default.findOne({ _id: id }).exec();
+            let screen = yield screen_2.default.findOne({ _id: id }).exec();
             if (!screen)
                 return monapt.None;
             return monapt.Option(createFromDocument(screen));
@@ -27,7 +27,7 @@ var interpreter;
     interpreter.findById = findById;
     function findByTheater(theaterCode) {
         return __awaiter(this, void 0, void 0, function* () {
-            let screens = yield screen_1.default.find({ theater: theaterCode }).exec();
+            let screens = yield screen_2.default.find({ theater: theaterCode }).exec();
             return screens.map((screen) => {
                 return createFromDocument(screen);
             });
@@ -36,7 +36,7 @@ var interpreter;
     interpreter.findByTheater = findByTheater;
     function store(screen) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield screen_1.default.findOneAndUpdate({ _id: screen._id }, screen, {
+            yield screen_2.default.findOneAndUpdate({ _id: screen._id }, screen, {
                 new: true,
                 upsert: true
             }).lean().exec();
@@ -63,7 +63,7 @@ var interpreter;
                     code: seat.seat_num
                 });
             });
-            yield store(new Screen_1.default(`${theater._id}${screenByCOA.screen_code}`, theater, screenByCOA.screen_code, {
+            yield store(new screen_1.default(`${theater._id}${screenByCOA.screen_code}`, theater, screenByCOA.screen_code, {
                 ja: screenByCOA.screen_name,
                 en: screenByCOA.screen_name_eng
             }, sections));

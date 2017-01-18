@@ -1,5 +1,5 @@
-import * as Authorization from "../model/Authorization";
-import Transaction from "../model/Transaction";
+import * as Authorization from "../model/authorization";
+import Transaction from "../model/transaction";
 // import TransactionEvent from "../model/TransactionEvent";
 import OwnerRepository from "../repository/owner";
 import TransactionRepository from "../repository/transaction";
@@ -25,7 +25,7 @@ interface TransactionService {
         gmo_job_cd: string,
         gmo_pay_type: string,
 
-    }): TransactionOperation<void>;
+    }): TransactionOperation<Authorization.GMO>;
     /** COA資産承認 */
     addCOAAuthorization(args: {
         transaction_id: string,
@@ -45,9 +45,13 @@ interface TransactionService {
             // dis_price: number,
         }>
         // price: number,
-    }): TransactionOperation<void>;
+    }): TransactionOperation<Authorization.COA>;
     /** 資産承認解除 */
-    // unauthorizeAsset(id: string): AssetAndTransactionOperation<void>;
+    removeAuthorization(args: {
+        transaction_id: string,
+        transaction_password: string,
+        authorization_id: string,
+    }): TransactionOperation<void>;
     /** 取引成立 */
     close(id: string): TransactionOperation<void>;
     /** 取引期限切れ */

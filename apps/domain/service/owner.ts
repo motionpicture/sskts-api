@@ -1,4 +1,4 @@
-import {Anonymous as AnonymousOwner} from "../model/Owner";
+import {Anonymous as AnonymousOwner} from "../model/owner";
 import AnonymousOwnerRepository from "../repository/owner/anonymous";
 
 // 所有者サービス

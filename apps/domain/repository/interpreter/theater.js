@@ -8,16 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const Theater_1 = require("../../model/Theater");
-const theater_1 = require("./mongoose/model/theater");
+const theater_1 = require("../../model/theater");
+const theater_2 = require("./mongoose/model/theater");
 var interpreter;
 (function (interpreter) {
     function createFromDocument(doc) {
-        return new Theater_1.default(doc.get("_id"), doc.get("name"), doc.get("name_kana"), doc.get("address"));
+        return new theater_1.default(doc.get("_id"), doc.get("name"), doc.get("name_kana"), doc.get("address"));
     }
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let theater = yield theater_1.default.findOne({ _id: id }).exec();
+            let theater = yield theater_2.default.findOne({ _id: id }).exec();
             if (!theater)
                 return monapt.None;
             return monapt.Option(createFromDocument(theater));
@@ -26,7 +26,7 @@ var interpreter;
     interpreter.findById = findById;
     function store(theater) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield theater_1.default.findOneAndUpdate({ _id: theater._id }, theater, {
+            yield theater_2.default.findOneAndUpdate({ _id: theater._id }, theater, {
                 new: true,
                 upsert: true
             }).lean().exec();
@@ -35,7 +35,7 @@ var interpreter;
     interpreter.store = store;
     function storeFromCOA(theaterByCOA) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield store(new Theater_1.default(theaterByCOA.theater_code, {
+            yield store(new theater_1.default(theaterByCOA.theater_code, {
                 ja: theaterByCOA.theater_name,
                 en: theaterByCOA.theater_name_eng,
             }, theaterByCOA.theater_name_kana, {

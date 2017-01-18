@@ -1,4 +1,4 @@
-import * as Owner from "../model/Owner";
+import * as Owner from "../model/owner";
 
 /**
  * 一般所有者を作成する

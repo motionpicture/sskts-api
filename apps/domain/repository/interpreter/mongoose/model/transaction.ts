@@ -23,6 +23,7 @@ let schema = new mongoose.Schema({
         ref: OwnerModel.modelName,
         required: true
     }],
+    authorizations: [],
     access_id: String, // 照会ID
     access_pass: String, // 照会PASS
 }, {

@@ -94,7 +94,21 @@ function main() {
         });
         if (!body.success)
             throw new Error(body.message);
-        console.log("addCOAAuthorization result:", body);
+        let coaAuthorization = body.authorization;
+        console.log("coaAuthorization:", coaAuthorization);
+        body = yield request.post({
+            url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
+            body: {
+                transaction_password: "password",
+                owner_id: ownerId4administrator,
+                authorization_id: coaAuthorization._id
+            },
+            json: true,
+            simple: false,
+        });
+        if (!body.success)
+            throw new Error(body.message);
+        console.log("removeAuthorization result:", body);
         let orderId = Date.now().toString();
         let amount = 1800;
         let entryTranResult = yield GMO.CreditService.entryTranInterface.call({
@@ -132,7 +146,21 @@ function main() {
         });
         if (!body.success)
             throw new Error(body.message);
-        console.log("addGMOAuthorization result:", body);
+        let gmoAuthorization = body.authorization;
+        console.log("gmoAuthorization:", gmoAuthorization);
+        body = yield request.post({
+            url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
+            body: {
+                transaction_password: "password",
+                owner_id: ownerId4administrator,
+                authorization_id: gmoAuthorization._id
+            },
+            json: true,
+            simple: false,
+        });
+        if (!body.success)
+            throw new Error(body.message);
+        console.log("removeAuthorization result:", body);
         body = yield request.post({
             url: `http://localhost:8080/transaction/${transaction._id}/close`,
             body: {
