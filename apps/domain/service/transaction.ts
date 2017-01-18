@@ -12,9 +12,40 @@ interface TransactionService {
     /** 内部資産承認 */
     addAssetAuthorization(id: string, authorization: Authorization.ASSET): TransactionOperation<void>;
     /** GMO資産承認 */
-    addGMOAuthorization(id: string, authorization: Authorization.GMO): TransactionOperation<void>;
+    addGMOAuthorization(args: {
+        transaction_id: string,
+        transaction_password: string,
+        owner_id: string,
+        gmo_shop_id: string,
+        gmo_shop_password: string,
+        gmo_order_id: string,
+        gmo_amount: string,
+        gmo_access_id: string,
+        gmo_access_password: string,
+        gmo_job_cd: string,
+        gmo_pay_type: string,
+
+    }): TransactionOperation<void>;
     /** COA資産承認 */
-    addCOAAuthorization(id: string, authorization: Authorization.COA): TransactionOperation<void>;
+    addCOAAuthorization(args: {
+        transaction_id: string,
+        transaction_password: string,
+        owner_id: string,
+        coa_tmp_reserve_num: string,
+        seats: Array<{
+            performance: string,
+            section: string,
+            seat_code: string,
+            ticket_code: string,
+            // ticket_name_ja: string,
+            // ticket_name_en: string,
+            // ticket_name_kana: string,
+            // std_price: number,
+            // add_price: number,
+            // dis_price: number,
+        }>
+        // price: number,
+    }): TransactionOperation<void>;
     /** 資産承認解除 */
     // unauthorizeAsset(id: string): AssetAndTransactionOperation<void>;
     /** 取引成立 */

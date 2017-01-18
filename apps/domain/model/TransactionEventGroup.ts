@@ -3,6 +3,8 @@ type TransactionEventGroup =
     | "CLOSE"
     | "EXPIRE"
     | "CANCEL"
+    | "AUTHORIZE"
+    | "UNAUTHORIZE"
     ;
 
 namespace TransactionEventGroup {
@@ -10,6 +12,8 @@ namespace TransactionEventGroup {
     export const CLOSE = "CLOSE";
     export const EXPIRE = "EXPIRE";
     export const CANCEL = "CANCEL";
+    export const AUTHORIZE = "AUTHORIZE";
+    export const UNAUTHORIZE = "UNAUTHORIZE";
 }
 
 export default TransactionEventGroup;

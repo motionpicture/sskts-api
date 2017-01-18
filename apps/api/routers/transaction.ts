@@ -1,4 +1,3 @@
-import mongoose = require("mongoose");
 import express = require("express");
 let router = express.Router();
 
@@ -6,7 +5,6 @@ import authentication4transaction from "../middlewares/authentication4transactio
 import OwnerRepository from "../../domain/repository/interpreter/owner";
 import TransactionRepository from "../../domain/repository/interpreter/transaction";
 import TransactionService from "../../domain/service/interpreter/transaction";
-import * as Authorization from "../../domain/model/Authorization";
 
 // router.get("/transactions", (req, res, next) => {
 //     req.getValidationResult().then((result) => {
@@ -49,11 +47,43 @@ router.post("/transaction/:id/addGMOAuthorization", authentication4transaction, 
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let authorization = new Authorization.GMO(
-            mongoose.Types.ObjectId().toString(),
-            "gmo_test_order_id"
-        );
-        await TransactionService.addGMOAuthorization(req.params.id, authorization)(TransactionRepository);
+        await TransactionService.addGMOAuthorization({
+            transaction_id: req.params.id,
+            transaction_password: req.body.transaction_password,
+            owner_id: req.body.owner_id,
+            gmo_shop_id: req.body.gmo_shop_id,
+            gmo_shop_password: req.body.gmo_shop_password,
+            gmo_order_id: req.body.gmo_order_id,
+            gmo_amount: req.body.gmo_amount,
+            gmo_access_id: req.body.gmo_access_id,
+            gmo_access_password: req.body.gmo_access_password,
+            gmo_job_cd: req.body.gmo_job_cd,
+            gmo_pay_type: req.body.gmo_pay_type,
+        })(TransactionRepository);
+
+        res.json({
+            success: true,
+            message: null,
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.post("/transaction/:id/addCOAAuthorization", authentication4transaction, async (req, res, next) => {
+    // TODO validations
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        await TransactionService.addCOAAuthorization({
+            transaction_id: req.params.id,
+            transaction_password: req.body.transaction_password,
+            owner_id: req.body.owner_id,
+            coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
+            seats: req.body.seats,
+        })(TransactionRepository);
+
         res.json({
             success: true,
             message: null,
