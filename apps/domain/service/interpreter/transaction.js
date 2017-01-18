@@ -10,9 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const mongoose = require("mongoose");
 const transaction_1 = require("../../model/transaction");
 const transactionEvent_1 = require("../../model/transactionEvent");
+const authorize_1 = require("../../model/transactionEvent/authorize");
+const unauthorize_1 = require("../../model/transactionEvent/unauthorize");
 const transactionEventGroup_1 = require("../../model/transactionEventGroup");
 const transactionStatus_1 = require("../../model/transactionStatus");
-const authorization_1 = require("../../model/authorization");
+const gmo_1 = require("../../model/authorization/gmo");
+const coa_1 = require("../../model/authorization/coa");
 var interpreter;
 (function (interpreter) {
     function start(expired_at, ownerIds) {
@@ -34,7 +37,7 @@ var interpreter;
     interpreter.start = start;
     function pushAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new transactionEvent_1.Authorize(mongoose.Types.ObjectId().toString(), args.authorization);
+            let event = new authorize_1.default(mongoose.Types.ObjectId().toString(), args.authorization);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 password: args.transaction_password,
@@ -52,7 +55,7 @@ var interpreter;
     }
     function addAssetAuthorization(id, authorization) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new transactionEvent_1.Authorize(mongoose.Types.ObjectId().toString(), authorization);
+            let event = new authorize_1.default(mongoose.Types.ObjectId().toString(), authorization);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: id,
                 status: transactionStatus_1.default.PROCESSING
@@ -69,7 +72,7 @@ var interpreter;
     interpreter.addAssetAuthorization = addAssetAuthorization;
     function addGMOAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let authorization = new authorization_1.GMO(mongoose.Types.ObjectId().toString(), args.gmo_order_id);
+            let authorization = new gmo_1.default(mongoose.Types.ObjectId().toString(), args.gmo_order_id, 1234);
             yield pushAuthorization({
                 transaction_id: args.transaction_id,
                 transaction_password: args.transaction_password,
@@ -81,7 +84,7 @@ var interpreter;
     interpreter.addGMOAuthorization = addGMOAuthorization;
     function addCOAAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let authorization = new authorization_1.COA(mongoose.Types.ObjectId().toString(), args.coa_tmp_reserve_num);
+            let authorization = new coa_1.default(mongoose.Types.ObjectId().toString(), args.coa_tmp_reserve_num, 1234);
             yield pushAuthorization({
                 transaction_id: args.transaction_id,
                 transaction_password: args.transaction_password,
@@ -93,7 +96,7 @@ var interpreter;
     interpreter.addCOAAuthorization = addCOAAuthorization;
     function removeAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new transactionEvent_1.Unauthoriza(mongoose.Types.ObjectId().toString(), args.authorization_id);
+            let event = new unauthorize_1.default(mongoose.Types.ObjectId().toString(), args.authorization_id);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 password: args.transaction_password,

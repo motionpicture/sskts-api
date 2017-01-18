@@ -1,10 +1,15 @@
 import mongoose = require("mongoose");
 import Owner from "../../model/owner";
 import Transaction from "../../model/transaction";
-import { default as TransactionEvent, Authorize as AuthorizeTransactionEvent, Unauthoriza as UnauthorizeTransactionEvent } from "../../model/transactionEvent";
+import TransactionEvent from "../../model/transactionEvent";
+import AuthorizeTransactionEvent from "../../model/transactionEvent/authorize";
+import UnauthorizeTransactionEvent from "../../model/transactionEvent/unauthorize";
 import TransactionEventGroup from "../../model/transactionEventGroup";
 import TransactionStatus from "../../model/transactionStatus";
-import { default as Authorization, ASSET as AssetAuthorization, GMO as GMOAuthorization, COA as COAAuthorization } from "../../model/authorization";
+import Authorization from "../../model/authorization";
+import AssetAuthorization from "../../model/authorization/asset";
+import GMOAuthorization from "../../model/authorization/gmo";
+import COAAuthorization from "../../model/authorization/coa";
 import TransactionService from "../transaction";
 import TransactionRepository from "../../repository/transaction";
 import OwnerRepository from "../../repository/owner";
@@ -116,7 +121,8 @@ namespace interpreter {
             // GMO承認を作成
             let authorization = new GMOAuthorization(
                 mongoose.Types.ObjectId().toString(),
-                args.gmo_order_id
+                args.gmo_order_id,
+                1234 // TODO
             );
 
             // 永続化
@@ -156,7 +162,8 @@ namespace interpreter {
             // GMO承認を作成
             let authorization = new COAAuthorization(
                 mongoose.Types.ObjectId().toString(),
-                args.coa_tmp_reserve_num
+                args.coa_tmp_reserve_num,
+                1234 // TODO
             );
 
             // 永続化

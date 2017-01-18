@@ -1,5 +1,5 @@
 import monapt = require("monapt");
-import {Anonymous as AnonymousOwner} from "../../model/owner";
+import AnonymousOwner from "../../model/owner/anonymous";
 import OwnerRepository from "../owner";
 
 interface AnonymousOwnerRepository extends OwnerRepository {

@@ -1,4 +1,4 @@
-import * as Owner from "../model/owner";
+import AnonymousOwner from "../model/owner/anonymous";
 
 /**
  * 一般所有者を作成する
@@ -11,8 +11,8 @@ export function createAnonymous(args: {
     name_last?: string,
     email?: string,
     tel?: string,
-}): Owner.Anonymous {
-    return new Owner.Anonymous(
+}): AnonymousOwner {
+    return new AnonymousOwner(
         args._id,
         (args.name_first) ? args.name_first : "",
         (args.name_last) ? args.name_last : "",

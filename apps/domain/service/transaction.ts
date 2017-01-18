@@ -1,4 +1,6 @@
-import * as Authorization from "../model/authorization";
+import AssetAuthorization from "../model/authorization/asset";
+import GMOAuthorization from "../model/authorization/gmo";
+import COAAuthorization from "../model/authorization/coa";
 import Transaction from "../model/transaction";
 // import TransactionEvent from "../model/TransactionEvent";
 import OwnerRepository from "../repository/owner";
@@ -10,7 +12,7 @@ interface TransactionService {
     /** 取引開始 */
     start(expired_at: Date, ownerIds: Array<string>): (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<Transaction>;
     /** 内部資産承認 */
-    addAssetAuthorization(id: string, authorization: Authorization.ASSET): TransactionOperation<void>;
+    addAssetAuthorization(id: string, authorization: AssetAuthorization): TransactionOperation<void>;
     /** GMO資産承認 */
     addGMOAuthorization(args: {
         transaction_id: string,
@@ -25,7 +27,7 @@ interface TransactionService {
         gmo_job_cd: string,
         gmo_pay_type: string,
 
-    }): TransactionOperation<Authorization.GMO>;
+    }): TransactionOperation<GMOAuthorization>;
     /** COA資産承認 */
     addCOAAuthorization(args: {
         transaction_id: string,
@@ -45,7 +47,7 @@ interface TransactionService {
             // dis_price: number,
         }>
         // price: number,
-    }): TransactionOperation<Authorization.COA>;
+    }): TransactionOperation<COAAuthorization>;
     /** 資産承認解除 */
     removeAuthorization(args: {
         transaction_id: string,

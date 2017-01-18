@@ -1,5 +1,5 @@
 import monapt = require("monapt");
-import {default as Owner} from "../model/owner";
+import Owner from "../model/owner";
 
 interface OwnerRepository {
     find(conditions: Object): Promise<Array<Owner>>;
