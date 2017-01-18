@@ -14,6 +14,7 @@ let schema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    events: [],
     owners: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: owner_1.default.modelName,

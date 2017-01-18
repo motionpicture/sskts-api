@@ -119,7 +119,7 @@ import filmRouter from "./routers/film";
 import performanceRouter from "./routers/performance";
 import screenRouter from "./routers/screen";
 import ownerRouter from "./routers/owner";
-// import transactionRouter from "./routers/transaction";
+import transactionRouter from "./routers/transaction";
 // import authorizationRouter from "./routers/authorization";
 app.use("/dev", devRouter);
 app.use("/", [
@@ -128,7 +128,7 @@ app.use("/", [
     performanceRouter,
     screenRouter,
     ownerRouter,
-    // transactionRouter,
+    transactionRouter,
     // authorizationRouter,
 ]);
 

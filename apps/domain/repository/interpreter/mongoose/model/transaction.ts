@@ -17,6 +17,7 @@ let schema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    events: [],
     owners: [{ // 取引の対象所有者リスト
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.modelName,

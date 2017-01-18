@@ -1,8 +1,10 @@
+import monapt = require("monapt");
 import Transaction from "../model/Transaction";
-import TransactionEvent from "../model/TransactionEvent";
 
 interface TransactionRepository {
-    pushEvent(_id: string, event: TransactionEvent): Promise<void>;
+    find(conditions: Object): Promise<Array<Transaction>>;
+    findById(id: string): Promise<monapt.Option<Transaction>>;
+    findOneAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Transaction>>;
     store(transaction: Transaction): Promise<void>;
 }
 

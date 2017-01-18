@@ -1,14 +1,18 @@
+import Owner from "./Owner";
 import TransactionEvent from "./TransactionEvent";
+import TransactionStatus from "./TransactionStatus";
 
-interface Transaction {
-    _id: string,
-    password: string,
-    // status: TransactionStatus,
-    events: Array<TransactionEvent>
-    owners: Array<string>,
-    expired_at: Date,
-    access_id?: string,
-    access_pass?: string,
+export default class Transaction {
+    constructor(
+        readonly _id: string,
+        readonly password: string,
+        readonly status: TransactionStatus,
+        readonly events: Array<TransactionEvent>,
+        readonly owners: Array<Owner>,
+        readonly expired_at: Date,
+        readonly access_id: string,
+        readonly access_pass: string,
+    ) {
+        // TODO validation
+    }
 }
-
-export default Transaction;

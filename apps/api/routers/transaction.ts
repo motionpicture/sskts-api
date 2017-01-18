@@ -1,9 +1,12 @@
-// import express = require('express')
-// let router = express.Router();
+import mongoose = require("mongoose");
+import express = require("express");
+let router = express.Router();
 
-// import authentication4transaction from "../middlewares/authentication4transaction";
-// import TransactionRepository from "../../common/infrastructure/persistence/mongoose/repositories/transaction";
-// import AuthorizationRepository from "../../common/infrastructure/persistence/mongoose/repositories/authorization";
+import authentication4transaction from "../middlewares/authentication4transaction";
+import OwnerRepository from "../../domain/repository/interpreter/owner";
+import TransactionRepository from "../../domain/repository/interpreter/transaction";
+import TransactionService from "../../domain/service/interpreter/transaction";
+import * as Authorization from "../../domain/model/Authorization";
 
 // router.get("/transactions", (req, res, next) => {
 //     req.getValidationResult().then((result) => {
@@ -24,73 +27,57 @@
 //     });
 // });
 
-// router.post("/transaction/start", (req, res, next) => {
-//     req.getValidationResult().then((result) => {
-//         if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
+router.post("/transaction/start", async (req, res, next) => {
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
-//         // TODO ownersの型チェック
+    // TODO ownersの型チェック
 
-//         // let owners = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
-//         TransactionRepository.create(req.body.owners).then((transaction) => {
-//             res.json({
-//                 success: true,
-//                 message: null,
-//                 transaction: transaction
-//             });
-//         }, (err) => {
-//             res.json({
-//                 success: false,
-//                 message: err.message
-//             });
-//         });
-//     });
-// });
+    let ownerIds: Array<string> = req.body.owners;
+    // let owners = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
+    let transaction = await TransactionService.start(new Date(), ownerIds)(OwnerRepository, TransactionRepository);
+    res.json({
+        success: true,
+        message: null,
+        transaction: transaction
+    });
+});
 
-// router.post("/transaction/:id/close", authentication4transaction, (req, res, next) => {
-//     req.getValidationResult().then((result) => {
-//         if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
+router.post("/transaction/:id/addGMOAuthorization", authentication4transaction, async (req, res, next) => {
+    // TODO validations
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
-//         TransactionRepository.close(req.params.id).then(() => {
-//             res.json({
-//                 success: true,
-//                 message: null,
-//             });
-//         }, (err) => {
-//             res.json({
-//                 success: false,
-//                 message: err.message
-//             });
-//         });
-//     });
-// });
+    try {
+        let authorization = new Authorization.GMO(
+            mongoose.Types.ObjectId().toString(),
+            "gmo_test_order_id"
+        );
+        await TransactionService.addGMOAuthorization(req.params.id, authorization)(TransactionRepository);
+        res.json({
+            success: true,
+            message: null,
+        });
+    } catch (error) {
+        next(error);
+    }
+});
 
-// router.post("/transaction/:id/authorize", authentication4transaction, (req, res, next) => {
+router.post("/transaction/:id/close", authentication4transaction, async (req, res, next) => {
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    await TransactionService.close(req.params.id)(TransactionRepository);
+    res.json({
+        success: true,
+        message: null,
+    });
+});
+
+// router.post("/transaction/:id/unauthorize", authentication4transaction, async (req, res, next) => {
 //     // TODO validations
-
-//     req.getValidationResult().then((result) => {
-//         if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
-
-//         AuthorizationRepository.create({
-//             transaction: req.params.id,
-//             group: req.body.authorization_group,
-//             authorizations: req.body.authorizations,
-//         }).then((results) => {
-//             res.json({
-//                 success: true,
-//                 message: null,
-//                 results: results
-//             });
-//         }, (err) => {
-//             res.json({
-//                 success: false,
-//                 message: err.message
-//             });
-//         });
-//     });
-// });
-
-// router.post("/transaction/:id/unauthorize", authentication4transaction, (req, res, next) => {
-//     // TODO validations
+//     let validatorResult = await req.getValidationResult();
+//     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
 //     req.getValidationResult().then((result) => {
 //         if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
@@ -113,7 +100,7 @@
 //     });
 // });
 
-// router.post("/transaction/:id/update", (req, res, next) => {
+// router.post("/transaction/:id/update", async (req, res, next) => {
 //     req.getValidationResult().then((result) => {
 //         if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
 
@@ -137,4 +124,4 @@
 //     });
 // });
 
-// export default router;
+export default router;

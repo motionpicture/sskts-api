@@ -22,6 +22,7 @@
     "@types/passport-http-bearer": "^1.0.30",
     "@types/redis": "^0.12.34",
     "@types/request": "0.0.36",
+    "@types/request-promise-native": "^1.0.2",
     "body-parser": "latest",
     "commander": "^2.9.0",
     "config": "^1.24.0",
@@ -38,7 +39,8 @@
     "passport": "^0.3.2",
     "passport-http-bearer": "^1.0.1",
     "redis": "^2.6.3",
-    "request": "^2.79.0"
+    "request": "^2.79.0",
+    "request-promise-native": "^1.0.3"
   },
   "devDependencies": {},
   "repository": {},
