@@ -6,14 +6,13 @@ import TransactionStatus from "./transactionStatus";
 export default class Transaction {
     constructor(
         readonly _id: string,
-        readonly password: string,
         readonly status: TransactionStatus,
         readonly events: Array<TransactionEvent>,
         readonly owners: Array<Owner>,
         readonly authorizations: Array<Authorization>,
         readonly expired_at: Date,
-        readonly access_id: string,
-        readonly access_pass: string,
+        readonly inquiry_id: string,
+        readonly inquiry_pass: string,
     ) {
         // TODO validation
     }

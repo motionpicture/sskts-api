@@ -5,27 +5,16 @@ import OwnerModel from "./owner";
  * 取引スキーマ
  */
 let schema = new mongoose.Schema({
-    password: {
-        type: String,
-        required: true,
-    },
-    expired_at: {
-        type: Date,
-        required: true,
-    },
-    status: {
-        type: String,
-        required: true,
-    },
-    events: [],
+    expired_at: Date,
+    status: String,
+    events: [], // イベントリスト
     owners: [{ // 取引の対象所有者リスト
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.modelName,
-        required: true
     }],
-    authorizations: [],
-    access_id: String, // 照会ID
-    access_pass: String, // 照会PASS
+    authorizations: [], // 資産承認リスト
+    inquiry_id: String, // 照会ID
+    inquiry_pass: String, // 照会PASS
 }, {
     collection: "transactions",
     timestamps: {

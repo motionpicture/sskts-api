@@ -2,27 +2,16 @@
 const mongoose = require("mongoose");
 const owner_1 = require("./owner");
 let schema = new mongoose.Schema({
-    password: {
-        type: String,
-        required: true,
-    },
-    expired_at: {
-        type: Date,
-        required: true,
-    },
-    status: {
-        type: String,
-        required: true,
-    },
+    expired_at: Date,
+    status: String,
     events: [],
     owners: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: owner_1.default.modelName,
-            required: true
         }],
     authorizations: [],
-    access_id: String,
-    access_pass: String,
+    inquiry_id: String,
+    inquiry_pass: String,
 }, {
     collection: "transactions",
     timestamps: {

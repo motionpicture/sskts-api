@@ -5,18 +5,26 @@ import Transaction from "../model/transaction";
 // import TransactionEvent from "../model/TransactionEvent";
 import OwnerRepository from "../repository/owner";
 import TransactionRepository from "../repository/transaction";
+import AssetAuthorizationRepository from "../repository/authorization/asset";
+type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
+type AssetAuthorizationAndTransactionOperation<T> = (assetAuthorizationRepository: AssetAuthorizationRepository, repository: TransactionRepository) => Promise<T>;
 type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
 
 // 取引サービス
 interface TransactionService {
     /** 取引開始 */
-    start(expired_at: Date, ownerIds: Array<string>): (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<Transaction>;
+    start(args: {
+        expired_at: Date,
+        owner_ids: Array<string>
+    }): OwnerAndTransactionOperation<Transaction>;
     /** 内部資産承認 */
-    addAssetAuthorization(id: string, authorization: AssetAuthorization): TransactionOperation<void>;
+    addAssetAuthorization(args: {
+        transaction_id: string,
+        authorization_id: string,
+    }): AssetAuthorizationAndTransactionOperation<AssetAuthorization>;
     /** GMO資産承認 */
     addGMOAuthorization(args: {
         transaction_id: string,
-        transaction_password: string,
         owner_id: string,
         gmo_shop_id: string,
         gmo_shop_password: string,
@@ -31,7 +39,6 @@ interface TransactionService {
     /** COA資産承認 */
     addCOAAuthorization(args: {
         transaction_id: string,
-        transaction_password: string,
         owner_id: string,
         coa_tmp_reserve_num: string,
         seats: Array<{
@@ -51,15 +58,26 @@ interface TransactionService {
     /** 資産承認解除 */
     removeAuthorization(args: {
         transaction_id: string,
-        transaction_password: string,
         authorization_id: string,
     }): TransactionOperation<void>;
+    /** 照合を可能にする */
+    enableInquiry(args: {
+        transaction_id: string,
+        inquiry_id: string,
+        inquiry_pass: string,
+    }): TransactionOperation<void>;
     /** 取引成立 */
-    close(id: string): TransactionOperation<void>;
+    close(args: {
+        transaction_id: string,
+    }): TransactionOperation<void>;
     /** 取引期限切れ */
-    expire(id: string): TransactionOperation<void>;
+    expire(args: {
+        transaction_id: string,
+    }): TransactionOperation<void>;
     /** 取引取消 */
-    cancel(id: string): TransactionOperation<void>;
+    cancel(args: {
+        transaction_id: string,
+    }): TransactionOperation<void>;
 }
 
 export default TransactionService;

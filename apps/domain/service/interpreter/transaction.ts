@@ -7,19 +7,23 @@ import UnauthorizeTransactionEvent from "../../model/transactionEvent/unauthoriz
 import TransactionEventGroup from "../../model/transactionEventGroup";
 import TransactionStatus from "../../model/transactionStatus";
 import Authorization from "../../model/authorization";
-import AssetAuthorization from "../../model/authorization/asset";
+// import AssetAuthorization from "../../model/authorization/asset";
 import GMOAuthorization from "../../model/authorization/gmo";
 import COAAuthorization from "../../model/authorization/coa";
 import TransactionService from "../transaction";
+import AssetAuthorizationRepository from "../../repository/authorization/asset";
 import TransactionRepository from "../../repository/transaction";
 import OwnerRepository from "../../repository/owner";
 
 namespace interpreter {
     /** 取引開始 */
-    export function start(expired_at: Date, ownerIds: Array<string>) {
+    export function start(args: {
+        expired_at: Date,
+        owner_ids: Array<string>
+    }) {
         return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
             let owners: Array<Owner> = [];
-            let promises = ownerIds.map(async (ownerId) => {
+            let promises = args.owner_ids.map(async (ownerId) => {
                 let option = await ownerRepository.findById(ownerId);
                 if (option.isEmpty) throw new Error("owner not found.");
                 owners.push(option.get());
@@ -33,12 +37,11 @@ namespace interpreter {
 
             let transaction = new Transaction(
                 mongoose.Types.ObjectId().toString(),
-                "password", // TODO 自動生成
                 TransactionStatus.PROCESSING,
                 [event],
                 owners,
                 [], // オーソリリスト初期化
-                expired_at,
+                args.expired_at,
                 "",
                 "",
             );
@@ -51,7 +54,6 @@ namespace interpreter {
 
     function pushAuthorization(args: {
         transaction_id: string,
-        transaction_password: string,
         authorization: Authorization
     }) {
         return async (transactionRepository: TransactionRepository) => {
@@ -64,7 +66,6 @@ namespace interpreter {
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
-                password: args.transaction_password,
                 status: TransactionStatus.PROCESSING
             }, {
                     $set: {
@@ -74,36 +75,33 @@ namespace interpreter {
                         authorizations: args.authorization,
                     }
                 });
-            if (option.isEmpty) throw new Error("processing transaction with given password not found.");
+            if (option.isEmpty) throw new Error("processing transaction not found.");
         }
     }
 
     /** 内部資産承認 */
-    export function addAssetAuthorization(id: string, authorization: AssetAuthorization) {
-        return async (transactionRepository: TransactionRepository) => {
-            let event = new AuthorizeTransactionEvent(
-                mongoose.Types.ObjectId().toString(),
-                authorization
-            );
+    export function addAssetAuthorization(args: {
+        transaction_id: string,
+        authorization_id: string,
+    }) {
+        return async (assetAuthorizationRepository: AssetAuthorizationRepository, transactionRepository: TransactionRepository) => {
+            // GMO承認を作成
+            let option = await assetAuthorizationRepository.findById(args.authorization_id);
+            if (option.isEmpty) throw new Error("authorization not found.");
 
-            let option = await transactionRepository.findOneAndUpdate({
-                _id: id,
-                status: TransactionStatus.PROCESSING
-            }, {
-                    $set: {
-                    },
-                    $push: {
-                        events: event
-                    }
-                });
-            if (option.isEmpty) throw new Error("processing transaction not found.");
+            // 永続化
+            await pushAuthorization({
+                transaction_id: args.transaction_id,
+                authorization: option.get()
+            })(transactionRepository);
+
+            return option.get();
         }
     }
 
     /** GMO資産承認 */
     export function addGMOAuthorization(args: {
         transaction_id: string,
-        transaction_password: string,
         owner_id: string,
         gmo_shop_id: string,
         gmo_shop_password: string,
@@ -128,7 +126,6 @@ namespace interpreter {
             // 永続化
             await pushAuthorization({
                 transaction_id: args.transaction_id,
-                transaction_password: args.transaction_password,
                 authorization: authorization
             })(transactionRepository);
 
@@ -139,7 +136,6 @@ namespace interpreter {
     /** COA資産承認 */
     export function addCOAAuthorization(args: {
         transaction_id: string,
-        transaction_password: string,
         owner_id: string,
         coa_tmp_reserve_num: string,
         seats: Array<{
@@ -169,7 +165,6 @@ namespace interpreter {
             // 永続化
             await pushAuthorization({
                 transaction_id: args.transaction_id,
-                transaction_password: args.transaction_password,
                 authorization: authorization
             })(transactionRepository);
 
@@ -180,7 +175,6 @@ namespace interpreter {
     /** 資産承認解除 */
     export function removeAuthorization(args: {
         transaction_id: string,
-        transaction_password: string,
         authorization_id: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
@@ -195,7 +189,6 @@ namespace interpreter {
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
-                password: args.transaction_password,
                 status: TransactionStatus.PROCESSING
             }, {
                     $set: {
@@ -209,12 +202,34 @@ namespace interpreter {
                         },
                     }
                 });
-            if (option.isEmpty) throw new Error("processing transaction with given password not found.");
+            if (option.isEmpty) throw new Error("processing transaction not found.");
         }
     }
 
+    /** 照合を可能にする */
+    export function enableInquiry(args: {
+        transaction_id: string,
+        inquiry_id: string,
+        inquiry_pass: string,
+    }) {
+        return async (transactionRepository: TransactionRepository) => {
+            let option = await transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: TransactionStatus.PROCESSING
+            }, {
+                    $set: {
+                        inquiry_id: args.inquiry_id,
+                        inquiry_pass: args.inquiry_pass,
+                    },
+                });
+            if (option.isEmpty) throw new Error("processing transaction not found.");
+        };
+    }
+
     /** 取引成立 */
-    export function close(id: string) {
+    export function close(args: {
+        transaction_id: string
+    }) {
         return async (transactionRepository: TransactionRepository) => {
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
@@ -222,7 +237,7 @@ namespace interpreter {
             );
 
             let option = await transactionRepository.findOneAndUpdate({
-                _id: id,
+                _id: args.transaction_id,
                 status: TransactionStatus.PROCESSING
             }, {
                     $set: {
@@ -237,7 +252,9 @@ namespace interpreter {
     }
 
     /** 取引期限切れ */
-    export function expire(id: string) {
+    export function expire(args: {
+        transaction_id: string
+    }) {
         return async (transactionRepository: TransactionRepository) => {
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
@@ -245,7 +262,7 @@ namespace interpreter {
             );
 
             let option = await transactionRepository.findOneAndUpdate({
-                _id: id,
+                _id: args.transaction_id,
                 status: TransactionStatus.PROCESSING
             }, {
                     $set: {
@@ -260,7 +277,9 @@ namespace interpreter {
     }
 
     /** 取引取消 */
-    export function cancel(id: string) {
+    export function cancel(args: {
+        transaction_id: string
+    }) {
         return async (transactionRepository: TransactionRepository) => {
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
@@ -268,7 +287,7 @@ namespace interpreter {
             );
 
             let option = await transactionRepository.findOneAndUpdate({
-                _id: id,
+                _id: args.transaction_id,
                 status: TransactionStatus.CLOSED
             }, {
                     $set: {

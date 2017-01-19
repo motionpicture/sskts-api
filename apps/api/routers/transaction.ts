@@ -1,7 +1,6 @@
 import express = require("express");
 let router = express.Router();
 
-import authentication4transaction from "../middlewares/authentication4transaction";
 import OwnerRepository from "../../domain/repository/interpreter/owner";
 import TransactionRepository from "../../domain/repository/interpreter/transaction";
 import TransactionService from "../../domain/service/interpreter/transaction";
@@ -33,7 +32,10 @@ router.post("/transaction/start", async (req, res, next) => {
 
     let ownerIds: Array<string> = req.body.owners;
     // let owners = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
-    let transaction = await TransactionService.start(new Date(), ownerIds)(OwnerRepository, TransactionRepository);
+    let transaction = await TransactionService.start({
+        expired_at: new Date(),
+        owner_ids: ownerIds
+    })(OwnerRepository, TransactionRepository);
     res.json({
         success: true,
         message: null,
@@ -41,7 +43,7 @@ router.post("/transaction/start", async (req, res, next) => {
     });
 });
 
-router.post("/transaction/:id/addGMOAuthorization", authentication4transaction, async (req, res, next) => {
+router.post("/transaction/:id/addGMOAuthorization", async (req, res, next) => {
     // TODO validations
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
@@ -49,7 +51,6 @@ router.post("/transaction/:id/addGMOAuthorization", authentication4transaction, 
     try {
         let authorization = await TransactionService.addGMOAuthorization({
             transaction_id: req.params.id,
-            transaction_password: req.body.transaction_password,
             owner_id: req.body.owner_id,
             gmo_shop_id: req.body.gmo_shop_id,
             gmo_shop_password: req.body.gmo_shop_password,
@@ -71,7 +72,7 @@ router.post("/transaction/:id/addGMOAuthorization", authentication4transaction, 
     }
 });
 
-router.post("/transaction/:id/addCOAAuthorization", authentication4transaction, async (req, res, next) => {
+router.post("/transaction/:id/addCOAAuthorization", async (req, res, next) => {
     // TODO validations
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
@@ -79,7 +80,6 @@ router.post("/transaction/:id/addCOAAuthorization", authentication4transaction, 
     try {
         let authorization = await TransactionService.addCOAAuthorization({
             transaction_id: req.params.id,
-            transaction_password: req.body.transaction_password,
             owner_id: req.body.owner_id,
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
             seats: req.body.seats,
@@ -95,7 +95,7 @@ router.post("/transaction/:id/addCOAAuthorization", authentication4transaction, 
     }
 });
 
-router.post("/transaction/:id/removeAuthorization", authentication4transaction, async (req, res, next) => {
+router.post("/transaction/:id/removeAuthorization", async (req, res, next) => {
     // TODO validations
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
@@ -103,7 +103,6 @@ router.post("/transaction/:id/removeAuthorization", authentication4transaction, 
     try {
         await TransactionService.removeAuthorization({
             transaction_id: req.params.id,
-            transaction_password: req.body.transaction_password,
             authorization_id: req.body.authorization_id
         })(TransactionRepository);
 
@@ -116,18 +115,45 @@ router.post("/transaction/:id/removeAuthorization", authentication4transaction, 
     }
 });
 
-router.post("/transaction/:id/close", authentication4transaction, async (req, res, next) => {
+router.post("/transaction/:id/enableInquiry", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
-    await TransactionService.close(req.params.id)(TransactionRepository);
-    res.json({
-        success: true,
-        message: null,
-    });
+    try {
+        await TransactionService.enableInquiry({
+            transaction_id: req.params.id,
+            inquiry_id: req.body.inquiry_id,
+            inquiry_pass: req.body.inquiry_pass,
+        })(TransactionRepository);
+
+        res.json({
+            success: true,
+            message: null,
+        });
+    } catch (error) {
+        next(error);
+    }
 });
 
-// router.post("/transaction/:id/unauthorize", authentication4transaction, async (req, res, next) => {
+router.post("/transaction/:id/close", async (req, res, next) => {
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        await TransactionService.close({
+            transaction_id: req.params.id
+        })(TransactionRepository);
+
+        res.json({
+            success: true,
+            message: null,
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// router.post("/transaction/:id/unauthorize", async (req, res, next) => {
 //     // TODO validations
 //     let validatorResult = await req.getValidationResult();
 //     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));

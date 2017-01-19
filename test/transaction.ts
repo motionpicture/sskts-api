@@ -23,7 +23,7 @@ async function main() {
         json: true,
         simple: false,
     });
-    if (!body.success) throw new Error(body.message); 
+    if (!body.success) throw new Error(body.message);
     let owner = body.owner;
     console.log("owner:", owner);
 
@@ -38,7 +38,7 @@ async function main() {
         json: true,
         simple: false,
     });
-    if (!body.success) throw new Error(body.message); 
+    if (!body.success) throw new Error(body.message);
     let transaction = body.transaction;
     console.log("transaction:", transaction);
 
@@ -70,7 +70,7 @@ async function main() {
         list_seat: [{
             seat_section: sectionCode,
             seat_num: freeSeatCodes[0]
-        },{
+        }, {
             seat_section: sectionCode,
             seat_num: freeSeatCodes[1]
         }]
@@ -82,7 +82,6 @@ async function main() {
     body = await request.post({
         url: `http://localhost:8080/transaction/${transaction._id}/addCOAAuthorization`,
         body: {
-            transaction_password: "password",
             owner_id: ownerId4administrator,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
             seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
@@ -106,7 +105,6 @@ async function main() {
     body = await request.post({
         url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
         body: {
-            transaction_password: "password",
             owner_id: ownerId4administrator,
             authorization_id: coaAuthorization._id
         },
@@ -143,7 +141,6 @@ async function main() {
     body = await request.post({
         url: `http://localhost:8080/transaction/${transaction._id}/addGMOAuthorization`,
         body: {
-            transaction_password: "password",
             owner_id: owner._id,
             gmo_shop_id: "tshop00024015",
             gmo_shop_password: "hf3wsuyy",
@@ -165,7 +162,6 @@ async function main() {
     body = await request.post({
         url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
         body: {
-            transaction_password: "password",
             owner_id: ownerId4administrator,
             authorization_id: gmoAuthorization._id
         },
@@ -176,16 +172,35 @@ async function main() {
     console.log("removeAuthorization result:", body);
 
 
-    // 取引成立
+
+
+
+    // 照合情報登録
     body = await request.post({
-        url: `http://localhost:8080/transaction/${transaction._id}/close`,
+        url: `http://localhost:8080/transaction/${transaction._id}/enableInquiry`,
         body: {
-            password: "password"
+            inquiry_id: "1234",
+            inquiry_pass: "1234"
         },
         json: true,
         simple: false,
     });
-    if (!body.success) throw new Error(body.message); 
+    if (!body.success) throw new Error(body.message);
+    console.log("enableInquiry result:", body);
+
+
+
+
+
+    // 取引成立
+    body = await request.post({
+        url: `http://localhost:8080/transaction/${transaction._id}/close`,
+        body: {
+        },
+        json: true,
+        simple: false,
+    });
+    if (!body.success) throw new Error(body.message);
     // let owner = body.owner;
     console.log("close result:", body);
 }
@@ -194,7 +209,6 @@ async function main() {
 // options = {
 //     url: "http://localhost:8080/transaction/586d8cc2fe0c971cd4b714f2/unauthorize",
 //     body: {
-//         password: "password",
 //         authorizations: ["586d9190ffe1bd0f9c2281cb", "586d9190ffe1bd0f9c2281cc"],
 //     },
 //     json: true
@@ -203,7 +217,6 @@ async function main() {
 // options = {
 //     url: "http://localhost:8080/transaction/586ee23af94ed12254c284fd/update",
 //     body: {
-//         password: "password",
 //         expired_at: moment().add(+30, 'minutes').unix()
 //     },
 //     json: true

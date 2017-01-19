@@ -18,10 +18,10 @@ const gmo_1 = require("../../model/authorization/gmo");
 const coa_1 = require("../../model/authorization/coa");
 var interpreter;
 (function (interpreter) {
-    function start(expired_at, ownerIds) {
+    function start(args) {
         return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let owners = [];
-            let promises = ownerIds.map((ownerId) => __awaiter(this, void 0, void 0, function* () {
+            let promises = args.owner_ids.map((ownerId) => __awaiter(this, void 0, void 0, function* () {
                 let option = yield ownerRepository.findById(ownerId);
                 if (option.isEmpty)
                     throw new Error("owner not found.");
@@ -29,7 +29,7 @@ var interpreter;
             }));
             yield Promise.all(promises);
             let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.START);
-            let transaction = new transaction_1.default(mongoose.Types.ObjectId().toString(), "password", transactionStatus_1.default.PROCESSING, [event], owners, [], expired_at, "", "");
+            let transaction = new transaction_1.default(mongoose.Types.ObjectId().toString(), transactionStatus_1.default.PROCESSING, [event], owners, [], args.expired_at, "", "");
             yield transactionRepository.store(transaction);
             return transaction;
         });
@@ -40,7 +40,6 @@ var interpreter;
             let event = new authorize_1.default(mongoose.Types.ObjectId().toString(), args.authorization);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
-                password: args.transaction_password,
                 status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {},
@@ -50,23 +49,19 @@ var interpreter;
                 }
             });
             if (option.isEmpty)
-                throw new Error("processing transaction with given password not found.");
+                throw new Error("processing transaction not found.");
         });
     }
-    function addAssetAuthorization(id, authorization) {
-        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new authorize_1.default(mongoose.Types.ObjectId().toString(), authorization);
-            let option = yield transactionRepository.findOneAndUpdate({
-                _id: id,
-                status: transactionStatus_1.default.PROCESSING
-            }, {
-                $set: {},
-                $push: {
-                    events: event
-                }
-            });
+    function addAssetAuthorization(args) {
+        return (assetAuthorizationRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let option = yield assetAuthorizationRepository.findById(args.authorization_id);
             if (option.isEmpty)
-                throw new Error("processing transaction not found.");
+                throw new Error("authorization not found.");
+            yield pushAuthorization({
+                transaction_id: args.transaction_id,
+                authorization: option.get()
+            })(transactionRepository);
+            return option.get();
         });
     }
     interpreter.addAssetAuthorization = addAssetAuthorization;
@@ -75,7 +70,6 @@ var interpreter;
             let authorization = new gmo_1.default(mongoose.Types.ObjectId().toString(), args.gmo_order_id, 1234);
             yield pushAuthorization({
                 transaction_id: args.transaction_id,
-                transaction_password: args.transaction_password,
                 authorization: authorization
             })(transactionRepository);
             return authorization;
@@ -87,7 +81,6 @@ var interpreter;
             let authorization = new coa_1.default(mongoose.Types.ObjectId().toString(), args.coa_tmp_reserve_num, 1234);
             yield pushAuthorization({
                 transaction_id: args.transaction_id,
-                transaction_password: args.transaction_password,
                 authorization: authorization
             })(transactionRepository);
             return authorization;
@@ -99,7 +92,6 @@ var interpreter;
             let event = new unauthorize_1.default(mongoose.Types.ObjectId().toString(), args.authorization_id);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
-                password: args.transaction_password,
                 status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {},
@@ -113,15 +105,31 @@ var interpreter;
                 }
             });
             if (option.isEmpty)
-                throw new Error("processing transaction with given password not found.");
+                throw new Error("processing transaction not found.");
         });
     }
     interpreter.removeAuthorization = removeAuthorization;
-    function close(id) {
+    function enableInquiry(args) {
+        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let option = yield transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: transactionStatus_1.default.PROCESSING
+            }, {
+                $set: {
+                    inquiry_id: args.inquiry_id,
+                    inquiry_pass: args.inquiry_pass,
+                },
+            });
+            if (option.isEmpty)
+                throw new Error("processing transaction not found.");
+        });
+    }
+    interpreter.enableInquiry = enableInquiry;
+    function close(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.CLOSE);
             let option = yield transactionRepository.findOneAndUpdate({
-                _id: id,
+                _id: args.transaction_id,
                 status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {
@@ -136,11 +144,11 @@ var interpreter;
         });
     }
     interpreter.close = close;
-    function expire(id) {
+    function expire(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.EXPIRE);
             let option = yield transactionRepository.findOneAndUpdate({
-                _id: id,
+                _id: args.transaction_id,
                 status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {
@@ -155,11 +163,11 @@ var interpreter;
         });
     }
     interpreter.expire = expire;
-    function cancel(id) {
+    function cancel(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.CANCEL);
             let option = yield transactionRepository.findOneAndUpdate({
-                _id: id,
+                _id: args.transaction_id,
                 status: transactionStatus_1.default.CLOSED
             }, {
                 $set: {

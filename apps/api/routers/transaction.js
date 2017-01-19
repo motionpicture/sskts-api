@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const express = require("express");
 let router = express.Router();
-const authentication4transaction_1 = require("../middlewares/authentication4transaction");
 const owner_1 = require("../../domain/repository/interpreter/owner");
 const transaction_1 = require("../../domain/repository/interpreter/transaction");
 const transaction_2 = require("../../domain/service/interpreter/transaction");
@@ -18,21 +17,23 @@ router.post("/transaction/start", (req, res, next) => __awaiter(this, void 0, vo
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     let ownerIds = req.body.owners;
-    let transaction = yield transaction_2.default.start(new Date(), ownerIds)(owner_1.default, transaction_1.default);
+    let transaction = yield transaction_2.default.start({
+        expired_at: new Date(),
+        owner_ids: ownerIds
+    })(owner_1.default, transaction_1.default);
     res.json({
         success: true,
         message: null,
         transaction: transaction
     });
 }));
-router.post("/transaction/:id/addGMOAuthorization", authentication4transaction_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post("/transaction/:id/addGMOAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
         let authorization = yield transaction_2.default.addGMOAuthorization({
             transaction_id: req.params.id,
-            transaction_password: req.body.transaction_password,
             owner_id: req.body.owner_id,
             gmo_shop_id: req.body.gmo_shop_id,
             gmo_shop_password: req.body.gmo_shop_password,
@@ -53,14 +54,13 @@ router.post("/transaction/:id/addGMOAuthorization", authentication4transaction_1
         next(error);
     }
 }));
-router.post("/transaction/:id/addCOAAuthorization", authentication4transaction_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post("/transaction/:id/addCOAAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
         let authorization = yield transaction_2.default.addCOAAuthorization({
             transaction_id: req.params.id,
-            transaction_password: req.body.transaction_password,
             owner_id: req.body.owner_id,
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
             seats: req.body.seats,
@@ -75,14 +75,13 @@ router.post("/transaction/:id/addCOAAuthorization", authentication4transaction_1
         next(error);
     }
 }));
-router.post("/transaction/:id/removeAuthorization", authentication4transaction_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post("/transaction/:id/removeAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
         yield transaction_2.default.removeAuthorization({
             transaction_id: req.params.id,
-            transaction_password: req.body.transaction_password,
             authorization_id: req.body.authorization_id
         })(transaction_1.default);
         res.json({
@@ -94,15 +93,41 @@ router.post("/transaction/:id/removeAuthorization", authentication4transaction_1
         next(error);
     }
 }));
-router.post("/transaction/:id/close", authentication4transaction_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post("/transaction/:id/enableInquiry", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
-    yield transaction_2.default.close(req.params.id)(transaction_1.default);
-    res.json({
-        success: true,
-        message: null,
-    });
+    try {
+        yield transaction_2.default.enableInquiry({
+            transaction_id: req.params.id,
+            inquiry_id: req.body.inquiry_id,
+            inquiry_pass: req.body.inquiry_pass,
+        })(transaction_1.default);
+        res.json({
+            success: true,
+            message: null,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+router.post("/transaction/:id/close", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    let validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty())
+        return next(new Error(validatorResult.array()[0].msg));
+    try {
+        yield transaction_2.default.close({
+            transaction_id: req.params.id
+        })(transaction_1.default);
+        res.json({
+            success: true,
+            message: null,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
 }));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = router;

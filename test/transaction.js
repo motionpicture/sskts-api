@@ -77,7 +77,6 @@ function main() {
         body = yield request.post({
             url: `http://localhost:8080/transaction/${transaction._id}/addCOAAuthorization`,
             body: {
-                transaction_password: "password",
                 owner_id: ownerId4administrator,
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
                 seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
@@ -99,7 +98,6 @@ function main() {
         body = yield request.post({
             url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
             body: {
-                transaction_password: "password",
                 owner_id: ownerId4administrator,
                 authorization_id: coaAuthorization._id
             },
@@ -131,7 +129,6 @@ function main() {
         body = yield request.post({
             url: `http://localhost:8080/transaction/${transaction._id}/addGMOAuthorization`,
             body: {
-                transaction_password: "password",
                 owner_id: owner._id,
                 gmo_shop_id: "tshop00024015",
                 gmo_shop_password: "hf3wsuyy",
@@ -151,7 +148,6 @@ function main() {
         body = yield request.post({
             url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
             body: {
-                transaction_password: "password",
                 owner_id: ownerId4administrator,
                 authorization_id: gmoAuthorization._id
             },
@@ -162,10 +158,20 @@ function main() {
             throw new Error(body.message);
         console.log("removeAuthorization result:", body);
         body = yield request.post({
-            url: `http://localhost:8080/transaction/${transaction._id}/close`,
+            url: `http://localhost:8080/transaction/${transaction._id}/enableInquiry`,
             body: {
-                password: "password"
+                inquiry_id: "1234",
+                inquiry_pass: "1234"
             },
+            json: true,
+            simple: false,
+        });
+        if (!body.success)
+            throw new Error(body.message);
+        console.log("enableInquiry result:", body);
+        body = yield request.post({
+            url: `http://localhost:8080/transaction/${transaction._id}/close`,
+            body: {},
             json: true,
             simple: false,
         });

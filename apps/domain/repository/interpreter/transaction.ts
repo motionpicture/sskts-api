@@ -27,7 +27,6 @@ namespace interpreter {
 
         return monapt.Option(new Transaction(
             doc.get("_id"),
-            doc.get("password"),
             doc.get("status"),
             doc.get("events"),
             doc.get("owners"),
