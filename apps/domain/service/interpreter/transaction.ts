@@ -72,6 +72,8 @@ namespace interpreter {
                     },
                     $push: {
                         events: event,
+                    },
+                    $addToSet: {
                         authorizations: args.authorization,
                     }
                 });
@@ -179,6 +181,8 @@ namespace interpreter {
     }) {
         return async (transactionRepository: TransactionRepository) => {
             // TODO 承認存在チェック
+
+            // TODO 承認あれば、そのグループに応じて削除する？
 
             // 取引イベント作成
             let event = new UnauthorizeTransactionEvent(

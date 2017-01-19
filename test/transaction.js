@@ -95,6 +95,15 @@ function main() {
             throw new Error(body.message);
         let coaAuthorization = body.authorization;
         console.log("coaAuthorization:", coaAuthorization);
+        yield COA.deleteTmpReserveInterface.call({
+            theater_code: "001",
+            date_jouei: "20170120",
+            title_code: "8513",
+            title_branch_num: "0",
+            time_begin: "1010",
+            tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
+        });
+        console.log("deleteTmpReserveResult:", true);
         body = yield request.post({
             url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
             body: {
@@ -145,6 +154,14 @@ function main() {
             throw new Error(body.message);
         let gmoAuthorization = body.authorization;
         console.log("gmoAuthorization:", gmoAuthorization);
+        let alterTranResult = yield GMO.CreditService.alterTranInterface.call({
+            shop_id: "tshop00024015",
+            shop_pass: "hf3wsuyy",
+            access_id: entryTranResult.access_id,
+            access_pass: entryTranResult.access_pass,
+            job_cd: GMO.Util.JOB_CD_VOID
+        });
+        console.log("alterTranResult:", alterTranResult);
         body = yield request.post({
             url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
             body: {
@@ -157,11 +174,120 @@ function main() {
         if (!body.success)
             throw new Error(body.message);
         console.log("removeAuthorization result:", body);
+        let reserveSeatsTemporarilyResult2 = yield COA.reserveSeatsTemporarilyInterface.call({
+            theater_code: "001",
+            date_jouei: "20170120",
+            title_code: "8513",
+            title_branch_num: "0",
+            time_begin: "1010",
+            screen_code: "2",
+            list_seat: [{
+                    seat_section: sectionCode,
+                    seat_num: freeSeatCodes[0]
+                }, {
+                    seat_section: sectionCode,
+                    seat_num: freeSeatCodes[1]
+                }]
+        });
+        console.log("reserveSeatsTemporarilyResult2:", reserveSeatsTemporarilyResult2);
+        body = yield request.post({
+            url: `http://localhost:8080/transaction/${transaction._id}/addCOAAuthorization`,
+            body: {
+                owner_id: ownerId4administrator,
+                coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
+                seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
+                    return {
+                        performance: "001201701208513021010",
+                        section: tmpReserve.seat_section,
+                        seat_code: tmpReserve.seat_num,
+                        ticket_code: "",
+                    };
+                })
+            },
+            json: true,
+            simple: false,
+        });
+        if (!body.success)
+            throw new Error(body.message);
+        let coaAuthorization2 = body.authorization;
+        console.log("coaAuthorization2:", coaAuthorization2);
+        orderId = Date.now().toString();
+        amount = 1500;
+        let entryTranResult2 = yield GMO.CreditService.entryTranInterface.call({
+            shop_id: "tshop00024015",
+            shop_pass: "hf3wsuyy",
+            order_id: orderId,
+            job_cd: GMO.Util.JOB_CD_AUTH,
+            amount: amount,
+        });
+        let execTranResult2 = yield GMO.CreditService.execTranInterface.call({
+            access_id: entryTranResult2.access_id,
+            access_pass: entryTranResult2.access_pass,
+            order_id: orderId,
+            method: "1",
+            card_no: "4111111111111111",
+            expire: "2012",
+            security_code: "123",
+        });
+        console.log("execTranResult2:", execTranResult2);
+        body = yield request.post({
+            url: `http://localhost:8080/transaction/${transaction._id}/addGMOAuthorization`,
+            body: {
+                owner_id: owner._id,
+                gmo_shop_id: "tshop00024015",
+                gmo_shop_password: "hf3wsuyy",
+                gmo_order_id: orderId,
+                gmo_amount: amount,
+                gmo_access_id: entryTranResult2.access_id,
+                gmo_access_password: entryTranResult2.access_pass,
+                gmo_job_cd: GMO.Util.JOB_CD_SALES,
+                gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
+            },
+            json: true
+        });
+        if (!body.success)
+            throw new Error(body.message);
+        let gmoAuthorization2 = body.authorization;
+        console.log("gmoAuthorization2:", gmoAuthorization2);
+        let salesTicketResult = yield COA.salesTicketInterface.call({
+            theater_code: "001",
+            date_jouei: "20170120",
+            title_code: "8513",
+            title_branch_num: "0",
+            time_begin: "1010",
+        });
+        console.log("salesTicketResult:", salesTicketResult);
+        let tel = "09012345678";
+        let updateReserveResult = yield COA.updateReserveInterface.call({
+            theater_code: "001",
+            date_jouei: "20170120",
+            title_code: "8513",
+            title_branch_num: "0",
+            time_begin: "1010",
+            tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num.toString(),
+            reserve_name: "山崎 哲",
+            reserve_name_jkana: "ヤマザキ テツ",
+            tel_num: "09012345678",
+            mail_addr: "yamazaki@motionpicture.jp",
+            reserve_amount: 1800,
+            list_ticket: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
+                return {
+                    ticket_code: salesTicketResult.list_ticket[0].ticket_code,
+                    std_price: salesTicketResult.list_ticket[0].std_price,
+                    add_price: salesTicketResult.list_ticket[0].add_price,
+                    dis_price: 0,
+                    sale_price: salesTicketResult.list_ticket[0].sale_price,
+                    ticket_count: 1,
+                    seat_num: tmpReserve.seat_num
+                };
+            })
+        });
+        console.log("updateReserveResult:", updateReserveResult);
         body = yield request.post({
             url: `http://localhost:8080/transaction/${transaction._id}/enableInquiry`,
             body: {
-                inquiry_id: "1234",
-                inquiry_pass: "1234"
+                inquiry_id: updateReserveResult.reserve_num,
+                inquiry_pass: tel
             },
             json: true,
             simple: false,

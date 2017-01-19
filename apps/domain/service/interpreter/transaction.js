@@ -45,6 +45,8 @@ var interpreter;
                 $set: {},
                 $push: {
                     events: event,
+                },
+                $addToSet: {
                     authorizations: args.authorization,
                 }
             });
