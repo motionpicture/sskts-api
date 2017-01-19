@@ -8,39 +8,58 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const performance_1 = require("../../model/performance");
-const performance_2 = require("./mongoose/model/performance");
+const PerformanceFactory = require("../../factory/performance");
+const performance_1 = require("./mongoose/model/performance");
 var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let performances = yield performance_2.default.find(conditions)
+            let performances = yield performance_1.default.find(conditions)
                 .populate("film")
                 .populate("theater")
                 .populate("screen")
                 .exec();
             return performances.map((performance) => {
-                return new performance_1.default(performance.get("_id"), performance.get("theater"), performance.get("screen"), performance.get("film"), performance.get("day"), performance.get("time_start"), performance.get("time_end"), performance.get("canceled"));
+                return PerformanceFactory.create({
+                    _id: performance.get("_id"),
+                    theater: performance.get("theater"),
+                    screen: performance.get("screen"),
+                    film: performance.get("film"),
+                    day: performance.get("day"),
+                    time_start: performance.get("time_start"),
+                    time_end: performance.get("time_end"),
+                    canceled: performance.get("canceled"),
+                });
             });
         });
     }
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let performance = yield performance_2.default.findOne({ _id: id })
+            let doc = yield performance_1.default.findOne({ _id: id })
                 .populate("film")
                 .populate("theater")
                 .populate("screen")
                 .exec();
-            if (!performance)
+            if (!doc)
                 return monapt.None;
-            return monapt.Option(new performance_1.default(performance.get("_id"), performance.get("theater"), performance.get("screen"), performance.get("film"), performance.get("day"), performance.get("time_start"), performance.get("time_end"), performance.get("canceled")));
+            let performance = PerformanceFactory.create({
+                _id: doc.get("_id"),
+                theater: doc.get("theater"),
+                screen: doc.get("screen"),
+                film: doc.get("film"),
+                day: doc.get("day"),
+                time_start: doc.get("time_start"),
+                time_end: doc.get("time_end"),
+                canceled: doc.get("canceled"),
+            });
+            return monapt.Option(performance);
         });
     }
     interpreter.findById = findById;
     function store(performance) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield performance_2.default.findOneAndUpdate({ _id: performance._id }, performance, {
+            yield performance_1.default.findOneAndUpdate({ _id: performance._id }, performance, {
                 new: true,
                 upsert: true
             }).lean().exec();
@@ -50,7 +69,17 @@ var interpreter;
     function storeFromCOA(performanceByCOA) {
         return (screen, film) => __awaiter(this, void 0, void 0, function* () {
             let id = `${screen.theater._id}${performanceByCOA.date_jouei}${performanceByCOA.title_code}${performanceByCOA.title_branch_num}${performanceByCOA.screen_code}${performanceByCOA.time_begin}`;
-            yield store(new performance_1.default(id, screen.theater, screen, film, performanceByCOA.date_jouei, performanceByCOA.time_begin, performanceByCOA.time_end, false));
+            let performance = PerformanceFactory.create({
+                _id: id,
+                theater: screen.theater,
+                screen: screen,
+                film: film,
+                day: performanceByCOA.date_jouei,
+                time_start: performanceByCOA.time_begin,
+                time_end: performanceByCOA.time_end,
+                canceled: false,
+            });
+            yield store(performance);
         });
     }
     interpreter.storeFromCOA = storeFromCOA;

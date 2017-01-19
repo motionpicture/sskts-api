@@ -26,13 +26,15 @@ program
     .version("0.0.1")
 
 program
-    .command("importTheater <code>")
+    .command("importTheater <theaterCode>")
     .description("import theater from COA.")
-    .action(async (code) => {
+    .action(async (theaterCode) => {
         mongoose.connect(MONGOLAB_URI);
 
         try {
-            await MasterService.importTheater(code)(TheaterRepository);
+            await MasterService.importTheater({
+                theater_code: theaterCode
+            })(TheaterRepository);
         } catch (error) {
             console.error(error);
         }
@@ -47,7 +49,9 @@ program
         mongoose.connect(MONGOLAB_URI);
 
         try {
-            await MasterService.importFilms(theaterCode)(TheaterRepository, FilmRepository);
+            await MasterService.importFilms({
+                theater_code: theaterCode
+            })(TheaterRepository, FilmRepository);
         } catch (error) {
             console.error(error);
         }
@@ -62,7 +66,9 @@ program
         mongoose.connect(MONGOLAB_URI);
 
         try {
-            await MasterService.importScreens(theaterCode)(TheaterRepository, ScreenRepository);
+            await MasterService.importScreens({
+                theater_code: theaterCode
+            })(TheaterRepository, ScreenRepository);
         } catch (error) {
             console.error(error);
         }
@@ -77,7 +83,11 @@ program
         mongoose.connect(MONGOLAB_URI);
 
         try {
-            await MasterService.importPerformances(theaterCode, start, end)(
+            await MasterService.importPerformances({
+                theater_code: theaterCode,
+                day_start: start,
+                day_end: end
+            })(
                 FilmRepository, ScreenRepository, PerformanceRepository
             );
         } catch (error) {

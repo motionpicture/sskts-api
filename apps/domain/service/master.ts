@@ -8,10 +8,20 @@ type FilmAndScreenAndPerformanceOperation<T> = (filmRepository: FilmRepository, 
 
 // マスターデータサービス
 interface MasterService {
-    importTheater(code: string): (repository: TheaterRepository) => Promise<void>;
-    importFilms(theaterCode: string): TheaterAndFilmOperation<void>;
-    importScreens(theaterCode: string): TheaterAndScreenOperation<void>;
-    importPerformances(theaterCode: string, dayStart: string, dayEnd: string): FilmAndScreenAndPerformanceOperation<void>;
+    importTheater(args: {
+        theater_code: string
+    }): (repository: TheaterRepository) => Promise<void>;
+    importFilms(args: {
+        theater_code: string
+    }): TheaterAndFilmOperation<void>;
+    importScreens(args: {
+        theater_code: string
+    }): TheaterAndScreenOperation<void>;
+    importPerformances(args: {
+        theater_code: string,
+        day_start: string,
+        day_end: string
+    }): FilmAndScreenAndPerformanceOperation<void>;
     // importSeatAvailability(theaterCode: string, dayStart: string, dayEnd: string): (repository: TheaterRepository) => Promise<void>;
     // importTickets(theaterCode: string): (repository: TheaterRepository) => Promise<void>;
 }

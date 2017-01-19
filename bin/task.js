@@ -27,12 +27,14 @@ COA.initialize({
 program
     .version("0.0.1");
 program
-    .command("importTheater <code>")
+    .command("importTheater <theaterCode>")
     .description("import theater from COA.")
-    .action((code) => __awaiter(this, void 0, void 0, function* () {
+    .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
     mongoose.connect(MONGOLAB_URI);
     try {
-        yield master_1.default.importTheater(code)(theater_1.default);
+        yield master_1.default.importTheater({
+            theater_code: theaterCode
+        })(theater_1.default);
     }
     catch (error) {
         console.error(error);
@@ -45,7 +47,9 @@ program
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
     mongoose.connect(MONGOLAB_URI);
     try {
-        yield master_1.default.importFilms(theaterCode)(theater_1.default, film_1.default);
+        yield master_1.default.importFilms({
+            theater_code: theaterCode
+        })(theater_1.default, film_1.default);
     }
     catch (error) {
         console.error(error);
@@ -58,7 +62,9 @@ program
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
     mongoose.connect(MONGOLAB_URI);
     try {
-        yield master_1.default.importScreens(theaterCode)(theater_1.default, screen_1.default);
+        yield master_1.default.importScreens({
+            theater_code: theaterCode
+        })(theater_1.default, screen_1.default);
     }
     catch (error) {
         console.error(error);
@@ -71,7 +77,11 @@ program
     .action((theaterCode, start, end) => __awaiter(this, void 0, void 0, function* () {
     mongoose.connect(MONGOLAB_URI);
     try {
-        yield master_1.default.importPerformances(theaterCode, start, end)(film_1.default, screen_1.default, performance_1.default);
+        yield master_1.default.importPerformances({
+            theater_code: theaterCode,
+            day_start: start,
+            day_end: end
+        })(film_1.default, screen_1.default, performance_1.default);
     }
     catch (error) {
         console.error(error);

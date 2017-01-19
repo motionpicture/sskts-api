@@ -1,4 +1,16 @@
+import Owner from "../model/owner";
 import AnonymousOwner from "../model/owner/anonymous";
+import OwnerGroup from "../model/ownerGroup";
+
+export function create(args: {
+    _id: string,
+    group: OwnerGroup,
+}) {
+    return new Owner(
+        args._id,
+        args.group,
+    );
+}
 
 /**
  * 一般所有者を作成する

@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const anonymous_1 = require("../../../model/owner/anonymous");
 const ownerGroup_1 = require("../../../model/ownerGroup");
+const OwnerFactory = require("../../../factory/owner");
 const owner_1 = require("../mongoose/model/owner");
 var interpreter;
 (function (interpreter) {
@@ -17,7 +17,13 @@ var interpreter;
         return __awaiter(this, void 0, void 0, function* () {
             let docs = yield owner_1.default.find({ $and: [conditions, { group: ownerGroup_1.default.ANONYMOUS }] }).exec();
             return docs.map((doc) => {
-                return new anonymous_1.default(doc.get("_id"), doc.get("name_first"), doc.get("name_last"), doc.get("email"), doc.get("tel"));
+                return OwnerFactory.createAnonymous({
+                    _id: doc.get("_id"),
+                    name_first: doc.get("name_first"),
+                    name_last: doc.get("name_last"),
+                    email: doc.get("email"),
+                    tel: doc.get("tel"),
+                });
             });
         });
     }
@@ -27,7 +33,14 @@ var interpreter;
             let doc = yield owner_1.default.findOne({ _id: id, group: ownerGroup_1.default.ANONYMOUS }).exec();
             if (!doc)
                 return monapt.None;
-            return monapt.Option(new anonymous_1.default(doc.get("_id"), doc.get("name_first"), doc.get("name_last"), doc.get("email"), doc.get("tel")));
+            let owner = OwnerFactory.createAnonymous({
+                _id: doc.get("_id"),
+                name_first: doc.get("name_first"),
+                name_last: doc.get("name_last"),
+                email: doc.get("email"),
+                tel: doc.get("tel"),
+            });
+            return monapt.Option(owner);
         });
     }
     interpreter.findById = findById;
@@ -39,7 +52,14 @@ var interpreter;
             }).exec();
             if (!doc)
                 return monapt.None;
-            return monapt.Option(new anonymous_1.default(doc.get("_id"), doc.get("name_first"), doc.get("name_last"), doc.get("email"), doc.get("tel")));
+            let owner = OwnerFactory.createAnonymous({
+                _id: doc.get("_id"),
+                name_first: doc.get("name_first"),
+                name_last: doc.get("name_last"),
+                email: doc.get("email"),
+                tel: doc.get("tel"),
+            });
+            return monapt.Option(owner);
         });
     }
     interpreter.findOneAndUpdate = findOneAndUpdate;

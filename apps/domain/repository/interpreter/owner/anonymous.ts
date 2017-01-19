@@ -2,19 +2,20 @@ import monapt = require("monapt");
 import AnonymousOwner from "../../../model/owner/anonymous";
 import OwnerGroup from "../../../model/ownerGroup";
 import AnonymousOwnerRepository from "../../owner/anonymous";
+import * as OwnerFactory from "../../../factory/owner";
 import OwnerModel from "../mongoose/model/owner";
 
 namespace interpreter {
     export async function find(conditions: Object) {
         let docs = await OwnerModel.find({ $and: [conditions, { group: OwnerGroup.ANONYMOUS }] }).exec();
         return docs.map((doc) => {
-            return new AnonymousOwner(
-                doc.get("_id"),
-                doc.get("name_first"),
-                doc.get("name_last"),
-                doc.get("email"),
-                doc.get("tel"),
-            );
+            return OwnerFactory.createAnonymous({
+                _id: doc.get("_id"),
+                name_first: doc.get("name_first"),
+                name_last: doc.get("name_last"),
+                email: doc.get("email"),
+                tel: doc.get("tel"),
+            });
         });
     }
 
@@ -22,13 +23,15 @@ namespace interpreter {
         let doc = await OwnerModel.findOne({ _id: id, group: OwnerGroup.ANONYMOUS }).exec();
         if (!doc) return monapt.None;
 
-        return monapt.Option(new AnonymousOwner(
-            doc.get("_id"),
-            doc.get("name_first"),
-            doc.get("name_last"),
-            doc.get("email"),
-            doc.get("tel"),
-        ));
+        let owner = OwnerFactory.createAnonymous({
+            _id: doc.get("_id"),
+            name_first: doc.get("name_first"),
+            name_last: doc.get("name_last"),
+            email: doc.get("email"),
+            tel: doc.get("tel"),
+        });
+
+        return monapt.Option(owner);
     }
 
     export async function findOneAndUpdate(conditions: Object, update: Object) {
@@ -38,13 +41,15 @@ namespace interpreter {
         }).exec();
         if (!doc) return monapt.None;
 
-        return monapt.Option(new AnonymousOwner(
-            doc.get("_id"),
-            doc.get("name_first"),
-            doc.get("name_last"),
-            doc.get("email"),
-            doc.get("tel"),
-        ));
+        let owner = OwnerFactory.createAnonymous({
+            _id: doc.get("_id"),
+            name_first: doc.get("name_first"),
+            name_last: doc.get("name_last"),
+            email: doc.get("email"),
+            tel: doc.get("tel"),
+        });
+
+        return monapt.Option(owner);
     }
 
     export async function store(owner: AnonymousOwner) {

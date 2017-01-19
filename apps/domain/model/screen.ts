@@ -1,9 +1,9 @@
 import Theater from "./theater";
 import MultilingualString from "./multilingualString";
-interface Seat {
+export interface Seat {
     code: string
 }
-interface Section {
+export interface Section {
     code: string,
     name: MultilingualString,
     seats: Array<Seat>

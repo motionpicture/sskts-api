@@ -1,33 +1,37 @@
-import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Screen from "../../model/screen";
 import Theater from "../../model/theater";
 import ScreenRepository from "../screen";
+import * as ScreenFactory from "../../factory/screen";
 import ScreenModel from "./mongoose/model/screen";
 import COA = require("@motionpicture/coa-service");
 
 namespace interpreter {
-    export function createFromDocument(doc: mongoose.Document): Screen {
-        return new Screen(
-            doc.get("_id"),
-            doc.get("theater"),
-            doc.get("coa_screen_code"),
-            doc.get("name"),
-            doc.get("sections")
-        );
-    }
-
     export async function findById(id: string) {
-        let screen = await ScreenModel.findOne({ _id: id }).exec();
-        if (!screen) return monapt.None;
+        let doc = await ScreenModel.findOne({ _id: id }).exec();
+        if (!doc) return monapt.None;
 
-        return monapt.Option(createFromDocument(screen));
+        let screen = ScreenFactory.create({
+            _id: doc.get("_id"),
+            theater: doc.get("theater"),
+            coa_screen_code: doc.get("coa_screen_code"),
+            name: doc.get("name"),
+            sections: doc.get("sections")
+        });
+
+        return monapt.Option(screen);
     }
 
     export async function findByTheater(theaterCode: string) {
-        let screens = await ScreenModel.find({theater: theaterCode}).exec();
-        return screens.map((screen) => {
-            return createFromDocument(screen);
+        let docs = await ScreenModel.find({theater: theaterCode}).exec();
+        return docs.map((doc) => {
+            return ScreenFactory.create({
+                _id: doc.get("_id"),
+                theater: doc.get("theater"),
+                coa_screen_code: doc.get("coa_screen_code"),
+                name: doc.get("name"),
+                sections: doc.get("sections")
+            });
         });
     }
 
@@ -69,16 +73,18 @@ namespace interpreter {
                 });
             });
 
-            await store(new Screen(
-                `${theater._id}${screenByCOA.screen_code}`,
-                theater,
-                screenByCOA.screen_code,
-                {
+            let screen = ScreenFactory.create({
+                _id: `${theater._id}${screenByCOA.screen_code}`,
+                theater: theater,
+                coa_screen_code: screenByCOA.screen_code,
+                name: {
                     ja: screenByCOA.screen_name,
                     en: screenByCOA.screen_name_eng
                 },
-                sections
-            ));
+                sections: sections
+            });
+
+            await store(screen);
         }
     }
 }

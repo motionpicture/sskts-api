@@ -10,21 +10,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const COA = require("@motionpicture/coa-service");
 var interpreter;
 (function (interpreter) {
-    function importTheater(code) {
+    function importTheater(args) {
         return (repository) => __awaiter(this, void 0, void 0, function* () {
             yield COA.findTheaterInterface.call({
-                theater_code: code
+                theater_code: args.theater_code
             }).then(repository.storeFromCOA);
         });
     }
     interpreter.importTheater = importTheater;
-    function importFilms(theaterCode) {
+    function importFilms(args) {
         return (theaterRepository, filmRepository) => __awaiter(this, void 0, void 0, function* () {
-            let optionTheater = yield theaterRepository.findById(theaterCode);
+            let optionTheater = yield theaterRepository.findById(args.theater_code);
             if (optionTheater.isEmpty)
                 throw new Error("theater not found.");
             let films = yield COA.findFilmsByTheaterCodeInterface.call({
-                theater_code: theaterCode
+                theater_code: args.theater_code
             });
             yield Promise.all(films.map((filmByCOA) => __awaiter(this, void 0, void 0, function* () {
                 yield filmRepository.storeFromCOA(filmByCOA)(optionTheater.get());
@@ -32,13 +32,13 @@ var interpreter;
         });
     }
     interpreter.importFilms = importFilms;
-    function importScreens(theaterCode) {
+    function importScreens(args) {
         return (theaterRepository, screenRepository) => __awaiter(this, void 0, void 0, function* () {
-            let optionTheater = yield theaterRepository.findById(theaterCode);
+            let optionTheater = yield theaterRepository.findById(args.theater_code);
             if (optionTheater.isEmpty)
                 throw new Error("theater not found.");
             let screens = yield COA.findScreensByTheaterCodeInterface.call({
-                theater_code: theaterCode
+                theater_code: args.theater_code
             });
             yield Promise.all(screens.map((screenByCOA) => __awaiter(this, void 0, void 0, function* () {
                 yield screenRepository.storeFromCOA(screenByCOA)(optionTheater.get());
@@ -46,17 +46,17 @@ var interpreter;
         });
     }
     interpreter.importScreens = importScreens;
-    function importPerformances(theaterId, dayStart, dayEnd) {
+    function importPerformances(args) {
         return (filmRepository, screenRepository, performanceRepository) => __awaiter(this, void 0, void 0, function* () {
-            let screens = yield screenRepository.findByTheater(theaterId);
+            let screens = yield screenRepository.findByTheater(args.theater_code);
             let performances = yield COA.findPerformancesByTheaterCodeInterface.call({
-                theater_code: theaterId,
-                begin: dayStart,
-                end: dayEnd,
+                theater_code: args.theater_code,
+                begin: args.day_start,
+                end: args.day_end,
             });
             yield Promise.all(performances.map((performanceByCOA) => __awaiter(this, void 0, void 0, function* () {
-                let screenId = `${theaterId}${performanceByCOA.screen_code}`;
-                let filmId = `${theaterId}${performanceByCOA.title_code}${performanceByCOA.title_branch_num}`;
+                let screenId = `${args.theater_code}${performanceByCOA.screen_code}`;
+                let filmId = `${args.theater_code}${performanceByCOA.title_code}${performanceByCOA.title_branch_num}`;
                 let _screen = screens.find((screen) => { return (screen._id === screenId); });
                 if (!_screen)
                     throw new Error(("screen not found."));

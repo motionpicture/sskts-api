@@ -8,43 +8,54 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const owner_1 = require("../../model/owner");
-const owner_2 = require("./mongoose/model/owner");
+const OwnerFactory = require("../../factory/owner");
+const owner_1 = require("./mongoose/model/owner");
 var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield owner_2.default.find({ $and: [conditions] }).exec();
+            let docs = yield owner_1.default.find({ $and: [conditions] }).exec();
             return docs.map((doc) => {
-                return new owner_1.default(doc.get("_id"), doc.get("group"));
+                return OwnerFactory.create({
+                    _id: doc.get("_id"),
+                    group: doc.get("group")
+                });
             });
         });
     }
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield owner_2.default.findOne({ _id: id }).exec();
+            let doc = yield owner_1.default.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
-            return monapt.Option(new owner_1.default(doc.get("_id"), doc.get("group")));
+            let owner = OwnerFactory.create({
+                _id: doc.get("_id"),
+                group: doc.get("group")
+            });
+            return monapt.Option(owner);
         });
     }
     interpreter.findById = findById;
     function findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield owner_2.default.findOneAndUpdate({ $and: [conditions] }, update, {
+            let doc = yield owner_1.default.findOneAndUpdate({ $and: [conditions] }, update, {
                 new: true,
                 upsert: false
             }).exec();
             if (!doc)
                 return monapt.None;
-            return monapt.Option(new owner_1.default(doc.get("_id"), doc.get("group")));
+            let owner = OwnerFactory.create({
+                _id: doc.get("_id"),
+                group: doc.get("group")
+            });
+            return monapt.Option(owner);
         });
     }
     interpreter.findOneAndUpdate = findOneAndUpdate;
     function store(owner) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield owner_2.default.findOneAndUpdate({ _id: owner._id }, owner, {
+            yield owner_1.default.findOneAndUpdate({ _id: owner._id }, owner, {
                 new: true,
                 upsert: true
             }).lean().exec();

@@ -1,16 +1,17 @@
 import monapt = require("monapt");
 import { default as Owner } from "../../model/owner";
 import OwnerRepository from "../owner";
+import * as OwnerFactory from "../../factory/owner";
 import OwnerModel from "./mongoose/model/owner";
 
 namespace interpreter {
     export async function find(conditions: Object) {
         let docs = await OwnerModel.find({ $and: [conditions] }).exec();
         return docs.map((doc) => {
-            return new Owner(
-                doc.get("_id"),
-                doc.get("group")
-            );
+            return OwnerFactory.create({
+                _id: doc.get("_id"),
+                group: doc.get("group")
+            });
         });
     }
 
@@ -18,10 +19,12 @@ namespace interpreter {
         let doc = await OwnerModel.findOne({ _id: id }).exec();
         if (!doc) return monapt.None;
 
-        return monapt.Option(new Owner(
-            doc.get("_id"),
-            doc.get("group")
-        ));
+        let owner = OwnerFactory.create({
+            _id: doc.get("_id"),
+            group: doc.get("group")
+        });
+
+        return monapt.Option(owner);
     }
 
     export async function findOneAndUpdate(conditions: Object, update: Object) {
@@ -31,10 +34,12 @@ namespace interpreter {
         }).exec();
         if (!doc) return monapt.None;
 
-        return monapt.Option(new Owner(
-            doc.get("_id"),
-            doc.get("group")
-        ));
+        let owner = OwnerFactory.create({
+            _id: doc.get("_id"),
+            group: doc.get("group")
+        });
+
+        return monapt.Option(owner);
     }
 
     export async function store(owner: Owner) {
