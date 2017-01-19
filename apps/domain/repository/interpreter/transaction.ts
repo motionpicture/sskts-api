@@ -1,5 +1,6 @@
 import monapt = require("monapt");
 import Transaction from "../../model/transaction";
+import * as TransactionFactory from "../../factory/transaction";
 import TransactionRepository from "../transaction";
 import TheaterModel from "./mongoose/model/transaction";
 
@@ -25,16 +26,16 @@ namespace interpreter {
         }).exec();
         if (!doc) return monapt.None;
 
-        return monapt.Option(new Transaction(
-            doc.get("_id"),
-            doc.get("status"),
-            doc.get("events"),
-            doc.get("owners"),
-            doc.get("authorizations"),
-            doc.get("expired_at"),
-            doc.get("access_id"),
-            doc.get("access_pass"),
-        ));
+        return monapt.Option(TransactionFactory.create({
+            _id: doc.get("_id"),
+            status: doc.get("status"),
+            events: doc.get("events"),
+            owners: doc.get("owners"),
+            authorizations: doc.get("authorizations"),
+            expired_at: doc.get("expired_at"),
+            inquiry_id: doc.get("inquiry_id"),
+            inquiry_pass: doc.get("inquiry_pass"),
+        }));
     }
 
     export async function store(transaction: Transaction) {

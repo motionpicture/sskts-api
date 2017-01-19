@@ -1,23 +1,18 @@
 import Theater from "../model/theater";
+import MultilingualString from "../model/multilingualString";
 import COA = require("@motionpicture/coa-service");
 
 export function create(args: {
     _id: string,
-    name_ja: string,
-    name_en: string,
-    name_kana: string
+    name: MultilingualString,
+    name_kana: string,
+    address: MultilingualString,
 }): Theater {
     return {
         _id: args._id,
-        name: {
-            ja: args.name_ja,
-            en: args.name_en,
-        },
+        name: args.name,
         name_kana: args.name_kana,
-        address: {
-            ja: args.name_ja,
-            en: "",
-        },
+        address: args.address,
     }
 }
 

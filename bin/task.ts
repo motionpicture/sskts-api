@@ -1,9 +1,12 @@
 import program = require("commander");
+import QueueService from "../apps/domain/service/interpreter/queue";
 import MasterService from "../apps/domain/service/interpreter/master";
 import FilmRepository from "../apps/domain/repository/interpreter/film";
 import ScreenRepository from "../apps/domain/repository/interpreter/screen";
 import TheaterRepository from "../apps/domain/repository/interpreter/theater";
 import PerformanceRepository from "../apps/domain/repository/interpreter/performance";
+import TransactionRepository from "../apps/domain/repository/interpreter/transaction";
+import QueueRepository from "../apps/domain/repository/interpreter/queue";
 
 // let env = process.env.NODE_ENV || "dev";
 
@@ -79,6 +82,40 @@ program
             );
         } catch (error) {
             console.error(error);
+        }
+
+        mongoose.disconnect();
+    });
+
+program
+    .command("importQueues")
+    .description("import authorizations from transaction.")
+    .action(async () => {
+        mongoose.connect(MONGOLAB_URI);
+
+        try {
+            await QueueService.importFromTransaction()(
+                TransactionRepository, QueueRepository
+            );
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        mongoose.disconnect();
+    });
+
+program
+    .command("settleAuthorization")
+    .description("import authorizations from transaction.")
+    .action(async () => {
+        mongoose.connect(MONGOLAB_URI);
+
+        try {
+            await QueueService.settleAuthorization()(
+                QueueRepository
+            );
+        } catch (error) {
+            console.error(error.message);
         }
 
         mongoose.disconnect();

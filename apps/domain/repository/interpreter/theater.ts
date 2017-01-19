@@ -1,18 +1,19 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Theater from "../../model/theater";
+import * as TheaterFactory from "../../factory/theater";
 import TheaterRepository from "../theater";
 import TheaterModel from "./mongoose/model/theater";
 import COA = require("@motionpicture/coa-service");
 
 namespace interpreter {
     function createFromDocument(doc: mongoose.Document): Theater {
-        return new Theater(
-            doc.get("_id"),
-            doc.get("name"),
-            doc.get("name_kana"),
-            doc.get("address"),
-        );
+        return TheaterFactory.create({
+            _id: doc.get("_id"),
+            name: doc.get("name"),
+            name_kana: doc.get("name_kana"),
+            address: doc.get("address"),
+        });
     }
 
     export async function findById(id: string) {
@@ -30,18 +31,20 @@ namespace interpreter {
     }
 
     export async function storeFromCOA(theaterByCOA: COA.findTheaterInterface.Result) {
-        await store(new Theater(
-            theaterByCOA.theater_code,
-            {
+        let theater =  TheaterFactory.create({
+            _id: theaterByCOA.theater_code,
+            name: {
                 ja: theaterByCOA.theater_name,
                 en: theaterByCOA.theater_name_eng,
             },
-            theaterByCOA.theater_name_kana,
-            {
+            name_kana: theaterByCOA.theater_name_kana,
+            address: {
                 ja: "",
                 en: "",
-            }
-        ));
+            },
+        });
+
+        await store(theater);
     }
 }
 

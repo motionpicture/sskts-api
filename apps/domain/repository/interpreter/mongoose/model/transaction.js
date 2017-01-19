@@ -4,14 +4,16 @@ const owner_1 = require("./owner");
 let schema = new mongoose.Schema({
     expired_at: Date,
     status: String,
-    events: [],
+    events: [mongoose.Schema.Types.Mixed],
     owners: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: owner_1.default.modelName,
         }],
-    authorizations: [],
+    authorizations: [mongoose.Schema.Types.Mixed],
+    emails: [mongoose.Schema.Types.Mixed],
     inquiry_id: String,
     inquiry_pass: String,
+    queues_imported: Boolean,
 }, {
     collection: "transactions",
     timestamps: {

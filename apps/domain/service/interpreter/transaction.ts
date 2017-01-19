@@ -1,6 +1,5 @@
 import mongoose = require("mongoose");
 import Owner from "../../model/owner";
-import Transaction from "../../model/transaction";
 import TransactionEvent from "../../model/transactionEvent";
 import AuthorizeTransactionEvent from "../../model/transactionEvent/authorize";
 import UnauthorizeTransactionEvent from "../../model/transactionEvent/unauthorize";
@@ -14,6 +13,7 @@ import TransactionService from "../transaction";
 import AssetAuthorizationRepository from "../../repository/authorization/asset";
 import TransactionRepository from "../../repository/transaction";
 import OwnerRepository from "../../repository/owner";
+import * as TransactionFactory from "../../factory/transaction";
 
 namespace interpreter {
     /** 取引開始 */
@@ -35,16 +35,13 @@ namespace interpreter {
                 TransactionEventGroup.START,
             );
 
-            let transaction = new Transaction(
-                mongoose.Types.ObjectId().toString(),
-                TransactionStatus.PROCESSING,
-                [event],
-                owners,
-                [], // オーソリリスト初期化
-                args.expired_at,
-                "",
-                "",
-            );
+            let transaction = TransactionFactory.create({
+                _id: mongoose.Types.ObjectId().toString(), // TODO どちらで指定？
+                status: TransactionStatus.PROCESSING,
+                events: [event],
+                owners: owners,
+                expired_at: args.expired_at
+            });
 
             await transactionRepository.store(transaction);
 
@@ -106,11 +103,11 @@ namespace interpreter {
         transaction_id: string,
         owner_id: string,
         gmo_shop_id: string,
-        gmo_shop_password: string,
+        gmo_shop_pass: string,
         gmo_order_id: string,
         gmo_amount: string,
         gmo_access_id: string,
-        gmo_access_password: string,
+        gmo_access_pass: string,
         gmo_job_cd: string,
         gmo_pay_type: string,
 
@@ -122,7 +119,7 @@ namespace interpreter {
             let authorization = new GMOAuthorization(
                 mongoose.Types.ObjectId().toString(),
                 args.gmo_order_id,
-                1234 // TODO
+                parseInt(args.gmo_amount) // TODO
             );
 
             // 永続化

@@ -53,11 +53,11 @@ router.post("/transaction/:id/addGMOAuthorization", async (req, res, next) => {
             transaction_id: req.params.id,
             owner_id: req.body.owner_id,
             gmo_shop_id: req.body.gmo_shop_id,
-            gmo_shop_password: req.body.gmo_shop_password,
+            gmo_shop_pass: req.body.gmo_shop_pass,
             gmo_order_id: req.body.gmo_order_id,
             gmo_amount: req.body.gmo_amount,
             gmo_access_id: req.body.gmo_access_id,
-            gmo_access_password: req.body.gmo_access_password,
+            gmo_access_pass: req.body.gmo_access_pass,
             gmo_job_cd: req.body.gmo_job_cd,
             gmo_pay_type: req.body.gmo_pay_type,
         })(TransactionRepository);

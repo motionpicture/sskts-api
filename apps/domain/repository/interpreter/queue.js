@@ -8,13 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const TransactionFactory = require("../../factory/transaction");
-const transaction_1 = require("./mongoose/model/transaction");
+const QueueFactory = require("../../factory/queue");
+const queue_1 = require("./mongoose/model/queue");
 var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield transaction_1.default.find(conditions).exec();
+            let docs = yield queue_1.default.find(conditions).exec();
             yield docs.map((doc) => {
                 console.log(doc);
             });
@@ -24,7 +24,7 @@ var interpreter;
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield transaction_1.default.findOne({ _id: id }).exec();
+            let doc = yield queue_1.default.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
             return monapt.None;
@@ -33,28 +33,23 @@ var interpreter;
     interpreter.findById = findById;
     function findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield transaction_1.default.findOneAndUpdate(conditions, update, {
+            let doc = yield queue_1.default.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).exec();
             if (!doc)
                 return monapt.None;
-            return monapt.Option(TransactionFactory.create({
+            return monapt.Option(QueueFactory.create({
                 _id: doc.get("_id"),
+                group: doc.get("group"),
                 status: doc.get("status"),
-                events: doc.get("events"),
-                owners: doc.get("owners"),
-                authorizations: doc.get("authorizations"),
-                expired_at: doc.get("expired_at"),
-                inquiry_id: doc.get("inquiry_id"),
-                inquiry_pass: doc.get("inquiry_pass"),
             }));
         });
     }
     interpreter.findOneAndUpdate = findOneAndUpdate;
-    function store(transaction) {
+    function store(queue) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield transaction_1.default.findOneAndUpdate({ _id: transaction._id }, transaction, {
+            yield queue_1.default.findOneAndUpdate({ _id: queue._id }, queue, {
                 new: true,
                 upsert: true
             }).lean().exec();

@@ -3,15 +3,9 @@ const theater_1 = require("../model/theater");
 function create(args) {
     return {
         _id: args._id,
-        name: {
-            ja: args.name_ja,
-            en: args.name_en,
-        },
+        name: args.name,
         name_kana: args.name_kana,
-        address: {
-            ja: args.name_ja,
-            en: "",
-        },
+        address: args.address,
     };
 }
 exports.create = create;

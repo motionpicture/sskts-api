@@ -7,14 +7,16 @@ import OwnerModel from "./owner";
 let schema = new mongoose.Schema({
     expired_at: Date,
     status: String,
-    events: [], // イベントリスト
+    events: [mongoose.Schema.Types.Mixed], // イベントリスト
     owners: [{ // 取引の対象所有者リスト
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.modelName,
     }],
-    authorizations: [], // 資産承認リスト
+    authorizations: [mongoose.Schema.Types.Mixed], // 資産承認リスト
+    emails: [mongoose.Schema.Types.Mixed],
     inquiry_id: String, // 照会ID
     inquiry_pass: String, // 照会PASS
+    queues_imported: Boolean,
 }, {
     collection: "transactions",
     timestamps: {

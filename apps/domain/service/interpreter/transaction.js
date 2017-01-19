@@ -8,7 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const mongoose = require("mongoose");
-const transaction_1 = require("../../model/transaction");
 const transactionEvent_1 = require("../../model/transactionEvent");
 const authorize_1 = require("../../model/transactionEvent/authorize");
 const unauthorize_1 = require("../../model/transactionEvent/unauthorize");
@@ -16,6 +15,7 @@ const transactionEventGroup_1 = require("../../model/transactionEventGroup");
 const transactionStatus_1 = require("../../model/transactionStatus");
 const gmo_1 = require("../../model/authorization/gmo");
 const coa_1 = require("../../model/authorization/coa");
+const TransactionFactory = require("../../factory/transaction");
 var interpreter;
 (function (interpreter) {
     function start(args) {
@@ -29,7 +29,13 @@ var interpreter;
             }));
             yield Promise.all(promises);
             let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.START);
-            let transaction = new transaction_1.default(mongoose.Types.ObjectId().toString(), transactionStatus_1.default.PROCESSING, [event], owners, [], args.expired_at, "", "");
+            let transaction = TransactionFactory.create({
+                _id: mongoose.Types.ObjectId().toString(),
+                status: transactionStatus_1.default.PROCESSING,
+                events: [event],
+                owners: owners,
+                expired_at: args.expired_at
+            });
             yield transactionRepository.store(transaction);
             return transaction;
         });
@@ -69,7 +75,7 @@ var interpreter;
     interpreter.addAssetAuthorization = addAssetAuthorization;
     function addGMOAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let authorization = new gmo_1.default(mongoose.Types.ObjectId().toString(), args.gmo_order_id, 1234);
+            let authorization = new gmo_1.default(mongoose.Types.ObjectId().toString(), args.gmo_order_id, parseInt(args.gmo_amount));
             yield pushAuthorization({
                 transaction_id: args.transaction_id,
                 authorization: authorization

@@ -27,11 +27,11 @@ interface TransactionService {
         transaction_id: string,
         owner_id: string,
         gmo_shop_id: string,
-        gmo_shop_password: string,
+        gmo_shop_pass: string,
         gmo_order_id: string,
         gmo_amount: string,
         gmo_access_id: string,
-        gmo_access_password: string,
+        gmo_access_pass: string,
         gmo_job_cd: string,
         gmo_pay_type: string,
 
@@ -53,14 +53,14 @@ interface TransactionService {
             // add_price: number,
             // dis_price: number,
         }>
-        // price: number,
+        // price: number, // TODO 必須
     }): TransactionOperation<COAAuthorization>;
     /** 資産承認解除 */
     removeAuthorization(args: {
         transaction_id: string,
         authorization_id: string,
     }): TransactionOperation<void>;
-    /** 照合を可能にする */
+    /** 照会を可能にする */
     enableInquiry(args: {
         transaction_id: string,
         inquiry_id: string,
