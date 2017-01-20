@@ -134,6 +134,7 @@ app.use("/", [
 
 // 404
 app.use((req, res) => {
+    res.status(404);
     res.json({
         success: false,
         message: `router for [${req.originalUrl}] not found.`
@@ -145,6 +146,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     console.error(req.originalUrl, req.query, req.params, req.body, err);
     if (res.headersSent) return next(err);
 
+    res.status(400);
     res.json({
         success: false,
         message: `${err.message}`

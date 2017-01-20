@@ -27,12 +27,12 @@ router.post("/transaction/start", (req, res, next) => __awaiter(this, void 0, vo
         transaction: transaction
     });
 }));
-router.post("/transaction/:id/addGMOAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.put("/transaction/:id/addGMOAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let authorization = yield transaction_2.default.addGMOAuthorization({
+        yield transaction_2.default.addGMOAuthorization({
             transaction_id: req.params.id,
             owner_id: req.body.owner_id,
             gmo_shop_id: req.body.gmo_shop_id,
@@ -44,56 +44,60 @@ router.post("/transaction/:id/addGMOAuthorization", (req, res, next) => __awaite
             gmo_job_cd: req.body.gmo_job_cd,
             gmo_pay_type: req.body.gmo_pay_type,
         })(transaction_1.default);
-        res.json({
-            success: true,
-            message: null,
-            authorization: authorization
-        });
+        res.status(204).end();
     }
     catch (error) {
         next(error);
     }
 }));
-router.post("/transaction/:id/addCOAAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.put("/transaction/:id/removeGMOAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let authorization = yield transaction_2.default.addCOAAuthorization({
+        yield transaction_2.default.removeGMOAuthorization({
+            transaction_id: req.params.id,
+            gmo_order_id: req.body.gmo_order_id,
+        })(transaction_1.default);
+        res.status(204).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+router.put("/transaction/:id/addCOASeatReservationAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    let validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty())
+        return next(new Error(validatorResult.array()[0].msg));
+    try {
+        yield transaction_2.default.addCOASeatReservationAuthorization({
             transaction_id: req.params.id,
             owner_id: req.body.owner_id,
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
             seats: req.body.seats,
         })(transaction_1.default);
-        res.json({
-            success: true,
-            message: null,
-            authorization: authorization
-        });
+        res.status(204).end();
     }
     catch (error) {
         next(error);
     }
 }));
-router.post("/transaction/:id/removeAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.put("/transaction/:id/removeCOASeatReservationAuthorization", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        yield transaction_2.default.removeAuthorization({
+        yield transaction_2.default.removeCOASeatReservationAuthorization({
             transaction_id: req.params.id,
-            authorization_id: req.body.authorization_id
+            coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
         })(transaction_1.default);
-        res.json({
-            success: true,
-            message: null,
-        });
+        res.status(204).end();
     }
     catch (error) {
         next(error);
     }
 }));
-router.post("/transaction/:id/enableInquiry", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.put("/transaction/:id/enableInquiry", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
@@ -103,16 +107,13 @@ router.post("/transaction/:id/enableInquiry", (req, res, next) => __awaiter(this
             inquiry_id: req.body.inquiry_id,
             inquiry_pass: req.body.inquiry_pass,
         })(transaction_1.default);
-        res.json({
-            success: true,
-            message: null,
-        });
+        res.status(204).end();
     }
     catch (error) {
         next(error);
     }
 }));
-router.post("/transaction/:id/close", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.put("/transaction/:id/close", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
@@ -120,10 +121,7 @@ router.post("/transaction/:id/close", (req, res, next) => __awaiter(this, void 0
         yield transaction_2.default.close({
             transaction_id: req.params.id
         })(transaction_1.default);
-        res.json({
-            success: true,
-            message: null,
-        });
+        res.status(204).end();
     }
     catch (error) {
         next(error);

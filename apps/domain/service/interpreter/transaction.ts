@@ -7,8 +7,7 @@ import TransactionEventGroup from "../../model/transactionEventGroup";
 import TransactionStatus from "../../model/transactionStatus";
 import Authorization from "../../model/authorization";
 // import AssetAuthorization from "../../model/authorization/asset";
-import GMOAuthorization from "../../model/authorization/gmo";
-import COAAuthorization from "../../model/authorization/coa";
+import * as AuthorizationFactory from "../../factory/authorization";
 import TransactionService from "../transaction";
 import AssetAuthorizationRepository from "../../repository/authorization/asset";
 import TransactionRepository from "../../repository/transaction";
@@ -116,24 +115,21 @@ namespace interpreter {
             // TODO 所有者チェック
 
             // GMO承認を作成
-            let authorization = new GMOAuthorization(
-                mongoose.Types.ObjectId().toString(),
-                args.gmo_order_id,
-                parseInt(args.gmo_amount) // TODO
-            );
+            let authorization = AuthorizationFactory.createGMO({
+                order_id: args.gmo_order_id,
+                price: parseInt(args.gmo_amount) // TODO
+            });
 
             // 永続化
             await pushAuthorization({
                 transaction_id: args.transaction_id,
                 authorization: authorization
             })(transactionRepository);
-
-            return authorization;
         }
     }
 
     /** COA資産承認 */
-    export function addCOAAuthorization(args: {
+    export function addCOASeatReservationAuthorization(args: {
         transaction_id: string,
         owner_id: string,
         coa_tmp_reserve_num: string,
@@ -154,20 +150,17 @@ namespace interpreter {
         return async (transactionRepository: TransactionRepository) => {
             // TODO 所有者チェック
 
-            // GMO承認を作成
-            let authorization = new COAAuthorization(
-                mongoose.Types.ObjectId().toString(),
-                args.coa_tmp_reserve_num,
-                1234 // TODO
-            );
+            // 承認を作成
+            let authorization = AuthorizationFactory.createCOASeatReservation({
+                coa_tmp_reserve_num: args.coa_tmp_reserve_num,
+                price: 1234 // TODO
+            });
 
             // 永続化
             await pushAuthorization({
                 transaction_id: args.transaction_id,
                 authorization: authorization
             })(transactionRepository);
-
-            return authorization;
         }
     }
 
@@ -200,6 +193,84 @@ namespace interpreter {
                     $pull: {
                         authorizations: {
                             _id: args.authorization_id
+                        },
+                    }
+                });
+            if (option.isEmpty) throw new Error("processing transaction not found.");
+        }
+    }
+
+    /** 資産承認解除 */
+    export function removeGMOAuthorization(args: {
+        transaction_id: string,
+        gmo_order_id: string,
+    }) {
+        return async (transactionRepository: TransactionRepository) => {
+            // TODO 承認存在チェック
+            // TODO 承認あれば、そのグループに応じて削除する？
+            let authorization = AuthorizationFactory.createGMO({
+                order_id: args.gmo_order_id,
+                price: 1234
+            });
+
+            // 取引イベント作成
+            let event = new UnauthorizeTransactionEvent(
+                mongoose.Types.ObjectId().toString(),
+                authorization._id
+            );
+
+            // 永続化
+            let option = await transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: TransactionStatus.PROCESSING
+            }, {
+                    $set: {
+                    },
+                    $push: {
+                        events: event,
+                    },
+                    $pull: {
+                        authorizations: {
+                            _id: authorization._id
+                        },
+                    }
+                });
+            if (option.isEmpty) throw new Error("processing transaction not found.");
+        }
+    }
+
+    /** COA座席予約資産承認解除 */
+    export function removeCOASeatReservationAuthorization(args: {
+        transaction_id: string,
+        coa_tmp_reserve_num: string,
+    }) {
+        return async (transactionRepository: TransactionRepository) => {
+            // TODO 承認存在チェック
+            // TODO 承認あれば、そのグループに応じて削除する？
+            let authorization = AuthorizationFactory.createCOASeatReservation({
+                coa_tmp_reserve_num: args.coa_tmp_reserve_num,
+                price: 1234
+            });
+
+            // 取引イベント作成
+            let event = new UnauthorizeTransactionEvent(
+                mongoose.Types.ObjectId().toString(),
+                authorization._id
+            );
+
+            // 永続化
+            let option = await transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: TransactionStatus.PROCESSING
+            }, {
+                    $set: {
+                    },
+                    $push: {
+                        events: event,
+                    },
+                    $pull: {
+                        authorizations: {
+                            _id: authorization._id
                         },
                     }
                 });

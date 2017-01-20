@@ -13,6 +13,7 @@ COA.initialize({
 
 async function main() {
     let body: any;
+    let response: any;
 
     // 一般所有者作成
     body = await request.post({
@@ -80,8 +81,8 @@ async function main() {
     console.log(reserveSeatsTemporarilyResult);
 
     // COAオーソリ追加
-    body = await request.post({
-        url: `http://localhost:8080/transaction/${transaction._id}/addCOAAuthorization`,
+    response = await request.put({
+        url: `http://localhost:8080/transaction/${transaction._id}/addCOASeatReservationAuthorization`,
         body: {
             owner_id: ownerId4administrator,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
@@ -96,10 +97,10 @@ async function main() {
         },
         json: true,
         simple: false,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    let coaAuthorization = body.authorization;
-    console.log("coaAuthorization:", coaAuthorization);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+    console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
 
 
 
@@ -118,17 +119,17 @@ async function main() {
     console.log("deleteTmpReserveResult:", true);
 
     // COAオーソリ削除
-    body = await request.post({
-        url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
+    response = await request.put({
+        url: `http://localhost:8080/transaction/${transaction._id}/removeCOASeatReservationAuthorization`,
         body: {
-            owner_id: ownerId4administrator,
-            authorization_id: coaAuthorization._id
+            coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
         },
         json: true,
         simple: false,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    console.log("removeAuthorization result:", body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+    console.log("removeCOASeatReservationAuthorization result:", response.statusCode, response.body);
 
 
 
@@ -157,7 +158,7 @@ async function main() {
     console.log(execTranResult);
 
     // GMOオーソリ追加
-    body = await request.post({
+    response = await request.put({
         url: `http://localhost:8080/transaction/${transaction._id}/addGMOAuthorization`,
         body: {
             owner_id: owner._id,
@@ -170,11 +171,12 @@ async function main() {
             gmo_job_cd: GMO.Util.JOB_CD_SALES,
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
         },
-        json: true
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    let gmoAuthorization = body.authorization;
-    console.log("gmoAuthorization:", gmoAuthorization);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+    console.log("addGMOAuthorization result:", response.statusCode, response.body);
 
 
 
@@ -189,17 +191,17 @@ async function main() {
     console.log("alterTranResult:", alterTranResult);
 
     // GMOオーソリ削除
-    body = await request.post({
-        url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
+    response = await request.put({
+        url: `http://localhost:8080/transaction/${transaction._id}/removeGMOAuthorization`,
         body: {
-            owner_id: ownerId4administrator,
-            authorization_id: gmoAuthorization._id
+            gmo_order_id: orderId
         },
         json: true,
         simple: false,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    console.log("removeAuthorization result:", body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+    console.log("removeGMOAuthorization result:", response.statusCode, response.body);
 
 
 
@@ -230,8 +232,8 @@ async function main() {
     console.log("reserveSeatsTemporarilyResult2:", reserveSeatsTemporarilyResult2);
 
     // COAオーソリ追加
-    body = await request.post({
-        url: `http://localhost:8080/transaction/${transaction._id}/addCOAAuthorization`,
+    response = await request.put({
+        url: `http://localhost:8080/transaction/${transaction._id}/addCOASeatReservationAuthorization`,
         body: {
             owner_id: ownerId4administrator,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
@@ -246,10 +248,10 @@ async function main() {
         },
         json: true,
         simple: false,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    let coaAuthorization2 = body.authorization;
-    console.log("coaAuthorization2:", coaAuthorization2);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+    console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
 
 
 
@@ -281,7 +283,7 @@ async function main() {
     console.log("execTranResult2:", execTranResult2);
 
     // GMOオーソリ追加
-    body = await request.post({
+    response = await request.put({
         url: `http://localhost:8080/transaction/${transaction._id}/addGMOAuthorization`,
         body: {
             owner_id: owner._id,
@@ -294,11 +296,11 @@ async function main() {
             gmo_job_cd: GMO.Util.JOB_CD_SALES,
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
         },
-        json: true
+        json: true,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    let gmoAuthorization2 = body.authorization;
-    console.log("gmoAuthorization2:", gmoAuthorization2);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+    console.log("addGMOAuthorization result:", response.statusCode, response.body);
 
 
 
@@ -350,7 +352,7 @@ async function main() {
 
 
     // 照会情報登録(購入番号と電話番号で照会する場合)
-    body = await request.post({
+    response = await request.put({
         url: `http://localhost:8080/transaction/${transaction._id}/enableInquiry`,
         body: {
             inquiry_id: updateReserveResult.reserve_num,
@@ -358,25 +360,26 @@ async function main() {
         },
         json: true,
         simple: false,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    console.log("enableInquiry result:", body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+    console.log("enableInquiry result:", response.statusCode, response.body);
 
 
 
 
 
     // 取引成立
-    body = await request.post({
+    response = await request.put({
         url: `http://localhost:8080/transaction/${transaction._id}/close`,
         body: {
         },
         json: true,
         simple: false,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    // let owner = body.owner;
-    console.log("close result:", body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+    console.log("close result:", response.statusCode, response.body);
 }
 
 

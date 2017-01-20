@@ -43,13 +43,13 @@ router.post("/transaction/start", async (req, res, next) => {
     });
 });
 
-router.post("/transaction/:id/addGMOAuthorization", async (req, res, next) => {
+router.put("/transaction/:id/addGMOAuthorization", async (req, res, next) => {
     // TODO validations
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let authorization = await TransactionService.addGMOAuthorization({
+        await TransactionService.addGMOAuthorization({
             transaction_id: req.params.id,
             owner_id: req.body.owner_id,
             gmo_shop_id: req.body.gmo_shop_id,
@@ -62,60 +62,66 @@ router.post("/transaction/:id/addGMOAuthorization", async (req, res, next) => {
             gmo_pay_type: req.body.gmo_pay_type,
         })(TransactionRepository);
 
-        res.json({
-            success: true,
-            message: null,
-            authorization: authorization
-        });
+        res.status(204).end();
     } catch (error) {
         next(error);
     }
 });
 
-router.post("/transaction/:id/addCOAAuthorization", async (req, res, next) => {
+router.put("/transaction/:id/removeGMOAuthorization", async (req, res, next) => {
     // TODO validations
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let authorization = await TransactionService.addCOAAuthorization({
+        await TransactionService.removeGMOAuthorization({
+            transaction_id: req.params.id,
+            gmo_order_id: req.body.gmo_order_id,
+        })(TransactionRepository);
+
+        res.status(204).end();
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.put("/transaction/:id/addCOASeatReservationAuthorization", async (req, res, next) => {
+    // TODO validations
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        await TransactionService.addCOASeatReservationAuthorization({
             transaction_id: req.params.id,
             owner_id: req.body.owner_id,
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
             seats: req.body.seats,
         })(TransactionRepository);
 
-        res.json({
-            success: true,
-            message: null,
-            authorization: authorization
-        });
+        res.status(204).end();
     } catch (error) {
         next(error);
     }
 });
 
-router.post("/transaction/:id/removeAuthorization", async (req, res, next) => {
+router.put("/transaction/:id/removeCOASeatReservationAuthorization", async (req, res, next) => {
     // TODO validations
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        await TransactionService.removeAuthorization({
+        await TransactionService.removeCOASeatReservationAuthorization({
             transaction_id: req.params.id,
-            authorization_id: req.body.authorization_id
+            coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
         })(TransactionRepository);
 
-        res.json({
-            success: true,
-            message: null,
-        });
+        res.status(204).end();
     } catch (error) {
         next(error);
     }
 });
 
-router.post("/transaction/:id/enableInquiry", async (req, res, next) => {
+router.put("/transaction/:id/enableInquiry", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
@@ -126,16 +132,13 @@ router.post("/transaction/:id/enableInquiry", async (req, res, next) => {
             inquiry_pass: req.body.inquiry_pass,
         })(TransactionRepository);
 
-        res.json({
-            success: true,
-            message: null,
-        });
+        res.status(204).end();
     } catch (error) {
         next(error);
     }
 });
 
-router.post("/transaction/:id/close", async (req, res, next) => {
+router.put("/transaction/:id/close", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
@@ -144,10 +147,7 @@ router.post("/transaction/:id/close", async (req, res, next) => {
             transaction_id: req.params.id
         })(TransactionRepository);
 
-        res.json({
-            success: true,
-            message: null,
-        });
+        res.status(204).end();
     } catch (error) {
         next(error);
     }

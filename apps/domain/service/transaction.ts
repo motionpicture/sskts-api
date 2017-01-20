@@ -1,6 +1,4 @@
 import AssetAuthorization from "../model/authorization/asset";
-import GMOAuthorization from "../model/authorization/gmo";
-import COAAuthorization from "../model/authorization/coa";
 import Transaction from "../model/transaction";
 // import TransactionEvent from "../model/TransactionEvent";
 import OwnerRepository from "../repository/owner";
@@ -23,7 +21,7 @@ interface TransactionService {
         authorization_id: string,
     }): AssetAuthorizationAndTransactionOperation<AssetAuthorization>;
     /** GMO資産承認 */
-    addGMOAuthorization(args: {
+    addGMOAuthorization(args: { // TODO shopとorder_idでユニークになるはず
         transaction_id: string,
         owner_id: string,
         gmo_shop_id: string,
@@ -35,9 +33,9 @@ interface TransactionService {
         gmo_job_cd: string,
         gmo_pay_type: string,
 
-    }): TransactionOperation<GMOAuthorization>;
+    }): TransactionOperation<void>;
     /** COA資産承認 */
-    addCOAAuthorization(args: {
+    addCOASeatReservationAuthorization(args: { // TODO theaterとtmp_reserve_numでユニークになるはず
         transaction_id: string,
         owner_id: string,
         coa_tmp_reserve_num: string,
@@ -54,11 +52,21 @@ interface TransactionService {
             // dis_price: number,
         }>
         // price: number, // TODO 必須
-    }): TransactionOperation<COAAuthorization>;
+    }): TransactionOperation<void>;
     /** 資産承認解除 */
     removeAuthorization(args: {
         transaction_id: string,
         authorization_id: string,
+    }): TransactionOperation<void>;
+    /** GMO資産承認解除 */
+    removeGMOAuthorization(args: {
+        transaction_id: string,
+        gmo_order_id: string,
+    }): TransactionOperation<void>;
+    /** COA座席予約資産承認解除 */
+    removeCOASeatReservationAuthorization(args: {
+        transaction_id: string,
+        coa_tmp_reserve_num: string,
     }): TransactionOperation<void>;
     /** 照会を可能にする */
     enableInquiry(args: {

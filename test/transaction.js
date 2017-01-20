@@ -20,6 +20,7 @@ COA.initialize({
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         let body;
+        let response;
         body = yield request.post({
             url: "http://localhost:8080/owner/anonymous/create",
             body: {
@@ -74,8 +75,8 @@ function main() {
                 }]
         });
         console.log(reserveSeatsTemporarilyResult);
-        body = yield request.post({
-            url: `http://localhost:8080/transaction/${transaction._id}/addCOAAuthorization`,
+        response = yield request.put({
+            url: `http://localhost:8080/transaction/${transaction._id}/addCOASeatReservationAuthorization`,
             body: {
                 owner_id: ownerId4administrator,
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
@@ -90,11 +91,11 @@ function main() {
             },
             json: true,
             simple: false,
+            resolveWithFullResponse: true,
         });
-        if (!body.success)
-            throw new Error(body.message);
-        let coaAuthorization = body.authorization;
-        console.log("coaAuthorization:", coaAuthorization);
+        if (response.statusCode !== 204)
+            throw new Error(response.body.message);
+        console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
         yield COA.deleteTmpReserveInterface.call({
             theater_code: "001",
             date_jouei: "20170120",
@@ -104,18 +105,18 @@ function main() {
             tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
         });
         console.log("deleteTmpReserveResult:", true);
-        body = yield request.post({
-            url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
+        response = yield request.put({
+            url: `http://localhost:8080/transaction/${transaction._id}/removeCOASeatReservationAuthorization`,
             body: {
-                owner_id: ownerId4administrator,
-                authorization_id: coaAuthorization._id
+                coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
             },
             json: true,
             simple: false,
+            resolveWithFullResponse: true,
         });
-        if (!body.success)
-            throw new Error(body.message);
-        console.log("removeAuthorization result:", body);
+        if (response.statusCode !== 204)
+            throw new Error(response.body.message);
+        console.log("removeCOASeatReservationAuthorization result:", response.statusCode, response.body);
         let orderId = Date.now().toString();
         let amount = 1800;
         let entryTranResult = yield GMO.CreditService.entryTranInterface.call({
@@ -135,7 +136,7 @@ function main() {
             security_code: "123",
         });
         console.log(execTranResult);
-        body = yield request.post({
+        response = yield request.put({
             url: `http://localhost:8080/transaction/${transaction._id}/addGMOAuthorization`,
             body: {
                 owner_id: owner._id,
@@ -148,12 +149,13 @@ function main() {
                 gmo_job_cd: GMO.Util.JOB_CD_SALES,
                 gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             },
-            json: true
+            json: true,
+            simple: false,
+            resolveWithFullResponse: true,
         });
-        if (!body.success)
-            throw new Error(body.message);
-        let gmoAuthorization = body.authorization;
-        console.log("gmoAuthorization:", gmoAuthorization);
+        if (response.statusCode !== 204)
+            throw new Error(response.body.message);
+        console.log("addGMOAuthorization result:", response.statusCode, response.body);
         let alterTranResult = yield GMO.CreditService.alterTranInterface.call({
             shop_id: "tshop00024015",
             shop_pass: "hf3wsuyy",
@@ -162,18 +164,18 @@ function main() {
             job_cd: GMO.Util.JOB_CD_VOID
         });
         console.log("alterTranResult:", alterTranResult);
-        body = yield request.post({
-            url: `http://localhost:8080/transaction/${transaction._id}/removeAuthorization`,
+        response = yield request.put({
+            url: `http://localhost:8080/transaction/${transaction._id}/removeGMOAuthorization`,
             body: {
-                owner_id: ownerId4administrator,
-                authorization_id: gmoAuthorization._id
+                gmo_order_id: orderId
             },
             json: true,
             simple: false,
+            resolveWithFullResponse: true,
         });
-        if (!body.success)
-            throw new Error(body.message);
-        console.log("removeAuthorization result:", body);
+        if (response.statusCode !== 204)
+            throw new Error(response.body.message);
+        console.log("removeGMOAuthorization result:", response.statusCode, response.body);
         let reserveSeatsTemporarilyResult2 = yield COA.reserveSeatsTemporarilyInterface.call({
             theater_code: "001",
             date_jouei: "20170120",
@@ -190,8 +192,8 @@ function main() {
                 }]
         });
         console.log("reserveSeatsTemporarilyResult2:", reserveSeatsTemporarilyResult2);
-        body = yield request.post({
-            url: `http://localhost:8080/transaction/${transaction._id}/addCOAAuthorization`,
+        response = yield request.put({
+            url: `http://localhost:8080/transaction/${transaction._id}/addCOASeatReservationAuthorization`,
             body: {
                 owner_id: ownerId4administrator,
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
@@ -206,11 +208,11 @@ function main() {
             },
             json: true,
             simple: false,
+            resolveWithFullResponse: true,
         });
-        if (!body.success)
-            throw new Error(body.message);
-        let coaAuthorization2 = body.authorization;
-        console.log("coaAuthorization2:", coaAuthorization2);
+        if (response.statusCode !== 204)
+            throw new Error(response.body.message);
+        console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
         orderId = Date.now().toString();
         amount = 1500;
         let entryTranResult2 = yield GMO.CreditService.entryTranInterface.call({
@@ -230,7 +232,7 @@ function main() {
             security_code: "123",
         });
         console.log("execTranResult2:", execTranResult2);
-        body = yield request.post({
+        response = yield request.put({
             url: `http://localhost:8080/transaction/${transaction._id}/addGMOAuthorization`,
             body: {
                 owner_id: owner._id,
@@ -243,12 +245,12 @@ function main() {
                 gmo_job_cd: GMO.Util.JOB_CD_SALES,
                 gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             },
-            json: true
+            json: true,
+            resolveWithFullResponse: true,
         });
-        if (!body.success)
-            throw new Error(body.message);
-        let gmoAuthorization2 = body.authorization;
-        console.log("gmoAuthorization2:", gmoAuthorization2);
+        if (response.statusCode !== 204)
+            throw new Error(response.body.message);
+        console.log("addGMOAuthorization result:", response.statusCode, response.body);
         let salesTicketResult = yield COA.salesTicketInterface.call({
             theater_code: "001",
             date_jouei: "20170120",
@@ -283,7 +285,7 @@ function main() {
             })
         });
         console.log("updateReserveResult:", updateReserveResult);
-        body = yield request.post({
+        response = yield request.put({
             url: `http://localhost:8080/transaction/${transaction._id}/enableInquiry`,
             body: {
                 inquiry_id: updateReserveResult.reserve_num,
@@ -291,19 +293,21 @@ function main() {
             },
             json: true,
             simple: false,
+            resolveWithFullResponse: true,
         });
-        if (!body.success)
-            throw new Error(body.message);
-        console.log("enableInquiry result:", body);
-        body = yield request.post({
+        if (response.statusCode !== 204)
+            throw new Error(response.body.message);
+        console.log("enableInquiry result:", response.statusCode, response.body);
+        response = yield request.put({
             url: `http://localhost:8080/transaction/${transaction._id}/close`,
             body: {},
             json: true,
             simple: false,
+            resolveWithFullResponse: true,
         });
-        if (!body.success)
-            throw new Error(body.message);
-        console.log("close result:", body);
+        if (response.statusCode !== 204)
+            throw new Error(response.body.message);
+        console.log("close result:", response.statusCode, response.body);
     });
 }
 main().then(() => {
