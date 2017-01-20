@@ -1,5 +1,5 @@
 import AnonymousOwner from "../model/owner/anonymous";
-import OwnerRepository from "../repository/owner/anonymous";
+import OwnerRepository from "../repository/owner";
 
 // 所有者サービス
 interface OwnerService {
