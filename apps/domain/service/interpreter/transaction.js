@@ -75,6 +75,7 @@ var interpreter;
     function addGMOAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let authorization = AuthorizationFactory.createGMO({
+                _id: mongoose.Types.ObjectId().toString(),
                 order_id: args.gmo_order_id,
                 price: parseInt(args.gmo_amount)
             });
@@ -82,12 +83,14 @@ var interpreter;
                 transaction_id: args.transaction_id,
                 authorization: authorization
             })(transactionRepository);
+            return authorization;
         });
     }
     interpreter.addGMOAuthorization = addGMOAuthorization;
     function addCOASeatReservationAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let authorization = AuthorizationFactory.createCOASeatReservation({
+                _id: mongoose.Types.ObjectId().toString(),
                 coa_tmp_reserve_num: args.coa_tmp_reserve_num,
                 price: 1234
             });
@@ -95,6 +98,7 @@ var interpreter;
                 transaction_id: args.transaction_id,
                 authorization: authorization
             })(transactionRepository);
+            return authorization;
         });
     }
     interpreter.addCOASeatReservationAuthorization = addCOASeatReservationAuthorization;
@@ -120,58 +124,6 @@ var interpreter;
         });
     }
     interpreter.removeAuthorization = removeAuthorization;
-    function removeGMOAuthorization(args) {
-        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let authorization = AuthorizationFactory.createGMO({
-                order_id: args.gmo_order_id,
-                price: 1234
-            });
-            let event = new unauthorize_1.default(mongoose.Types.ObjectId().toString(), authorization._id);
-            let option = yield transactionRepository.findOneAndUpdate({
-                _id: args.transaction_id,
-                status: transactionStatus_1.default.PROCESSING
-            }, {
-                $set: {},
-                $push: {
-                    events: event,
-                },
-                $pull: {
-                    authorizations: {
-                        _id: authorization._id
-                    },
-                }
-            });
-            if (option.isEmpty)
-                throw new Error("processing transaction not found.");
-        });
-    }
-    interpreter.removeGMOAuthorization = removeGMOAuthorization;
-    function removeCOASeatReservationAuthorization(args) {
-        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let authorization = AuthorizationFactory.createCOASeatReservation({
-                coa_tmp_reserve_num: args.coa_tmp_reserve_num,
-                price: 1234
-            });
-            let event = new unauthorize_1.default(mongoose.Types.ObjectId().toString(), authorization._id);
-            let option = yield transactionRepository.findOneAndUpdate({
-                _id: args.transaction_id,
-                status: transactionStatus_1.default.PROCESSING
-            }, {
-                $set: {},
-                $push: {
-                    events: event,
-                },
-                $pull: {
-                    authorizations: {
-                        _id: authorization._id
-                    },
-                }
-            });
-            if (option.isEmpty)
-                throw new Error("processing transaction not found.");
-        });
-    }
-    interpreter.removeCOASeatReservationAuthorization = removeCOASeatReservationAuthorization;
     function enableInquiry(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let option = yield transactionRepository.findOneAndUpdate({

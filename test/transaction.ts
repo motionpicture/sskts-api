@@ -101,7 +101,8 @@ async function main() {
         resolveWithFullResponse: true,
     });
     console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
+    if (response.statusCode !== 200) throw new Error(response.body.message);
+    let coaAuthorizationId = response.body.data._id;
 
 
 
@@ -121,7 +122,7 @@ async function main() {
 
     // COAオーソリ削除
     response = await request.del({
-        url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
+        url: `http://localhost:8080/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
         body: {
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
         },
@@ -177,7 +178,8 @@ async function main() {
         resolveWithFullResponse: true,
     });
     console.log("addGMOAuthorization result:", response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
+    if (response.statusCode !== 200) throw new Error(response.body.message);
+    let gmoAuthorizationId = response.body.data._id;
 
 
 
@@ -193,7 +195,7 @@ async function main() {
 
     // GMOオーソリ削除
     response = await request.del({
-        url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
+        url: `http://localhost:8080/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
         body: {
             gmo_order_id: orderId
         },
@@ -252,7 +254,7 @@ async function main() {
         resolveWithFullResponse: true,
     });
     console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
+    if (response.statusCode !== 200) throw new Error(response.body.message);
 
 
 
@@ -301,7 +303,7 @@ async function main() {
         resolveWithFullResponse: true,
     });
     console.log("addGMOAuthorization result:", response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
+    if (response.statusCode !== 200) throw new Error(response.body.message);
 
 
 

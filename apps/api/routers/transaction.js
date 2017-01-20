@@ -68,7 +68,7 @@ router.post("/:id/authorizations/gmo", (req, res, next) => __awaiter(this, void 
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        yield transaction_2.default.addGMOAuthorization({
+        let authorization = yield transaction_2.default.addGMOAuthorization({
             transaction_id: req.params.id,
             owner_id: req.body.owner_id,
             gmo_shop_id: req.body.gmo_shop_id,
@@ -80,22 +80,12 @@ router.post("/:id/authorizations/gmo", (req, res, next) => __awaiter(this, void 
             gmo_job_cd: req.body.gmo_job_cd,
             gmo_pay_type: req.body.gmo_pay_type,
         })(transaction_1.default);
-        res.status(204).end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-router.delete("/:id/authorizations/gmo", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    let validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty())
-        return next(new Error(validatorResult.array()[0].msg));
-    try {
-        yield transaction_2.default.removeGMOAuthorization({
-            transaction_id: req.params.id,
-            gmo_order_id: req.body.gmo_order_id,
-        })(transaction_1.default);
-        res.status(204).end();
+        res.status(200).json({
+            data: {
+                type: "authorizations",
+                _id: authorization._id
+            }
+        });
     }
     catch (error) {
         next(error);
@@ -106,26 +96,31 @@ router.post("/:id/authorizations/coaSeatReservation", (req, res, next) => __awai
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        yield transaction_2.default.addCOASeatReservationAuthorization({
+        let authorization = yield transaction_2.default.addCOASeatReservationAuthorization({
             transaction_id: req.params.id,
             owner_id: req.body.owner_id,
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
             seats: req.body.seats,
         })(transaction_1.default);
-        res.status(204).end();
+        res.status(200).json({
+            data: {
+                type: "authorizations",
+                _id: authorization._id
+            }
+        });
     }
     catch (error) {
         next(error);
     }
 }));
-router.delete("/:id/authorizations/coaSeatReservation", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.delete("/:id/authorizations/:authorization_id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        yield transaction_2.default.removeCOASeatReservationAuthorization({
+        yield transaction_2.default.removeAuthorization({
             transaction_id: req.params.id,
-            coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
+            authorization_id: req.params.authorization_id,
         })(transaction_1.default);
         res.status(204).end();
     }

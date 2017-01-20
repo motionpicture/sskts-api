@@ -94,8 +94,9 @@ function main() {
             resolveWithFullResponse: true,
         });
         console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
-        if (response.statusCode !== 204)
+        if (response.statusCode !== 200)
             throw new Error(response.body.message);
+        let coaAuthorizationId = response.body.data._id;
         yield COA.deleteTmpReserveInterface.call({
             theater_code: "001",
             date_jouei: "20170120",
@@ -106,7 +107,7 @@ function main() {
         });
         console.log("deleteTmpReserveResult:", true);
         response = yield request.del({
-            url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
+            url: `http://localhost:8080/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
             body: {
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
             },
@@ -154,8 +155,9 @@ function main() {
             resolveWithFullResponse: true,
         });
         console.log("addGMOAuthorization result:", response.statusCode, response.body);
-        if (response.statusCode !== 204)
+        if (response.statusCode !== 200)
             throw new Error(response.body.message);
+        let gmoAuthorizationId = response.body.data._id;
         let alterTranResult = yield GMO.CreditService.alterTranInterface.call({
             shop_id: "tshop00024015",
             shop_pass: "hf3wsuyy",
@@ -165,7 +167,7 @@ function main() {
         });
         console.log("alterTranResult:", alterTranResult);
         response = yield request.del({
-            url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
+            url: `http://localhost:8080/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
             body: {
                 gmo_order_id: orderId
             },
@@ -211,7 +213,7 @@ function main() {
             resolveWithFullResponse: true,
         });
         console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
-        if (response.statusCode !== 204)
+        if (response.statusCode !== 200)
             throw new Error(response.body.message);
         orderId = Date.now().toString();
         amount = 1500;
@@ -249,7 +251,7 @@ function main() {
             resolveWithFullResponse: true,
         });
         console.log("addGMOAuthorization result:", response.statusCode, response.body);
-        if (response.statusCode !== 204)
+        if (response.statusCode !== 200)
             throw new Error(response.body.message);
         response = yield request.patch({
             url: `http://localhost:8080/owners/anonymous/${anonymousOwnerId}`,
