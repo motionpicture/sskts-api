@@ -57,7 +57,12 @@ app.use("/transactions", transaction_1.default);
 app.use((req, res) => {
     res.status(404);
     res.json({
-        message: `router for [${req.originalUrl}] not found.`
+        errors: [
+            {
+                code: `NotFound`,
+                description: `router for [${req.originalUrl}] not found.`
+            }
+        ]
     });
 });
 app.use((err, req, res, next) => {
@@ -66,7 +71,12 @@ app.use((err, req, res, next) => {
         return next(err);
     res.status(400);
     res.json({
-        message: `${err.message}`
+        errors: [
+            {
+                code: `${err.name}`,
+                description: `${err.message}`
+            }
+        ]
     });
 });
 module.exports = app;

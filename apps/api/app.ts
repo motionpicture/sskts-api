@@ -132,18 +132,28 @@ app.use("/transactions", transactionRouter);
 app.use((req, res) => {
     res.status(404);
     res.json({
-        message: `router for [${req.originalUrl}] not found.`
+        errors: [
+            {
+                code: `NotFound`,
+                description: `router for [${req.originalUrl}] not found.`
+            }
+        ]
     });
 });
 
 // error handlers
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error(req.originalUrl, req.query, req.params, req.body, err);
     if (res.headersSent) return next(err);
 
     res.status(400);
     res.json({
-        message: `${err.message}`
+        errors: [
+            {
+                code: `${err.name}`,
+                description: `${err.message}`
+            }
+        ]
     });
 });
 

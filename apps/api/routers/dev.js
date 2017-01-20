@@ -7,7 +7,10 @@ let MONGOLAB_URI = conf.get("mongolab_uri");
 router.get("/environmentVariables", (req, res) => {
     console.log("ip:", req.ip);
     res.json({
-        variables: process.env
+        data: {
+            type: "envs",
+            attributes: process.env
+        }
     });
 });
 router.get("/mongoose/connect", (req, res, next) => {
@@ -15,9 +18,7 @@ router.get("/mongoose/connect", (req, res, next) => {
     mongoose.connect(MONGOLAB_URI, (err) => {
         if (err)
             return next(err);
-        res.json({
-            message: "connected."
-        });
+        res.status(204).end();
     });
 });
 router.get("/mongoose/disconnect", (req, res, next) => {
@@ -25,9 +26,7 @@ router.get("/mongoose/disconnect", (req, res, next) => {
     mongoose.disconnect((err) => {
         if (err)
             return next(err);
-        res.json({
-            message: "disconnected."
-        });
+        res.status(204).end();
     });
 });
 Object.defineProperty(exports, "__esModule", { value: true });
