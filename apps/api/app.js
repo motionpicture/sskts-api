@@ -48,14 +48,12 @@ const screen_1 = require("./routers/screen");
 const owner_1 = require("./routers/owner");
 const transaction_1 = require("./routers/transaction");
 app.use("/dev", dev_1.default);
-app.use("/", [
-    theater_1.default,
-    film_1.default,
-    performance_1.default,
-    screen_1.default,
-    owner_1.default,
-    transaction_1.default,
-]);
+app.use("/theaters", theater_1.default);
+app.use("/films", film_1.default);
+app.use("/screens", screen_1.default);
+app.use("/performances", performance_1.default);
+app.use("/owners", owner_1.default);
+app.use("/transactions", transaction_1.default);
 app.use((req, res) => {
     res.status(404);
     res.json({

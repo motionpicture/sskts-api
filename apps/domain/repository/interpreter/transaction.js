@@ -27,7 +27,18 @@ var interpreter;
             let doc = yield transaction_1.default.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
-            return monapt.None;
+            let transaction = TransactionFactory.create({
+                _id: doc.get("_id"),
+                status: doc.get("status"),
+                events: doc.get("events"),
+                owners: doc.get("owners"),
+                authorizations: doc.get("authorizations"),
+                expired_at: doc.get("expired_at"),
+                inquiry_id: doc.get("inquiry_id"),
+                inquiry_pass: doc.get("inquiry_pass"),
+                queues_imported: doc.get("queues_imported"),
+            });
+            return monapt.Option(transaction);
         });
     }
     interpreter.findById = findById;

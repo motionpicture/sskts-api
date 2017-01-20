@@ -2,7 +2,7 @@ import {Router} from "express";
 let router = Router();
 import FilmRepository from "../../domain/repository/interpreter/film";
 
-router.get("/film/:id", async (req, res, next) => {
+router.get("/:id", async (req, res, next) => {
     // req.checkQuery("theater_code", "theater_code required.").notEmpty();
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
@@ -12,15 +12,17 @@ router.get("/film/:id", async (req, res, next) => {
         option.match({
             Some: (film) => {
                 res.json({
-                    message: "",
-                    film: film
+                    data: {
+                        type: "films",
+                        _id: film._id,
+                        attributes: film
+                    }
                 });
             },
             None: () => {
                 res.status(404);
                 res.json({
-                    message: "not found.",
-                    film: null
+                    data: null
                 });
             }
         });

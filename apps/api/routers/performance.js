@@ -11,7 +11,7 @@ const express_1 = require("express");
 let router = express_1.Router();
 const performance_1 = require("../../domain/repository/interpreter/performance");
 const performance_2 = require("../../domain/service/interpreter/performance");
-router.get("/performance/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
@@ -20,15 +20,17 @@ router.get("/performance/:id", (req, res, next) => __awaiter(this, void 0, void 
         option.match({
             Some: (performance) => {
                 res.json({
-                    message: "",
-                    performance: performance
+                    data: {
+                        type: "performances",
+                        _id: performance._id,
+                        attributes: performance
+                    }
                 });
             },
             None: () => {
                 res.status(404);
                 res.json({
-                    message: "not found.",
-                    performance: null
+                    data: null
                 });
             }
         });
@@ -37,7 +39,7 @@ router.get("/performance/:id", (req, res, next) => __awaiter(this, void 0, void 
         next(error);
     }
 }));
-router.get("/performances", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.get("", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
@@ -46,9 +48,15 @@ router.get("/performances", (req, res, next) => __awaiter(this, void 0, void 0, 
             day: req.query.day,
             theater: req.query.theater,
         })(performance_1.default);
+        let data = performances.map((performance) => {
+            return {
+                type: "performances",
+                _id: performance._id,
+                attributes: performance
+            };
+        });
         res.json({
-            message: "",
-            performances: performances
+            data: data,
         });
     }
     catch (error) {

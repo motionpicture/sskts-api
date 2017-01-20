@@ -11,14 +11,18 @@ const express = require("express");
 let router = express.Router();
 const anonymous_1 = require("../../domain/repository/interpreter/owner/anonymous");
 const owner_1 = require("../../domain/service/interpreter/owner");
-router.all("/owner/anonymous/create", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post("/anonymous", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
         let owner = yield owner_1.default.createAnonymous()(anonymous_1.default);
+        res.status(201);
         res.json({
-            owner: owner
+            data: {
+                type: "owners",
+                _id: owner._id,
+            }
         });
     }
     catch (error) {

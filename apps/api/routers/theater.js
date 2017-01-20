@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const express_1 = require("express");
 let router = express_1.Router();
 const theater_1 = require("../../domain/repository/interpreter/theater");
-router.get("/theater/:code", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.get("/:code", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
@@ -19,15 +19,17 @@ router.get("/theater/:code", (req, res, next) => __awaiter(this, void 0, void 0,
         optionTheater.match({
             Some: (theater) => {
                 res.json({
-                    message: "",
-                    theater: theater
+                    data: {
+                        type: "theaters",
+                        _id: theater._id,
+                        attributes: theater
+                    }
                 });
             },
             None: () => {
                 res.status(404);
                 res.json({
-                    message: "not found.",
-                    theater: null
+                    data: null
                 });
             }
         });

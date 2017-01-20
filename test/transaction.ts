@@ -12,36 +12,37 @@ COA.initialize({
 
 
 async function main() {
-    let body: any;
     let response: any;
 
     // 一般所有者作成
-    body = await request.post({
-        url: "http://localhost:8080/owner/anonymous/create",
+    response = await request.post({
+        url: "http://localhost:8080/owners/anonymous",
         body: {
-            group: "ANONYMOUS",
         },
         json: true,
         simple: false,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    let owner = body.owner;
-    console.log("owner:", owner);
+    console.log("/owners/anonymous result:", response.statusCode, response.body);
+    if (response.statusCode !== 201) throw new Error(response.body.message);
+    let anonymousOwnerId = response.body.data._id;
+    console.log("anonymousOwnerId:", anonymousOwnerId);
 
-    let ownerId4administrator = "5868e16789cc75249cdbfa4b";
+    let anonymousOwnerId4administrator = "5868e16789cc75249cdbfa4b";
 
     // 取引開始
-    body = await request.post({
-        url: "http://localhost:8080/transaction/start",
+    response = await request.post({
+        url: "http://localhost:8080/transactions",
         body: {
-            owners: [ownerId4administrator, owner._id]
+            owners: [anonymousOwnerId4administrator, anonymousOwnerId]
         },
         json: true,
         simple: false,
+        resolveWithFullResponse: true,
     });
-    if (!body.success) throw new Error(body.message);
-    let transaction = body.transaction;
-    console.log("transaction:", transaction);
+    console.log("/transactions/start result:", response.statusCode, response.body);
+    if (response.statusCode !== 201) throw new Error(response.body.message);
+    let transactionId = response.body.data._id;
 
 
     // COA空席確認
@@ -81,10 +82,10 @@ async function main() {
     console.log(reserveSeatsTemporarilyResult);
 
     // COAオーソリ追加
-    response = await request.put({
-        url: `http://localhost:8080/transaction/${transaction._id}/addCOASeatReservationAuthorization`,
+    response = await request.post({
+        url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
-            owner_id: ownerId4administrator,
+            owner_id: anonymousOwnerId4administrator,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
             seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                 return {
@@ -119,8 +120,8 @@ async function main() {
     console.log("deleteTmpReserveResult:", true);
 
     // COAオーソリ削除
-    response = await request.put({
-        url: `http://localhost:8080/transaction/${transaction._id}/removeCOASeatReservationAuthorization`,
+    response = await request.del({
+        url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
         },
@@ -158,10 +159,10 @@ async function main() {
     console.log(execTranResult);
 
     // GMOオーソリ追加
-    response = await request.put({
-        url: `http://localhost:8080/transaction/${transaction._id}/addGMOAuthorization`,
+    response = await request.post({
+        url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
-            owner_id: owner._id,
+            owner_id: anonymousOwnerId,
             gmo_shop_id: "tshop00024015",
             gmo_shop_pass: "hf3wsuyy",
             gmo_order_id: orderId,
@@ -191,8 +192,8 @@ async function main() {
     console.log("alterTranResult:", alterTranResult);
 
     // GMOオーソリ削除
-    response = await request.put({
-        url: `http://localhost:8080/transaction/${transaction._id}/removeGMOAuthorization`,
+    response = await request.del({
+        url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
             gmo_order_id: orderId
         },
@@ -232,10 +233,10 @@ async function main() {
     console.log("reserveSeatsTemporarilyResult2:", reserveSeatsTemporarilyResult2);
 
     // COAオーソリ追加
-    response = await request.put({
-        url: `http://localhost:8080/transaction/${transaction._id}/addCOASeatReservationAuthorization`,
+    response = await request.post({
+        url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
-            owner_id: ownerId4administrator,
+            owner_id: anonymousOwnerId4administrator,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
             seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
                 return {
@@ -283,10 +284,10 @@ async function main() {
     console.log("execTranResult2:", execTranResult2);
 
     // GMOオーソリ追加
-    response = await request.put({
-        url: `http://localhost:8080/transaction/${transaction._id}/addGMOAuthorization`,
+    response = await request.post({
+        url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
-            owner_id: owner._id,
+            owner_id: anonymousOwnerId,
             gmo_shop_id: "tshop00024015",
             gmo_shop_pass: "hf3wsuyy",
             gmo_order_id: orderId,
@@ -352,8 +353,8 @@ async function main() {
 
 
     // 照会情報登録(購入番号と電話番号で照会する場合)
-    response = await request.put({
-        url: `http://localhost:8080/transaction/${transaction._id}/enableInquiry`,
+    response = await request.patch({
+        url: `http://localhost:8080/transactions/${transactionId}/enableInquiry`,
         body: {
             inquiry_id: updateReserveResult.reserve_num,
             inquiry_pass: tel
@@ -370,8 +371,8 @@ async function main() {
 
 
     // 取引成立
-    response = await request.put({
-        url: `http://localhost:8080/transaction/${transaction._id}/close`,
+    response = await request.patch({
+        url: `http://localhost:8080/transactions/${transactionId}/close`,
         body: {
         },
         json: true,
@@ -384,7 +385,7 @@ async function main() {
 
 
 // options = {
-//     url: "http://localhost:8080/transaction/586d8cc2fe0c971cd4b714f2/unauthorize",
+//     url: "http://localhost:8080/transactions/586d8cc2fe0c971cd4b714f2/unauthorize",
 //     body: {
 //         authorizations: ["586d9190ffe1bd0f9c2281cb", "586d9190ffe1bd0f9c2281cc"],
 //     },
@@ -392,7 +393,7 @@ async function main() {
 // };
 
 // options = {
-//     url: "http://localhost:8080/transaction/586ee23af94ed12254c284fd/update",
+//     url: "http://localhost:8080/transactions/586ee23af94ed12254c284fd/update",
 //     body: {
 //         expired_at: moment().add(+30, 'minutes').unix()
 //     },

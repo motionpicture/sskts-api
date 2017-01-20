@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const express_1 = require("express");
 let router = express_1.Router();
 const screen_1 = require("../../domain/repository/interpreter/screen");
-router.get("/screen/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
@@ -19,15 +19,17 @@ router.get("/screen/:id", (req, res, next) => __awaiter(this, void 0, void 0, fu
         option.match({
             Some: (screen) => {
                 res.json({
-                    message: "",
-                    screen: screen
+                    data: {
+                        type: "screens",
+                        _id: screen._id,
+                        attributes: screen
+                    }
                 });
             },
             None: () => {
                 res.status(404);
                 res.json({
-                    message: "not found.",
-                    screen: null
+                    data: null
                 });
             }
         });

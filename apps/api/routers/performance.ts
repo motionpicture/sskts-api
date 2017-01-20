@@ -3,7 +3,7 @@ let router = Router();
 import PerformanceRepository from "../../domain/repository/interpreter/performance";
 import PerformanceService from "../../domain/service/interpreter/performance";
 
-router.get("/performance/:id", async (req, res, next) => {
+router.get("/:id", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
@@ -12,15 +12,17 @@ router.get("/performance/:id", async (req, res, next) => {
         option.match({
             Some: (performance) => {
                 res.json({
-                    message: "",
-                    performance: performance
+                    data: {
+                        type: "performances",
+                        _id: performance._id,
+                        attributes: performance
+                    }
                 });
             },
             None: () => {
                 res.status(404);
                 res.json({
-                    message: "not found.",
-                    performance: null
+                    data: null
                 });
             }
         });
@@ -29,7 +31,7 @@ router.get("/performance/:id", async (req, res, next) => {
     }
 });
 
-router.get("/performances", async (req, res, next) => {
+router.get("", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
@@ -39,9 +41,16 @@ router.get("/performances", async (req, res, next) => {
             theater: req.query.theater,
         })(PerformanceRepository);
 
+        let data = performances.map((performance) => {
+            return {
+                type: "performances",
+                _id: performance._id,
+                attributes: performance
+            }
+        });
+
         res.json({
-            message: "",
-            performances: performances
+            data: data,
         });
     } catch (error) {
         next(error);

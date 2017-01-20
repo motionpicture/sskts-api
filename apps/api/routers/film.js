@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const express_1 = require("express");
 let router = express_1.Router();
 const film_1 = require("../../domain/repository/interpreter/film");
-router.get("/film/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
@@ -19,15 +19,17 @@ router.get("/film/:id", (req, res, next) => __awaiter(this, void 0, void 0, func
         option.match({
             Some: (film) => {
                 res.json({
-                    message: "",
-                    film: film
+                    data: {
+                        type: "films",
+                        _id: film._id,
+                        attributes: film
+                    }
                 });
             },
             None: () => {
                 res.status(404);
                 res.json({
-                    message: "not found.",
-                    film: null
+                    data: null
                 });
             }
         });

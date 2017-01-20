@@ -2,7 +2,7 @@ import {Router} from "express";
 let router = Router();
 import ScreenRepository from "../../domain/repository/interpreter/screen";
 
-router.get("/screen/:id", async (req, res, next) => {
+router.get("/:id", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
@@ -11,15 +11,17 @@ router.get("/screen/:id", async (req, res, next) => {
         option.match({
             Some: (screen) => {
                 res.json({
-                    message: "",
-                    screen: screen
+                    data: {
+                        type: "screens",
+                        _id: screen._id,
+                        attributes: screen
+                    }
                 });
             },
             None: () => {
                 res.status(404);
                 res.json({
-                    message: "not found.",
-                    screen: null
+                    data: null
                 });
             }
         });

@@ -2,7 +2,7 @@ import {Router} from "express";
 let router = Router();
 import TheaterRepository from "../../domain/repository/interpreter/theater";
 
-router.get("/theater/:code", async (req, res, next) => {
+router.get("/:code", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
@@ -11,15 +11,17 @@ router.get("/theater/:code", async (req, res, next) => {
         optionTheater.match({
             Some: (theater) => {
                 res.json({
-                    message: "",
-                    theater: theater
+                    data: {
+                        type: "theaters",
+                        _id: theater._id,
+                        attributes: theater
+                    }
                 });
             },
             None: () => {
                 res.status(404);
                 res.json({
-                    message: "not found.",
-                    theater: null
+                    data: null
                 });
             }
         });

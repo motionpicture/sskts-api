@@ -3,7 +3,7 @@ let router = express.Router();
 import AnonymousOwnerRepository from "../../domain/repository/interpreter/owner/anonymous";
 import OwnerService from "../../domain/service/interpreter/owner";
 
-router.all("/owner/anonymous/create", async (req, res, next) => {
+router.post("/anonymous", async (req, res, next) => {
     // req.checkBody("group", "invalid group.").notEmpty();
 
     let validatorResult = await req.getValidationResult();
@@ -12,8 +12,13 @@ router.all("/owner/anonymous/create", async (req, res, next) => {
     try {
         let owner = await OwnerService.createAnonymous()(AnonymousOwnerRepository);
 
+        res.status(201);
+        // res.setHeader("Location", `/owners/${owner._id}`); // TODO
         res.json({
-            owner: owner
+            data: {
+                type: "owners",
+                _id: owner._id,
+            }
         });
     } catch (error) {
         next(error);
