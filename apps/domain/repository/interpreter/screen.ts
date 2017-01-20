@@ -8,7 +8,9 @@ import COA = require("@motionpicture/coa-service");
 
 namespace interpreter {
     export async function findById(id: string) {
-        let doc = await ScreenModel.findOne({ _id: id }).exec();
+        let doc = await ScreenModel.findOne({ _id: id })
+        .populate("theater")
+        .exec();
         if (!doc) return monapt.None;
 
         let screen = ScreenFactory.create({
@@ -23,7 +25,9 @@ namespace interpreter {
     }
 
     export async function findByTheater(theaterCode: string) {
-        let docs = await ScreenModel.find({theater: theaterCode}).exec();
+        let docs = await ScreenModel.find({theater: theaterCode})
+        .populate("theater")
+        .exec();
         return docs.map((doc) => {
             return ScreenFactory.create({
                 _id: doc.get("_id"),

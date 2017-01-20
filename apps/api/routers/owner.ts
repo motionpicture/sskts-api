@@ -1,6 +1,6 @@
 import express = require("express");
 let router = express.Router();
-import AnonymousOwnerRepository from "../../domain/repository/interpreter/owner/anonymous";
+import OwnerRepository from "../../domain/repository/interpreter/owner";
 import OwnerService from "../../domain/service/interpreter/owner";
 
 router.post("/anonymous", async (req, res, next) => {
@@ -10,14 +10,65 @@ router.post("/anonymous", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let owner = await OwnerService.createAnonymous()(AnonymousOwnerRepository);
+        let owner = await OwnerService.createAnonymous()(OwnerRepository);
 
         res.status(201);
-        // res.setHeader("Location", `/owners/${owner._id}`); // TODO
+        res.setHeader("Location", `https://${req.headers["host"]}/owners/${owner._id}`);
         res.json({
             data: {
                 type: "owners",
                 _id: owner._id,
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.patch("/anonymous/:id", async (req, res, next) => {
+    // req.checkBody("group", "invalid group.").notEmpty();
+
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        await OwnerService.updateAnonymous({
+            _id: req.params.id,
+            name_first: req.body.name_first,
+            name_last: req.body.name_last,
+            tel: req.body.tel,
+            email: req.body.email,
+        })(OwnerRepository);
+
+        res.status(204).end();
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.get("/:id", async (req, res, next) => {
+    // TODO validation
+
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        let option = await OwnerRepository.findById(req.params.id);
+        option.match({
+            Some: (owner) => {
+                res.json({
+                    data: {
+                        type: "owners",
+                        _id: owner._id,
+                        attributes: owner
+                    }
+                });
+            },
+            None: () => {
+                res.status(404);
+                res.json({
+                    data: null
+                });
             }
         });
     } catch (error) {

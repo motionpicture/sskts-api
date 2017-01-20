@@ -45,7 +45,7 @@ router.post("", (req, res, next) => __awaiter(this, void 0, void 0, function* ()
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let ownerIds = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
+        let ownerIds = req.body.owners;
         let transaction = yield transaction_2.default.start({
             expired_at: new Date(),
             owner_ids: ownerIds

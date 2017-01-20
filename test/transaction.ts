@@ -100,8 +100,8 @@ async function main() {
         simple: false,
         resolveWithFullResponse: true,
     });
-    if (response.statusCode !== 204) throw new Error(response.body.message);
     console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
 
 
 
@@ -129,8 +129,8 @@ async function main() {
         simple: false,
         resolveWithFullResponse: true,
     });
-    if (response.statusCode !== 204) throw new Error(response.body.message);
     console.log("removeCOASeatReservationAuthorization result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
 
 
 
@@ -176,8 +176,8 @@ async function main() {
         simple: false,
         resolveWithFullResponse: true,
     });
-    if (response.statusCode !== 204) throw new Error(response.body.message);
     console.log("addGMOAuthorization result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
 
 
 
@@ -201,8 +201,8 @@ async function main() {
         simple: false,
         resolveWithFullResponse: true,
     });
-    if (response.statusCode !== 204) throw new Error(response.body.message);
     console.log("removeGMOAuthorization result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
 
 
 
@@ -251,8 +251,8 @@ async function main() {
         simple: false,
         resolveWithFullResponse: true,
     });
-    if (response.statusCode !== 204) throw new Error(response.body.message);
     console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
 
 
 
@@ -300,8 +300,29 @@ async function main() {
         json: true,
         resolveWithFullResponse: true,
     });
-    if (response.statusCode !== 204) throw new Error(response.body.message);
     console.log("addGMOAuthorization result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+
+
+
+
+
+
+
+    // 購入者情報登録
+    response = await request.patch({
+        url: `http://localhost:8080/owners/anonymous/${anonymousOwnerId}`,
+        body: {
+            name_first: "Tetsu",
+            name_last: "Yamazaki",
+            tel: "09012345678",
+            email: "yamazaki@motionpicture.jp",
+        },
+        json: true,
+        resolveWithFullResponse: true,
+    });
+    console.log("/owners/anonymous/${anonymousOwnerId} result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
 
 
 
@@ -363,8 +384,8 @@ async function main() {
         simple: false,
         resolveWithFullResponse: true,
     });
-    if (response.statusCode !== 204) throw new Error(response.body.message);
     console.log("enableInquiry result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
 
 
 
@@ -379,8 +400,8 @@ async function main() {
         simple: false,
         resolveWithFullResponse: true,
     });
-    if (response.statusCode !== 204) throw new Error(response.body.message);
     console.log("close result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
 }
 
 

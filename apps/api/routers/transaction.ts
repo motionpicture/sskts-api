@@ -59,15 +59,15 @@ router.post("", async (req, res, next) => {
     // TODO ownersの型チェック
 
     try {
-        // let ownerIds: Array<string> = req.body.owners;
-        let ownerIds = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
+        let ownerIds: Array<string> = req.body.owners;
+        // let ownerIds = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
         let transaction = await TransactionService.start({
             expired_at: new Date(),
             owner_ids: ownerIds
         })(OwnerRepository, TransactionRepository);
 
         res.status(201);
-        res.setHeader("Location", `https://${req.headers["host"]}/transactions/${transaction._id}`); // TODO
+        res.setHeader("Location", `https://${req.headers["host"]}/transactions/${transaction._id}`);
         res.json({
             data: {
                 type: "transactions",

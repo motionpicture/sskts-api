@@ -1,13 +1,15 @@
 "use strict";
 const mongoose = require("mongoose");
 let schema = new mongoose.Schema({
+    group: String,
+    name_first: String,
+    name_last: String,
+    email: String,
+    tel: String,
     name: {
         ja: String,
         en: String
     },
-    group: String,
-    email: String,
-    tel: String,
 }, {
     collection: "owners",
     timestamps: {

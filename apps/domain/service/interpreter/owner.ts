@@ -1,11 +1,11 @@
 import mongoose = require("mongoose");
 import * as OwnerFactory from "../../factory/owner";
 import OwnerService from "../owner";
-import AnonymousOwnerRepository from "../../repository/owner/anonymous";
+import OwnerRepository from "../../repository/owner";
 
 namespace interpreter {
     export function createAnonymous() {
-        return async (repository: AnonymousOwnerRepository) => {
+        return async (repository: OwnerRepository) => {
             // 新しい一般所有者を作成
             let owner = OwnerFactory.createAnonymous({
                 _id: mongoose.Types.ObjectId().toString()
@@ -15,6 +15,22 @@ namespace interpreter {
             await repository.store(owner);
 
             return owner;
+        };
+    }
+
+    export function updateAnonymous(args: {
+        _id: string,
+        name_first?: string,
+        name_last?: string,
+        email?: string,
+        tel?: string,
+    }) {
+        return async (repository: OwnerRepository) => {
+            // 永続化
+            let option = await repository.findOneAndUpdate({
+                _id: args._id,
+            }, { $set: args });
+            if (option.isEmpty) throw new Error("owner not found.");
         };
     }
 }

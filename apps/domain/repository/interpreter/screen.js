@@ -14,7 +14,9 @@ var interpreter;
 (function (interpreter) {
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield screen_1.default.findOne({ _id: id }).exec();
+            let doc = yield screen_1.default.findOne({ _id: id })
+                .populate("theater")
+                .exec();
             if (!doc)
                 return monapt.None;
             let screen = ScreenFactory.create({
@@ -30,7 +32,9 @@ var interpreter;
     interpreter.findById = findById;
     function findByTheater(theaterCode) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield screen_1.default.find({ theater: theaterCode }).exec();
+            let docs = yield screen_1.default.find({ theater: theaterCode })
+                .populate("theater")
+                .exec();
             return docs.map((doc) => {
                 return ScreenFactory.create({
                     _id: doc.get("_id"),

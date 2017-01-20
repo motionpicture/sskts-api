@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const monapt = require("monapt");
 const OwnerFactory = require("../../factory/owner");
+const ownerGroup_1 = require("../../model/ownerGroup");
 const owner_1 = require("./mongoose/model/owner");
 var interpreter;
 (function (interpreter) {
@@ -29,17 +30,31 @@ var interpreter;
             let doc = yield owner_1.default.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
-            let owner = OwnerFactory.create({
-                _id: doc.get("_id"),
-                group: doc.get("group")
-            });
+            let owner;
+            switch (doc.get("group")) {
+                case ownerGroup_1.default.ANONYMOUS:
+                    owner = OwnerFactory.createAnonymous({
+                        _id: doc.get("_id"),
+                        name_first: doc.get("name_first"),
+                        name_last: doc.get("name_last"),
+                        email: doc.get("email"),
+                        tel: doc.get("tel"),
+                    });
+                    break;
+                default:
+                    owner = OwnerFactory.create({
+                        _id: doc.get("_id"),
+                        group: doc.get("group")
+                    });
+                    break;
+            }
             return monapt.Option(owner);
         });
     }
     interpreter.findById = findById;
     function findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield owner_1.default.findOneAndUpdate({ $and: [conditions] }, update, {
+            let doc = yield owner_1.default.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).exec();

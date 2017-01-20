@@ -21,6 +21,16 @@ var interpreter;
         });
     }
     interpreter.createAnonymous = createAnonymous;
+    function updateAnonymous(args) {
+        return (repository) => __awaiter(this, void 0, void 0, function* () {
+            let option = yield repository.findOneAndUpdate({
+                _id: args._id,
+            }, { $set: args });
+            if (option.isEmpty)
+                throw new Error("owner not found.");
+        });
+    }
+    interpreter.updateAnonymous = updateAnonymous;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });
