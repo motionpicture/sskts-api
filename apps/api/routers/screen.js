@@ -19,7 +19,6 @@ router.get("/screen/:id", (req, res, next) => __awaiter(this, void 0, void 0, fu
         option.match({
             Some: (screen) => {
                 res.json({
-                    success: true,
                     message: "",
                     screen: screen
                 });
@@ -27,7 +26,6 @@ router.get("/screen/:id", (req, res, next) => __awaiter(this, void 0, void 0, fu
             None: () => {
                 res.status(404);
                 res.json({
-                    success: true,
                     message: "not found.",
                     screen: null
                 });

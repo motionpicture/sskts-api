@@ -11,13 +11,11 @@ import TransactionService from "../../domain/service/interpreter/transaction";
 
 //         TransactionRepository.find({}).then((transactions) => {
 //             res.json({
-//                 success: true,
 //                 message: null,
 //                 transactions: transactions
 //             });
 //         }, (err) => {
 //             res.json({
-//                 success: false,
 //                 message: err.message
 //             });
 //         });
@@ -37,8 +35,7 @@ router.post("/transaction/start", async (req, res, next) => {
         owner_ids: ownerIds
     })(OwnerRepository, TransactionRepository);
     res.json({
-        success: true,
-        message: null,
+        message: "",
         transaction: transaction
     });
 });
@@ -152,55 +149,5 @@ router.put("/transaction/:id/close", async (req, res, next) => {
         next(error);
     }
 });
-
-// router.post("/transaction/:id/unauthorize", async (req, res, next) => {
-//     // TODO validations
-//     let validatorResult = await req.getValidationResult();
-//     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
-
-//     req.getValidationResult().then((result) => {
-//         if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
-
-//         AuthorizationRepository.remove({
-//             transaction: req.params.id,
-//             authorizations: req.body.authorizations,
-//         }).then((results) => {
-//             res.json({
-//                 success: true,
-//                 message: null,
-//                 results: results
-//             });
-//         }, (err) => {
-//             res.json({
-//                 success: false,
-//                 message: err.message
-//             });
-//         });
-//     });
-// });
-
-// router.post("/transaction/:id/update", async (req, res, next) => {
-//     req.getValidationResult().then((result) => {
-//         if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
-
-//         let args = {
-//             _id: req.params.id,
-//             expired_at: (req.body.expired_at) ? new Date(parseInt(req.body.expired_at) * 1000) : undefined,
-//             access_id: (req.body.access_id) ? req.body.access_id : undefined,
-//             access_pass: (req.body.access_pass) ? req.body.access_pass : undefined,
-//         };
-//         TransactionRepository.update(args).then(() => {
-//             res.json({
-//                 success: true,
-//                 message: null,
-//             });
-//         }, (err) => {
-//             res.json({
-//                 success: false,
-//                 message: err.message
-//             });
-//         });
-//     });
-// });
 
 export default router;

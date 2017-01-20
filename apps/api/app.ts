@@ -136,7 +136,6 @@ app.use("/", [
 app.use((req, res) => {
     res.status(404);
     res.json({
-        success: false,
         message: `router for [${req.originalUrl}] not found.`
     });
 });
@@ -148,7 +147,6 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
     res.status(400);
     res.json({
-        success: false,
         message: `${err.message}`
     });
 });

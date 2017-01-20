@@ -11,7 +11,6 @@ router.get("/screen/:id", async (req, res, next) => {
         option.match({
             Some: (screen) => {
                 res.json({
-                    success: true,
                     message: "",
                     screen: screen
                 });
@@ -19,7 +18,6 @@ router.get("/screen/:id", async (req, res, next) => {
             None: () => {
                 res.status(404);
                 res.json({
-                    success: true,
                     message: "not found.",
                     screen: null
                 });

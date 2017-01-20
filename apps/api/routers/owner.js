@@ -18,8 +18,6 @@ router.all("/owner/anonymous/create", (req, res, next) => __awaiter(this, void 0
     try {
         let owner = yield owner_1.default.createAnonymous()(anonymous_1.default);
         res.json({
-            success: true,
-            message: "",
             owner: owner
         });
     }

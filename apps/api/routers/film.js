@@ -19,7 +19,6 @@ router.get("/film/:id", (req, res, next) => __awaiter(this, void 0, void 0, func
         option.match({
             Some: (film) => {
                 res.json({
-                    success: true,
                     message: "",
                     film: film
                 });
@@ -27,7 +26,6 @@ router.get("/film/:id", (req, res, next) => __awaiter(this, void 0, void 0, func
             None: () => {
                 res.status(404);
                 res.json({
-                    success: true,
                     message: "not found.",
                     film: null
                 });

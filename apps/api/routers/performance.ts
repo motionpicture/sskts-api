@@ -12,7 +12,6 @@ router.get("/performance/:id", async (req, res, next) => {
         option.match({
             Some: (performance) => {
                 res.json({
-                    success: true,
                     message: "",
                     performance: performance
                 });
@@ -20,7 +19,6 @@ router.get("/performance/:id", async (req, res, next) => {
             None: () => {
                 res.status(404);
                 res.json({
-                    success: true,
                     message: "not found.",
                     performance: null
                 });
@@ -42,7 +40,6 @@ router.get("/performances", async (req, res, next) => {
         })(PerformanceRepository);
 
         res.json({
-            success: true,
             message: "",
             performances: performances
         });

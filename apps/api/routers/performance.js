@@ -20,7 +20,6 @@ router.get("/performance/:id", (req, res, next) => __awaiter(this, void 0, void 
         option.match({
             Some: (performance) => {
                 res.json({
-                    success: true,
                     message: "",
                     performance: performance
                 });
@@ -28,7 +27,6 @@ router.get("/performance/:id", (req, res, next) => __awaiter(this, void 0, void 
             None: () => {
                 res.status(404);
                 res.json({
-                    success: true,
                     message: "not found.",
                     performance: null
                 });
@@ -49,7 +47,6 @@ router.get("/performances", (req, res, next) => __awaiter(this, void 0, void 0, 
             theater: req.query.theater,
         })(performance_1.default);
         res.json({
-            success: true,
             message: "",
             performances: performances
         });

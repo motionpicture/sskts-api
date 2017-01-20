@@ -13,8 +13,6 @@ router.all("/owner/anonymous/create", async (req, res, next) => {
         let owner = await OwnerService.createAnonymous()(AnonymousOwnerRepository);
 
         res.json({
-            success: true,
-            message: "",
             owner: owner
         });
     } catch (error) {
@@ -36,13 +34,11 @@ router.all("/owner/anonymous/create", async (req, res, next) => {
 //         };
 //         OwnerRepository.findByIdAndUpdate(args).then((owner) => {
 //             res.json({
-//                 success: true,
 //                 message: null,
 //                 owner: owner
 //             });
 //         }, (err) => {
 //             res.json({
-//                 success: false,
 //                 message: err.message
 //             });
 //         });
@@ -52,7 +48,6 @@ router.all("/owner/anonymous/create", async (req, res, next) => {
 // router.get("/owner/:id/assets", (req, res) => {
 //     req.getValidationResult().then(() => {
 //         res.json({
-//             success: false,
 //             message: "now coding..."
 //         });
 //     });
@@ -61,7 +56,6 @@ router.all("/owner/anonymous/create", async (req, res, next) => {
 // router.get("/owner/:id/transactions", (req, res) => {
 //     req.getValidationResult().then(() => {
 //         res.json({
-//             success: false,
 //             message: "now coding..."
 //         });
 //     });

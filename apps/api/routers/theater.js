@@ -19,7 +19,6 @@ router.get("/theater/:code", (req, res, next) => __awaiter(this, void 0, void 0,
         optionTheater.match({
             Some: (theater) => {
                 res.json({
-                    success: true,
                     message: "",
                     theater: theater
                 });
@@ -27,7 +26,6 @@ router.get("/theater/:code", (req, res, next) => __awaiter(this, void 0, void 0,
             None: () => {
                 res.status(404);
                 res.json({
-                    success: true,
                     message: "not found.",
                     theater: null
                 });

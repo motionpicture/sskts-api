@@ -11,7 +11,6 @@ router.get("/theater/:code", async (req, res, next) => {
         optionTheater.match({
             Some: (theater) => {
                 res.json({
-                    success: true,
                     message: "",
                     theater: theater
                 });
@@ -19,7 +18,6 @@ router.get("/theater/:code", async (req, res, next) => {
             None: () => {
                 res.status(404);
                 res.json({
-                    success: true,
                     message: "not found.",
                     theater: null
                 });

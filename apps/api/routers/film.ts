@@ -12,7 +12,6 @@ router.get("/film/:id", async (req, res, next) => {
         option.match({
             Some: (film) => {
                 res.json({
-                    success: true,
                     message: "",
                     film: film
                 });
@@ -20,7 +19,6 @@ router.get("/film/:id", async (req, res, next) => {
             None: () => {
                 res.status(404);
                 res.json({
-                    success: true,
                     message: "not found.",
                     film: null
                 });

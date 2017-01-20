@@ -22,8 +22,7 @@ router.post("/transaction/start", (req, res, next) => __awaiter(this, void 0, vo
         owner_ids: ownerIds
     })(owner_1.default, transaction_1.default);
     res.json({
-        success: true,
-        message: null,
+        message: "",
         transaction: transaction
     });
 }));

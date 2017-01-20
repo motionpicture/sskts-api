@@ -59,7 +59,6 @@ app.use("/", [
 app.use((req, res) => {
     res.status(404);
     res.json({
-        success: false,
         message: `router for [${req.originalUrl}] not found.`
     });
 });
@@ -69,7 +68,6 @@ app.use((err, req, res, next) => {
         return next(err);
     res.status(400);
     res.json({
-        success: false,
         message: `${err.message}`
     });
 });
