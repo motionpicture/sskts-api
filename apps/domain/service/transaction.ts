@@ -1,9 +1,10 @@
 import Authorization from "../model/authorization";
 import Transaction from "../model/transaction";
-// import TransactionEvent from "../model/TransactionEvent";
 import OwnerRepository from "../repository/owner";
 import TransactionRepository from "../repository/transaction";
 import AssetAuthorizationRepository from "../repository/authorization/asset";
+import QueueRepository from "../repository/queue";
+type TransactionAndQueueOperation<T> = (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
 type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
 type AssetAuthorizationAndTransactionOperation<T> = (assetAuthorizationRepository: AssetAuthorizationRepository, repository: TransactionRepository) => Promise<T>;
 type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
@@ -76,6 +77,10 @@ interface TransactionService {
     cancel(args: {
         transaction_id: string,
     }): TransactionOperation<void>;
+    /** キューを出力する */
+    enqueue(args: {
+        transaction_id?: string,
+    }): TransactionAndQueueOperation<void>;
 }
 
 export default TransactionService;

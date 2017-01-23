@@ -9,12 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const mongoose = require("mongoose");
 const transactionEvent_1 = require("../../model/transactionEvent");
+const transactionStatus_1 = require("../../model/transactionStatus");
 const authorize_1 = require("../../model/transactionEvent/authorize");
 const unauthorize_1 = require("../../model/transactionEvent/unauthorize");
 const transactionEventGroup_1 = require("../../model/transactionEventGroup");
-const transactionStatus_1 = require("../../model/transactionStatus");
+const queueStatus_1 = require("../../model/queueStatus");
 const AuthorizationFactory = require("../../factory/authorization");
 const TransactionFactory = require("../../factory/transaction");
+const QueueFactory = require("../../factory/queue");
 var interpreter;
 (function (interpreter) {
     function start(args) {
@@ -197,6 +199,46 @@ var interpreter;
         });
     }
     interpreter.cancel = cancel;
+    function enqueue() {
+        return (transactionRepository, queueRepository) => __awaiter(this, void 0, void 0, function* () {
+            let option = yield transactionRepository.findOneAndUpdate({
+                status: { $in: [transactionStatus_1.default.CLOSED, transactionStatus_1.default.EXPIRED] },
+                queues_imported: false
+            }, {
+                queues_imported: false
+            });
+            if (option.isEmpty)
+                return;
+            let transaction = option.get();
+            console.log("transaction is", transaction);
+            let promises = [];
+            switch (transaction.status) {
+                case transactionStatus_1.default.CLOSED:
+                    promises = promises.concat(transaction.authorizations.map((authorization) => __awaiter(this, void 0, void 0, function* () {
+                        let queue = QueueFactory.createSettleAuthorization({
+                            status: queueStatus_1.default.UNEXECUTED,
+                            executed_at: new Date(),
+                            count_try: 0,
+                            authorization: authorization
+                        });
+                        yield queueRepository.store(queue);
+                    })));
+                    break;
+                case transactionStatus_1.default.EXPIRED:
+                    break;
+                default:
+                    break;
+            }
+            yield Promise.all(promises);
+            console.log("queues created.");
+            yield transactionRepository.findOneAndUpdate({
+                _id: transaction._id
+            }, {
+                queues_imported: true
+            });
+        });
+    }
+    interpreter.enqueue = enqueue;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

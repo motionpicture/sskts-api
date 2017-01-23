@@ -40,7 +40,8 @@
     "passport-http-bearer": "^1.0.1",
     "redis": "^2.6.3",
     "request": "^2.79.0",
-    "request-promise-native": "^1.0.3"
+    "request-promise-native": "^1.0.3",
+    "sendgrid": "^4.7.1"
   },
   "devDependencies": {},
   "repository": {},

@@ -1,12 +1,15 @@
 import program = require("commander");
-import QueueService from "../apps/domain/service/interpreter/queue";
+// import AssetService from "../apps/domain/service/interpreter/asset";
 import MasterService from "../apps/domain/service/interpreter/master";
+import TransactionService from "../apps/domain/service/interpreter/transaction";
 import FilmRepository from "../apps/domain/repository/interpreter/film";
 import ScreenRepository from "../apps/domain/repository/interpreter/screen";
 import TheaterRepository from "../apps/domain/repository/interpreter/theater";
 import PerformanceRepository from "../apps/domain/repository/interpreter/performance";
 import TransactionRepository from "../apps/domain/repository/interpreter/transaction";
 import QueueRepository from "../apps/domain/repository/interpreter/queue";
+// import QueueStatus from "../apps/domain/model/queueStatus";
+// import QueueGroup from "../apps/domain/model/queueGroup";
 
 // let env = process.env.NODE_ENV || "dev";
 
@@ -98,13 +101,13 @@ program
     });
 
 program
-    .command("importQueues")
-    .description("import authorizations from transaction.")
+    .command("enqueue4transaction")
+    .description("enqueue for a transaction.")
     .action(async () => {
         mongoose.connect(MONGOLAB_URI);
 
         try {
-            await QueueService.importFromTransaction()(
+            await TransactionService.enqueue({})(
                 TransactionRepository, QueueRepository
             );
         } catch (error) {
@@ -114,22 +117,31 @@ program
         mongoose.disconnect();
     });
 
-program
-    .command("settleAuthorization")
-    .description("import authorizations from transaction.")
-    .action(async () => {
-        mongoose.connect(MONGOLAB_URI);
+// program
+//     .command("settleAuthorization")
+//     .description("import authorizations from transaction.")
+//     .action(async () => {
+//         mongoose.connect(MONGOLAB_URI);
 
-        try {
-            await QueueService.settleAuthorization()(
-                QueueRepository
-            );
-        } catch (error) {
-            console.error(error.message);
-        }
+//         try {
+//             let option = await QueueRepository.findOneAndUpdate({
+//                 status: QueueStatus.UNEXECUTED,
+//                 group: QueueGroup.SETTLE_AUTHORIZATION
+//             }, { status: QueueStatus.RUNNING });
+//             if (option.isEmpty) return;
 
-        mongoose.disconnect();
-    });
+//             // TODO 資産移動処理
+//             let queue = option.get();
+//             console.log("queue is", queue);
+//             await AssetService.transfer(queue.authorization);
+
+//             await QueueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
+//         } catch (error) {
+//             console.error(error.message);
+//         }
+
+//         mongoose.disconnect();
+//     });
 
 // program
 //     .command("importSeatAvailability <theaterCode> <day_start> <day_end>")

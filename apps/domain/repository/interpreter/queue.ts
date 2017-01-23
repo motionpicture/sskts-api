@@ -30,6 +30,8 @@ namespace interpreter {
             _id: doc.get("_id"),
             group: doc.get("group"),
             status: doc.get("status"),
+            executed_at: doc.get("executed_at"),
+            count_try: doc.get("count_try")
         }));
     }
 

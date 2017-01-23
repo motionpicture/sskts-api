@@ -8,14 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const program = require("commander");
-const queue_1 = require("../apps/domain/service/interpreter/queue");
 const master_1 = require("../apps/domain/service/interpreter/master");
+const transaction_1 = require("../apps/domain/service/interpreter/transaction");
 const film_1 = require("../apps/domain/repository/interpreter/film");
 const screen_1 = require("../apps/domain/repository/interpreter/screen");
 const theater_1 = require("../apps/domain/repository/interpreter/theater");
 const performance_1 = require("../apps/domain/repository/interpreter/performance");
-const transaction_1 = require("../apps/domain/repository/interpreter/transaction");
-const queue_2 = require("../apps/domain/repository/interpreter/queue");
+const transaction_2 = require("../apps/domain/repository/interpreter/transaction");
+const queue_1 = require("../apps/domain/repository/interpreter/queue");
 const config = require("config");
 const mongoose = require("mongoose");
 let MONGOLAB_URI = config.get("mongolab_uri");
@@ -89,25 +89,12 @@ program
     mongoose.disconnect();
 }));
 program
-    .command("importQueues")
-    .description("import authorizations from transaction.")
+    .command("enqueue4transaction")
+    .description("enqueue for a transaction.")
     .action(() => __awaiter(this, void 0, void 0, function* () {
     mongoose.connect(MONGOLAB_URI);
     try {
-        yield queue_1.default.importFromTransaction()(transaction_1.default, queue_2.default);
-    }
-    catch (error) {
-        console.error(error.message);
-    }
-    mongoose.disconnect();
-}));
-program
-    .command("settleAuthorization")
-    .description("import authorizations from transaction.")
-    .action(() => __awaiter(this, void 0, void 0, function* () {
-    mongoose.connect(MONGOLAB_URI);
-    try {
-        yield queue_1.default.settleAuthorization()(queue_2.default);
+        yield transaction_1.default.enqueue({})(transaction_2.default, queue_1.default);
     }
     catch (error) {
         console.error(error.message);
