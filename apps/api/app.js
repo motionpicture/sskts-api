@@ -29,8 +29,7 @@ i18n.configure({
     updateFiles: false
 });
 app.use(i18n.init);
-let MONGOLAB_URI = config.get("mongolab_uri");
-mongoose.connect(MONGOLAB_URI, {});
+mongoose.set('debug', true);
 const COA = require("@motionpicture/coa-service");
 COA.initialize({
     endpoint: config.get("coa_api_endpoint"),

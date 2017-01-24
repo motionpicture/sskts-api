@@ -7,9 +7,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const mongoose = require("mongoose");
 const monapt = require("monapt");
 const TheaterFactory = require("../../factory/theater");
 const theater_1 = require("./mongoose/model/theater");
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let theaterModel = db.model(theater_1.default.modelName, theater_1.default.schema);
 var interpreter;
 (function (interpreter) {
     function createFromDocument(doc) {
@@ -22,7 +25,7 @@ var interpreter;
     }
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let theater = yield theater_1.default.findOne({ _id: id }).exec();
+            let theater = yield theaterModel.findOne({ _id: id }).exec();
             if (!theater)
                 return monapt.None;
             return monapt.Option(createFromDocument(theater));
@@ -31,7 +34,7 @@ var interpreter;
     interpreter.findById = findById;
     function store(theater) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield theater_1.default.findOneAndUpdate({ _id: theater._id }, theater, {
+            yield theaterModel.findOneAndUpdate({ _id: theater._id }, theater, {
                 new: true,
                 upsert: true
             }).lean().exec();

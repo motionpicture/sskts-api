@@ -7,15 +7,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const mongoose = require("mongoose");
 const monapt = require("monapt");
 const OwnerFactory = require("../../factory/owner");
 const ownerGroup_1 = require("../../model/ownerGroup");
 const owner_1 = require("./mongoose/model/owner");
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let ownerModel = db.model(owner_1.default.modelName, owner_1.default.schema);
 var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield owner_1.default.find({ $and: [conditions] }).exec();
+            let docs = yield ownerModel.find({ $and: [conditions] }).exec();
             return docs.map((doc) => {
                 return OwnerFactory.create({
                     _id: doc.get("_id"),
@@ -27,7 +30,7 @@ var interpreter;
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield owner_1.default.findOne({ _id: id }).exec();
+            let doc = yield ownerModel.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
             let owner;
@@ -54,7 +57,7 @@ var interpreter;
     interpreter.findById = findById;
     function findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield owner_1.default.findOneAndUpdate(conditions, update, {
+            let doc = yield ownerModel.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).exec();
@@ -70,7 +73,7 @@ var interpreter;
     interpreter.findOneAndUpdate = findOneAndUpdate;
     function store(owner) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield owner_1.default.findOneAndUpdate({ _id: owner._id }, owner, {
+            yield ownerModel.findOneAndUpdate({ _id: owner._id }, owner, {
                 new: true,
                 upsert: true
             }).lean().exec();

@@ -1,19 +1,23 @@
+import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Transaction from "../../model/transaction";
 import * as TransactionFactory from "../../factory/transaction";
 import TransactionRepository from "../transaction";
-import TheaterModel from "./mongoose/model/transaction";
+import TransactionModel from "./mongoose/model/transaction";
+
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let transactionModel = db.model(TransactionModel.modelName, TransactionModel.schema);
 
 namespace interpreter {
     export async function find(conditions: Object) {
-        let docs = await TheaterModel.find(conditions).exec();
+        let docs = await transactionModel.find(conditions).exec();
         await docs.map((doc) => {
             console.log(doc);
         });
         return [];
     }
     export async function findById(id: string) {
-        let doc = await TheaterModel.findOne({ _id: id }).exec();
+        let doc = await transactionModel.findOne({ _id: id }).exec();
         if (!doc) return monapt.None;
 
         let transaction = TransactionFactory.create({
@@ -32,7 +36,7 @@ namespace interpreter {
     }
 
     export async function findOneAndUpdate(conditions: Object, update: Object) {
-        let doc = await TheaterModel.findOneAndUpdate(conditions, update, {
+        let doc = await transactionModel.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         }).exec();
@@ -51,7 +55,7 @@ namespace interpreter {
     }
 
     export async function store(transaction: Transaction) {
-        await TheaterModel.findOneAndUpdate({ _id: transaction._id }, transaction, {
+        await transactionModel.findOneAndUpdate({ _id: transaction._id }, transaction, {
             new: true,
             upsert: true
         }).lean().exec();

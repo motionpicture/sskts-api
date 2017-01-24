@@ -16,7 +16,14 @@ import QueueRepository from "../apps/domain/repository/interpreter/queue";
 import config = require("config");
 
 import mongoose = require("mongoose");
-let MONGOLAB_URI = config.get<string>("mongolab_uri");
+mongoose.set('debug', true); // TODO 本番でははずす
+// mongoose.connect(process.env.MONGOLAB_URI, {
+// });
+// process.on("SIGINT", function() {
+//     mongoose.disconnect(() => {
+//         process.exit(0);
+//     });
+// });
 
 import COA = require("@motionpicture/coa-service");
 COA.initialize({
@@ -32,8 +39,6 @@ program
     .command("importTheater <theaterCode>")
     .description("import theater from COA.")
     .action(async (theaterCode) => {
-        mongoose.connect(MONGOLAB_URI);
-
         try {
             await MasterService.importTheater({
                 theater_code: theaterCode
@@ -42,15 +47,13 @@ program
             console.error(error);
         }
 
-        mongoose.disconnect();
+        process.exit(0);
     });
 
 program
     .command("importFilms <theaterCode>")
     .description("import films from COA.")
     .action(async (theaterCode) => {
-        mongoose.connect(MONGOLAB_URI);
-
         try {
             await MasterService.importFilms({
                 theater_code: theaterCode
@@ -59,15 +62,13 @@ program
             console.error(error);
         }
 
-        mongoose.disconnect();
+        process.exit(0);
     });
 
 program
     .command("importScreens <theaterCode>")
     .description("import screens from COA.")
     .action(async (theaterCode) => {
-        mongoose.connect(MONGOLAB_URI);
-
         try {
             await MasterService.importScreens({
                 theater_code: theaterCode
@@ -76,15 +77,13 @@ program
             console.error(error);
         }
 
-        mongoose.disconnect();
+        process.exit(0);
     });
 
 program
     .command("importPerformances <theaterCode> <day_start> <day_end>")
     .description("import performances from COA.")
     .action(async (theaterCode, start, end) => {
-        mongoose.connect(MONGOLAB_URI);
-
         try {
             await MasterService.importPerformances({
                 theater_code: theaterCode,
@@ -97,14 +96,14 @@ program
             console.error(error);
         }
 
-        mongoose.disconnect();
+        process.exit(0);
     });
 
 program
     .command("enqueue4transaction")
     .description("enqueue for a transaction.")
     .action(async () => {
-        mongoose.connect(MONGOLAB_URI);
+        // mongoose.connect(MONGOLAB_URI);
 
         try {
             await TransactionService.enqueue({})(
@@ -114,7 +113,7 @@ program
             console.error(error.message);
         }
 
-        mongoose.disconnect();
+        // mongoose.disconnect();
     });
 
 // program

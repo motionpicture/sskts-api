@@ -70,10 +70,12 @@ app.use(i18n.init);
 
 
 
-
-let MONGOLAB_URI = config.get<string>("mongolab_uri");
-mongoose.connect(MONGOLAB_URI, {
-});
+mongoose.set('debug', true); // TODO 本番でははずす
+// process.on("SIGINT", function() {
+//     mongoose.disconnect(() => {
+//         process.exit(0);
+//     });
+// });
 // if (process.env.NODE_ENV !== "prod") {
 //     let db = mongoose.connection;
 //     db.on("connecting", () => {

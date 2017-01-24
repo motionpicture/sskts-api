@@ -7,6 +7,9 @@ import * as FilmFactory from "../../factory/film";
 import FilmModel from "./mongoose/model/film";
 import COA = require("@motionpicture/coa-service");
 
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let filmModel = db.model(FilmModel.modelName, FilmModel.schema);
+
 namespace interpreter {
     export function createFromDocument(doc: mongoose.Document): Film {
         return FilmFactory.create({
@@ -29,14 +32,14 @@ namespace interpreter {
     }
 
     export async function findById(id: string) {
-        let film = await FilmModel.findOne({ _id: id }).exec();
+        let film = await filmModel.findOne({ _id: id }).exec();
         if (!film) return monapt.None;
 
         return monapt.Option(createFromDocument(film));
     }
 
     export async function store(film: Film) {
-        await FilmModel.findOneAndUpdate({ _id: film._id }, film, {
+        await filmModel.findOneAndUpdate({ _id: film._id }, film, {
             new: true,
             upsert: true
         }).lean().exec();

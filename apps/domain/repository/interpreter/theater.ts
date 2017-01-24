@@ -6,6 +6,9 @@ import TheaterRepository from "../theater";
 import TheaterModel from "./mongoose/model/theater";
 import COA = require("@motionpicture/coa-service");
 
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let theaterModel = db.model(TheaterModel.modelName, TheaterModel.schema);
+
 namespace interpreter {
     function createFromDocument(doc: mongoose.Document): Theater {
         return TheaterFactory.create({
@@ -17,14 +20,14 @@ namespace interpreter {
     }
 
     export async function findById(id: string) {
-        let theater = await TheaterModel.findOne({ _id: id }).exec();
+        let theater = await theaterModel.findOne({ _id: id }).exec();
         if (!theater) return monapt.None;
 
         return monapt.Option(createFromDocument(theater));
     }
 
     export async function store(theater: Theater) {
-        await TheaterModel.findOneAndUpdate({ _id: theater._id }, theater, {
+        await theaterModel.findOneAndUpdate({ _id: theater._id }, theater, {
             new: true,
             upsert: true
         }).lean().exec();

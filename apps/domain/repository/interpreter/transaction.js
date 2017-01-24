@@ -7,14 +7,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const mongoose = require("mongoose");
 const monapt = require("monapt");
 const TransactionFactory = require("../../factory/transaction");
 const transaction_1 = require("./mongoose/model/transaction");
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let transactionModel = db.model(transaction_1.default.modelName, transaction_1.default.schema);
 var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield transaction_1.default.find(conditions).exec();
+            let docs = yield transactionModel.find(conditions).exec();
             yield docs.map((doc) => {
                 console.log(doc);
             });
@@ -24,7 +27,7 @@ var interpreter;
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield transaction_1.default.findOne({ _id: id }).exec();
+            let doc = yield transactionModel.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
             let transaction = TransactionFactory.create({
@@ -44,7 +47,7 @@ var interpreter;
     interpreter.findById = findById;
     function findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield transaction_1.default.findOneAndUpdate(conditions, update, {
+            let doc = yield transactionModel.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).exec();
@@ -65,7 +68,7 @@ var interpreter;
     interpreter.findOneAndUpdate = findOneAndUpdate;
     function store(transaction) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield transaction_1.default.findOneAndUpdate({ _id: transaction._id }, transaction, {
+            yield transactionModel.findOneAndUpdate({ _id: transaction._id }, transaction, {
                 new: true,
                 upsert: true
             }).lean().exec();

@@ -1,3 +1,4 @@
+import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Screen from "../../model/screen";
 import Theater from "../../model/theater";
@@ -6,9 +7,12 @@ import * as ScreenFactory from "../../factory/screen";
 import ScreenModel from "./mongoose/model/screen";
 import COA = require("@motionpicture/coa-service");
 
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let screenModel = db.model(ScreenModel.modelName, ScreenModel.schema);
+
 namespace interpreter {
     export async function findById(id: string) {
-        let doc = await ScreenModel.findOne({ _id: id })
+        let doc = await screenModel.findOne({ _id: id })
         .populate("theater")
         .exec();
         if (!doc) return monapt.None;
@@ -25,7 +29,7 @@ namespace interpreter {
     }
 
     export async function findByTheater(theaterCode: string) {
-        let docs = await ScreenModel.find({theater: theaterCode})
+        let docs = await screenModel.find({theater: theaterCode})
         .populate("theater")
         .exec();
         return docs.map((doc) => {
@@ -40,7 +44,7 @@ namespace interpreter {
     }
 
     export async function store(screen: Screen) {
-        await ScreenModel.findOneAndUpdate({ _id: screen._id }, screen, {
+        await screenModel.findOneAndUpdate({ _id: screen._id }, screen, {
             new: true,
             upsert: true
         }).lean().exec();

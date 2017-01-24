@@ -18,7 +18,7 @@ const transaction_2 = require("../apps/domain/repository/interpreter/transaction
 const queue_1 = require("../apps/domain/repository/interpreter/queue");
 const config = require("config");
 const mongoose = require("mongoose");
-let MONGOLAB_URI = config.get("mongolab_uri");
+mongoose.set('debug', true);
 const COA = require("@motionpicture/coa-service");
 COA.initialize({
     endpoint: config.get("coa_api_endpoint"),
@@ -30,7 +30,6 @@ program
     .command("importTheater <theaterCode>")
     .description("import theater from COA.")
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
-    mongoose.connect(MONGOLAB_URI);
     try {
         yield master_1.default.importTheater({
             theater_code: theaterCode
@@ -39,13 +38,12 @@ program
     catch (error) {
         console.error(error);
     }
-    mongoose.disconnect();
+    process.exit(0);
 }));
 program
     .command("importFilms <theaterCode>")
     .description("import films from COA.")
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
-    mongoose.connect(MONGOLAB_URI);
     try {
         yield master_1.default.importFilms({
             theater_code: theaterCode
@@ -54,13 +52,12 @@ program
     catch (error) {
         console.error(error);
     }
-    mongoose.disconnect();
+    process.exit(0);
 }));
 program
     .command("importScreens <theaterCode>")
     .description("import screens from COA.")
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
-    mongoose.connect(MONGOLAB_URI);
     try {
         yield master_1.default.importScreens({
             theater_code: theaterCode
@@ -69,13 +66,12 @@ program
     catch (error) {
         console.error(error);
     }
-    mongoose.disconnect();
+    process.exit(0);
 }));
 program
     .command("importPerformances <theaterCode> <day_start> <day_end>")
     .description("import performances from COA.")
     .action((theaterCode, start, end) => __awaiter(this, void 0, void 0, function* () {
-    mongoose.connect(MONGOLAB_URI);
     try {
         yield master_1.default.importPerformances({
             theater_code: theaterCode,
@@ -86,20 +82,18 @@ program
     catch (error) {
         console.error(error);
     }
-    mongoose.disconnect();
+    process.exit(0);
 }));
 program
     .command("enqueue4transaction")
     .description("enqueue for a transaction.")
     .action(() => __awaiter(this, void 0, void 0, function* () {
-    mongoose.connect(MONGOLAB_URI);
     try {
         yield transaction_1.default.enqueue({})(transaction_2.default, queue_1.default);
     }
     catch (error) {
         console.error(error.message);
     }
-    mongoose.disconnect();
 }));
 program
     .command("*")

@@ -1,3 +1,4 @@
+import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Owner from "../../model/owner";
 import OwnerRepository from "../owner";
@@ -5,9 +6,12 @@ import * as OwnerFactory from "../../factory/owner";
 import OwnerGroup from "../../model/ownerGroup";
 import OwnerModel from "./mongoose/model/owner";
 
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let ownerModel = db.model(OwnerModel.modelName, OwnerModel.schema);
+
 namespace interpreter {
     export async function find(conditions: Object) {
-        let docs = await OwnerModel.find({ $and: [conditions] }).exec();
+        let docs = await ownerModel.find({ $and: [conditions] }).exec();
         return docs.map((doc) => {
             return OwnerFactory.create({
                 _id: doc.get("_id"),
@@ -17,7 +21,7 @@ namespace interpreter {
     }
 
     export async function findById(id: string) {
-        let doc = await OwnerModel.findOne({ _id: id }).exec();
+        let doc = await ownerModel.findOne({ _id: id }).exec();
         if (!doc) return monapt.None;
 
         let owner: Owner;
@@ -52,7 +56,7 @@ namespace interpreter {
     }
 
     export async function findOneAndUpdate(conditions: Object, update: Object) {
-        let doc = await OwnerModel.findOneAndUpdate(conditions, update, {
+        let doc = await ownerModel.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         }).exec();
@@ -67,7 +71,7 @@ namespace interpreter {
     }
 
     export async function store(owner: Owner) {
-        await OwnerModel.findOneAndUpdate({ _id: owner._id }, owner, {
+        await ownerModel.findOneAndUpdate({ _id: owner._id }, owner, {
             new: true,
             upsert: true
         }).lean().exec();

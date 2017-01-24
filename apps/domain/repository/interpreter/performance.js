@@ -7,14 +7,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const mongoose = require("mongoose");
 const monapt = require("monapt");
 const PerformanceFactory = require("../../factory/performance");
 const performance_1 = require("./mongoose/model/performance");
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let performanceModel = db.model(performance_1.default.modelName, performance_1.default.schema);
 var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let performances = yield performance_1.default.find(conditions)
+            let performances = yield performanceModel.find(conditions)
                 .populate("film")
                 .populate("theater")
                 .populate("screen")
@@ -36,7 +39,7 @@ var interpreter;
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield performance_1.default.findOne({ _id: id })
+            let doc = yield performanceModel.findOne({ _id: id })
                 .populate("film")
                 .populate("theater")
                 .populate("screen")
@@ -59,7 +62,7 @@ var interpreter;
     interpreter.findById = findById;
     function store(performance) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield performance_1.default.findOneAndUpdate({ _id: performance._id }, performance, {
+            yield performanceModel.findOneAndUpdate({ _id: performance._id }, performance, {
                 new: true,
                 upsert: true
             }).lean().exec();

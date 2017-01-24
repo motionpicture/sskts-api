@@ -1,4 +1,4 @@
-// import mongoose = require("mongoose");
+import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Screen from "../../model/screen";
 import Film from "../../model/film";
@@ -8,9 +8,12 @@ import * as PerformanceFactory from "../../factory/performance";
 import PerformanceModel from "./mongoose/model/performance";
 import COA = require("@motionpicture/coa-service");
 
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let performanceModel = db.model(PerformanceModel.modelName, PerformanceModel.schema);
+
 namespace interpreter {
     export async function find(conditions: Object) {
-        let performances = await PerformanceModel.find(conditions)
+        let performances = await performanceModel.find(conditions)
             .populate("film")
             .populate("theater")
             .populate("screen")
@@ -31,7 +34,7 @@ namespace interpreter {
     }
 
     export async function findById(id: string) {
-        let doc = await PerformanceModel.findOne({ _id: id })
+        let doc = await performanceModel.findOne({ _id: id })
             .populate("film")
             .populate("theater")
             .populate("screen")
@@ -53,7 +56,7 @@ namespace interpreter {
     }
 
     export async function store(performance: Performance) {
-        await PerformanceModel.findOneAndUpdate({ _id: performance._id }, performance, {
+        await performanceModel.findOneAndUpdate({ _id: performance._id }, performance, {
             new: true,
             upsert: true
         }).lean().exec();

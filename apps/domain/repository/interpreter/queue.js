@@ -7,14 +7,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const mongoose = require("mongoose");
 const monapt = require("monapt");
 const QueueFactory = require("../../factory/queue");
 const queue_1 = require("./mongoose/model/queue");
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let queueModel = db.model(queue_1.default.modelName, queue_1.default.schema);
 var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield queue_1.default.find(conditions).exec();
+            let docs = yield queueModel.find(conditions).exec();
             yield docs.map((doc) => {
                 console.log(doc);
             });
@@ -24,7 +27,7 @@ var interpreter;
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield queue_1.default.findOne({ _id: id }).exec();
+            let doc = yield queueModel.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
             return monapt.None;
@@ -33,7 +36,7 @@ var interpreter;
     interpreter.findById = findById;
     function findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield queue_1.default.findOneAndUpdate(conditions, update, {
+            let doc = yield queueModel.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).exec();
@@ -51,7 +54,7 @@ var interpreter;
     interpreter.findOneAndUpdate = findOneAndUpdate;
     function store(queue) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield queue_1.default.findOneAndUpdate({ _id: queue._id }, queue, {
+            yield queueModel.findOneAndUpdate({ _id: queue._id }, queue, {
                 new: true,
                 upsert: true
             }).lean().exec();

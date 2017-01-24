@@ -7,14 +7,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const mongoose = require("mongoose");
 const monapt = require("monapt");
 const ScreenFactory = require("../../factory/screen");
 const screen_1 = require("./mongoose/model/screen");
+let db = mongoose.createConnection(process.env.MONGOLAB_URI);
+let screenModel = db.model(screen_1.default.modelName, screen_1.default.schema);
 var interpreter;
 (function (interpreter) {
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield screen_1.default.findOne({ _id: id })
+            let doc = yield screenModel.findOne({ _id: id })
                 .populate("theater")
                 .exec();
             if (!doc)
@@ -32,7 +35,7 @@ var interpreter;
     interpreter.findById = findById;
     function findByTheater(theaterCode) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield screen_1.default.find({ theater: theaterCode })
+            let docs = yield screenModel.find({ theater: theaterCode })
                 .populate("theater")
                 .exec();
             return docs.map((doc) => {
@@ -49,7 +52,7 @@ var interpreter;
     interpreter.findByTheater = findByTheater;
     function store(screen) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield screen_1.default.findOneAndUpdate({ _id: screen._id }, screen, {
+            yield screenModel.findOneAndUpdate({ _id: screen._id }, screen, {
                 new: true,
                 upsert: true
             }).lean().exec();
