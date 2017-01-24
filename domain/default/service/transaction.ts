@@ -1,5 +1,6 @@
 import Authorization from "../model/authorization";
 import Transaction from "../model/transaction";
+import AnonymousOwner from "../model/owner/anonymous";
 import OwnerRepository from "../repository/owner";
 import TransactionRepository from "../repository/transaction";
 import AssetAuthorizationRepository from "../repository/authorization/asset";
@@ -9,8 +10,20 @@ type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transa
 type AssetAuthorizationAndTransactionOperation<T> = (assetAuthorizationRepository: AssetAuthorizationRepository, repository: TransactionRepository) => Promise<T>;
 type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
 
-// 取引サービス
+/**
+ * 取引関連サービス
+ */
 interface TransactionService {
+    /** 一般購入者を発行する */
+    createAnonymousOwner(): (ownerRepository: OwnerRepository) => Promise<AnonymousOwner>;
+    /** 一般購入者の情報を更新する */
+    updateAnonymousOwner(args: {
+        _id: string,
+        name_first?: string,
+        name_last?: string,
+        email?: string,
+        tel?: string,
+    }): (ownerRepository: OwnerRepository) => Promise<void>;
     /** 取引開始 */
     start(args: {
         expired_at: Date,

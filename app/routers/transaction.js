@@ -9,9 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const express = require("express");
 let router = express.Router();
-const owner_1 = require("../../domain/repository/interpreter/owner");
-const transaction_1 = require("../../domain/repository/interpreter/transaction");
-const transaction_2 = require("../../domain/service/interpreter/transaction");
+const owner_1 = require("../../domain/default/repository/interpreter/owner");
+const transaction_1 = require("../../domain/default/repository/interpreter/transaction");
+const transaction_2 = require("../../domain/default/service/interpreter/transaction");
 router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())

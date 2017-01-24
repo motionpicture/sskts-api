@@ -1,20 +1,20 @@
 import {Router} from "express";
 let router = Router();
-import ScreenRepository from "../../domain/repository/interpreter/screen";
+import TheaterRepository from "../../domain/default/repository/interpreter/theater";
 
-router.get("/:id", async (req, res, next) => {
+router.get("/:code", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let option = await ScreenRepository.findById(req.params.id);
-        option.match({
-            Some: (screen) => {
+        let optionTheater = await TheaterRepository.findById(req.params.code);
+        optionTheater.match({
+            Some: (theater) => {
                 res.json({
                     data: {
-                        type: "screens",
-                        _id: screen._id,
-                        attributes: screen
+                        type: "theaters",
+                        _id: theater._id,
+                        attributes: theater
                     }
                 });
             },

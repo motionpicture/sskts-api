@@ -4,7 +4,7 @@
 
 let startTime = process.hrtime();
 
-import app = require("./apps/api/app");
+import app = require("./app/app");
 // import debugModule = require("debug");
 import http = require("http");
 

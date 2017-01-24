@@ -19,8 +19,39 @@ import QueueRepository from "../../repository/queue";
 import * as AuthorizationFactory from "../../factory/authorization";
 import * as TransactionFactory from "../../factory/transaction";
 import * as QueueFactory from "../../factory/queue";
+import * as OwnerFactory from "../../factory/owner";
 
 namespace interpreter {
+    export function createAnonymousOwner() {
+        return async (repository: OwnerRepository) => {
+            // 新しい一般所有者を作成
+            let owner = OwnerFactory.createAnonymous({
+                _id: mongoose.Types.ObjectId().toString()
+            });
+
+            // 永続化
+            await repository.store(owner);
+
+            return owner;
+        };
+    }
+
+    export function updateAnonymousOwner(args: {
+        _id: string,
+        name_first?: string,
+        name_last?: string,
+        email?: string,
+        tel?: string,
+    }) {
+        return async (repository: OwnerRepository) => {
+            // 永続化
+            let option = await repository.findOneAndUpdate({
+                _id: args._id,
+            }, { $set: args });
+            if (option.isEmpty) throw new Error("owner not found.");
+        };
+    }
+
     /** 取引開始 */
     export function start(args: {
         expired_at: Date,

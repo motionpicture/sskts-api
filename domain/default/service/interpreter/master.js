@@ -68,6 +68,42 @@ var interpreter;
         });
     }
     interpreter.importPerformances = importPerformances;
+    function searchPerformances(conditions) {
+        return (performanceRepository) => __awaiter(this, void 0, void 0, function* () {
+            let andConditions = [
+                { _id: { $ne: null } }
+            ];
+            if (conditions.day) {
+                andConditions.push({ day: conditions.day });
+            }
+            if (conditions.theater) {
+                andConditions.push({ theater: conditions.theater });
+            }
+            let performances = yield performanceRepository.find({ $and: andConditions });
+            return performances.map((performance) => {
+                return {
+                    _id: performance._id,
+                    theater: {
+                        _id: performance.theater._id,
+                        name: performance.theater.name,
+                    },
+                    screen: {
+                        _id: performance.screen._id,
+                        name: performance.screen.name,
+                    },
+                    film: {
+                        _id: performance.film._id,
+                        name: performance.film.name,
+                    },
+                    day: performance.day,
+                    time_start: performance.time_start,
+                    time_end: performance.time_end,
+                    canceled: performance.canceled,
+                };
+            });
+        });
+    }
+    interpreter.searchPerformances = searchPerformances;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

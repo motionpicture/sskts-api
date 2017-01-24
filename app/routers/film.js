@@ -9,21 +9,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const express_1 = require("express");
 let router = express_1.Router();
-const performance_1 = require("../../domain/repository/interpreter/performance");
-const performance_2 = require("../../domain/service/interpreter/performance");
+const film_1 = require("../../domain/default/repository/interpreter/film");
 router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let option = yield performance_1.default.findById(req.params.id);
+        let option = yield film_1.default.findById(req.params.id);
         option.match({
-            Some: (performance) => {
+            Some: (film) => {
                 res.json({
                     data: {
-                        type: "performances",
-                        _id: performance._id,
-                        attributes: performance
+                        type: "films",
+                        _id: film._id,
+                        attributes: film
                     }
                 });
             },
@@ -33,30 +32,6 @@ router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function*
                     data: null
                 });
             }
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-router.get("", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    let validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty())
-        return next(new Error(validatorResult.array()[0].msg));
-    try {
-        let performances = yield performance_2.default.search({
-            day: req.query.day,
-            theater: req.query.theater,
-        })(performance_1.default);
-        let data = performances.map((performance) => {
-            return {
-                type: "performances",
-                _id: performance._id,
-                attributes: performance
-            };
-        });
-        res.json({
-            data: data,
         });
     }
     catch (error) {

@@ -1,7 +1,7 @@
 import express = require("express");
 let router = express.Router();
-import OwnerRepository from "../../domain/repository/interpreter/owner";
-import OwnerService from "../../domain/service/interpreter/owner";
+import OwnerRepository from "../../domain/default/repository/interpreter/owner";
+import TransactionService from "../../domain/default/service/interpreter/transaction";
 
 router.post("/anonymous", async (req, res, next) => {
     // req.checkBody("group", "invalid group.").notEmpty();
@@ -10,7 +10,7 @@ router.post("/anonymous", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let owner = await OwnerService.createAnonymous()(OwnerRepository);
+        let owner = await TransactionService.createAnonymousOwner()(OwnerRepository);
 
         res.status(201);
         res.setHeader("Location", `https://${req.headers["host"]}/owners/${owner._id}`);
@@ -32,7 +32,7 @@ router.patch("/anonymous/:id", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        await OwnerService.updateAnonymous({
+        await TransactionService.updateAnonymousOwner({
             _id: req.params.id,
             name_first: req.body.name_first,
             name_last: req.body.name_last,

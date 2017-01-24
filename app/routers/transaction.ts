@@ -1,9 +1,9 @@
 import express = require("express");
 let router = express.Router();
 
-import OwnerRepository from "../../domain/repository/interpreter/owner";
-import TransactionRepository from "../../domain/repository/interpreter/transaction";
-import TransactionService from "../../domain/service/interpreter/transaction";
+import OwnerRepository from "../../domain/default/repository/interpreter/owner";
+import TransactionRepository from "../../domain/default/repository/interpreter/transaction";
+import TransactionService from "../../domain/default/service/interpreter/transaction";
 
 // router.get("", (req, res, next) => {
 //     req.getValidationResult().then((result) => {
@@ -62,7 +62,7 @@ router.post("", async (req, res, next) => {
         let ownerIds: Array<string> = req.body.owners;
         // let ownerIds = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
         let transaction = await TransactionService.start({
-            expired_at: new Date(),
+            expired_at: new Date(), // TODO 受け取る
             owner_ids: ownerIds
         })(OwnerRepository, TransactionRepository);
 

@@ -26,3 +26,4 @@ skip_files:
 env_variables:
   NODE_ENV: 'dev'
   NPM_TOKEN: '730c4855-ef65-4901-a8ac-d26c5ba117c9'
+  MONGOLAB_URI: 'mongodb://testsasakiticketmongodbuser:aZHGD262LNsBTQgG9UGQpA6QvbFkKbAhBfxf3vvz@ds056379-a0.mlab.com:56379,ds056379-a1.mlab.com:56372/testsasakiticketmongodb?replicaSet=rs-ds056379'

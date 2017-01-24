@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const express_1 = require("express");
 let router = express_1.Router();
-const theater_1 = require("../../domain/repository/interpreter/theater");
+const theater_1 = require("../../domain/default/repository/interpreter/theater");
 router.get("/:code", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())

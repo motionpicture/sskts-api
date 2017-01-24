@@ -1,5 +1,5 @@
-import EmailService from "../apps/domain/service/interpreter/email";
-import Email from "../apps/domain/model/email";
+import EmailService from "../domain/default/service/interpreter/email";
+import Email from "../domain/default/model/email";
 
 let email = new Email(
     "test",

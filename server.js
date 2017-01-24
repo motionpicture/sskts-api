@@ -1,6 +1,6 @@
 "use strict";
 let startTime = process.hrtime();
-const app = require("./apps/api/app");
+const app = require("./app/app");
 const http = require("http");
 let port = normalizePort(process.env.PORT || process.env.npm_config_port);
 app.set("port", port);

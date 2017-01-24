@@ -1,21 +1,20 @@
 import {Router} from "express";
 let router = Router();
-import FilmRepository from "../../domain/repository/interpreter/film";
+import ScreenRepository from "../../domain/default/repository/interpreter/screen";
 
 router.get("/:id", async (req, res, next) => {
-    // req.checkQuery("theater_code", "theater_code required.").notEmpty();
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let option = await FilmRepository.findById(req.params.id);
+        let option = await ScreenRepository.findById(req.params.id);
         option.match({
-            Some: (film) => {
+            Some: (screen) => {
                 res.json({
                     data: {
-                        type: "films",
-                        _id: film._id,
-                        attributes: film
+                        type: "screens",
+                        _id: screen._id,
+                        attributes: screen
                     }
                 });
             },

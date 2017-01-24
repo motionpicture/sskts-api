@@ -1,15 +1,15 @@
 import program = require("commander");
-// import AssetService from "../apps/domain/service/interpreter/asset";
-import MasterService from "../apps/domain/service/interpreter/master";
-import TransactionService from "../apps/domain/service/interpreter/transaction";
-import FilmRepository from "../apps/domain/repository/interpreter/film";
-import ScreenRepository from "../apps/domain/repository/interpreter/screen";
-import TheaterRepository from "../apps/domain/repository/interpreter/theater";
-import PerformanceRepository from "../apps/domain/repository/interpreter/performance";
-import TransactionRepository from "../apps/domain/repository/interpreter/transaction";
-import QueueRepository from "../apps/domain/repository/interpreter/queue";
-// import QueueStatus from "../apps/domain/model/queueStatus";
-// import QueueGroup from "../apps/domain/model/queueGroup";
+// import AssetService from "../domain/default/service/interpreter/asset";
+import MasterService from "../domain/default/service/interpreter/master";
+import TransactionService from "../domain/default/service/interpreter/transaction";
+import FilmRepository from "../domain/default/repository/interpreter/film";
+import ScreenRepository from "../domain/default/repository/interpreter/screen";
+import TheaterRepository from "../domain/default/repository/interpreter/theater";
+import PerformanceRepository from "../domain/default/repository/interpreter/performance";
+import TransactionRepository from "../domain/default/repository/interpreter/transaction";
+import QueueRepository from "../domain/default/repository/interpreter/queue";
+// import QueueStatus from "../domain/default/model/queueStatus";
+// import QueueGroup from "../domain/default/model/queueGroup";
 
 // let env = process.env.NODE_ENV || "dev";
 

@@ -9,14 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const express = require("express");
 let router = express.Router();
-const owner_1 = require("../../domain/repository/interpreter/owner");
-const owner_2 = require("../../domain/service/interpreter/owner");
+const owner_1 = require("../../domain/default/repository/interpreter/owner");
+const transaction_1 = require("../../domain/default/service/interpreter/transaction");
 router.post("/anonymous", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let owner = yield owner_2.default.createAnonymous()(owner_1.default);
+        let owner = yield transaction_1.default.createAnonymousOwner()(owner_1.default);
         res.status(201);
         res.setHeader("Location", `https://${req.headers["host"]}/owners/${owner._id}`);
         res.json({
@@ -35,7 +35,7 @@ router.patch("/anonymous/:id", (req, res, next) => __awaiter(this, void 0, void 
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        yield owner_2.default.updateAnonymous({
+        yield transaction_1.default.updateAnonymousOwner({
             _id: req.params.id,
             name_first: req.body.name_first,
             name_last: req.body.name_last,
