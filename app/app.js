@@ -8,6 +8,9 @@ const i18n = require("i18n");
 let app = express();
 if (process.env.NODE_ENV !== "prod") {
     app.get("/dev/500", (req) => {
+        req.on("data", (chunk) => {
+            console.log(chunk);
+        });
         req.on("end", () => {
             throw new Error("500 manually.");
         });
