@@ -1,5 +1,6 @@
 import Owner from "./owner";
 import Authorization from "./authorization";
+import Email from "./email";
 import TransactionEvent from "./transactionEvent";
 import TransactionStatus from "./transactionStatus";
 
@@ -10,7 +11,7 @@ export default class Transaction {
         readonly events: Array<TransactionEvent>,
         readonly owners: Array<Owner>,
         readonly authorizations: Array<Authorization>,
-        readonly email_queues: Array<any>, // TODO
+        readonly emails: Array<Email>,
         readonly expired_at: Date,
         readonly inquiry_id: string,
         readonly inquiry_pass: string,

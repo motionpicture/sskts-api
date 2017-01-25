@@ -58,6 +58,10 @@ async function main() {
     let transactionId = response.body.data._id;
 
 
+
+
+
+
     // COA空席確認
     let getStateReserveSeatResult = await COA.getStateReserveSeatInterface.call({
         theater_code: "001",
@@ -401,6 +405,80 @@ async function main() {
     });
     console.log("enableInquiry result:", response.statusCode, response.body);
     if (response.statusCode !== 204) throw new Error(response.body.message);
+
+
+
+
+
+
+
+    // メール追加
+    let emailBody = `
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>購入完了</title>
+</head>
+<body>
+<div style="padding:0 30px;font-family:'游ゴシック',meiryo,sans-serif;">
+    <p style="font-size:14px;">
+        この度はご購入いただき誠にありがとうございます。<br>
+    </p>
+    <hr style="margin:1em 0;">
+    <div style="margin-bottom:1em;">
+        <h3 style="font-weight:normal;font-size:14px;margin:0;">購入番号 (Transaction number) :</h3>
+        <strong>${updateReserveResult.reserve_num}</strong>
+    </div>
+</div>
+</body>
+</html>
+`;
+    response = await request.post({
+        url: `http://localhost:8080/transactions/${transactionId}/emails`,
+        body: {
+            from: "noreply@localhost",
+            to: "ilovegadd",
+            subject: "購入完了",
+            body: emailBody,
+        },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true,
+    });
+    console.log("addEmail result:", response.statusCode, response.body);
+    if (response.statusCode !== 200) throw new Error(response.body.message);
+    let emailId = response.body.data._id;
+
+    // メール削除
+    response = await request.del({
+        url: `http://localhost:8080/transactions/${transactionId}/emails/${emailId}`,
+        body: {
+        },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true,
+    });
+    console.log("removeEmail result:", response.statusCode, response.body);
+    if (response.statusCode !== 204) throw new Error(response.body.message);
+
+    // 再度メール追加
+    response = await request.post({
+        url: `http://localhost:8080/transactions/${transactionId}/emails`,
+        body: {
+            from: "noreply@localhost",
+            to: "ilovegadd@gmail.com",
+            subject: "購入完了",
+            body: emailBody,
+        },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true,
+    });
+    console.log("addEmail result:", response.statusCode, response.body);
+    if (response.statusCode !== 200) throw new Error(response.body.message);
+
+
 
 
 

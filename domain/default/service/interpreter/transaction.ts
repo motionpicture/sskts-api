@@ -18,7 +18,9 @@ import QueueRepository from "../../repository/queue";
 
 import * as AuthorizationFactory from "../../factory/authorization";
 import * as TransactionFactory from "../../factory/transaction";
+import * as TransactionEventFactory from "../../factory/transactionEvent";
 import * as QueueFactory from "../../factory/queue";
+import * as EmailFactory from "../../factory/email";
 
 namespace interpreter {
     export function getDetails(args: {
@@ -42,6 +44,7 @@ namespace interpreter {
             });
             await Promise.all(promises);
 
+            // TODO EventFactory
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
                 TransactionEventGroup.START,
@@ -66,7 +69,7 @@ namespace interpreter {
         authorization: Authorization
     }) {
         return async (transactionRepository: TransactionRepository) => {
-            // 取引イベント作成
+            // 取引イベント作成 TODO eventFactory
             let event = new AuthorizeTransactionEvent(
                 mongoose.Types.ObjectId().toString(),
                 args.authorization
@@ -274,10 +277,10 @@ namespace interpreter {
         transaction_id: string
     }) {
         return async (transactionRepository: TransactionRepository) => {
-            let event = new TransactionEvent(
-                mongoose.Types.ObjectId().toString(),
-                TransactionEventGroup.EXPIRE,
-            );
+            let event = TransactionEventFactory.create({
+                _id: mongoose.Types.ObjectId().toString(),
+                group: TransactionEventGroup.EXPIRE,
+            });
 
             // TODO キューリストを事前作成する
 
@@ -379,6 +382,63 @@ namespace interpreter {
             }, {
                     queues_imported: true
                 });
+        }
+    }
+
+    export function addEmail(args: {
+        transaction_id: string,
+        from: string,
+        to: string,
+        subject: string,
+        body: string,
+    }) {
+        return async (transactionRepository: TransactionRepository) => {
+            // メールを作成
+            let email = EmailFactory.create({
+                _id: mongoose.Types.ObjectId().toString(),
+                from: args.from,
+                to: args.to,
+                subject: args.subject,
+                body: args.body,
+            });
+
+            // 永続化
+            let option = await transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: TransactionStatus.PROCESSING
+            }, {
+                    $set: {
+                    },
+                    $addToSet: {
+                        emails: email,
+                    }
+                });
+
+            if (option.isEmpty) throw new Error("processing transaction not found.");
+
+            return email;
+        }
+    }
+
+    export function removeEmail(args: {
+        transaction_id: string,
+        email_id: string,
+    }) {
+        return async (transactionRepository: TransactionRepository) => {
+            // 永続化
+            let option = await transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: TransactionStatus.PROCESSING
+            }, {
+                    $set: {
+                    },
+                    $pull: {
+                        emails: {
+                            _id: args.email_id
+                        },
+                    }
+                });
+            if (option.isEmpty) throw new Error("processing transaction not found.");
         }
     }
 }

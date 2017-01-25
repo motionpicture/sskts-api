@@ -146,6 +146,44 @@ router.patch("/:id/enableInquiry", (req, res, next) => __awaiter(this, void 0, v
         next(error);
     }
 }));
+router.post("/:id/emails", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    let validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty())
+        return next(new Error(validatorResult.array()[0].msg));
+    try {
+        let email = yield transaction_2.default.addEmail({
+            transaction_id: req.params.id,
+            from: req.body.from,
+            to: req.body.to,
+            subject: req.body.subject,
+            body: req.body.body,
+        })(transaction_1.default);
+        res.status(200).json({
+            data: {
+                type: "emails",
+                _id: email._id
+            }
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+router.delete("/:id/emails/:email_id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    let validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty())
+        return next(new Error(validatorResult.array()[0].msg));
+    try {
+        yield transaction_2.default.removeEmail({
+            transaction_id: req.params.id,
+            email_id: req.params.email_id,
+        })(transaction_1.default);
+        res.status(204).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 router.patch("/:id/close", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())

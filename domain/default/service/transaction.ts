@@ -1,5 +1,6 @@
 import monapt = require("monapt");
 import Authorization from "../model/authorization";
+import Email from "../model/email";
 import Transaction from "../model/transaction";
 import OwnerRepository from "../repository/owner";
 import TransactionRepository from "../repository/transaction";
@@ -71,6 +72,17 @@ interface TransactionService {
         transaction_id: string,
         inquiry_id: string,
         inquiry_pass: string,
+    }): TransactionOperation<void>;
+    addEmail(args: {
+        transaction_id: string,
+        from: string,
+        to: string,
+        subject: string,
+        body: string,
+    }): TransactionOperation<Email>;
+    removeEmail(args: {
+        transaction_id: string,
+        email_id: string,
     }): TransactionOperation<void>;
     /** 取引成立 */
     close(args: {

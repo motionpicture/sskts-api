@@ -16,7 +16,9 @@ const transactionEventGroup_1 = require("../../model/transactionEventGroup");
 const queueStatus_1 = require("../../model/queueStatus");
 const AuthorizationFactory = require("../../factory/authorization");
 const TransactionFactory = require("../../factory/transaction");
+const TransactionEventFactory = require("../../factory/transactionEvent");
 const QueueFactory = require("../../factory/queue");
+const EmailFactory = require("../../factory/email");
 var interpreter;
 (function (interpreter) {
     function getDetails(args) {
@@ -169,7 +171,10 @@ var interpreter;
     interpreter.close = close;
     function expire(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.EXPIRE);
+            let event = TransactionEventFactory.create({
+                _id: mongoose.Types.ObjectId().toString(),
+                group: transactionEventGroup_1.default.EXPIRE,
+            });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 status: transactionStatus_1.default.PROCESSING
@@ -245,6 +250,48 @@ var interpreter;
         });
     }
     interpreter.enqueue = enqueue;
+    function addEmail(args) {
+        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let email = EmailFactory.create({
+                _id: mongoose.Types.ObjectId().toString(),
+                from: args.from,
+                to: args.to,
+                subject: args.subject,
+                body: args.body,
+            });
+            let option = yield transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: transactionStatus_1.default.PROCESSING
+            }, {
+                $set: {},
+                $addToSet: {
+                    emails: email,
+                }
+            });
+            if (option.isEmpty)
+                throw new Error("processing transaction not found.");
+            return email;
+        });
+    }
+    interpreter.addEmail = addEmail;
+    function removeEmail(args) {
+        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let option = yield transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: transactionStatus_1.default.PROCESSING
+            }, {
+                $set: {},
+                $pull: {
+                    emails: {
+                        _id: args.email_id
+                    },
+                }
+            });
+            if (option.isEmpty)
+                throw new Error("processing transaction not found.");
+        });
+    }
+    interpreter.removeEmail = removeEmail;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

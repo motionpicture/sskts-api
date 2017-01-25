@@ -169,6 +169,48 @@ router.patch("/:id/enableInquiry", async (req, res, next) => {
     }
 });
 
+router.post("/:id/emails", async (req, res, next) => {
+    // TODO validations
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        let email = await TransactionService.addEmail({
+            transaction_id: req.params.id,
+            from: req.body.from,
+            to: req.body.to,
+            subject: req.body.subject,
+            body: req.body.body,
+        })(TransactionRepository);
+
+        res.status(200).json({
+            data: {
+                type: "emails",
+                _id: email._id
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.delete("/:id/emails/:email_id", async (req, res, next) => {
+    // TODO validations
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        await TransactionService.removeEmail({
+            transaction_id: req.params.id,
+            email_id: req.params.email_id,
+        })(TransactionRepository);
+
+        res.status(204).end();
+    } catch (error) {
+        next(error);
+    }
+});
+
 router.patch("/:id/close", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));

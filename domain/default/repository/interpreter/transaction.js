@@ -36,6 +36,7 @@ var interpreter;
                 events: doc.get("events"),
                 owners: doc.get("owners"),
                 authorizations: doc.get("authorizations"),
+                emails: doc.get("emails"),
                 expired_at: doc.get("expired_at"),
                 inquiry_id: doc.get("inquiry_id"),
                 inquiry_pass: doc.get("inquiry_pass"),
