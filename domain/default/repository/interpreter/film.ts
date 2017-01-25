@@ -1,11 +1,9 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Film from "../../model/film";
-import Theater from "../../model/theater";
 import FilmRepository from "../film";
 import * as FilmFactory from "../../factory/film";
 import FilmModel from "./mongoose/model/film";
-import COA = require("@motionpicture/coa-service");
 
 let db = mongoose.createConnection(process.env.MONGOLAB_URI);
 let filmModel = db.model(FilmModel.modelName, FilmModel.schema);
@@ -43,34 +41,6 @@ namespace interpreter {
             new: true,
             upsert: true
         }).lean().exec();
-    }
-
-    export function storeFromCOA(filmByCOA: COA.findFilmsByTheaterCodeInterface.Result) {
-        return async (theater: Theater) => {
-            let film = FilmFactory.create({
-                // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
-                _id: `${theater._id}${filmByCOA.title_code}${filmByCOA.title_branch_num}`,
-                coa_title_code: filmByCOA.title_code,
-                coa_title_branch_num: filmByCOA.title_branch_num,
-                theater: theater,
-                name: {
-                    ja: filmByCOA.title_name,
-                    en: filmByCOA.title_name_eng
-                },
-                name_kana: filmByCOA.title_name_kana,
-                name_short: filmByCOA.title_name_short,
-                name_original: filmByCOA.title_name_orig,
-                minutes: filmByCOA.show_time,
-                date_start: filmByCOA.date_begin,
-                date_end: filmByCOA.date_end,
-                kbn_eirin: filmByCOA.kbn_eirin,
-                kbn_eizou: filmByCOA.kbn_eizou,
-                kbn_joueihousiki: filmByCOA.kbn_joueihousiki,
-                kbn_jimakufukikae: filmByCOA.kbn_jimakufukikae
-            });
-
-            await store(film);
-        }
     }
 }
 

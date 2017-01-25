@@ -16,17 +16,17 @@ export function create(args: {
     }
 }
 
-export function createByCOA(theaterByCOA: COA.findTheaterInterface.Result): Theater {
-    return new Theater(
-        theaterByCOA.theater_code,
-        {
-            ja: theaterByCOA.theater_name,
-            en: theaterByCOA.theater_name_eng,
+export function createFromCOA(theaterFromCOA: COA.findTheaterInterface.Result): Theater {
+    return create({
+        _id: theaterFromCOA.theater_code,
+        name: {
+            ja: theaterFromCOA.theater_name,
+            en: theaterFromCOA.theater_name_eng,
         },
-        theaterByCOA.theater_name_kana,
-        {
+        name_kana: theaterFromCOA.theater_name_kana,
+        address: {
             ja: "",
             en: "",
         }
-    );
+    });
 }

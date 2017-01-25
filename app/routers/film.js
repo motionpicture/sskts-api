@@ -10,12 +10,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const express_1 = require("express");
 let router = express_1.Router();
 const film_1 = require("../../domain/default/repository/interpreter/film");
+const master_1 = require("../../domain/default/service/interpreter/master");
 router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let option = yield film_1.default.findById(req.params.id);
+        let option = yield master_1.default.findFilm({
+            film_id: req.params.id
+        })(film_1.default);
         option.match({
             Some: (film) => {
                 res.json({

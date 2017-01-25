@@ -1,14 +1,16 @@
 import {Router} from "express";
 let router = Router();
 import ScreenRepository from "../../domain/default/repository/interpreter/screen";
+import MasterService from "../../domain/default/service/interpreter/master";
 
 router.get("/:id", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        // TODO サービス化
-        let option = await ScreenRepository.findById(req.params.id);
+        let option = await MasterService.findScreen({
+            screen_id: req.params.id
+        })(ScreenRepository);
         option.match({
             Some: (screen) => {
                 res.json({

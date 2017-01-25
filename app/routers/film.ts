@@ -1,6 +1,7 @@
 import {Router} from "express";
 let router = Router();
 import FilmRepository from "../../domain/default/repository/interpreter/film";
+import MasterService from "../../domain/default/service/interpreter/master";
 
 router.get("/:id", async (req, res, next) => {
     // req.checkQuery("theater_code", "theater_code required.").notEmpty();
@@ -8,8 +9,9 @@ router.get("/:id", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        // TODO サービス化
-        let option = await FilmRepository.findById(req.params.id);
+        let option = await MasterService.findFilm({
+            film_id: req.params.id
+        })(FilmRepository);
         option.match({
             Some: (film) => {
                 res.json({

@@ -5,6 +5,10 @@ import ScreenRepository from "../../repository/screen";
 import PerformanceRepository from "../../repository/performance";
 import COA = require("@motionpicture/coa-service");
 import MultilingualString from "../../model/multilingualString";
+import * as TheaterFactory from "../../factory/theater";
+import * as FilmFactory from "../../factory/film";
+import * as ScreenFactory from "../../factory/screen";
+import * as PerformanceFactory from "../../factory/performance";
 
 interface SearchPerformancesConditions {
     day?: string,
@@ -35,9 +39,13 @@ namespace interpreter {
         theater_code: string
     }) {
         return async (repository: TheaterRepository) => {
-            await COA.findTheaterInterface.call({
+            let theaterFromCOA = await COA.findTheaterInterface.call({
                 theater_code: args.theater_code
-            }).then(repository.storeFromCOA);
+            });
+
+            let theater =  TheaterFactory.createFromCOA(theaterFromCOA);
+
+            await repository.store(theater);
         };
     }
 
@@ -52,8 +60,9 @@ namespace interpreter {
                 theater_code: args.theater_code
             });
 
-            await Promise.all(films.map(async (filmByCOA) => {
-                await filmRepository.storeFromCOA(filmByCOA)(optionTheater.get());
+            await Promise.all(films.map(async (filmFromCOA) => {
+                let film =  await FilmFactory.createFromCOA(filmFromCOA)(optionTheater.get());
+                await filmRepository.store(film);
             }));
         };
     }
@@ -69,8 +78,9 @@ namespace interpreter {
                 theater_code: args.theater_code
             });
 
-            await Promise.all(screens.map(async (screenByCOA) => {
-                await screenRepository.storeFromCOA(screenByCOA)(optionTheater.get());
+            await Promise.all(screens.map(async (screenFromCOA) => {
+                let screen = await ScreenFactory.createFromCOA(screenFromCOA)(optionTheater.get());
+                await screenRepository.store(screen);
             }));
         };
     }
@@ -89,9 +99,9 @@ namespace interpreter {
                 end: args.day_end,
             });
 
-            await Promise.all(performances.map(async (performanceByCOA) => {
-                let screenId = `${args.theater_code}${performanceByCOA.screen_code}`;
-                let filmId = `${args.theater_code}${performanceByCOA.title_code}${performanceByCOA.title_branch_num}`;
+            await Promise.all(performances.map(async (performanceFromCOA) => {
+                let screenId = `${args.theater_code}${performanceFromCOA.screen_code}`;
+                let filmId = `${args.theater_code}${performanceFromCOA.title_code}${performanceFromCOA.title_branch_num}`;
 
                 let _screen = screens.find((screen) => { return (screen._id === screenId); });
                 if (!_screen) throw new Error(("screen not found."));
@@ -99,7 +109,9 @@ namespace interpreter {
                 let optionFilm = await filmRepository.findById(filmId);
                 if (optionFilm.isEmpty) throw new Error("film not found.");
 
-                await performanceRepository.storeFromCOA(performanceByCOA)(_screen, optionFilm.get());
+                let performance = PerformanceFactory.createFromCOA(performanceFromCOA)(_screen, optionFilm.get());
+
+                await performanceRepository.store(performance);
             }));
         };
     }
@@ -144,6 +156,38 @@ namespace interpreter {
                     canceled: performance.canceled,
                 }
             });
+        }
+    }
+
+    export function findTheater(args: {
+        theater_id: string
+    }) {
+        return async (repository: TheaterRepository) => {
+            return await repository.findById(args.theater_id);
+        }
+    }
+
+    export function findFilm(args: {
+        film_id: string
+    }) {
+        return async (repository: FilmRepository) => {
+            return await repository.findById(args.film_id);
+        }
+    }
+
+    export function findScreen(args: {
+        screen_id: string
+    }) {
+        return async (repository: ScreenRepository) => {
+            return await repository.findById(args.screen_id);
+        }
+    }
+
+    export function findPerformance(args: {
+        performance_id: string
+    }) {
+        return async (repository: PerformanceRepository) => {
+            return await repository.findById(args.performance_id);
         }
     }
 }

@@ -4,7 +4,6 @@ import Theater from "../../model/theater";
 import * as TheaterFactory from "../../factory/theater";
 import TheaterRepository from "../theater";
 import TheaterModel from "./mongoose/model/theater";
-import COA = require("@motionpicture/coa-service");
 
 let db = mongoose.createConnection(process.env.MONGOLAB_URI);
 let theaterModel = db.model(TheaterModel.modelName, TheaterModel.schema);
@@ -31,23 +30,6 @@ namespace interpreter {
             new: true,
             upsert: true
         }).lean().exec();
-    }
-
-    export async function storeFromCOA(theaterByCOA: COA.findTheaterInterface.Result) {
-        let theater =  TheaterFactory.create({
-            _id: theaterByCOA.theater_code,
-            name: {
-                ja: theaterByCOA.theater_name,
-                en: theaterByCOA.theater_name_eng,
-            },
-            name_kana: theaterByCOA.theater_name_kana,
-            address: {
-                ja: "",
-                en: "",
-            },
-        });
-
-        await store(theater);
     }
 }
 

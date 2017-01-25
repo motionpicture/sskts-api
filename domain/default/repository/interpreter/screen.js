@@ -59,40 +59,6 @@ var interpreter;
         });
     }
     interpreter.store = store;
-    function storeFromCOA(screenByCOA) {
-        return (theater) => __awaiter(this, void 0, void 0, function* () {
-            let sections = [];
-            let sectionCodes = [];
-            screenByCOA.list_seat.forEach((seat) => {
-                if (sectionCodes.indexOf(seat.seat_section) < 0) {
-                    sectionCodes.push(seat.seat_section);
-                    sections.push({
-                        code: seat.seat_section,
-                        name: {
-                            ja: `セクション${seat.seat_section}`,
-                            en: `section${seat.seat_section}`,
-                        },
-                        seats: []
-                    });
-                }
-                sections[sectionCodes.indexOf(seat.seat_section)].seats.push({
-                    code: seat.seat_num
-                });
-            });
-            let screen = ScreenFactory.create({
-                _id: `${theater._id}${screenByCOA.screen_code}`,
-                theater: theater,
-                coa_screen_code: screenByCOA.screen_code,
-                name: {
-                    ja: screenByCOA.screen_name,
-                    en: screenByCOA.screen_name_eng
-                },
-                sections: sections
-            });
-            yield store(screen);
-        });
-    }
-    interpreter.storeFromCOA = storeFromCOA;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

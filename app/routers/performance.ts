@@ -8,8 +8,9 @@ router.get("/:id", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        // TODO サービス化
-        let option = await PerformanceRepository.findById(req.params.id);
+        let option = await MasterService.findPerformance({
+            performance_id: req.params.id
+        })(PerformanceRepository);
         option.match({
             Some: (performance) => {
                 res.json({

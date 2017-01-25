@@ -1,12 +1,9 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
-import Screen from "../../model/screen";
-import Film from "../../model/film";
 import Performance from "../../model/performance";
 import PerformanceRepository from "../performance";
 import * as PerformanceFactory from "../../factory/performance";
 import PerformanceModel from "./mongoose/model/performance";
-import COA = require("@motionpicture/coa-service");
 
 let db = mongoose.createConnection(process.env.MONGOLAB_URI);
 let performanceModel = db.model(PerformanceModel.modelName, PerformanceModel.schema);
@@ -60,25 +57,6 @@ namespace interpreter {
             new: true,
             upsert: true
         }).lean().exec();
-    }
-
-    export function storeFromCOA(performanceByCOA: COA.findPerformancesByTheaterCodeInterface.Result) {
-        return async (screen: Screen, film: Film) => {
-            let id = `${screen.theater._id}${performanceByCOA.date_jouei}${performanceByCOA.title_code}${performanceByCOA.title_branch_num}${performanceByCOA.screen_code}${performanceByCOA.time_begin}`;
-
-            let performance = PerformanceFactory.create({
-                _id: id,
-                theater: screen.theater,
-                screen: screen,
-                film: film,
-                day: performanceByCOA.date_jouei,
-                time_start: performanceByCOA.time_begin,
-                time_end: performanceByCOA.time_end,
-                canceled: false,
-            });
-
-            await store(performance);
-        }
     }
 }
 

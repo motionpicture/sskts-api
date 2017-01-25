@@ -16,7 +16,9 @@ router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function*
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let option = yield performance_1.default.findById(req.params.id);
+        let option = yield master_1.default.findPerformance({
+            performance_id: req.params.id
+        })(performance_1.default);
         option.match({
             Some: (performance) => {
                 res.json({

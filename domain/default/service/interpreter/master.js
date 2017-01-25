@@ -8,13 +8,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const COA = require("@motionpicture/coa-service");
+const TheaterFactory = require("../../factory/theater");
+const FilmFactory = require("../../factory/film");
+const ScreenFactory = require("../../factory/screen");
+const PerformanceFactory = require("../../factory/performance");
 var interpreter;
 (function (interpreter) {
     function importTheater(args) {
         return (repository) => __awaiter(this, void 0, void 0, function* () {
-            yield COA.findTheaterInterface.call({
+            let theaterFromCOA = yield COA.findTheaterInterface.call({
                 theater_code: args.theater_code
-            }).then(repository.storeFromCOA);
+            });
+            let theater = TheaterFactory.createFromCOA(theaterFromCOA);
+            yield repository.store(theater);
         });
     }
     interpreter.importTheater = importTheater;
@@ -26,8 +32,9 @@ var interpreter;
             let films = yield COA.findFilmsByTheaterCodeInterface.call({
                 theater_code: args.theater_code
             });
-            yield Promise.all(films.map((filmByCOA) => __awaiter(this, void 0, void 0, function* () {
-                yield filmRepository.storeFromCOA(filmByCOA)(optionTheater.get());
+            yield Promise.all(films.map((filmFromCOA) => __awaiter(this, void 0, void 0, function* () {
+                let film = yield FilmFactory.createFromCOA(filmFromCOA)(optionTheater.get());
+                yield filmRepository.store(film);
             })));
         });
     }
@@ -40,8 +47,9 @@ var interpreter;
             let screens = yield COA.findScreensByTheaterCodeInterface.call({
                 theater_code: args.theater_code
             });
-            yield Promise.all(screens.map((screenByCOA) => __awaiter(this, void 0, void 0, function* () {
-                yield screenRepository.storeFromCOA(screenByCOA)(optionTheater.get());
+            yield Promise.all(screens.map((screenFromCOA) => __awaiter(this, void 0, void 0, function* () {
+                let screen = yield ScreenFactory.createFromCOA(screenFromCOA)(optionTheater.get());
+                yield screenRepository.store(screen);
             })));
         });
     }
@@ -54,16 +62,17 @@ var interpreter;
                 begin: args.day_start,
                 end: args.day_end,
             });
-            yield Promise.all(performances.map((performanceByCOA) => __awaiter(this, void 0, void 0, function* () {
-                let screenId = `${args.theater_code}${performanceByCOA.screen_code}`;
-                let filmId = `${args.theater_code}${performanceByCOA.title_code}${performanceByCOA.title_branch_num}`;
+            yield Promise.all(performances.map((performanceFromCOA) => __awaiter(this, void 0, void 0, function* () {
+                let screenId = `${args.theater_code}${performanceFromCOA.screen_code}`;
+                let filmId = `${args.theater_code}${performanceFromCOA.title_code}${performanceFromCOA.title_branch_num}`;
                 let _screen = screens.find((screen) => { return (screen._id === screenId); });
                 if (!_screen)
                     throw new Error(("screen not found."));
                 let optionFilm = yield filmRepository.findById(filmId);
                 if (optionFilm.isEmpty)
                     throw new Error("film not found.");
-                yield performanceRepository.storeFromCOA(performanceByCOA)(_screen, optionFilm.get());
+                let performance = PerformanceFactory.createFromCOA(performanceFromCOA)(_screen, optionFilm.get());
+                yield performanceRepository.store(performance);
             })));
         });
     }
@@ -104,6 +113,30 @@ var interpreter;
         });
     }
     interpreter.searchPerformances = searchPerformances;
+    function findTheater(args) {
+        return (repository) => __awaiter(this, void 0, void 0, function* () {
+            return yield repository.findById(args.theater_id);
+        });
+    }
+    interpreter.findTheater = findTheater;
+    function findFilm(args) {
+        return (repository) => __awaiter(this, void 0, void 0, function* () {
+            return yield repository.findById(args.film_id);
+        });
+    }
+    interpreter.findFilm = findFilm;
+    function findScreen(args) {
+        return (repository) => __awaiter(this, void 0, void 0, function* () {
+            return yield repository.findById(args.screen_id);
+        });
+    }
+    interpreter.findScreen = findScreen;
+    function findPerformance(args) {
+        return (repository) => __awaiter(this, void 0, void 0, function* () {
+            return yield repository.findById(args.performance_id);
+        });
+    }
+    interpreter.findPerformance = findPerformance;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

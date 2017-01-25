@@ -69,23 +69,6 @@ var interpreter;
         });
     }
     interpreter.store = store;
-    function storeFromCOA(performanceByCOA) {
-        return (screen, film) => __awaiter(this, void 0, void 0, function* () {
-            let id = `${screen.theater._id}${performanceByCOA.date_jouei}${performanceByCOA.title_code}${performanceByCOA.title_branch_num}${performanceByCOA.screen_code}${performanceByCOA.time_begin}`;
-            let performance = PerformanceFactory.create({
-                _id: id,
-                theater: screen.theater,
-                screen: screen,
-                film: film,
-                day: performanceByCOA.date_jouei,
-                time_start: performanceByCOA.time_begin,
-                time_end: performanceByCOA.time_end,
-                canceled: false,
-            });
-            yield store(performance);
-        });
-    }
-    interpreter.storeFromCOA = storeFromCOA;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

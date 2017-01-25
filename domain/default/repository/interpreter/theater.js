@@ -41,24 +41,6 @@ var interpreter;
         });
     }
     interpreter.store = store;
-    function storeFromCOA(theaterByCOA) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let theater = TheaterFactory.create({
-                _id: theaterByCOA.theater_code,
-                name: {
-                    ja: theaterByCOA.theater_name,
-                    en: theaterByCOA.theater_name_eng,
-                },
-                name_kana: theaterByCOA.theater_name_kana,
-                address: {
-                    ja: "",
-                    en: "",
-                },
-            });
-            yield store(theater);
-        });
-    }
-    interpreter.storeFromCOA = storeFromCOA;
 })(interpreter || (interpreter = {}));
 let i = interpreter;
 Object.defineProperty(exports, "__esModule", { value: true });

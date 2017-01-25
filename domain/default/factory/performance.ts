@@ -2,6 +2,7 @@ import Performace from "../model/performance";
 import Theater from "../model/theater";
 import Screen from "../model/screen";
 import Film from "../model/film";
+import COA = require("@motionpicture/coa-service");
 
 export function create(args: {
     _id: string,
@@ -28,4 +29,19 @@ export function create(args: {
         args.time_end,
         args.canceled,
     );
+}
+
+export function createFromCOA(performanceFromCOA: COA.findPerformancesByTheaterCodeInterface.Result) {
+    return (screen: Screen, film: Film) => {
+        return create({
+            _id: `${screen.theater._id}${performanceFromCOA.date_jouei}${performanceFromCOA.title_code}${performanceFromCOA.title_branch_num}${performanceFromCOA.screen_code}${performanceFromCOA.time_begin}`,
+            theater: screen.theater,
+            screen: screen,
+            film: film,
+            day: performanceFromCOA.date_jouei,
+            time_start: performanceFromCOA.time_begin,
+            time_end: performanceFromCOA.time_end,
+            canceled: false,
+        });
+    }
 }

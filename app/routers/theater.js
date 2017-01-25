@@ -10,13 +10,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const express_1 = require("express");
 let router = express_1.Router();
 const theater_1 = require("../../domain/default/repository/interpreter/theater");
+const master_1 = require("../../domain/default/service/interpreter/master");
 router.get("/:code", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let optionTheater = yield theater_1.default.findById(req.params.code);
-        optionTheater.match({
+        let option = yield master_1.default.findTheater({
+            theater_id: req.params.id
+        })(theater_1.default);
+        option.match({
             Some: (theater) => {
                 res.json({
                     data: {
