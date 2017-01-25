@@ -1,6 +1,8 @@
 import Owner from "../model/owner";
 import AnonymousOwner from "../model/owner/anonymous";
+import AdministratorOwner from "../model/owner/administrator";
 import OwnerGroup from "../model/ownerGroup";
+import MultilingualString from "../model/multilingualString";
 
 export function create(args: {
     _id: string,
@@ -30,5 +32,15 @@ export function createAnonymous(args: {
         (args.name_last) ? args.name_last : "",
         (args.email) ? args.email : "",
         (args.tel) ? args.tel : "",
+    );
+}
+
+export function createAdministrator(args: {
+    _id: string,
+    name?: MultilingualString,
+}): AdministratorOwner {
+    return new AdministratorOwner(
+        args._id,
+        (args.name) ? args.name : {ja: "", en: ""},
     );
 }

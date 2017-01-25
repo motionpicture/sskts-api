@@ -17,7 +17,9 @@ router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function*
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let option = yield transaction_1.default.findById(req.params.id);
+        let option = yield transaction_2.default.getDetails({
+            transaction_id: req.params.id
+        })(transaction_1.default);
         option.match({
             Some: (transaction) => {
                 res.json({

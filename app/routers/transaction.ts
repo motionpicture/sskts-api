@@ -29,7 +29,9 @@ router.get("/:id", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let option = await TransactionRepository.findById(req.params.id);
+        let option = await TransactionService.getDetails({
+            transaction_id: req.params.id
+        })(TransactionRepository);
         option.match({
             Some: (transaction) => {
                 res.json({

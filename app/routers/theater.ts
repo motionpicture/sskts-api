@@ -7,6 +7,7 @@ router.get("/:code", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
+        // TODO サービス化
         let optionTheater = await TheaterRepository.findById(req.params.code);
         optionTheater.match({
             Some: (theater) => {

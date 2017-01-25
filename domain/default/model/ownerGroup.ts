@@ -8,7 +8,7 @@ namespace OwnerGroup {
     /** 匿名グループ */
     export const ANONYMOUS = "ANONYMOUS";
     /** 運営者グループ */
-    export const ADMINISTRATOR = "ANONYMOUS";
+    export const ADMINISTRATOR = "ADMINISTRATOR";
     /** 会員グループ */
     export const MEMBER = "MEMBER";
 }

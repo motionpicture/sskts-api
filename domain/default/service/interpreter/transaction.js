@@ -17,29 +17,14 @@ const queueStatus_1 = require("../../model/queueStatus");
 const AuthorizationFactory = require("../../factory/authorization");
 const TransactionFactory = require("../../factory/transaction");
 const QueueFactory = require("../../factory/queue");
-const OwnerFactory = require("../../factory/owner");
 var interpreter;
 (function (interpreter) {
-    function createAnonymousOwner() {
-        return (repository) => __awaiter(this, void 0, void 0, function* () {
-            let owner = OwnerFactory.createAnonymous({
-                _id: mongoose.Types.ObjectId().toString()
-            });
-            yield repository.store(owner);
-            return owner;
+    function getDetails(args) {
+        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            return yield transactionRepository.findById(args.transaction_id);
         });
     }
-    interpreter.createAnonymousOwner = createAnonymousOwner;
-    function updateAnonymousOwner(args) {
-        return (repository) => __awaiter(this, void 0, void 0, function* () {
-            let option = yield repository.findOneAndUpdate({
-                _id: args._id,
-            }, { $set: args });
-            if (option.isEmpty)
-                throw new Error("owner not found.");
-        });
-    }
-    interpreter.updateAnonymousOwner = updateAnonymousOwner;
+    interpreter.getDetails = getDetails;
     function start(args) {
         return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let owners = [];

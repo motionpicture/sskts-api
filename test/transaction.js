@@ -20,6 +20,18 @@ COA.initialize({
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         let response;
+        response = yield request.get({
+            url: "http://localhost:8080/owners/administrator",
+            body: {},
+            json: true,
+            simple: false,
+            resolveWithFullResponse: true,
+        });
+        console.log("/owners/administrator result:", response.statusCode, response.body);
+        if (response.statusCode !== 200)
+            throw new Error(response.body.message);
+        let administratorOwnerId = response.body.data._id;
+        console.log("administratorOwnerId:", administratorOwnerId);
         response = yield request.post({
             url: "http://localhost:8080/owners/anonymous",
             body: {},
@@ -32,11 +44,10 @@ function main() {
             throw new Error(response.body.message);
         let anonymousOwnerId = response.body.data._id;
         console.log("anonymousOwnerId:", anonymousOwnerId);
-        let anonymousOwnerId4administrator = "5868e16789cc75249cdbfa4b";
         response = yield request.post({
             url: "http://localhost:8080/transactions",
             body: {
-                owners: [anonymousOwnerId4administrator, anonymousOwnerId]
+                owners: [administratorOwnerId, anonymousOwnerId]
             },
             json: true,
             simple: false,
@@ -78,7 +89,7 @@ function main() {
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
             body: {
-                owner_id: anonymousOwnerId4administrator,
+                owner_id: administratorOwnerId,
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
                 seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                     return {
@@ -197,7 +208,7 @@ function main() {
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
             body: {
-                owner_id: anonymousOwnerId4administrator,
+                owner_id: administratorOwnerId,
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
                 seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
                     return {

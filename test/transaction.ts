@@ -14,6 +14,20 @@ COA.initialize({
 async function main() {
     let response: any;
 
+    // 運営者取得
+    response = await request.get({
+        url: "http://localhost:8080/owners/administrator",
+        body: {
+        },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true,
+    });
+    console.log("/owners/administrator result:", response.statusCode, response.body);
+    if (response.statusCode !== 200) throw new Error(response.body.message);
+    let administratorOwnerId = response.body.data._id;
+    console.log("administratorOwnerId:", administratorOwnerId);
+
     // 一般所有者作成
     response = await request.post({
         url: "http://localhost:8080/owners/anonymous",
@@ -28,13 +42,12 @@ async function main() {
     let anonymousOwnerId = response.body.data._id;
     console.log("anonymousOwnerId:", anonymousOwnerId);
 
-    let anonymousOwnerId4administrator = "5868e16789cc75249cdbfa4b";
 
     // 取引開始
     response = await request.post({
         url: "http://localhost:8080/transactions",
         body: {
-            owners: [anonymousOwnerId4administrator, anonymousOwnerId]
+            owners: [administratorOwnerId, anonymousOwnerId]
         },
         json: true,
         simple: false,
@@ -85,7 +98,7 @@ async function main() {
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
-            owner_id: anonymousOwnerId4administrator,
+            owner_id: administratorOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
             seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                 return {
@@ -238,7 +251,7 @@ async function main() {
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
-            owner_id: anonymousOwnerId4administrator,
+            owner_id: administratorOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
             seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
                 return {

@@ -1,7 +1,8 @@
 import express = require("express");
 let router = express.Router();
 import OwnerRepository from "../../domain/default/repository/interpreter/owner";
-import TransactionService from "../../domain/default/service/interpreter/transaction";
+import AdministratorOwnerRepository from "../../domain/default/repository/interpreter/owner/administrator";
+import OwnerService from "../../domain/default/service/interpreter/owner";
 
 router.post("/anonymous", async (req, res, next) => {
     // req.checkBody("group", "invalid group.").notEmpty();
@@ -10,7 +11,7 @@ router.post("/anonymous", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let owner = await TransactionService.createAnonymousOwner()(OwnerRepository);
+        let owner = await OwnerService.createAnonymous()(OwnerRepository);
 
         res.status(201);
         res.setHeader("Location", `https://${req.headers["host"]}/owners/${owner._id}`);
@@ -32,7 +33,7 @@ router.patch("/anonymous/:id", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        await TransactionService.updateAnonymousOwner({
+        await OwnerService.updateAnonymous({
             _id: req.params.id,
             name_first: req.body.name_first,
             name_last: req.body.name_last,
@@ -46,6 +47,26 @@ router.patch("/anonymous/:id", async (req, res, next) => {
     }
 });
 
+router.get("/administrator", async (req, res, next) => {
+    // TODO validation
+
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        let owner = await OwnerService.getAdministrator()(AdministratorOwnerRepository);
+        res.json({
+            data: {
+                type: "owners",
+                _id: owner._id,
+                attributes: owner
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 router.get("/:id", async (req, res, next) => {
     // TODO validation
 
@@ -53,6 +74,7 @@ router.get("/:id", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
+        // TODO サービス化
         let option = await OwnerRepository.findById(req.params.id);
         option.match({
             Some: (owner) => {

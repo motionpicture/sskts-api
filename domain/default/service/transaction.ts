@@ -1,6 +1,6 @@
+import monapt = require("monapt");
 import Authorization from "../model/authorization";
 import Transaction from "../model/transaction";
-import AnonymousOwner from "../model/owner/anonymous";
 import OwnerRepository from "../repository/owner";
 import TransactionRepository from "../repository/transaction";
 import AssetAuthorizationRepository from "../repository/authorization/asset";
@@ -14,16 +14,10 @@ type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>
  * 取引関連サービス
  */
 interface TransactionService {
-    /** 一般購入者を発行する */
-    createAnonymousOwner(): (ownerRepository: OwnerRepository) => Promise<AnonymousOwner>;
-    /** 一般購入者の情報を更新する */
-    updateAnonymousOwner(args: {
-        _id: string,
-        name_first?: string,
-        name_last?: string,
-        email?: string,
-        tel?: string,
-    }): (ownerRepository: OwnerRepository) => Promise<void>;
+    /** 取引詳細取得 */
+    getDetails(args: {
+        transaction_id: string,
+    }): TransactionOperation<monapt.Option<Transaction>>;
     /** 取引開始 */
     start(args: {
         expired_at: Date,

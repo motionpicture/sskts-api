@@ -7,6 +7,7 @@ router.get("/:id", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
+        // TODO サービス化
         let option = await ScreenRepository.findById(req.params.id);
         option.match({
             Some: (screen) => {
