@@ -10,8 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const mongoose = require("mongoose");
 const transactionEvent_1 = require("../../model/transactionEvent");
 const transactionStatus_1 = require("../../model/transactionStatus");
-const authorize_1 = require("../../model/transactionEvent/authorize");
-const unauthorize_1 = require("../../model/transactionEvent/unauthorize");
 const transactionEventGroup_1 = require("../../model/transactionEventGroup");
 const queueStatus_1 = require("../../model/queueStatus");
 const AuthorizationFactory = require("../../factory/authorization");
@@ -37,7 +35,10 @@ var interpreter;
                 owners.push(option.get());
             }));
             yield Promise.all(promises);
-            let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.START);
+            let event = TransactionEventFactory.create({
+                _id: mongoose.Types.ObjectId().toString(),
+                group: transactionEventGroup_1.default.START,
+            });
             let transaction = TransactionFactory.create({
                 _id: mongoose.Types.ObjectId().toString(),
                 status: transactionStatus_1.default.PROCESSING,
@@ -52,10 +53,13 @@ var interpreter;
     interpreter.start = start;
     function pushAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new authorize_1.default(mongoose.Types.ObjectId().toString(), args.authorization);
+            let event = TransactionEventFactory.createAuthorize({
+                _id: mongoose.Types.ObjectId().toString(),
+                authorization: args.authorization,
+            });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
-                status: transactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.PROCESSING,
             }, {
                 $set: {},
                 $push: {
@@ -83,11 +87,30 @@ var interpreter;
     }
     interpreter.addAssetAuthorization = addAssetAuthorization;
     function addGMOAuthorization(args) {
-        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+        return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let optionTransaction = yield transactionRepository.findById(args.transaction_id);
+            if (optionTransaction.isEmpty)
+                throw new Error(`transaction[${args.transaction_id}] not found.`);
+            let transaction = optionTransaction.get();
+            let ownerIds = transaction.owners.map((owner) => {
+                return owner._id.toString();
+            });
+            if (ownerIds.indexOf(args.owner_id_from) < 0)
+                throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_from}].`);
+            if (ownerIds.indexOf(args.owner_id_to) < 0)
+                throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_to}].`);
+            let optionOwnerFrom = yield ownerRepository.findById(args.owner_id_from);
+            if (optionOwnerFrom.isEmpty)
+                throw new Error(`owner[${args.owner_id_from}] not found.`);
+            let optionOwnerTo = yield ownerRepository.findById(args.owner_id_to);
+            if (optionOwnerTo.isEmpty)
+                throw new Error(`owner[${args.owner_id_to}] not found.`);
             let authorization = AuthorizationFactory.createGMO({
                 _id: mongoose.Types.ObjectId().toString(),
                 order_id: args.gmo_order_id,
-                price: parseInt(args.gmo_amount)
+                price: parseInt(args.gmo_amount),
+                owner_from: optionOwnerFrom.get(),
+                owner_to: optionOwnerTo.get(),
             });
             yield pushAuthorization({
                 transaction_id: args.transaction_id,
@@ -98,11 +121,31 @@ var interpreter;
     }
     interpreter.addGMOAuthorization = addGMOAuthorization;
     function addCOASeatReservationAuthorization(args) {
-        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+        return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let optionTransaction = yield transactionRepository.findById(args.transaction_id);
+            if (optionTransaction.isEmpty)
+                throw new Error(`transaction[${args.transaction_id}] not found.`);
+            let transaction = optionTransaction.get();
+            let ownerIds = transaction.owners.map((owner) => {
+                return owner._id.toString();
+            });
+            if (ownerIds.indexOf(args.owner_id_from) < 0)
+                throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_from}].`);
+            if (ownerIds.indexOf(args.owner_id_to) < 0)
+                throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_to}].`);
+            let optionOwnerFrom = yield ownerRepository.findById(args.owner_id_from);
+            if (optionOwnerFrom.isEmpty)
+                throw new Error(`owner[${args.owner_id_from}] not found.`);
+            let optionOwnerTo = yield ownerRepository.findById(args.owner_id_to);
+            if (optionOwnerTo.isEmpty)
+                throw new Error(`owner[${args.owner_id_to}] not found.`);
             let authorization = AuthorizationFactory.createCOASeatReservation({
                 _id: mongoose.Types.ObjectId().toString(),
                 coa_tmp_reserve_num: args.coa_tmp_reserve_num,
-                price: 1234
+                price: args.price,
+                owner_from: optionOwnerFrom.get(),
+                owner_to: optionOwnerTo.get(),
+                seats: args.seats
             });
             yield pushAuthorization({
                 transaction_id: args.transaction_id,
@@ -114,7 +157,10 @@ var interpreter;
     interpreter.addCOASeatReservationAuthorization = addCOASeatReservationAuthorization;
     function removeAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = new unauthorize_1.default(mongoose.Types.ObjectId().toString(), args.authorization_id);
+            let event = TransactionEventFactory.createUnauthorize({
+                _id: mongoose.Types.ObjectId().toString(),
+                authorization_id: args.authorization_id,
+            });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 status: transactionStatus_1.default.PROCESSING

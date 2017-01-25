@@ -49,7 +49,7 @@ router.post("", (req, res, next) => __awaiter(this, void 0, void 0, function* ()
     try {
         let ownerIds = req.body.owners;
         let transaction = yield transaction_2.default.start({
-            expired_at: new Date(),
+            expired_at: new Date(parseInt(req.body.expired_at) * 1000),
             owner_ids: ownerIds
         })(owner_1.default, transaction_1.default);
         res.status(201);
@@ -58,6 +58,7 @@ router.post("", (req, res, next) => __awaiter(this, void 0, void 0, function* ()
             data: {
                 type: "transactions",
                 _id: transaction._id,
+                attributes: transaction
             }
         });
     }
@@ -72,7 +73,8 @@ router.post("/:id/authorizations/gmo", (req, res, next) => __awaiter(this, void 
     try {
         let authorization = yield transaction_2.default.addGMOAuthorization({
             transaction_id: req.params.id,
-            owner_id: req.body.owner_id,
+            owner_id_from: req.body.owner_id_from,
+            owner_id_to: req.body.owner_id_to,
             gmo_shop_id: req.body.gmo_shop_id,
             gmo_shop_pass: req.body.gmo_shop_pass,
             gmo_order_id: req.body.gmo_order_id,
@@ -81,7 +83,7 @@ router.post("/:id/authorizations/gmo", (req, res, next) => __awaiter(this, void 
             gmo_access_pass: req.body.gmo_access_pass,
             gmo_job_cd: req.body.gmo_job_cd,
             gmo_pay_type: req.body.gmo_pay_type,
-        })(transaction_1.default);
+        })(owner_1.default, transaction_1.default);
         res.status(200).json({
             data: {
                 type: "authorizations",
@@ -100,10 +102,12 @@ router.post("/:id/authorizations/coaSeatReservation", (req, res, next) => __awai
     try {
         let authorization = yield transaction_2.default.addCOASeatReservationAuthorization({
             transaction_id: req.params.id,
-            owner_id: req.body.owner_id,
+            owner_id_from: req.body.owner_id_from,
+            owner_id_to: req.body.owner_id_to,
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
+            price: parseInt(req.body.price),
             seats: req.body.seats,
-        })(transaction_1.default);
+        })(owner_1.default, transaction_1.default);
         res.status(200).json({
             data: {
                 type: "authorizations",

@@ -5,16 +5,13 @@ import Email from "../../model/email";
 namespace interpreter {
     /** メール送信 */
     export async function send(email: Email) {
-        // TODO メール送信
-        let helper = sendgrid.mail;
-        
-        let from_email = new helper.Email(email.from);
-        let to_email = new helper.Email(email.to);
-        let subject = email.subject;
-        let content = new helper.Content("text/plain", email.body);
-        let mail = new helper.Mail(from_email, subject, to_email, content);
+        let mail = new sendgrid.mail.Mail(
+            new sendgrid.mail.Email(email.from),
+            email.subject,
+            new sendgrid.mail.Email(email.to),
+            new sendgrid.mail.Content("text/html", email.body)
+        );
 
-        process.env.SENDGRID_API_KEY = "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";
         let sg = sendgrid(process.env.SENDGRID_API_KEY);
 
         let request = sg.emptyRequest({

@@ -10,14 +10,16 @@ let transactionModel = db.model(TransactionModel.modelName, TransactionModel.sch
 
 namespace interpreter {
     export async function find(conditions: Object) {
-        let docs = await transactionModel.find(conditions).exec();
+        let docs = await transactionModel.find(conditions)
+            .populate("owner").exec();
         await docs.map((doc) => {
             console.log(doc);
         });
         return [];
     }
     export async function findById(id: string) {
-        let doc = await transactionModel.findOne({ _id: id }).exec();
+        let doc = await transactionModel.findOne({ _id: id })
+            .populate("owners").exec();
         if (!doc) return monapt.None;
 
         let transaction = TransactionFactory.create({

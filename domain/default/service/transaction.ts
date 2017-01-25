@@ -30,9 +30,10 @@ interface TransactionService {
         authorization_id: string,
     }): AssetAuthorizationAndTransactionOperation<Authorization>;
     /** GMO資産承認 */
-    addGMOAuthorization(args: { // TODO shopとorder_idでユニークになるはず
+    addGMOAuthorization(args: {
         transaction_id: string,
-        owner_id: string,
+        owner_id_from: string,
+        owner_id_to: string,
         gmo_shop_id: string,
         gmo_shop_pass: string,
         gmo_order_id: string,
@@ -42,26 +43,28 @@ interface TransactionService {
         gmo_job_cd: string,
         gmo_pay_type: string,
 
-    }): TransactionOperation<Authorization>;
+    }): OwnerAndTransactionOperation<Authorization>;
     /** COA資産承認 */
-    addCOASeatReservationAuthorization(args: { // TODO theaterとtmp_reserve_numでユニークになるはず
+    addCOASeatReservationAuthorization(args: {
         transaction_id: string,
-        owner_id: string,
+        owner_id_from: string,
+        owner_id_to: string,
         coa_tmp_reserve_num: string,
+        price: number,
         seats: Array<{
             performance: string,
             section: string,
             seat_code: string,
             ticket_code: string,
-            // ticket_name_ja: string,
-            // ticket_name_en: string,
-            // ticket_name_kana: string,
-            // std_price: number,
-            // add_price: number,
-            // dis_price: number,
+            ticket_name_ja: string,
+            ticket_name_en: string,
+            ticket_name_kana: string,
+            std_price: number,
+            add_price: number,
+            dis_price: number,
+            sale_price: number,
         }>
-        // price: number, // TODO 必須
-    }): TransactionOperation<Authorization>;
+    }): OwnerAndTransactionOperation<Authorization>;
     /** 資産承認解除 */
     removeAuthorization(args: {
         transaction_id: string,

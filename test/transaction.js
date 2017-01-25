@@ -17,6 +17,7 @@ COA.initialize({
     endpoint: "http://coacinema.aa0.netvolante.jp",
     refresh_token: "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ"
 });
+const moment = require("moment");
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         let response;
@@ -47,6 +48,7 @@ function main() {
         response = yield request.post({
             url: "http://localhost:8080/transactions",
             body: {
+                expired_at: moment().add("minutes", 30).unix(),
                 owners: [administratorOwnerId, anonymousOwnerId]
             },
             json: true,
@@ -57,6 +59,14 @@ function main() {
         if (response.statusCode !== 201)
             throw new Error(response.body.message);
         let transactionId = response.body.data._id;
+        let salesTicketResult = yield COA.salesTicketInterface.call({
+            theater_code: "001",
+            date_jouei: "20170120",
+            title_code: "8513",
+            title_branch_num: "0",
+            time_begin: "1010",
+        });
+        console.log("salesTicketResult:", salesTicketResult);
         let getStateReserveSeatResult = yield COA.getStateReserveSeatInterface.call({
             theater_code: "001",
             date_jouei: "20170120",
@@ -86,19 +96,29 @@ function main() {
                 }]
         });
         console.log(reserveSeatsTemporarilyResult);
+        let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
             body: {
-                owner_id: administratorOwnerId,
+                owner_id_from: administratorOwnerId,
+                owner_id_to: anonymousOwnerId,
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
                 seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                     return {
                         performance: "001201701208513021010",
                         section: tmpReserve.seat_section,
                         seat_code: tmpReserve.seat_num,
-                        ticket_code: "",
+                        ticket_code: salesTicketResult.list_ticket[0].ticket_code,
+                        ticket_name_ja: salesTicketResult.list_ticket[0].ticket_name,
+                        ticket_name_en: salesTicketResult.list_ticket[0].ticket_name_eng,
+                        ticket_name_kana: salesTicketResult.list_ticket[0].ticket_name_kana,
+                        std_price: salesTicketResult.list_ticket[0].std_price,
+                        add_price: salesTicketResult.list_ticket[0].add_price,
+                        dis_price: 0,
+                        sale_price: salesTicketResult.list_ticket[0].sale_price,
                     };
-                })
+                }),
+                price: totalPrice
             },
             json: true,
             simple: false,
@@ -119,9 +139,7 @@ function main() {
         console.log("deleteTmpReserveResult:", true);
         response = yield request.del({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
-            body: {
-                coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
-            },
+            body: {},
             json: true,
             simple: false,
             resolveWithFullResponse: true,
@@ -130,13 +148,12 @@ function main() {
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
         let orderId = Date.now().toString();
-        let amount = 1800;
         let entryTranResult = yield GMO.CreditService.entryTranInterface.call({
             shop_id: "tshop00024015",
             shop_pass: "hf3wsuyy",
             order_id: orderId,
             job_cd: GMO.Util.JOB_CD_AUTH,
-            amount: amount,
+            amount: totalPrice,
         });
         let execTranResult = yield GMO.CreditService.execTranInterface.call({
             access_id: entryTranResult.access_id,
@@ -151,11 +168,12 @@ function main() {
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {
-                owner_id: anonymousOwnerId,
+                owner_id_from: anonymousOwnerId,
+                owner_id_to: administratorOwnerId,
                 gmo_shop_id: "tshop00024015",
                 gmo_shop_pass: "hf3wsuyy",
                 gmo_order_id: orderId,
-                gmo_amount: amount,
+                gmo_amount: totalPrice,
                 gmo_access_id: entryTranResult.access_id,
                 gmo_access_pass: entryTranResult.access_pass,
                 gmo_job_cd: GMO.Util.JOB_CD_SALES,
@@ -179,9 +197,7 @@ function main() {
         console.log("alterTranResult:", alterTranResult);
         response = yield request.del({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
-            body: {
-                gmo_order_id: orderId
-            },
+            body: {},
             json: true,
             simple: false,
             resolveWithFullResponse: true,
@@ -208,16 +224,25 @@ function main() {
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
             body: {
-                owner_id: administratorOwnerId,
+                owner_id_from: administratorOwnerId,
+                owner_id_to: anonymousOwnerId,
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
                 seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
                     return {
                         performance: "001201701208513021010",
                         section: tmpReserve.seat_section,
                         seat_code: tmpReserve.seat_num,
-                        ticket_code: "",
+                        ticket_code: salesTicketResult.list_ticket[0].ticket_code,
+                        ticket_name_ja: salesTicketResult.list_ticket[0].ticket_name,
+                        ticket_name_en: salesTicketResult.list_ticket[0].ticket_name_eng,
+                        ticket_name_kana: salesTicketResult.list_ticket[0].ticket_name_kana,
+                        std_price: salesTicketResult.list_ticket[0].std_price,
+                        add_price: salesTicketResult.list_ticket[0].add_price,
+                        dis_price: 0,
+                        sale_price: salesTicketResult.list_ticket[0].sale_price,
                     };
-                })
+                }),
+                price: totalPrice
             },
             json: true,
             simple: false,
@@ -227,13 +252,12 @@ function main() {
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
         orderId = Date.now().toString();
-        amount = 1500;
         let entryTranResult2 = yield GMO.CreditService.entryTranInterface.call({
             shop_id: "tshop00024015",
             shop_pass: "hf3wsuyy",
             order_id: orderId,
             job_cd: GMO.Util.JOB_CD_AUTH,
-            amount: amount,
+            amount: totalPrice,
         });
         let execTranResult2 = yield GMO.CreditService.execTranInterface.call({
             access_id: entryTranResult2.access_id,
@@ -248,11 +272,12 @@ function main() {
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {
-                owner_id: anonymousOwnerId,
+                owner_id_from: anonymousOwnerId,
+                owner_id_to: administratorOwnerId,
                 gmo_shop_id: "tshop00024015",
                 gmo_shop_pass: "hf3wsuyy",
                 gmo_order_id: orderId,
-                gmo_amount: amount,
+                gmo_amount: totalPrice,
                 gmo_access_id: entryTranResult2.access_id,
                 gmo_access_pass: entryTranResult2.access_pass,
                 gmo_job_cd: GMO.Util.JOB_CD_SALES,
@@ -278,14 +303,6 @@ function main() {
         console.log("/owners/anonymous/${anonymousOwnerId} result:", response.statusCode, response.body);
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
-        let salesTicketResult = yield COA.salesTicketInterface.call({
-            theater_code: "001",
-            date_jouei: "20170120",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
-        });
-        console.log("salesTicketResult:", salesTicketResult);
         let tel = "09012345678";
         let updateReserveResult = yield COA.updateReserveInterface.call({
             theater_code: "001",

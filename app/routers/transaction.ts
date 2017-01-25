@@ -59,12 +59,12 @@ router.post("", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     // TODO ownersの型チェック
+    // expired_atはsecondsのタイムスタンプで
 
     try {
         let ownerIds: Array<string> = req.body.owners;
-        // let ownerIds = ["5868e16789cc75249cdbfa4b", "5869c2c316aaa805d835f94a"];
         let transaction = await TransactionService.start({
-            expired_at: new Date(), // TODO 受け取る
+            expired_at: new Date(parseInt(req.body.expired_at) * 1000),
             owner_ids: ownerIds
         })(OwnerRepository, TransactionRepository);
 
@@ -74,6 +74,7 @@ router.post("", async (req, res, next) => {
             data: {
                 type: "transactions",
                 _id: transaction._id,
+                attributes: transaction
             }
         });
     } catch (error) {
@@ -89,7 +90,8 @@ router.post("/:id/authorizations/gmo", async (req, res, next) => {
     try {
         let authorization = await TransactionService.addGMOAuthorization({
             transaction_id: req.params.id,
-            owner_id: req.body.owner_id,
+            owner_id_from: req.body.owner_id_from,
+            owner_id_to: req.body.owner_id_to,
             gmo_shop_id: req.body.gmo_shop_id,
             gmo_shop_pass: req.body.gmo_shop_pass,
             gmo_order_id: req.body.gmo_order_id,
@@ -98,7 +100,7 @@ router.post("/:id/authorizations/gmo", async (req, res, next) => {
             gmo_access_pass: req.body.gmo_access_pass,
             gmo_job_cd: req.body.gmo_job_cd,
             gmo_pay_type: req.body.gmo_pay_type,
-        })(TransactionRepository);
+        })(OwnerRepository, TransactionRepository);
 
         res.status(200).json({
             data: {
@@ -119,10 +121,12 @@ router.post("/:id/authorizations/coaSeatReservation", async (req, res, next) => 
     try {
         let authorization = await TransactionService.addCOASeatReservationAuthorization({
             transaction_id: req.params.id,
-            owner_id: req.body.owner_id,
+            owner_id_from: req.body.owner_id_from,
+            owner_id_to: req.body.owner_id_to,
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
+            price: parseInt(req.body.price),
             seats: req.body.seats,
-        })(TransactionRepository);
+        })(OwnerRepository, TransactionRepository);
 
         res.status(200).json({
             data: {

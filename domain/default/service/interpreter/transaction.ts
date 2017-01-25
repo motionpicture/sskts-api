@@ -5,8 +5,6 @@ import TransactionService from "../transaction";
 import Owner from "../../model/owner";
 import TransactionEvent from "../../model/transactionEvent";
 import TransactionStatus from "../../model/transactionStatus";
-import AuthorizeTransactionEvent from "../../model/transactionEvent/authorize";
-import UnauthorizeTransactionEvent from "../../model/transactionEvent/unauthorize";
 import TransactionEventGroup from "../../model/transactionEventGroup";
 import Authorization from "../../model/authorization";
 import QueueStatus from "../../model/queueStatus";
@@ -44,14 +42,13 @@ namespace interpreter {
             });
             await Promise.all(promises);
 
-            // TODO EventFactory
-            let event = new TransactionEvent(
-                mongoose.Types.ObjectId().toString(),
-                TransactionEventGroup.START,
-            );
+            let event = TransactionEventFactory.create({
+                _id: mongoose.Types.ObjectId().toString(),
+                group: TransactionEventGroup.START,
+            });
 
             let transaction = TransactionFactory.create({
-                _id: mongoose.Types.ObjectId().toString(), // TODO どちらで指定？
+                _id: mongoose.Types.ObjectId().toString(),
                 status: TransactionStatus.PROCESSING,
                 events: [event],
                 owners: owners,
@@ -69,17 +66,16 @@ namespace interpreter {
         authorization: Authorization
     }) {
         return async (transactionRepository: TransactionRepository) => {
-            // 取引イベント作成 TODO eventFactory
-            let event = new AuthorizeTransactionEvent(
-                mongoose.Types.ObjectId().toString(),
-                args.authorization
-            );
+            // 取引イベント作成
+            let event = TransactionEventFactory.createAuthorize({
+                _id: mongoose.Types.ObjectId().toString(),
+                authorization: args.authorization,
+            });
 
             // 永続化
-            // TODO idempotent?
             let option = await transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
-                status: TransactionStatus.PROCESSING
+                status: TransactionStatus.PROCESSING,
             }, {
                     $set: {
                     },
@@ -118,7 +114,8 @@ namespace interpreter {
     /** GMO資産承認 */
     export function addGMOAuthorization(args: {
         transaction_id: string,
-        owner_id: string,
+        owner_id_from: string,
+        owner_id_to: string,
         gmo_shop_id: string,
         gmo_shop_pass: string,
         gmo_order_id: string,
@@ -129,14 +126,33 @@ namespace interpreter {
         gmo_pay_type: string,
 
     }) {
-        return async (transactionRepository: TransactionRepository) => {
-            // TODO 所有者チェック
+        return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
+            let optionTransaction = await transactionRepository.findById(args.transaction_id);
+            if (optionTransaction.isEmpty) throw new Error(`transaction[${args.transaction_id}] not found.`);
+
+            let transaction = optionTransaction.get();
+            // TODO ObjectIDとStringの問題を解決する
+            let ownerIds = transaction.owners.map((owner) => {
+                return owner._id.toString();
+            });
+
+            if (ownerIds.indexOf(args.owner_id_from) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_from}].`); 
+            if (ownerIds.indexOf(args.owner_id_to) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_to}].`); 
+
+
+            let optionOwnerFrom = await ownerRepository.findById(args.owner_id_from);
+            if (optionOwnerFrom.isEmpty) throw new Error(`owner[${args.owner_id_from}] not found.`);
+
+            let optionOwnerTo = await ownerRepository.findById(args.owner_id_to);
+            if (optionOwnerTo.isEmpty) throw new Error(`owner[${args.owner_id_to}] not found.`);
 
             // GMO承認を作成
             let authorization = AuthorizationFactory.createGMO({
                 _id: mongoose.Types.ObjectId().toString(),
                 order_id: args.gmo_order_id,
-                price: parseInt(args.gmo_amount) // TODO
+                price: parseInt(args.gmo_amount),
+                owner_from: optionOwnerFrom.get(),
+                owner_to: optionOwnerTo.get(),
             });
 
             // 永続化
@@ -152,30 +168,52 @@ namespace interpreter {
     /** COA資産承認 */
     export function addCOASeatReservationAuthorization(args: {
         transaction_id: string,
-        owner_id: string,
+        owner_id_from: string,
+        owner_id_to: string,
         coa_tmp_reserve_num: string,
+        price: number,
         seats: Array<{
             performance: string,
             section: string,
             seat_code: string,
             ticket_code: string,
-            // ticket_name_ja: string,
-            // ticket_name_en: string,
-            // ticket_name_kana: string,
-            // std_price: number,
-            // add_price: number,
-            // dis_price: number,
+            ticket_name_ja: string,
+            ticket_name_en: string,
+            ticket_name_kana: string,
+            std_price: number,
+            add_price: number,
+            dis_price: number,
+            sale_price: number,
         }>
-        // price: number,
     }) {
-        return async (transactionRepository: TransactionRepository) => {
-            // TODO 所有者チェック
+        return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
+            let optionTransaction = await transactionRepository.findById(args.transaction_id);
+            if (optionTransaction.isEmpty) throw new Error(`transaction[${args.transaction_id}] not found.`);
+
+            let transaction = optionTransaction.get();
+            // TODO ObjectIDとStringの問題を解決する
+            let ownerIds = transaction.owners.map((owner) => {
+                return owner._id.toString();
+            });
+
+            if (ownerIds.indexOf(args.owner_id_from) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_from}].`); 
+            if (ownerIds.indexOf(args.owner_id_to) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_to}].`); 
+
+
+            let optionOwnerFrom = await ownerRepository.findById(args.owner_id_from);
+            if (optionOwnerFrom.isEmpty) throw new Error(`owner[${args.owner_id_from}] not found.`);
+
+            let optionOwnerTo = await ownerRepository.findById(args.owner_id_to);
+            if (optionOwnerTo.isEmpty) throw new Error(`owner[${args.owner_id_to}] not found.`);
 
             // 承認を作成
             let authorization = AuthorizationFactory.createCOASeatReservation({
                 _id: mongoose.Types.ObjectId().toString(),
                 coa_tmp_reserve_num: args.coa_tmp_reserve_num,
-                price: 1234 // TODO
+                price: args.price,
+                owner_from: optionOwnerFrom.get(),
+                owner_to: optionOwnerTo.get(),
+                seats: args.seats
             });
 
             // 永続化
@@ -194,18 +232,13 @@ namespace interpreter {
         authorization_id: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
-            // TODO 承認存在チェック
-
-            // TODO 承認あれば、そのグループに応じて削除する？
-
             // 取引イベント作成
-            let event = new UnauthorizeTransactionEvent(
-                mongoose.Types.ObjectId().toString(),
-                args.authorization_id
-            );
+            let event = TransactionEventFactory.createUnauthorize({
+                _id: mongoose.Types.ObjectId().toString(),
+                authorization_id: args.authorization_id,
+            });
 
             // 永続化
-            // TODO idempotent?
             let option = await transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 status: TransactionStatus.PROCESSING

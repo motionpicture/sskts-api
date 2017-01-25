@@ -17,7 +17,8 @@ var interpreter;
 (function (interpreter) {
     function find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield transactionModel.find(conditions).exec();
+            let docs = yield transactionModel.find(conditions)
+                .populate("owner").exec();
             yield docs.map((doc) => {
                 console.log(doc);
             });
@@ -27,7 +28,8 @@ var interpreter;
     interpreter.find = find;
     function findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield transactionModel.findOne({ _id: id }).exec();
+            let doc = yield transactionModel.findOne({ _id: id })
+                .populate("owners").exec();
             if (!doc)
                 return monapt.None;
             let transaction = TransactionFactory.create({
