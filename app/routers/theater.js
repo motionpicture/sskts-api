@@ -11,6 +11,7 @@ const express_1 = require("express");
 let router = express_1.Router();
 const theater_1 = require("../../domain/default/repository/interpreter/theater");
 const master_1 = require("../../domain/default/service/interpreter/master");
+const mongoose = require("mongoose");
 router.get("/:code", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
@@ -18,7 +19,7 @@ router.get("/:code", (req, res, next) => __awaiter(this, void 0, void 0, functio
     try {
         let option = yield master_1.default.findTheater({
             theater_id: req.params.id
-        })(theater_1.default);
+        })(theater_1.default(mongoose.connection));
         option.match({
             Some: (theater) => {
                 res.json({

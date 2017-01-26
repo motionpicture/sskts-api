@@ -6,12 +6,12 @@ import * as OwnerFactory from "../../factory/owner";
 import OwnerGroup from "../../model/ownerGroup";
 import OwnerModel from "./mongoose/model/owner";
 
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let ownerModel = db.model(OwnerModel.modelName, OwnerModel.schema);
+class OwnerRepositoryInterpreter implements OwnerRepository {
+    public connection: mongoose.Connection;
 
-namespace interpreter {
-    export async function find(conditions: Object) {
-        let docs = await ownerModel.find({ $and: [conditions] }).exec();
+    async find(conditions: Object) {
+        let model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
+        let docs = await model.find({ $and: [conditions] }).exec();
         return docs.map((doc) => {
             return OwnerFactory.create({
                 _id: doc.get("_id"),
@@ -20,8 +20,9 @@ namespace interpreter {
         });
     }
 
-    export async function findById(id: string) {
-        let doc = await ownerModel.findOne({ _id: id }).exec();
+    async findById(id: string) {
+        let model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
+        let doc = await model.findOne({ _id: id }).exec();
         if (!doc) return monapt.None;
 
         let owner: Owner;
@@ -55,8 +56,9 @@ namespace interpreter {
         return monapt.Option(owner);
     }
 
-    export async function findOneAndUpdate(conditions: Object, update: Object) {
-        let doc = await ownerModel.findOneAndUpdate(conditions, update, {
+    async findOneAndUpdate(conditions: Object, update: Object) {
+        let model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
+        let doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         }).exec();
@@ -70,13 +72,18 @@ namespace interpreter {
         return monapt.Option(owner);
     }
 
-    export async function store(owner: Owner) {
-        await ownerModel.findOneAndUpdate({ _id: owner._id }, owner, {
+    async store(owner: Owner) {
+        let model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
+        await model.findOneAndUpdate({ _id: owner._id }, owner, {
             new: true,
             upsert: true
         }).lean().exec();
     }
 }
 
-let i: OwnerRepository = interpreter;
-export default i;
+let repo = new OwnerRepositoryInterpreter();
+
+export default (connection: mongoose.Connection) => {
+    repo.connection = connection;
+    return repo;
+}

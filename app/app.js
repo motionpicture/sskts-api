@@ -33,6 +33,7 @@ i18n.configure({
 });
 app.use(i18n.init);
 mongoose.set('debug', true);
+mongoose.connect(process.env.MONGOLAB_URI);
 const COA = require("@motionpicture/coa-service");
 COA.initialize({
     endpoint: config.get("coa_api_endpoint"),

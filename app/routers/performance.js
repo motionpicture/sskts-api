@@ -11,6 +11,7 @@ const express_1 = require("express");
 let router = express_1.Router();
 const performance_1 = require("../../domain/default/repository/interpreter/performance");
 const master_1 = require("../../domain/default/service/interpreter/master");
+const mongoose = require("mongoose");
 router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
@@ -18,7 +19,7 @@ router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function*
     try {
         let option = yield master_1.default.findPerformance({
             performance_id: req.params.id
-        })(performance_1.default);
+        })(performance_1.default(mongoose.connection));
         option.match({
             Some: (performance) => {
                 res.json({
@@ -49,7 +50,7 @@ router.get("", (req, res, next) => __awaiter(this, void 0, void 0, function* () 
         let performances = yield master_1.default.searchPerformances({
             day: req.query.day,
             theater: req.query.theater,
-        })(performance_1.default);
+        })(performance_1.default(mongoose.connection));
         let data = performances.map((performance) => {
             return {
                 type: "performances",

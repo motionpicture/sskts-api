@@ -2,6 +2,7 @@ import { Router } from "express";
 let router = Router();
 import PerformanceRepository from "../../domain/default/repository/interpreter/performance";
 import MasterService from "../../domain/default/service/interpreter/master";
+import mongoose = require("mongoose");
 
 router.get("/:id", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
@@ -10,7 +11,7 @@ router.get("/:id", async (req, res, next) => {
     try {
         let option = await MasterService.findPerformance({
             performance_id: req.params.id
-        })(PerformanceRepository);
+        })(PerformanceRepository(mongoose.connection));
         option.match({
             Some: (performance) => {
                 res.json({
@@ -41,7 +42,7 @@ router.get("", async (req, res, next) => {
         let performances = await MasterService.searchPerformances({
             day: req.query.day,
             theater: req.query.theater,
-        })(PerformanceRepository);
+        })(PerformanceRepository(mongoose.connection));
 
         let data = performances.map((performance) => {
             return {

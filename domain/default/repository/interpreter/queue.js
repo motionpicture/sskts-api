@@ -7,36 +7,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const mongoose = require("mongoose");
 const monapt = require("monapt");
 const QueueFactory = require("../../factory/queue");
 const queue_1 = require("./mongoose/model/queue");
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let queueModel = db.model(queue_1.default.modelName, queue_1.default.schema);
-var interpreter;
-(function (interpreter) {
-    function find(conditions) {
+class QueueRepositoryInterpreter {
+    find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield queueModel.find(conditions).exec();
+            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
+            let docs = yield model.find(conditions).exec();
             yield docs.map((doc) => {
                 console.log(doc);
             });
             return [];
         });
     }
-    interpreter.find = find;
-    function findById(id) {
+    findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield queueModel.findOne({ _id: id }).exec();
+            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
+            let doc = yield model.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
             return monapt.None;
         });
     }
-    interpreter.findById = findById;
-    function findOneAndUpdate(conditions, update) {
+    findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield queueModel.findOneAndUpdate(conditions, update, {
+            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
+            let doc = yield model.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).exec();
@@ -51,17 +48,19 @@ var interpreter;
             }));
         });
     }
-    interpreter.findOneAndUpdate = findOneAndUpdate;
-    function store(queue) {
+    store(queue) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield queueModel.findOneAndUpdate({ _id: queue._id }, queue, {
+            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
+            yield model.findOneAndUpdate({ _id: queue._id }, queue, {
                 new: true,
                 upsert: true
             }).lean().exec();
         });
     }
-    interpreter.store = store;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
+let repo = new QueueRepositoryInterpreter();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = (connection) => {
+    repo.connection = connection;
+    return repo;
+};

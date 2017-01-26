@@ -2,6 +2,7 @@ import {Router} from "express";
 let router = Router();
 import TheaterRepository from "../../domain/default/repository/interpreter/theater";
 import MasterService from "../../domain/default/service/interpreter/master";
+import mongoose = require("mongoose");
 
 router.get("/:code", async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
@@ -10,7 +11,7 @@ router.get("/:code", async (req, res, next) => {
     try {
         let option = await MasterService.findTheater({
             theater_id: req.params.id
-        })(TheaterRepository);
+        })(TheaterRepository(mongoose.connection));
         option.match({
             Some: (theater) => {
                 res.json({

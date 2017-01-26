@@ -1,4 +1,4 @@
-import EmailService from "../domain/default/service/interpreter/email";
+import NotificationService from "../domain/default/service/interpreter/notification";
 import Email from "../domain/default/model/email";
 
 let email = new Email(
@@ -29,7 +29,7 @@ let email = new Email(
 `
 );
 
-EmailService.send(email).then(() => {
+NotificationService.sendEmail(email).then(() => {
     console.log("sent.");
 }).catch((err) => {
     console.error(err);

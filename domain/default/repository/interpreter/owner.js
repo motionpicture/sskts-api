@@ -7,18 +7,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const mongoose = require("mongoose");
 const monapt = require("monapt");
 const OwnerFactory = require("../../factory/owner");
 const ownerGroup_1 = require("../../model/ownerGroup");
 const owner_1 = require("./mongoose/model/owner");
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let ownerModel = db.model(owner_1.default.modelName, owner_1.default.schema);
-var interpreter;
-(function (interpreter) {
-    function find(conditions) {
+class OwnerRepositoryInterpreter {
+    find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield ownerModel.find({ $and: [conditions] }).exec();
+            let model = this.connection.model(owner_1.default.modelName, owner_1.default.schema);
+            let docs = yield model.find({ $and: [conditions] }).exec();
             return docs.map((doc) => {
                 return OwnerFactory.create({
                     _id: doc.get("_id"),
@@ -27,10 +24,10 @@ var interpreter;
             });
         });
     }
-    interpreter.find = find;
-    function findById(id) {
+    findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield ownerModel.findOne({ _id: id }).exec();
+            let model = this.connection.model(owner_1.default.modelName, owner_1.default.schema);
+            let doc = yield model.findOne({ _id: id }).exec();
             if (!doc)
                 return monapt.None;
             let owner;
@@ -54,10 +51,10 @@ var interpreter;
             return monapt.Option(owner);
         });
     }
-    interpreter.findById = findById;
-    function findOneAndUpdate(conditions, update) {
+    findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield ownerModel.findOneAndUpdate(conditions, update, {
+            let model = this.connection.model(owner_1.default.modelName, owner_1.default.schema);
+            let doc = yield model.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).exec();
@@ -70,17 +67,19 @@ var interpreter;
             return monapt.Option(owner);
         });
     }
-    interpreter.findOneAndUpdate = findOneAndUpdate;
-    function store(owner) {
+    store(owner) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield ownerModel.findOneAndUpdate({ _id: owner._id }, owner, {
+            let model = this.connection.model(owner_1.default.modelName, owner_1.default.schema);
+            yield model.findOneAndUpdate({ _id: owner._id }, owner, {
                 new: true,
                 upsert: true
             }).lean().exec();
         });
     }
-    interpreter.store = store;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
+let repo = new OwnerRepositoryInterpreter();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = (connection) => {
+    repo.connection = connection;
+    return repo;
+};

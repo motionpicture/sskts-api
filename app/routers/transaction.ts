@@ -4,6 +4,7 @@ let router = express.Router();
 import OwnerRepository from "../../domain/default/repository/interpreter/owner";
 import TransactionRepository from "../../domain/default/repository/interpreter/transaction";
 import TransactionService from "../../domain/default/service/interpreter/transaction";
+import mongoose = require("mongoose");
 
 // router.get("", (req, res, next) => {
 //     req.getValidationResult().then((result) => {
@@ -29,9 +30,9 @@ router.get("/:id", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let option = await TransactionService.getDetails({
+        let option = await TransactionService.findById({
             transaction_id: req.params.id
-        })(TransactionRepository);
+        })(TransactionRepository(mongoose.connection));
         option.match({
             Some: (transaction) => {
                 res.json({
@@ -66,7 +67,7 @@ router.post("", async (req, res, next) => {
         let transaction = await TransactionService.start({
             expired_at: new Date(parseInt(req.body.expired_at) * 1000),
             owner_ids: ownerIds
-        })(OwnerRepository, TransactionRepository);
+        })(OwnerRepository(mongoose.connection), TransactionRepository(mongoose.connection));
 
         res.status(201);
         res.setHeader("Location", `https://${req.headers["host"]}/transactions/${transaction._id}`);
@@ -100,7 +101,7 @@ router.post("/:id/authorizations/gmo", async (req, res, next) => {
             gmo_access_pass: req.body.gmo_access_pass,
             gmo_job_cd: req.body.gmo_job_cd,
             gmo_pay_type: req.body.gmo_pay_type,
-        })(OwnerRepository, TransactionRepository);
+        })(OwnerRepository(mongoose.connection), TransactionRepository(mongoose.connection));
 
         res.status(200).json({
             data: {
@@ -126,7 +127,7 @@ router.post("/:id/authorizations/coaSeatReservation", async (req, res, next) => 
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
             price: parseInt(req.body.price),
             seats: req.body.seats,
-        })(OwnerRepository, TransactionRepository);
+        })(OwnerRepository(mongoose.connection), TransactionRepository(mongoose.connection));
 
         res.status(200).json({
             data: {
@@ -148,7 +149,7 @@ router.delete("/:id/authorizations/:authorization_id", async (req, res, next) =>
         await TransactionService.removeAuthorization({
             transaction_id: req.params.id,
             authorization_id: req.params.authorization_id,
-        })(TransactionRepository);
+        })(TransactionRepository(mongoose.connection));
 
         res.status(204).end();
     } catch (error) {
@@ -165,7 +166,7 @@ router.patch("/:id/enableInquiry", async (req, res, next) => {
             transaction_id: req.params.id,
             inquiry_id: req.body.inquiry_id,
             inquiry_pass: req.body.inquiry_pass,
-        })(TransactionRepository);
+        })(TransactionRepository(mongoose.connection));
 
         res.status(204).end();
     } catch (error) {
@@ -185,7 +186,7 @@ router.post("/:id/emails", async (req, res, next) => {
             to: req.body.to,
             subject: req.body.subject,
             body: req.body.body,
-        })(TransactionRepository);
+        })(TransactionRepository(mongoose.connection));
 
         res.status(200).json({
             data: {
@@ -207,7 +208,7 @@ router.delete("/:id/emails/:email_id", async (req, res, next) => {
         await TransactionService.removeEmail({
             transaction_id: req.params.id,
             email_id: req.params.email_id,
-        })(TransactionRepository);
+        })(TransactionRepository(mongoose.connection));
 
         res.status(204).end();
     } catch (error) {
@@ -222,7 +223,7 @@ router.patch("/:id/close", async (req, res, next) => {
     try {
         await TransactionService.close({
             transaction_id: req.params.id
-        })(TransactionRepository);
+        })(TransactionRepository(mongoose.connection));
 
         res.status(204).end();
     } catch (error) {

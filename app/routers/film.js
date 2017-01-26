@@ -11,6 +11,7 @@ const express_1 = require("express");
 let router = express_1.Router();
 const film_1 = require("../../domain/default/repository/interpreter/film");
 const master_1 = require("../../domain/default/service/interpreter/master");
+const mongoose = require("mongoose");
 router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
@@ -18,7 +19,7 @@ router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function*
     try {
         let option = yield master_1.default.findFilm({
             film_id: req.params.id
-        })(film_1.default);
+        })(film_1.default(mongoose.connection));
         option.match({
             Some: (film) => {
                 res.json({

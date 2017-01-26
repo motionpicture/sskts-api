@@ -8,9 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const sendgrid = require("sendgrid");
-var interpreter;
-(function (interpreter) {
-    function send(email) {
+class NotificationServiceInterpreter {
+    sendEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
             let mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(email.from), email.subject, new sendgrid.mail.Email(email.to), new sendgrid.mail.Content("text/html", email.body));
             let sg = sendgrid(process.env.SENDGRID_API_KEY);
@@ -28,8 +27,7 @@ var interpreter;
             console.log("response is", response);
         });
     }
-    interpreter.send = send;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+    ;
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = new NotificationServiceInterpreter();

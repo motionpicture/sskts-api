@@ -7,17 +7,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const mongoose = require("mongoose");
 const monapt = require("monapt");
 const TransactionFactory = require("../../factory/transaction");
 const transaction_1 = require("./mongoose/model/transaction");
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let transactionModel = db.model(transaction_1.default.modelName, transaction_1.default.schema);
-var interpreter;
-(function (interpreter) {
-    function find(conditions) {
+class TransactionRepositoryInterpreter {
+    find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield transactionModel.find(conditions)
+            let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
+            let docs = yield model.find(conditions)
                 .populate("owner").exec();
             yield docs.map((doc) => {
                 console.log(doc);
@@ -25,10 +22,10 @@ var interpreter;
             return [];
         });
     }
-    interpreter.find = find;
-    function findById(id) {
+    findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield transactionModel.findOne({ _id: id })
+            let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
+            let doc = yield model.findOne({ _id: id })
                 .populate("owners").exec();
             if (!doc)
                 return monapt.None;
@@ -47,10 +44,10 @@ var interpreter;
             return monapt.Option(transaction);
         });
     }
-    interpreter.findById = findById;
-    function findOneAndUpdate(conditions, update) {
+    findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield transactionModel.findOneAndUpdate(conditions, update, {
+            let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
+            let doc = yield model.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).exec();
@@ -68,17 +65,19 @@ var interpreter;
             }));
         });
     }
-    interpreter.findOneAndUpdate = findOneAndUpdate;
-    function store(transaction) {
+    store(transaction) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield transactionModel.findOneAndUpdate({ _id: transaction._id }, transaction, {
+            let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
+            yield model.findOneAndUpdate({ _id: transaction._id }, transaction, {
                 new: true,
                 upsert: true
             }).lean().exec();
         });
     }
-    interpreter.store = store;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
+let repo = new TransactionRepositoryInterpreter();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = (connection) => {
+    repo.connection = connection;
+    return repo;
+};

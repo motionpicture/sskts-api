@@ -1,7 +1,7 @@
 "use strict";
-const email_1 = require("../domain/default/service/interpreter/email");
-const email_2 = require("../domain/default/model/email");
-let email = new email_2.default("test", "test@localhost", "ilovegadd@gmail.com", "test subject", `
+const notification_1 = require("../domain/default/service/interpreter/notification");
+const email_1 = require("../domain/default/model/email");
+let email = new email_1.default("test", "test@localhost", "ilovegadd@gmail.com", "test subject", `
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -22,7 +22,7 @@ let email = new email_2.default("test", "test@localhost", "ilovegadd@gmail.com",
 </body>
 </html>
 `);
-email_1.default.send(email).then(() => {
+notification_1.default.sendEmail(email).then(() => {
     console.log("sent.");
 }).catch((err) => {
     console.error(err);

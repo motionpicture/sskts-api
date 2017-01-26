@@ -5,12 +5,12 @@ import PerformanceRepository from "../performance";
 import * as PerformanceFactory from "../../factory/performance";
 import PerformanceModel from "./mongoose/model/performance";
 
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let performanceModel = db.model(PerformanceModel.modelName, PerformanceModel.schema);
+class PerformanceRepositoryInterpreter implements PerformanceRepository {
+    public connection: mongoose.Connection;
 
-namespace interpreter {
-    export async function find(conditions: Object) {
-        let performances = await performanceModel.find(conditions)
+    async find(conditions: Object) {
+        let model = this.connection.model(PerformanceModel.modelName, PerformanceModel.schema);
+        let performances = await model.find(conditions)
             .populate("film")
             .populate("theater")
             .populate("screen")
@@ -30,8 +30,9 @@ namespace interpreter {
         });
     }
 
-    export async function findById(id: string) {
-        let doc = await performanceModel.findOne({ _id: id })
+    async findById(id: string) {
+        let model = this.connection.model(PerformanceModel.modelName, PerformanceModel.schema);
+        let doc = await model.findOne({ _id: id })
             .populate("film")
             .populate("theater")
             .populate("screen")
@@ -52,13 +53,18 @@ namespace interpreter {
         return monapt.Option(performance);
     }
 
-    export async function store(performance: Performance) {
-        await performanceModel.findOneAndUpdate({ _id: performance._id }, performance, {
+    async store(performance: Performance) {
+        let model = this.connection.model(PerformanceModel.modelName, PerformanceModel.schema);
+        await model.findOneAndUpdate({ _id: performance._id }, performance, {
             new: true,
             upsert: true
         }).lean().exec();
     }
 }
 
-let i: PerformanceRepository = interpreter;
-export default i;
+let repo = new PerformanceRepositoryInterpreter();
+
+export default (connection: mongoose.Connection) => {
+    repo.connection = connection;
+    return repo;
+}

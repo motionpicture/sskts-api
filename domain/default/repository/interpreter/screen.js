@@ -7,17 +7,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const mongoose = require("mongoose");
 const monapt = require("monapt");
 const ScreenFactory = require("../../factory/screen");
 const screen_1 = require("./mongoose/model/screen");
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let screenModel = db.model(screen_1.default.modelName, screen_1.default.schema);
-var interpreter;
-(function (interpreter) {
-    function findById(id) {
+class ScreenRepositoryInterpreter {
+    findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield screenModel.findOne({ _id: id })
+            let model = this.connection.model(screen_1.default.modelName, screen_1.default.schema);
+            let doc = yield model.findOne({ _id: id })
                 .populate("theater")
                 .exec();
             if (!doc)
@@ -32,10 +29,10 @@ var interpreter;
             return monapt.Option(screen);
         });
     }
-    interpreter.findById = findById;
-    function findByTheater(theaterCode) {
+    findByTheater(theaterCode) {
         return __awaiter(this, void 0, void 0, function* () {
-            let docs = yield screenModel.find({ theater: theaterCode })
+            let model = this.connection.model(screen_1.default.modelName, screen_1.default.schema);
+            let docs = yield model.find({ theater: theaterCode })
                 .populate("theater")
                 .exec();
             return docs.map((doc) => {
@@ -49,17 +46,19 @@ var interpreter;
             });
         });
     }
-    interpreter.findByTheater = findByTheater;
-    function store(screen) {
+    store(screen) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield screenModel.findOneAndUpdate({ _id: screen._id }, screen, {
+            let model = this.connection.model(screen_1.default.modelName, screen_1.default.schema);
+            yield model.findOneAndUpdate({ _id: screen._id }, screen, {
                 new: true,
                 upsert: true
             }).lean().exec();
         });
     }
-    interpreter.store = store;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
+let repo = new ScreenRepositoryInterpreter();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = (connection) => {
+    repo.connection = connection;
+    return repo;
+};

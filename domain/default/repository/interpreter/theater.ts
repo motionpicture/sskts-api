@@ -5,11 +5,10 @@ import * as TheaterFactory from "../../factory/theater";
 import TheaterRepository from "../theater";
 import TheaterModel from "./mongoose/model/theater";
 
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let theaterModel = db.model(TheaterModel.modelName, TheaterModel.schema);
+class TheaterRepositoryInterpreter implements TheaterRepository {
+    public connection: mongoose.Connection;
 
-namespace interpreter {
-    function createFromDocument(doc: mongoose.Document): Theater {
+    private createFromDocument(doc: mongoose.Document): Theater {
         return TheaterFactory.create({
             _id: doc.get("_id"),
             name: doc.get("name"),
@@ -18,20 +17,26 @@ namespace interpreter {
         });
     }
 
-    export async function findById(id: string) {
-        let theater = await theaterModel.findOne({ _id: id }).exec();
+    async findById(id: string) {
+        let model = this.connection.model(TheaterModel.modelName, TheaterModel.schema);
+        let theater = await model.findOne({ _id: id }).exec();
         if (!theater) return monapt.None;
 
-        return monapt.Option(createFromDocument(theater));
+        return monapt.Option(this.createFromDocument(theater));
     }
 
-    export async function store(theater: Theater) {
-        await theaterModel.findOneAndUpdate({ _id: theater._id }, theater, {
+    async store(theater: Theater) {
+        let model = this.connection.model(TheaterModel.modelName, TheaterModel.schema);
+        await model.findOneAndUpdate({ _id: theater._id }, theater, {
             new: true,
             upsert: true
         }).lean().exec();
     }
 }
 
-let i: TheaterRepository = interpreter;
-export default i;
+let repo = new TheaterRepositoryInterpreter();
+
+export default (connection: mongoose.Connection) => {
+    repo.connection = connection;
+    return repo;
+}

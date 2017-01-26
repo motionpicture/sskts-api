@@ -7,15 +7,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const mongoose = require("mongoose");
 const monapt = require("monapt");
 const FilmFactory = require("../../factory/film");
 const film_1 = require("./mongoose/model/film");
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let filmModel = db.model(film_1.default.modelName, film_1.default.schema);
-var interpreter;
-(function (interpreter) {
-    function createFromDocument(doc) {
+class FilmRepositoryInterpreter {
+    createFromDocument(doc) {
         return FilmFactory.create({
             _id: doc.get("_id"),
             coa_title_code: doc.get("coa_title_code"),
@@ -34,26 +30,28 @@ var interpreter;
             kbn_jimakufukikae: doc.get("kbn_jimakufukikae")
         });
     }
-    interpreter.createFromDocument = createFromDocument;
-    function findById(id) {
+    findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let film = yield filmModel.findOne({ _id: id }).exec();
+            let model = this.connection.model(film_1.default.modelName, film_1.default.schema);
+            let film = yield model.findOne({ _id: id }).exec();
             if (!film)
                 return monapt.None;
-            return monapt.Option(createFromDocument(film));
+            return monapt.Option(this.createFromDocument(film));
         });
     }
-    interpreter.findById = findById;
-    function store(film) {
+    store(film) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield filmModel.findOneAndUpdate({ _id: film._id }, film, {
+            let model = this.connection.model(film_1.default.modelName, film_1.default.schema);
+            yield model.findOneAndUpdate({ _id: film._id }, film, {
                 new: true,
                 upsert: true
             }).lean().exec();
         });
     }
-    interpreter.store = store;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
+let repo = new FilmRepositoryInterpreter();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = (connection) => {
+    repo.connection = connection;
+    return repo;
+};

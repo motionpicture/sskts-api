@@ -1,13 +1,13 @@
 import program = require("commander");
 // import AssetService from "../domain/default/service/interpreter/asset";
 import MasterService from "../domain/default/service/interpreter/master";
-import TransactionService from "../domain/default/service/interpreter/transaction";
+// import TransactionService from "../domain/default/service/interpreter/transaction";
 import FilmRepository from "../domain/default/repository/interpreter/film";
 import ScreenRepository from "../domain/default/repository/interpreter/screen";
 import TheaterRepository from "../domain/default/repository/interpreter/theater";
 import PerformanceRepository from "../domain/default/repository/interpreter/performance";
-import TransactionRepository from "../domain/default/repository/interpreter/transaction";
-import QueueRepository from "../domain/default/repository/interpreter/queue";
+// import TransactionRepository from "../domain/default/repository/interpreter/transaction";
+// import QueueRepository from "../domain/default/repository/interpreter/queue";
 // import QueueStatus from "../domain/default/model/queueStatus";
 // import QueueGroup from "../domain/default/model/queueGroup";
 
@@ -40,13 +40,16 @@ program
     .description("import theater from COA.")
     .action(async (theaterCode) => {
         try {
+            mongoose.connect(process.env.MONGOLAB_URI);
+
             await MasterService.importTheater({
                 theater_code: theaterCode
-            })(TheaterRepository);
+            })(TheaterRepository(mongoose.connection));
         } catch (error) {
             console.error(error);
         }
 
+        mongoose.disconnect();
         process.exit(0);
     });
 
@@ -55,13 +58,16 @@ program
     .description("import films from COA.")
     .action(async (theaterCode) => {
         try {
+            mongoose.connect(process.env.MONGOLAB_URI);
+
             await MasterService.importFilms({
                 theater_code: theaterCode
-            })(TheaterRepository, FilmRepository);
+            })(TheaterRepository(mongoose.connection), FilmRepository(mongoose.connection));
         } catch (error) {
             console.error(error);
         }
 
+        mongoose.disconnect();
         process.exit(0);
     });
 
@@ -70,13 +76,16 @@ program
     .description("import screens from COA.")
     .action(async (theaterCode) => {
         try {
+            mongoose.connect(process.env.MONGOLAB_URI);
+
             await MasterService.importScreens({
                 theater_code: theaterCode
-            })(TheaterRepository, ScreenRepository);
+            })(TheaterRepository(mongoose.connection), ScreenRepository(mongoose.connection));
         } catch (error) {
             console.error(error);
         }
 
+        mongoose.disconnect();
         process.exit(0);
     });
 
@@ -85,12 +94,14 @@ program
     .description("import performances from COA.")
     .action(async (theaterCode, start, end) => {
         try {
+            mongoose.connect(process.env.MONGOLAB_URI);
+
             await MasterService.importPerformances({
                 theater_code: theaterCode,
                 day_start: start,
                 day_end: end
             })(
-                FilmRepository, ScreenRepository, PerformanceRepository
+                FilmRepository(mongoose.connection), ScreenRepository(mongoose.connection), PerformanceRepository(mongoose.connection)
             );
         } catch (error) {
             console.error(error);
@@ -99,22 +110,22 @@ program
         process.exit(0);
     });
 
-program
-    .command("enqueue4transaction")
-    .description("enqueue for a transaction.")
-    .action(async () => {
-        // mongoose.connect(MONGOLAB_URI);
+// program
+//     .command("enqueue4transaction")
+//     .description("enqueue for a transaction.")
+//     .action(async () => {
+//         // mongoose.connect(MONGOLAB_URI);
 
-        try {
-            await TransactionService.enqueue({})(
-                TransactionRepository, QueueRepository
-            );
-        } catch (error) {
-            console.error(error.message);
-        }
+//         try {
+//             await TransactionService.enqueue({})(
+//                 TransactionRepository, QueueRepository
+//             );
+//         } catch (error) {
+//             console.error(error.message);
+//         }
 
-        // mongoose.disconnect();
-    });
+//         // mongoose.disconnect();
+//     });
 
 // program
 //     .command("settleAuthorization")

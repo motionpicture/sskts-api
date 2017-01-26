@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const mongoose = require("mongoose");
+const monapt = require("monapt");
 const transactionEvent_1 = require("../../model/transactionEvent");
 const transactionStatus_1 = require("../../model/transactionStatus");
 const transactionEventGroup_1 = require("../../model/transactionEventGroup");
@@ -17,15 +18,47 @@ const TransactionFactory = require("../../factory/transaction");
 const TransactionEventFactory = require("../../factory/transactionEvent");
 const QueueFactory = require("../../factory/queue");
 const EmailFactory = require("../../factory/email");
-var interpreter;
-(function (interpreter) {
-    function getDetails(args) {
+const OwnerFactory = require("../../factory/owner");
+class TransactionServiceInterpreter {
+    createAnonymousOwner() {
+        return (repository) => __awaiter(this, void 0, void 0, function* () {
+            let owner = OwnerFactory.createAnonymous({
+                _id: mongoose.Types.ObjectId().toString()
+            });
+            yield repository.store(owner);
+            return owner;
+        });
+    }
+    updateAnonymousOwner(args) {
+        return (repository) => __awaiter(this, void 0, void 0, function* () {
+            let option = yield repository.findOneAndUpdate({
+                _id: args._id,
+            }, {
+                $set: {
+                    name_first: args.name_first,
+                    name_last: args.name_last,
+                    email: args.email,
+                    tel: args.tel,
+                }
+            });
+            if (option.isEmpty)
+                throw new Error("owner not found.");
+        });
+    }
+    getAdministratorOwner() {
+        return (repository) => __awaiter(this, void 0, void 0, function* () {
+            let option = yield repository.findOne();
+            if (option.isEmpty)
+                throw new Error("administrator owner not found.");
+            return option.get();
+        });
+    }
+    findById(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             return yield transactionRepository.findById(args.transaction_id);
         });
     }
-    interpreter.getDetails = getDetails;
-    function start(args) {
+    start(args) {
         return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let owners = [];
             let promises = args.owner_ids.map((ownerId) => __awaiter(this, void 0, void 0, function* () {
@@ -50,43 +83,25 @@ var interpreter;
             return transaction;
         });
     }
-    interpreter.start = start;
-    function pushAuthorization(args) {
-        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = TransactionEventFactory.createAuthorize({
-                _id: mongoose.Types.ObjectId().toString(),
-                authorization: args.authorization,
-            });
-            let option = yield transactionRepository.findOneAndUpdate({
-                _id: args.transaction_id,
-                status: transactionStatus_1.default.PROCESSING,
-            }, {
-                $set: {},
-                $push: {
-                    events: event,
-                },
-                $addToSet: {
-                    authorizations: args.authorization,
-                }
-            });
-            if (option.isEmpty)
-                throw new Error("processing transaction not found.");
+    authorizeAsset(authorization) {
+        return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
+            console.log(authorization);
+            console.log(assetRepository);
         });
     }
-    function addAssetAuthorization(args) {
+    addAssetAuthorization(args) {
         return (assetAuthorizationRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let option = yield assetAuthorizationRepository.findById(args.authorization_id);
             if (option.isEmpty)
                 throw new Error("authorization not found.");
-            yield pushAuthorization({
+            yield this.pushAuthorization({
                 transaction_id: args.transaction_id,
                 authorization: option.get()
             })(transactionRepository);
             return option.get();
         });
     }
-    interpreter.addAssetAuthorization = addAssetAuthorization;
-    function addGMOAuthorization(args) {
+    addGMOAuthorization(args) {
         return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let optionTransaction = yield transactionRepository.findById(args.transaction_id);
             if (optionTransaction.isEmpty)
@@ -112,15 +127,14 @@ var interpreter;
                 owner_from: optionOwnerFrom.get(),
                 owner_to: optionOwnerTo.get(),
             });
-            yield pushAuthorization({
+            yield this.pushAuthorization({
                 transaction_id: args.transaction_id,
                 authorization: authorization
             })(transactionRepository);
             return authorization;
         });
     }
-    interpreter.addGMOAuthorization = addGMOAuthorization;
-    function addCOASeatReservationAuthorization(args) {
+    addCOASeatReservationAuthorization(args) {
         return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let optionTransaction = yield transactionRepository.findById(args.transaction_id);
             if (optionTransaction.isEmpty)
@@ -147,15 +161,35 @@ var interpreter;
                 owner_to: optionOwnerTo.get(),
                 seats: args.seats
             });
-            yield pushAuthorization({
+            yield this.pushAuthorization({
                 transaction_id: args.transaction_id,
                 authorization: authorization
             })(transactionRepository);
             return authorization;
         });
     }
-    interpreter.addCOASeatReservationAuthorization = addCOASeatReservationAuthorization;
-    function removeAuthorization(args) {
+    pushAuthorization(args) {
+        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let event = TransactionEventFactory.createAuthorize({
+                _id: mongoose.Types.ObjectId().toString(),
+                authorization: args.authorization,
+            });
+            let option = yield transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: transactionStatus_1.default.PROCESSING,
+            }, {
+                $push: {
+                    events: event,
+                },
+                $addToSet: {
+                    authorizations: args.authorization,
+                }
+            });
+            if (option.isEmpty)
+                throw new Error("processing transaction not found.");
+        });
+    }
+    removeAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = TransactionEventFactory.createUnauthorize({
                 _id: mongoose.Types.ObjectId().toString(),
@@ -165,7 +199,6 @@ var interpreter;
                 _id: args.transaction_id,
                 status: transactionStatus_1.default.PROCESSING
             }, {
-                $set: {},
                 $push: {
                     events: event,
                 },
@@ -179,8 +212,7 @@ var interpreter;
                 throw new Error("processing transaction not found.");
         });
     }
-    interpreter.removeAuthorization = removeAuthorization;
-    function enableInquiry(args) {
+    enableInquiry(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
@@ -195,8 +227,19 @@ var interpreter;
                 throw new Error("processing transaction not found.");
         });
     }
-    interpreter.enableInquiry = enableInquiry;
-    function close(args) {
+    inquiry(args) {
+        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let transactions = yield transactionRepository.find({
+                inquiry_id: args.inquiry_id,
+                inquiry_pass: args.inquiry_pass,
+                status: transactionStatus_1.default.CLOSED
+            });
+            if (transactions.length === 0)
+                return monapt.None;
+            return monapt.Option(transactions[0]);
+        });
+    }
+    close(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.CLOSE);
             let option = yield transactionRepository.findOneAndUpdate({
@@ -214,8 +257,7 @@ var interpreter;
                 throw new Error("processing transaction not found.");
         });
     }
-    interpreter.close = close;
-    function expire(args) {
+    expire(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = TransactionEventFactory.create({
                 _id: mongoose.Types.ObjectId().toString(),
@@ -236,8 +278,7 @@ var interpreter;
                 throw new Error("processing transaction not found.");
         });
     }
-    interpreter.expire = expire;
-    function cancel(args) {
+    cancel(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.CANCEL);
             let option = yield transactionRepository.findOneAndUpdate({
@@ -255,8 +296,7 @@ var interpreter;
                 throw new Error("closed transaction not found.");
         });
     }
-    interpreter.cancel = cancel;
-    function enqueue() {
+    enqueue() {
         return (transactionRepository, queueRepository) => __awaiter(this, void 0, void 0, function* () {
             let option = yield transactionRepository.findOneAndUpdate({
                 status: { $in: [transactionStatus_1.default.CLOSED, transactionStatus_1.default.EXPIRED] },
@@ -295,8 +335,7 @@ var interpreter;
             });
         });
     }
-    interpreter.enqueue = enqueue;
-    function addEmail(args) {
+    addEmail(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let email = EmailFactory.create({
                 _id: mongoose.Types.ObjectId().toString(),
@@ -309,7 +348,6 @@ var interpreter;
                 _id: args.transaction_id,
                 status: transactionStatus_1.default.PROCESSING
             }, {
-                $set: {},
                 $addToSet: {
                     emails: email,
                 }
@@ -319,14 +357,12 @@ var interpreter;
             return email;
         });
     }
-    interpreter.addEmail = addEmail;
-    function removeEmail(args) {
+    removeEmail(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 status: transactionStatus_1.default.PROCESSING
             }, {
-                $set: {},
                 $pull: {
                     emails: {
                         _id: args.email_id
@@ -337,8 +373,6 @@ var interpreter;
                 throw new Error("processing transaction not found.");
         });
     }
-    interpreter.removeEmail = removeEmail;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = new TransactionServiceInterpreter();

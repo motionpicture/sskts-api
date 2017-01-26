@@ -7,55 +7,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var interpreter;
-(function (interpreter) {
-    function authorize(authorization) {
+class StockServiceInterpreter {
+    unauthorizeAsset(authorization) {
         return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
             console.log(authorization);
             console.log(assetRepository);
         });
     }
-    interpreter.authorize = authorize;
-    function unauthorize(authorization) {
+    transferAssset(authorization) {
         return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
             console.log(authorization);
             console.log(assetRepository);
         });
     }
-    interpreter.unauthorize = unauthorize;
-    function transfer(authorization) {
-        return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
-            console.log(authorization);
-            console.log(assetRepository);
-        });
-    }
-    interpreter.transfer = transfer;
-    function unauthorizeGMO(authorization) {
+    unauthorizeCOASeatReservation(authorization) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(authorization);
         });
     }
-    interpreter.unauthorizeGMO = unauthorizeGMO;
-    function transferGMO(authorization) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log(authorization);
-        });
-    }
-    interpreter.transferGMO = transferGMO;
-    function unauthorizeCOASeatReservation(authorization) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log(authorization);
-        });
-    }
-    interpreter.unauthorizeCOASeatReservation = unauthorizeCOASeatReservation;
-    function transferCOASeatReservation(authorization) {
+    transferCOASeatReservation(authorization) {
         return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
             console.log(authorization);
             console.log(assetRepository);
         });
     }
-    interpreter.transferCOASeatReservation = transferCOASeatReservation;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = new StockServiceInterpreter();

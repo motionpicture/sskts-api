@@ -12,9 +12,8 @@ const TheaterFactory = require("../../factory/theater");
 const FilmFactory = require("../../factory/film");
 const ScreenFactory = require("../../factory/screen");
 const PerformanceFactory = require("../../factory/performance");
-var interpreter;
-(function (interpreter) {
-    function importTheater(args) {
+class MasterServiceInterpreter {
+    importTheater(args) {
         return (repository) => __awaiter(this, void 0, void 0, function* () {
             let theaterFromCOA = yield COA.findTheaterInterface.call({
                 theater_code: args.theater_code
@@ -23,8 +22,7 @@ var interpreter;
             yield repository.store(theater);
         });
     }
-    interpreter.importTheater = importTheater;
-    function importFilms(args) {
+    importFilms(args) {
         return (theaterRepository, filmRepository) => __awaiter(this, void 0, void 0, function* () {
             let optionTheater = yield theaterRepository.findById(args.theater_code);
             if (optionTheater.isEmpty)
@@ -38,8 +36,7 @@ var interpreter;
             })));
         });
     }
-    interpreter.importFilms = importFilms;
-    function importScreens(args) {
+    importScreens(args) {
         return (theaterRepository, screenRepository) => __awaiter(this, void 0, void 0, function* () {
             let optionTheater = yield theaterRepository.findById(args.theater_code);
             if (optionTheater.isEmpty)
@@ -53,8 +50,7 @@ var interpreter;
             })));
         });
     }
-    interpreter.importScreens = importScreens;
-    function importPerformances(args) {
+    importPerformances(args) {
         return (filmRepository, screenRepository, performanceRepository) => __awaiter(this, void 0, void 0, function* () {
             let screens = yield screenRepository.findByTheater(args.theater_code);
             let performances = yield COA.findPerformancesByTheaterCodeInterface.call({
@@ -76,8 +72,7 @@ var interpreter;
             })));
         });
     }
-    interpreter.importPerformances = importPerformances;
-    function searchPerformances(conditions) {
+    searchPerformances(conditions) {
         return (performanceRepository) => __awaiter(this, void 0, void 0, function* () {
             let andConditions = [
                 { _id: { $ne: null } }
@@ -112,32 +107,26 @@ var interpreter;
             });
         });
     }
-    interpreter.searchPerformances = searchPerformances;
-    function findTheater(args) {
+    findTheater(args) {
         return (repository) => __awaiter(this, void 0, void 0, function* () {
             return yield repository.findById(args.theater_id);
         });
     }
-    interpreter.findTheater = findTheater;
-    function findFilm(args) {
+    findFilm(args) {
         return (repository) => __awaiter(this, void 0, void 0, function* () {
             return yield repository.findById(args.film_id);
         });
     }
-    interpreter.findFilm = findFilm;
-    function findScreen(args) {
+    findScreen(args) {
         return (repository) => __awaiter(this, void 0, void 0, function* () {
             return yield repository.findById(args.screen_id);
         });
     }
-    interpreter.findScreen = findScreen;
-    function findPerformance(args) {
+    findPerformance(args) {
         return (repository) => __awaiter(this, void 0, void 0, function* () {
             return yield repository.findById(args.performance_id);
         });
     }
-    interpreter.findPerformance = findPerformance;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = new MasterServiceInterpreter();

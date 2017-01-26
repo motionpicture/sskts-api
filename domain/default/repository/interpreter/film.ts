@@ -5,11 +5,10 @@ import FilmRepository from "../film";
 import * as FilmFactory from "../../factory/film";
 import FilmModel from "./mongoose/model/film";
 
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let filmModel = db.model(FilmModel.modelName, FilmModel.schema);
+class FilmRepositoryInterpreter implements FilmRepository {
+    public connection: mongoose.Connection;
 
-namespace interpreter {
-    export function createFromDocument(doc: mongoose.Document): Film {
+    private createFromDocument(doc: mongoose.Document): Film {
         return FilmFactory.create({
             _id: doc.get("_id"),
             coa_title_code: doc.get("coa_title_code"),
@@ -29,20 +28,26 @@ namespace interpreter {
         });
     }
 
-    export async function findById(id: string) {
-        let film = await filmModel.findOne({ _id: id }).exec();
+    async findById(id: string) {
+        let model = this.connection.model(FilmModel.modelName, FilmModel.schema);
+        let film = await model.findOne({ _id: id }).exec();
         if (!film) return monapt.None;
 
-        return monapt.Option(createFromDocument(film));
+        return monapt.Option(this.createFromDocument(film));
     }
 
-    export async function store(film: Film) {
-        await filmModel.findOneAndUpdate({ _id: film._id }, film, {
+    async store(film: Film) {
+        let model = this.connection.model(FilmModel.modelName, FilmModel.schema);
+        await model.findOneAndUpdate({ _id: film._id }, film, {
             new: true,
             upsert: true
         }).lean().exec();
     }
 }
 
-let i: FilmRepository = interpreter;
-export default i;
+let repo = new FilmRepositoryInterpreter();
+
+export default (connection: mongoose.Connection) => {
+    repo.connection = connection;
+    return repo;
+}

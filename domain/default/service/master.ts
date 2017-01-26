@@ -39,7 +39,9 @@ interface SearchPerformancesResult {
     canceled: boolean
 }
 
-// マスターデータサービス
+/**
+ * マスターサービス
+ */
 interface MasterService {
     /** 劇場インポート */
     importTheater(args: {

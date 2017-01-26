@@ -2,6 +2,7 @@ import {Router} from "express";
 let router = Router();
 import FilmRepository from "../../domain/default/repository/interpreter/film";
 import MasterService from "../../domain/default/service/interpreter/master";
+import mongoose = require("mongoose");
 
 router.get("/:id", async (req, res, next) => {
     // req.checkQuery("theater_code", "theater_code required.").notEmpty();
@@ -11,7 +12,7 @@ router.get("/:id", async (req, res, next) => {
     try {
         let option = await MasterService.findFilm({
             film_id: req.params.id
-        })(FilmRepository);
+        })(FilmRepository(mongoose.connection));
         option.match({
             Some: (film) => {
                 res.json({

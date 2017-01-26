@@ -5,26 +5,28 @@ import * as QueueFactory from "../../factory/queue";
 import QueueRepository from "../queue";
 import QueueModel from "./mongoose/model/queue";
 
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let queueModel = db.model(QueueModel.modelName, QueueModel.schema);
+class QueueRepositoryInterpreter implements QueueRepository {
+    public connection: mongoose.Connection;
 
-namespace interpreter {
-    export async function find(conditions: Object) {
-        let docs = await queueModel.find(conditions).exec();
+    async find(conditions: Object) {
+        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        let docs = await model.find(conditions).exec();
         await docs.map((doc) => {
             console.log(doc);
         });
         return [];
     }
-    export async function findById(id: string) {
-        let doc = await queueModel.findOne({ _id: id }).exec();
+    async findById(id: string) {
+        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        let doc = await model.findOne({ _id: id }).exec();
         if (!doc) return monapt.None;
 
         return monapt.None;
     }
 
-    export async function findOneAndUpdate(conditions: Object, update: Object) {
-        let doc = await queueModel.findOneAndUpdate(conditions, update, {
+    async findOneAndUpdate(conditions: Object, update: Object) {
+        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        let doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         }).exec();
@@ -39,13 +41,18 @@ namespace interpreter {
         }));
     }
 
-    export async function store(queue: Queue) {
-        await queueModel.findOneAndUpdate({ _id: queue._id }, queue, {
+    async store(queue: Queue) {
+        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        await model.findOneAndUpdate({ _id: queue._id }, queue, {
             new: true,
             upsert: true
         }).lean().exec();
     }
 }
 
-let i: QueueRepository = interpreter;
-export default i;
+let repo = new QueueRepositoryInterpreter();
+
+export default (connection: mongoose.Connection) => {
+    repo.connection = connection;
+    return repo;
+}

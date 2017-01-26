@@ -5,12 +5,12 @@ import ScreenRepository from "../screen";
 import * as ScreenFactory from "../../factory/screen";
 import ScreenModel from "./mongoose/model/screen";
 
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let screenModel = db.model(ScreenModel.modelName, ScreenModel.schema);
+class ScreenRepositoryInterpreter implements ScreenRepository {
+    public connection: mongoose.Connection;
 
-namespace interpreter {
-    export async function findById(id: string) {
-        let doc = await screenModel.findOne({ _id: id })
+    async findById(id: string) {
+        let model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
+        let doc = await model.findOne({ _id: id })
         .populate("theater")
         .exec();
         if (!doc) return monapt.None;
@@ -26,8 +26,9 @@ namespace interpreter {
         return monapt.Option(screen);
     }
 
-    export async function findByTheater(theaterCode: string) {
-        let docs = await screenModel.find({theater: theaterCode})
+    async findByTheater(theaterCode: string) {
+        let model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
+        let docs = await model.find({theater: theaterCode})
         .populate("theater")
         .exec();
         return docs.map((doc) => {
@@ -41,13 +42,18 @@ namespace interpreter {
         });
     }
 
-    export async function store(screen: Screen) {
-        await screenModel.findOneAndUpdate({ _id: screen._id }, screen, {
+    async store(screen: Screen) {
+        let model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
+        await model.findOneAndUpdate({ _id: screen._id }, screen, {
             new: true,
             upsert: true
         }).lean().exec();
     }
 }
 
-let i: ScreenRepository = interpreter;
-export default i;
+let repo = new ScreenRepositoryInterpreter();
+
+export default (connection: mongoose.Connection) => {
+    repo.connection = connection;
+    return repo;
+}

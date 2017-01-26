@@ -1,4 +1,5 @@
 import mongoose = require("mongoose");
+import monapt = require("monapt");
 
 import TransactionService from "../transaction";
 
@@ -8,32 +9,97 @@ import TransactionStatus from "../../model/transactionStatus";
 import TransactionEventGroup from "../../model/transactionEventGroup";
 import Authorization from "../../model/authorization";
 import QueueStatus from "../../model/queueStatus";
+import AssetAuthorization from "../../model/authorization/asset";
 
+import AssetRepository from "../../repository/asset";
 import AssetAuthorizationRepository from "../../repository/authorization/asset";
 import TransactionRepository from "../../repository/transaction";
 import OwnerRepository from "../../repository/owner";
 import QueueRepository from "../../repository/queue";
+import AdministratorOwnerRepository from "../../repository/owner/administrator";
 
 import * as AuthorizationFactory from "../../factory/authorization";
 import * as TransactionFactory from "../../factory/transaction";
 import * as TransactionEventFactory from "../../factory/transactionEvent";
 import * as QueueFactory from "../../factory/queue";
 import * as EmailFactory from "../../factory/email";
+import * as OwnerFactory from "../../factory/owner";
 
-namespace interpreter {
-    export function getDetails(args: {
+class TransactionServiceInterpreter implements TransactionService {
+    /**
+     * 匿名所有者作成
+     */
+    createAnonymousOwner() {
+        return async (repository: OwnerRepository) => {
+            let owner = OwnerFactory.createAnonymous({
+                _id: mongoose.Types.ObjectId().toString()
+            });
+
+            // 永続化
+            await repository.store(owner);
+            return owner;
+        };
+    }
+
+    /**
+     * 匿名所有者更新
+     */
+    updateAnonymousOwner(args: {
+        _id: string,
+        name_first?: string,
+        name_last?: string,
+        email?: string,
+        tel?: string,
+    }) {
+        return async (repository: OwnerRepository) => {
+            // 永続化
+            let option = await repository.findOneAndUpdate({
+                _id: args._id,
+            }, {
+                    $set: {
+                        name_first: args.name_first,
+                        name_last: args.name_last,
+                        email: args.email,
+                        tel: args.tel,
+                    }
+                });
+            if (option.isEmpty) throw new Error("owner not found.");
+        };
+    }
+
+    /**
+     * 運営者を取得する
+     */
+    getAdministratorOwner() {
+        return async (repository: AdministratorOwnerRepository) => {
+            // 運営者取得
+            let option = await repository.findOne();
+            if (option.isEmpty) throw new Error("administrator owner not found.");
+
+            return option.get();
+        };
+    }
+
+    /**
+     * IDから取得する
+     */
+    findById(args: {
         transaction_id: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
             return await transactionRepository.findById(args.transaction_id);
         };
     }
-    /** 取引開始 */
-    export function start(args: {
+
+    /**
+     * 取引開始
+     */
+    start(args: {
         expired_at: Date,
         owner_ids: Array<string>
     }) {
         return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
+            // 所有者取得
             let owners: Array<Owner> = [];
             let promises = args.owner_ids.map(async (ownerId) => {
                 let option = await ownerRepository.findById(ownerId);
@@ -42,11 +108,13 @@ namespace interpreter {
             });
             await Promise.all(promises);
 
+            // イベント作成
             let event = TransactionEventFactory.create({
                 _id: mongoose.Types.ObjectId().toString(),
                 group: TransactionEventGroup.START,
             });
 
+            // 取引作成
             let transaction = TransactionFactory.create({
                 _id: mongoose.Types.ObjectId().toString(),
                 status: TransactionStatus.PROCESSING,
@@ -55,44 +123,21 @@ namespace interpreter {
                 expired_at: args.expired_at
             });
 
+            // 永続化
             await transactionRepository.store(transaction);
-
             return transaction;
         }
     }
 
-    function pushAuthorization(args: {
-        transaction_id: string,
-        authorization: Authorization
-    }) {
-        return async (transactionRepository: TransactionRepository) => {
-            // 取引イベント作成
-            let event = TransactionEventFactory.createAuthorize({
-                _id: mongoose.Types.ObjectId().toString(),
-                authorization: args.authorization,
-            });
-
-            // 永続化
-            let option = await transactionRepository.findOneAndUpdate({
-                _id: args.transaction_id,
-                status: TransactionStatus.PROCESSING,
-            }, {
-                    $set: {
-                    },
-                    $push: {
-                        events: event,
-                    },
-                    $addToSet: {
-                        authorizations: args.authorization,
-                    }
-                });
-
-            if (option.isEmpty) throw new Error("processing transaction not found.");
+    authorizeAsset(authorization: AssetAuthorization) {
+        return async (assetRepository: AssetRepository) => {
+            console.log(authorization);
+            console.log(assetRepository);
         }
     }
 
     /** 内部資産承認 */
-    export function addAssetAuthorization(args: {
+    addAssetAuthorization(args: {
         transaction_id: string,
         authorization_id: string,
     }) {
@@ -102,7 +147,7 @@ namespace interpreter {
             if (option.isEmpty) throw new Error("authorization not found.");
 
             // 永続化
-            await pushAuthorization({
+            await this.pushAuthorization({
                 transaction_id: args.transaction_id,
                 authorization: option.get()
             })(transactionRepository);
@@ -112,7 +157,7 @@ namespace interpreter {
     }
 
     /** GMO資産承認 */
-    export function addGMOAuthorization(args: {
+    addGMOAuthorization(args: {
         transaction_id: string,
         owner_id_from: string,
         owner_id_to: string,
@@ -127,26 +172,28 @@ namespace interpreter {
 
     }) {
         return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
+            // 取引取得
             let optionTransaction = await transactionRepository.findById(args.transaction_id);
             if (optionTransaction.isEmpty) throw new Error(`transaction[${args.transaction_id}] not found.`);
-
             let transaction = optionTransaction.get();
+
+            // 所有者が取引に存在するかチェック
             // TODO ObjectIDとStringの問題を解決する
             let ownerIds = transaction.owners.map((owner) => {
                 return owner._id.toString();
             });
+            if (ownerIds.indexOf(args.owner_id_from) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_from}].`);
+            if (ownerIds.indexOf(args.owner_id_to) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_to}].`);
 
-            if (ownerIds.indexOf(args.owner_id_from) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_from}].`); 
-            if (ownerIds.indexOf(args.owner_id_to) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_to}].`); 
-
-
+            // 所有者from取得
             let optionOwnerFrom = await ownerRepository.findById(args.owner_id_from);
             if (optionOwnerFrom.isEmpty) throw new Error(`owner[${args.owner_id_from}] not found.`);
 
+            // 所有者to取得
             let optionOwnerTo = await ownerRepository.findById(args.owner_id_to);
             if (optionOwnerTo.isEmpty) throw new Error(`owner[${args.owner_id_to}] not found.`);
 
-            // GMO承認を作成
+            // GMO承認作成
             let authorization = AuthorizationFactory.createGMO({
                 _id: mongoose.Types.ObjectId().toString(),
                 order_id: args.gmo_order_id,
@@ -156,7 +203,7 @@ namespace interpreter {
             });
 
             // 永続化
-            await pushAuthorization({
+            await this.pushAuthorization({
                 transaction_id: args.transaction_id,
                 authorization: authorization
             })(transactionRepository);
@@ -166,7 +213,7 @@ namespace interpreter {
     }
 
     /** COA資産承認 */
-    export function addCOASeatReservationAuthorization(args: {
+    addCOASeatReservationAuthorization(args: {
         transaction_id: string,
         owner_id_from: string,
         owner_id_to: string,
@@ -187,26 +234,28 @@ namespace interpreter {
         }>
     }) {
         return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
+            // 取引取得
             let optionTransaction = await transactionRepository.findById(args.transaction_id);
             if (optionTransaction.isEmpty) throw new Error(`transaction[${args.transaction_id}] not found.`);
-
             let transaction = optionTransaction.get();
+
+            // 所有者が取引に存在するかチェック
             // TODO ObjectIDとStringの問題を解決する
             let ownerIds = transaction.owners.map((owner) => {
                 return owner._id.toString();
             });
+            if (ownerIds.indexOf(args.owner_id_from) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_from}].`);
+            if (ownerIds.indexOf(args.owner_id_to) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_to}].`);
 
-            if (ownerIds.indexOf(args.owner_id_from) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_from}].`); 
-            if (ownerIds.indexOf(args.owner_id_to) < 0) throw new Error(`transaction[${args.transaction_id}] does not contain a owner[${args.owner_id_to}].`); 
-
-
+            // 所有者from取得
             let optionOwnerFrom = await ownerRepository.findById(args.owner_id_from);
             if (optionOwnerFrom.isEmpty) throw new Error(`owner[${args.owner_id_from}] not found.`);
 
+            // 所有者to取得
             let optionOwnerTo = await ownerRepository.findById(args.owner_id_to);
             if (optionOwnerTo.isEmpty) throw new Error(`owner[${args.owner_id_to}] not found.`);
 
-            // 承認を作成
+            // 承認作成
             let authorization = AuthorizationFactory.createCOASeatReservation({
                 _id: mongoose.Types.ObjectId().toString(),
                 coa_tmp_reserve_num: args.coa_tmp_reserve_num,
@@ -217,7 +266,7 @@ namespace interpreter {
             });
 
             // 永続化
-            await pushAuthorization({
+            await this.pushAuthorization({
                 transaction_id: args.transaction_id,
                 authorization: authorization
             })(transactionRepository);
@@ -226,13 +275,46 @@ namespace interpreter {
         }
     }
 
-    /** 資産承認解除 */
-    export function removeAuthorization(args: {
+    /**
+     * 取引に承認を追加する
+     */
+    private pushAuthorization(args: {
+        transaction_id: string,
+        authorization: Authorization
+    }) {
+        return async (transactionRepository: TransactionRepository) => {
+            // イベント作成
+            let event = TransactionEventFactory.createAuthorize({
+                _id: mongoose.Types.ObjectId().toString(),
+                authorization: args.authorization,
+            });
+
+            // 永続化
+            let option = await transactionRepository.findOneAndUpdate({
+                _id: args.transaction_id,
+                status: TransactionStatus.PROCESSING,
+            }, {
+                    $push: {
+                        events: event,
+                    },
+                    $addToSet: {
+                        authorizations: args.authorization,
+                    }
+                });
+
+            if (option.isEmpty) throw new Error("processing transaction not found.");
+        }
+    }
+
+    /**
+     * 資産承認解除
+     */
+    removeAuthorization(args: {
         transaction_id: string,
         authorization_id: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
-            // 取引イベント作成
+            // イベント作成
             let event = TransactionEventFactory.createUnauthorize({
                 _id: mongoose.Types.ObjectId().toString(),
                 authorization_id: args.authorization_id,
@@ -243,8 +325,6 @@ namespace interpreter {
                 _id: args.transaction_id,
                 status: TransactionStatus.PROCESSING
             }, {
-                    $set: {
-                    },
                     $push: {
                         events: event,
                     },
@@ -258,13 +338,16 @@ namespace interpreter {
         }
     }
 
-    /** 照合を可能にする */
-    export function enableInquiry(args: {
+    /**
+     * 照合を可能にする
+     */
+    enableInquiry(args: {
         transaction_id: string,
         inquiry_id: string,
         inquiry_pass: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 status: TransactionStatus.PROCESSING
@@ -278,11 +361,34 @@ namespace interpreter {
         };
     }
 
-    /** 取引成立 */
-    export function close(args: {
+    /**
+     * 照合する
+     */
+    inquiry(args: {
+        inquiry_id: string,
+        inquiry_pass: string,
+    }) {
+        return async (transactionRepository: TransactionRepository) => {
+            // 取引取得
+            let transactions = await transactionRepository.find({
+                inquiry_id: args.inquiry_id,
+                inquiry_pass: args.inquiry_pass,
+                status: TransactionStatus.CLOSED
+            });
+            if (transactions.length === 0) return monapt.None;
+
+            return monapt.Option(transactions[0]);
+        };
+    }
+
+    /**
+     * 取引成立
+     */
+    close(args: {
         transaction_id: string
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // イベント作成
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
                 TransactionEventGroup.CLOSE,
@@ -290,6 +396,7 @@ namespace interpreter {
 
             // TODO キューリストを事前作成する
 
+            // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 status: TransactionStatus.PROCESSING
@@ -305,11 +412,14 @@ namespace interpreter {
         }
     }
 
-    /** 取引期限切れ */
-    export function expire(args: {
+    /**
+     * 取引期限切れ
+     */
+    expire(args: {
         transaction_id: string
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // イベント作成
             let event = TransactionEventFactory.create({
                 _id: mongoose.Types.ObjectId().toString(),
                 group: TransactionEventGroup.EXPIRE,
@@ -317,6 +427,7 @@ namespace interpreter {
 
             // TODO キューリストを事前作成する
 
+            // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 status: TransactionStatus.PROCESSING
@@ -332,11 +443,14 @@ namespace interpreter {
         }
     }
 
-    /** 取引取消 */
-    export function cancel(args: {
+    /**
+     * 取引取消
+     */
+    cancel(args: {
         transaction_id: string
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // イベント作成
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
                 TransactionEventGroup.CANCEL,
@@ -344,6 +458,7 @@ namespace interpreter {
 
             // TODO キューリストを事前作成する
 
+            // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
                 status: TransactionStatus.CLOSED
@@ -359,8 +474,10 @@ namespace interpreter {
         }
     }
 
-    /** キュー出力 */
-    export function enqueue() {
+    /**
+     * キュー出力
+     */
+    enqueue() {
         return async (transactionRepository: TransactionRepository, queueRepository: QueueRepository) => {
             // 未インポートの取引を取得
             let option = await transactionRepository.findOneAndUpdate({
@@ -418,7 +535,10 @@ namespace interpreter {
         }
     }
 
-    export function addEmail(args: {
+    /**
+     * メール追加
+     */
+    addEmail(args: {
         transaction_id: string,
         from: string,
         to: string,
@@ -426,7 +546,7 @@ namespace interpreter {
         body: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
-            // メールを作成
+            // メール作成
             let email = EmailFactory.create({
                 _id: mongoose.Types.ObjectId().toString(),
                 from: args.from,
@@ -440,8 +560,6 @@ namespace interpreter {
                 _id: args.transaction_id,
                 status: TransactionStatus.PROCESSING
             }, {
-                    $set: {
-                    },
                     $addToSet: {
                         emails: email,
                     }
@@ -453,7 +571,10 @@ namespace interpreter {
         }
     }
 
-    export function removeEmail(args: {
+    /**
+     * メール削除
+     */
+    removeEmail(args: {
         transaction_id: string,
         email_id: string,
     }) {
@@ -463,8 +584,6 @@ namespace interpreter {
                 _id: args.transaction_id,
                 status: TransactionStatus.PROCESSING
             }, {
-                    $set: {
-                    },
                     $pull: {
                         emails: {
                             _id: args.email_id
@@ -476,5 +595,4 @@ namespace interpreter {
     }
 }
 
-let i: TransactionService = interpreter;
-export default i;
+export default new TransactionServiceInterpreter();

@@ -9,13 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const program = require("commander");
 const master_1 = require("../domain/default/service/interpreter/master");
-const transaction_1 = require("../domain/default/service/interpreter/transaction");
 const film_1 = require("../domain/default/repository/interpreter/film");
 const screen_1 = require("../domain/default/repository/interpreter/screen");
 const theater_1 = require("../domain/default/repository/interpreter/theater");
 const performance_1 = require("../domain/default/repository/interpreter/performance");
-const transaction_2 = require("../domain/default/repository/interpreter/transaction");
-const queue_1 = require("../domain/default/repository/interpreter/queue");
 const config = require("config");
 const mongoose = require("mongoose");
 mongoose.set('debug', true);
@@ -31,13 +28,15 @@ program
     .description("import theater from COA.")
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
     try {
+        mongoose.connect(process.env.MONGOLAB_URI);
         yield master_1.default.importTheater({
             theater_code: theaterCode
-        })(theater_1.default);
+        })(theater_1.default(mongoose.connection));
     }
     catch (error) {
         console.error(error);
     }
+    mongoose.disconnect();
     process.exit(0);
 }));
 program
@@ -45,13 +44,15 @@ program
     .description("import films from COA.")
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
     try {
+        mongoose.connect(process.env.MONGOLAB_URI);
         yield master_1.default.importFilms({
             theater_code: theaterCode
-        })(theater_1.default, film_1.default);
+        })(theater_1.default(mongoose.connection), film_1.default(mongoose.connection));
     }
     catch (error) {
         console.error(error);
     }
+    mongoose.disconnect();
     process.exit(0);
 }));
 program
@@ -59,13 +60,15 @@ program
     .description("import screens from COA.")
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
     try {
+        mongoose.connect(process.env.MONGOLAB_URI);
         yield master_1.default.importScreens({
             theater_code: theaterCode
-        })(theater_1.default, screen_1.default);
+        })(theater_1.default(mongoose.connection), screen_1.default(mongoose.connection));
     }
     catch (error) {
         console.error(error);
     }
+    mongoose.disconnect();
     process.exit(0);
 }));
 program
@@ -73,27 +76,17 @@ program
     .description("import performances from COA.")
     .action((theaterCode, start, end) => __awaiter(this, void 0, void 0, function* () {
     try {
+        mongoose.connect(process.env.MONGOLAB_URI);
         yield master_1.default.importPerformances({
             theater_code: theaterCode,
             day_start: start,
             day_end: end
-        })(film_1.default, screen_1.default, performance_1.default);
+        })(film_1.default(mongoose.connection), screen_1.default(mongoose.connection), performance_1.default(mongoose.connection));
     }
     catch (error) {
         console.error(error);
     }
     process.exit(0);
-}));
-program
-    .command("enqueue4transaction")
-    .description("enqueue for a transaction.")
-    .action(() => __awaiter(this, void 0, void 0, function* () {
-    try {
-        yield transaction_1.default.enqueue({})(transaction_2.default, queue_1.default);
-    }
-    catch (error) {
-        console.error(error.message);
-    }
 }));
 program
     .command("*")

@@ -7,17 +7,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const mongoose = require("mongoose");
 const monapt = require("monapt");
 const PerformanceFactory = require("../../factory/performance");
 const performance_1 = require("./mongoose/model/performance");
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let performanceModel = db.model(performance_1.default.modelName, performance_1.default.schema);
-var interpreter;
-(function (interpreter) {
-    function find(conditions) {
+class PerformanceRepositoryInterpreter {
+    find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let performances = yield performanceModel.find(conditions)
+            let model = this.connection.model(performance_1.default.modelName, performance_1.default.schema);
+            let performances = yield model.find(conditions)
                 .populate("film")
                 .populate("theater")
                 .populate("screen")
@@ -36,10 +33,10 @@ var interpreter;
             });
         });
     }
-    interpreter.find = find;
-    function findById(id) {
+    findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let doc = yield performanceModel.findOne({ _id: id })
+            let model = this.connection.model(performance_1.default.modelName, performance_1.default.schema);
+            let doc = yield model.findOne({ _id: id })
                 .populate("film")
                 .populate("theater")
                 .populate("screen")
@@ -59,17 +56,19 @@ var interpreter;
             return monapt.Option(performance);
         });
     }
-    interpreter.findById = findById;
-    function store(performance) {
+    store(performance) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield performanceModel.findOneAndUpdate({ _id: performance._id }, performance, {
+            let model = this.connection.model(performance_1.default.modelName, performance_1.default.schema);
+            yield model.findOneAndUpdate({ _id: performance._id }, performance, {
                 new: true,
                 upsert: true
             }).lean().exec();
         });
     }
-    interpreter.store = store;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
+let repo = new PerformanceRepositoryInterpreter();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = (connection) => {
+    repo.connection = connection;
+    return repo;
+};

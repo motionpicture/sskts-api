@@ -34,32 +34,42 @@ interface SearchPerformancesResult {
     canceled: boolean
 }
 
-namespace interpreter {
-    export function importTheater(args: {
+class MasterServiceInterpreter implements MasterService {
+    /**
+     * 劇場インポート
+     */
+    importTheater(args: {
         theater_code: string
     }) {
         return async (repository: TheaterRepository) => {
+            // COAから取得
             let theaterFromCOA = await COA.findTheaterInterface.call({
                 theater_code: args.theater_code
             });
 
+            // 永続化
             let theater =  TheaterFactory.createFromCOA(theaterFromCOA);
-
             await repository.store(theater);
         };
     }
 
-    export function importFilms(args: {
+    /**
+     * 作品インポート
+     */
+    importFilms(args: {
         theater_code: string
     }) {
         return async (theaterRepository: TheaterRepository, filmRepository: FilmRepository) => {
+            // 劇場取得
             let optionTheater = await theaterRepository.findById(args.theater_code);
             if (optionTheater.isEmpty) throw new Error("theater not found.");
 
+            // COAから作品取得
             let films = await COA.findFilmsByTheaterCodeInterface.call({
                 theater_code: args.theater_code
             });
 
+            // 永続化
             await Promise.all(films.map(async (filmFromCOA) => {
                 let film =  await FilmFactory.createFromCOA(filmFromCOA)(optionTheater.get());
                 await filmRepository.store(film);
@@ -67,17 +77,20 @@ namespace interpreter {
         };
     }
 
-    export function importScreens(args: {
+    importScreens(args: {
         theater_code: string
     }) {
         return async (theaterRepository: TheaterRepository, screenRepository: ScreenRepository) => {
+            // 劇場取得
             let optionTheater = await theaterRepository.findById(args.theater_code);
             if (optionTheater.isEmpty) throw new Error("theater not found.");
 
+            // COAからスクリーン取得
             let screens = await COA.findScreensByTheaterCodeInterface.call({
                 theater_code: args.theater_code
             });
 
+            // 永続化
             await Promise.all(screens.map(async (screenFromCOA) => {
                 let screen = await ScreenFactory.createFromCOA(screenFromCOA)(optionTheater.get());
                 await screenRepository.store(screen);
@@ -85,38 +98,46 @@ namespace interpreter {
         };
     }
 
-    export function importPerformances(args: {
+    importPerformances(args: {
         theater_code: string,
         day_start: string,
         day_end: string
     }) {
         return async (filmRepository: FilmRepository, screenRepository: ScreenRepository, performanceRepository: PerformanceRepository) => {
+            // スクリーン取得
             let screens = await screenRepository.findByTheater(args.theater_code);
 
+            // COAからパフォーマンス取得
             let performances = await COA.findPerformancesByTheaterCodeInterface.call({
                 theater_code: args.theater_code,
                 begin: args.day_start,
                 end: args.day_end,
             });
 
+            // パフォーマンスごとに永続化トライ
             await Promise.all(performances.map(async (performanceFromCOA) => {
                 let screenId = `${args.theater_code}${performanceFromCOA.screen_code}`;
                 let filmId = `${args.theater_code}${performanceFromCOA.title_code}${performanceFromCOA.title_branch_num}`;
 
+                // スクリーン存在チェック
                 let _screen = screens.find((screen) => { return (screen._id === screenId); });
                 if (!_screen) throw new Error(("screen not found."));
 
+                // 作品取得
                 let optionFilm = await filmRepository.findById(filmId);
                 if (optionFilm.isEmpty) throw new Error("film not found.");
 
+                // 永続化
                 let performance = PerformanceFactory.createFromCOA(performanceFromCOA)(_screen, optionFilm.get());
-
                 await performanceRepository.store(performance);
             }));
         };
     }
 
-    export function searchPerformances(conditions: SearchPerformancesConditions) {
+    /**
+     * パフォーマンス検索
+     */
+    searchPerformances(conditions: SearchPerformancesConditions) {
         return async (performanceRepository: PerformanceRepository): Promise<Array<SearchPerformancesResult>> => {
             // 検索条件を作成
             let andConditions: Array<Object> = [
@@ -159,7 +180,10 @@ namespace interpreter {
         }
     }
 
-    export function findTheater(args: {
+    /**
+     * 劇場取得
+     */
+    findTheater(args: {
         theater_id: string
     }) {
         return async (repository: TheaterRepository) => {
@@ -167,7 +191,10 @@ namespace interpreter {
         }
     }
 
-    export function findFilm(args: {
+    /**
+     * 作品取得
+     */
+    findFilm(args: {
         film_id: string
     }) {
         return async (repository: FilmRepository) => {
@@ -175,7 +202,10 @@ namespace interpreter {
         }
     }
 
-    export function findScreen(args: {
+    /**
+     * スクリーン取得
+     */
+    findScreen(args: {
         screen_id: string
     }) {
         return async (repository: ScreenRepository) => {
@@ -183,7 +213,10 @@ namespace interpreter {
         }
     }
 
-    export function findPerformance(args: {
+    /**
+     * パフォーマンス取得
+     */
+    findPerformance(args: {
         performance_id: string
     }) {
         return async (repository: PerformanceRepository) => {
@@ -192,5 +225,4 @@ namespace interpreter {
     }
 }
 
-let i: MasterService = interpreter;
-export default i;
+export default new MasterServiceInterpreter();

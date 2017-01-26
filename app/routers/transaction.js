@@ -12,14 +12,15 @@ let router = express.Router();
 const owner_1 = require("../../domain/default/repository/interpreter/owner");
 const transaction_1 = require("../../domain/default/repository/interpreter/transaction");
 const transaction_2 = require("../../domain/default/service/interpreter/transaction");
+const mongoose = require("mongoose");
 router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let option = yield transaction_2.default.getDetails({
+        let option = yield transaction_2.default.findById({
             transaction_id: req.params.id
-        })(transaction_1.default);
+        })(transaction_1.default(mongoose.connection));
         option.match({
             Some: (transaction) => {
                 res.json({
@@ -51,7 +52,7 @@ router.post("", (req, res, next) => __awaiter(this, void 0, void 0, function* ()
         let transaction = yield transaction_2.default.start({
             expired_at: new Date(parseInt(req.body.expired_at) * 1000),
             owner_ids: ownerIds
-        })(owner_1.default, transaction_1.default);
+        })(owner_1.default(mongoose.connection), transaction_1.default(mongoose.connection));
         res.status(201);
         res.setHeader("Location", `https://${req.headers["host"]}/transactions/${transaction._id}`);
         res.json({
@@ -83,7 +84,7 @@ router.post("/:id/authorizations/gmo", (req, res, next) => __awaiter(this, void 
             gmo_access_pass: req.body.gmo_access_pass,
             gmo_job_cd: req.body.gmo_job_cd,
             gmo_pay_type: req.body.gmo_pay_type,
-        })(owner_1.default, transaction_1.default);
+        })(owner_1.default(mongoose.connection), transaction_1.default(mongoose.connection));
         res.status(200).json({
             data: {
                 type: "authorizations",
@@ -107,7 +108,7 @@ router.post("/:id/authorizations/coaSeatReservation", (req, res, next) => __awai
             coa_tmp_reserve_num: req.body.coa_tmp_reserve_num,
             price: parseInt(req.body.price),
             seats: req.body.seats,
-        })(owner_1.default, transaction_1.default);
+        })(owner_1.default(mongoose.connection), transaction_1.default(mongoose.connection));
         res.status(200).json({
             data: {
                 type: "authorizations",
@@ -127,7 +128,7 @@ router.delete("/:id/authorizations/:authorization_id", (req, res, next) => __awa
         yield transaction_2.default.removeAuthorization({
             transaction_id: req.params.id,
             authorization_id: req.params.authorization_id,
-        })(transaction_1.default);
+        })(transaction_1.default(mongoose.connection));
         res.status(204).end();
     }
     catch (error) {
@@ -143,7 +144,7 @@ router.patch("/:id/enableInquiry", (req, res, next) => __awaiter(this, void 0, v
             transaction_id: req.params.id,
             inquiry_id: req.body.inquiry_id,
             inquiry_pass: req.body.inquiry_pass,
-        })(transaction_1.default);
+        })(transaction_1.default(mongoose.connection));
         res.status(204).end();
     }
     catch (error) {
@@ -161,7 +162,7 @@ router.post("/:id/emails", (req, res, next) => __awaiter(this, void 0, void 0, f
             to: req.body.to,
             subject: req.body.subject,
             body: req.body.body,
-        })(transaction_1.default);
+        })(transaction_1.default(mongoose.connection));
         res.status(200).json({
             data: {
                 type: "emails",
@@ -181,7 +182,7 @@ router.delete("/:id/emails/:email_id", (req, res, next) => __awaiter(this, void 
         yield transaction_2.default.removeEmail({
             transaction_id: req.params.id,
             email_id: req.params.email_id,
-        })(transaction_1.default);
+        })(transaction_1.default(mongoose.connection));
         res.status(204).end();
     }
     catch (error) {
@@ -195,7 +196,7 @@ router.patch("/:id/close", (req, res, next) => __awaiter(this, void 0, void 0, f
     try {
         yield transaction_2.default.close({
             transaction_id: req.params.id
-        })(transaction_1.default);
+        })(transaction_1.default(mongoose.connection));
         res.status(204).end();
     }
     catch (error) {

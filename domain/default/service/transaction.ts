@@ -1,22 +1,44 @@
+import AssetAuthorization from "../model/authorization/asset";
 import monapt = require("monapt");
 import Authorization from "../model/authorization";
 import Email from "../model/email";
 import Transaction from "../model/transaction";
+import AnonymousOwner from "../model/owner/anonymous";
+import AdministratorOwner from "../model/owner/administrator";
+
 import OwnerRepository from "../repository/owner";
 import TransactionRepository from "../repository/transaction";
 import AssetAuthorizationRepository from "../repository/authorization/asset";
 import QueueRepository from "../repository/queue";
+import AssetRepository from "../repository/asset";
+import AdministratorOwnerRepository from "../repository/owner/administrator";
+
 type TransactionAndQueueOperation<T> = (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
 type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
 type AssetAuthorizationAndTransactionOperation<T> = (assetAuthorizationRepository: AssetAuthorizationRepository, repository: TransactionRepository) => Promise<T>;
 type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
+type AssetOperation<T> = (assetRepository: AssetRepository) => Promise<T>;
+type OwnerOperation<T> = (ownerRepository: OwnerRepository) => Promise<T>;
+type AdministratorOwnerOperation<T> = (administratorOwnerRepository: AdministratorOwnerRepository) => Promise<T>;
 
 /**
- * 取引関連サービス
+ * 取引サービス
  */
 interface TransactionService {
+    /** 匿名所有者を発行する */
+    createAnonymousOwner(): OwnerOperation<AnonymousOwner>;
+    /** 匿名所有者の情報を更新する */
+    updateAnonymousOwner(args: {
+        _id: string,
+        name_first?: string,
+        name_last?: string,
+        email?: string,
+        tel?: string,
+    }): OwnerOperation<void>;
+    /** 運営者を取得する */
+    getAdministratorOwner(): AdministratorOwnerOperation<AdministratorOwner>;
     /** 取引詳細取得 */
-    getDetails(args: {
+    findById(args: {
         transaction_id: string,
     }): TransactionOperation<monapt.Option<Transaction>>;
     /** 取引開始 */
@@ -24,6 +46,8 @@ interface TransactionService {
         expired_at: Date,
         owner_ids: Array<string>
     }): OwnerAndTransactionOperation<Transaction>;
+    /** 資産承認 */
+    authorizeAsset(authorization: AssetAuthorization): AssetOperation<void>;
     /** 内部資産承認 */
     addAssetAuthorization(args: {
         transaction_id: string,
@@ -76,6 +100,12 @@ interface TransactionService {
         inquiry_id: string,
         inquiry_pass: string,
     }): TransactionOperation<void>;
+    /** 照会する */
+    inquiry(args: {
+        inquiry_id: string,
+        inquiry_pass: string,
+    }): TransactionOperation<monapt.Option<Transaction>>;
+    /** メール追加 */
     addEmail(args: {
         transaction_id: string,
         from: string,
@@ -83,6 +113,7 @@ interface TransactionService {
         subject: string,
         body: string,
     }): TransactionOperation<Email>;
+    /** メール削除 */
     removeEmail(args: {
         transaction_id: string,
         email_id: string,

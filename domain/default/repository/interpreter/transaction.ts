@@ -5,20 +5,21 @@ import * as TransactionFactory from "../../factory/transaction";
 import TransactionRepository from "../transaction";
 import TransactionModel from "./mongoose/model/transaction";
 
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let transactionModel = db.model(TransactionModel.modelName, TransactionModel.schema);
+class TransactionRepositoryInterpreter implements TransactionRepository {
+    public connection: mongoose.Connection;
 
-namespace interpreter {
-    export async function find(conditions: Object) {
-        let docs = await transactionModel.find(conditions)
+    async find(conditions: Object) {
+        let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        let docs = await model.find(conditions)
             .populate("owner").exec();
         await docs.map((doc) => {
             console.log(doc);
         });
         return [];
     }
-    export async function findById(id: string) {
-        let doc = await transactionModel.findOne({ _id: id })
+    async findById(id: string) {
+        let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        let doc = await model.findOne({ _id: id })
             .populate("owners").exec();
         if (!doc) return monapt.None;
 
@@ -38,8 +39,9 @@ namespace interpreter {
         return monapt.Option(transaction);
     }
 
-    export async function findOneAndUpdate(conditions: Object, update: Object) {
-        let doc = await transactionModel.findOneAndUpdate(conditions, update, {
+    async findOneAndUpdate(conditions: Object, update: Object) {
+        let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        let doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         }).exec();
@@ -57,13 +59,18 @@ namespace interpreter {
         }));
     }
 
-    export async function store(transaction: Transaction) {
-        await transactionModel.findOneAndUpdate({ _id: transaction._id }, transaction, {
+    async store(transaction: Transaction) {
+        let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        await model.findOneAndUpdate({ _id: transaction._id }, transaction, {
             new: true,
             upsert: true
         }).lean().exec();
     }
 }
 
-let i: TransactionRepository = interpreter;
-export default i;
+let repo = new TransactionRepositoryInterpreter();
+
+export default (connection: mongoose.Connection) => {
+    repo.connection = connection;
+    return repo;
+}

@@ -7,15 +7,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const mongoose = require("mongoose");
 const monapt = require("monapt");
 const TheaterFactory = require("../../factory/theater");
 const theater_1 = require("./mongoose/model/theater");
-let db = mongoose.createConnection(process.env.MONGOLAB_URI);
-let theaterModel = db.model(theater_1.default.modelName, theater_1.default.schema);
-var interpreter;
-(function (interpreter) {
-    function createFromDocument(doc) {
+class TheaterRepositoryInterpreter {
+    createFromDocument(doc) {
         return TheaterFactory.create({
             _id: doc.get("_id"),
             name: doc.get("name"),
@@ -23,25 +19,28 @@ var interpreter;
             address: doc.get("address"),
         });
     }
-    function findById(id) {
+    findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let theater = yield theaterModel.findOne({ _id: id }).exec();
+            let model = this.connection.model(theater_1.default.modelName, theater_1.default.schema);
+            let theater = yield model.findOne({ _id: id }).exec();
             if (!theater)
                 return monapt.None;
-            return monapt.Option(createFromDocument(theater));
+            return monapt.Option(this.createFromDocument(theater));
         });
     }
-    interpreter.findById = findById;
-    function store(theater) {
+    store(theater) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield theaterModel.findOneAndUpdate({ _id: theater._id }, theater, {
+            let model = this.connection.model(theater_1.default.modelName, theater_1.default.schema);
+            yield model.findOneAndUpdate({ _id: theater._id }, theater, {
                 new: true,
                 upsert: true
             }).lean().exec();
         });
     }
-    interpreter.store = store;
-})(interpreter || (interpreter = {}));
-let i = interpreter;
+}
+let repo = new TheaterRepositoryInterpreter();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = i;
+exports.default = (connection) => {
+    repo.connection = connection;
+    return repo;
+};

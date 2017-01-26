@@ -1,10 +1,10 @@
+import NotificationService from "../notification";
 import sendgrid = require("sendgrid");
-import EmailService from "../email";
 import Email from "../../model/email";
 
-namespace interpreter {
+class NotificationServiceInterpreter implements NotificationService {
     /** メール送信 */
-    export async function send(email: Email) {
+    async sendEmail(email: Email) {
         let mail = new sendgrid.mail.Mail(
             new sendgrid.mail.Email(email.from),
             email.subject,
@@ -27,8 +27,7 @@ namespace interpreter {
 
         let response = await sg.API(request);
         console.log("response is", response);
-    }
+    };
 }
 
-let i: EmailService = interpreter;
-export default i;
+export default new NotificationServiceInterpreter();
