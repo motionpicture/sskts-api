@@ -71,7 +71,7 @@ async function main() {
     // 販売可能チケット検索
     let salesTicketResult = await COA.salesTicketInterface.call({
         theater_code: "001",
-        date_jouei: "20170120",
+        date_jouei: "20170131",
         title_code: "8513",
         title_branch_num: "0",
         time_begin: "1010",
@@ -88,7 +88,7 @@ async function main() {
     // COA空席確認
     let getStateReserveSeatResult = await COA.getStateReserveSeatInterface.call({
         theater_code: "001",
-        date_jouei: "20170120",
+        date_jouei: "20170131",
         title_code: "8513",
         title_branch_num: "0",
         time_begin: "1010",
@@ -106,7 +106,7 @@ async function main() {
     // COA仮予約
     let reserveSeatsTemporarilyResult = await COA.reserveSeatsTemporarilyInterface.call({
         theater_code: "001",
-        date_jouei: "20170120",
+        date_jouei: "20170131",
         title_code: "8513",
         title_branch_num: "0",
         time_begin: "1010",
@@ -164,7 +164,7 @@ async function main() {
     // COA仮予約削除
     await COA.deleteTmpReserveInterface.call({
         theater_code: "001",
-        date_jouei: "20170120",
+        date_jouei: "20170131",
         title_code: "8513",
         title_branch_num: "0",
         time_begin: "1010",
@@ -275,7 +275,7 @@ async function main() {
     // COA仮予約2回目
     let reserveSeatsTemporarilyResult2 = await COA.reserveSeatsTemporarilyInterface.call({
         theater_code: "001",
-        date_jouei: "20170120",
+        date_jouei: "20170131",
         title_code: "8513",
         title_branch_num: "0",
         time_begin: "1010",
@@ -405,7 +405,7 @@ async function main() {
     let tel = "09012345678";
     let updateReserveResult = await COA.updateReserveInterface.call({
         theater_code: "001",
-        date_jouei: "20170120",
+        date_jouei: "20170131",
         title_code: "8513",
         title_branch_num: "0",
         time_begin: "1010",

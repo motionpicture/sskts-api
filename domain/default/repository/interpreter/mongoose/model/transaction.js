@@ -11,9 +11,10 @@ let schema = new mongoose.Schema({
         }],
     authorizations: [mongoose.Schema.Types.Mixed],
     emails: [mongoose.Schema.Types.Mixed],
+    queues: [mongoose.Schema.Types.Mixed],
     inquiry_id: String,
     inquiry_pass: String,
-    queues_imported: Boolean,
+    queues_status: String,
 }, {
     collection: "transactions",
     timestamps: {

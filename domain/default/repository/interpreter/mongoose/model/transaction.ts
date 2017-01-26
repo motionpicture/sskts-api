@@ -14,9 +14,10 @@ let schema = new mongoose.Schema({
     }],
     authorizations: [mongoose.Schema.Types.Mixed], // 資産承認リスト
     emails: [mongoose.Schema.Types.Mixed],
+    queues: [mongoose.Schema.Types.Mixed],
     inquiry_id: String, // 照会ID
     inquiry_pass: String, // 照会PASS
-    queues_imported: Boolean,
+    queues_status: String,
 }, {
     collection: "transactions",
     timestamps: {

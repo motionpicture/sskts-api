@@ -131,7 +131,7 @@ interface TransactionService {
         transaction_id: string,
     }): TransactionOperation<void>;
     /** キューを出力する */
-    enqueue(args: {
+    exportQueues(args: {
         transaction_id?: string,
     }): TransactionAndQueueOperation<void>;
 }

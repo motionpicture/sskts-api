@@ -61,7 +61,7 @@ function main() {
         let transactionId = response.body.data._id;
         let salesTicketResult = yield COA.salesTicketInterface.call({
             theater_code: "001",
-            date_jouei: "20170120",
+            date_jouei: "20170131",
             title_code: "8513",
             title_branch_num: "0",
             time_begin: "1010",
@@ -69,7 +69,7 @@ function main() {
         console.log("salesTicketResult:", salesTicketResult);
         let getStateReserveSeatResult = yield COA.getStateReserveSeatInterface.call({
             theater_code: "001",
-            date_jouei: "20170120",
+            date_jouei: "20170131",
             title_code: "8513",
             title_branch_num: "0",
             time_begin: "1010",
@@ -82,7 +82,7 @@ function main() {
         console.log(freeSeatCodes);
         let reserveSeatsTemporarilyResult = yield COA.reserveSeatsTemporarilyInterface.call({
             theater_code: "001",
-            date_jouei: "20170120",
+            date_jouei: "20170131",
             title_code: "8513",
             title_branch_num: "0",
             time_begin: "1010",
@@ -130,7 +130,7 @@ function main() {
         let coaAuthorizationId = response.body.data._id;
         yield COA.deleteTmpReserveInterface.call({
             theater_code: "001",
-            date_jouei: "20170120",
+            date_jouei: "20170131",
             title_code: "8513",
             title_branch_num: "0",
             time_begin: "1010",
@@ -207,7 +207,7 @@ function main() {
             throw new Error(response.body.message);
         let reserveSeatsTemporarilyResult2 = yield COA.reserveSeatsTemporarilyInterface.call({
             theater_code: "001",
-            date_jouei: "20170120",
+            date_jouei: "20170131",
             title_code: "8513",
             title_branch_num: "0",
             time_begin: "1010",
@@ -306,7 +306,7 @@ function main() {
         let tel = "09012345678";
         let updateReserveResult = yield COA.updateReserveInterface.call({
             theater_code: "001",
-            date_jouei: "20170120",
+            date_jouei: "20170131",
             title_code: "8513",
             title_branch_num: "0",
             time_begin: "1010",

@@ -89,6 +89,16 @@ program
     process.exit(0);
 }));
 program
+    .command("watchTransactions")
+    .description("enqueue for a transaction.")
+    .action(() => {
+});
+program
+    .command("watchSendEmailQueue")
+    .description("")
+    .action(() => {
+});
+program
     .command("*")
     .action((env) => {
     console.log("deploying \"%s\"", env);

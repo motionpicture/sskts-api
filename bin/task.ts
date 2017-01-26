@@ -1,15 +1,11 @@
 import program = require("commander");
 // import AssetService from "../domain/default/service/interpreter/asset";
 import MasterService from "../domain/default/service/interpreter/master";
-// import TransactionService from "../domain/default/service/interpreter/transaction";
+
 import FilmRepository from "../domain/default/repository/interpreter/film";
 import ScreenRepository from "../domain/default/repository/interpreter/screen";
 import TheaterRepository from "../domain/default/repository/interpreter/theater";
 import PerformanceRepository from "../domain/default/repository/interpreter/performance";
-// import TransactionRepository from "../domain/default/repository/interpreter/transaction";
-// import QueueRepository from "../domain/default/repository/interpreter/queue";
-// import QueueStatus from "../domain/default/model/queueStatus";
-// import QueueGroup from "../domain/default/model/queueGroup";
 
 // let env = process.env.NODE_ENV || "dev";
 
@@ -102,7 +98,7 @@ program
                 day_end: end
             })(
                 FilmRepository(mongoose.connection), ScreenRepository(mongoose.connection), PerformanceRepository(mongoose.connection)
-            );
+                );
         } catch (error) {
             console.error(error);
         }
@@ -110,22 +106,20 @@ program
         process.exit(0);
     });
 
-// program
-//     .command("enqueue4transaction")
-//     .description("enqueue for a transaction.")
-//     .action(async () => {
-//         // mongoose.connect(MONGOLAB_URI);
+program
+    .command("watchTransactions")
+    .description("enqueue for a transaction.")
+    .action(() => {
+    });
 
-//         try {
-//             await TransactionService.enqueue({})(
-//                 TransactionRepository, QueueRepository
-//             );
-//         } catch (error) {
-//             console.error(error.message);
-//         }
+program
+    .command("watchSendEmailQueue")
+    .description("")
+    .action(() => {
 
-//         // mongoose.disconnect();
-//     });
+        // mongoose.disconnect();
+        // process.exit(0);
+    });
 
 // program
 //     .command("settleAuthorization")

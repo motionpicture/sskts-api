@@ -11,6 +11,21 @@ const monapt = require("monapt");
 const TransactionFactory = require("../../factory/transaction");
 const transaction_1 = require("./mongoose/model/transaction");
 class TransactionRepositoryInterpreter {
+    createFromDocument(doc) {
+        return TransactionFactory.create({
+            _id: doc.get("_id"),
+            status: doc.get("status"),
+            events: doc.get("events"),
+            owners: doc.get("owners"),
+            authorizations: doc.get("authorizations"),
+            emails: doc.get("emails"),
+            queues: doc.get("queues"),
+            expired_at: doc.get("expired_at"),
+            inquiry_id: doc.get("inquiry_id"),
+            inquiry_pass: doc.get("inquiry_pass"),
+            queues_status: doc.get("queues_status"),
+        });
+    }
     find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
@@ -29,19 +44,7 @@ class TransactionRepositoryInterpreter {
                 .populate("owners").exec();
             if (!doc)
                 return monapt.None;
-            let transaction = TransactionFactory.create({
-                _id: doc.get("_id"),
-                status: doc.get("status"),
-                events: doc.get("events"),
-                owners: doc.get("owners"),
-                authorizations: doc.get("authorizations"),
-                emails: doc.get("emails"),
-                expired_at: doc.get("expired_at"),
-                inquiry_id: doc.get("inquiry_id"),
-                inquiry_pass: doc.get("inquiry_pass"),
-                queues_imported: doc.get("queues_imported"),
-            });
-            return monapt.Option(transaction);
+            return monapt.Option(this.createFromDocument(doc));
         });
     }
     findOneAndUpdate(conditions, update) {
@@ -53,16 +56,7 @@ class TransactionRepositoryInterpreter {
             }).exec();
             if (!doc)
                 return monapt.None;
-            return monapt.Option(TransactionFactory.create({
-                _id: doc.get("_id"),
-                status: doc.get("status"),
-                events: doc.get("events"),
-                owners: doc.get("owners"),
-                authorizations: doc.get("authorizations"),
-                expired_at: doc.get("expired_at"),
-                inquiry_id: doc.get("inquiry_id"),
-                inquiry_pass: doc.get("inquiry_pass"),
-            }));
+            return monapt.Option(this.createFromDocument(doc));
         });
     }
     store(transaction) {

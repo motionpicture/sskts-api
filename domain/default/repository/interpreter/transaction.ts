@@ -8,6 +8,22 @@ import TransactionModel from "./mongoose/model/transaction";
 class TransactionRepositoryInterpreter implements TransactionRepository {
     public connection: mongoose.Connection;
 
+    private createFromDocument(doc: mongoose.Document) {
+        return TransactionFactory.create({
+            _id: doc.get("_id"),
+            status: doc.get("status"),
+            events: doc.get("events"),
+            owners: doc.get("owners"),
+            authorizations: doc.get("authorizations"),
+            emails: doc.get("emails"),
+            queues: doc.get("queues"),
+            expired_at: doc.get("expired_at"),
+            inquiry_id: doc.get("inquiry_id"),
+            inquiry_pass: doc.get("inquiry_pass"),
+            queues_status: doc.get("queues_status"),
+        });
+    }
+
     async find(conditions: Object) {
         let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
         let docs = await model.find(conditions)
@@ -17,26 +33,14 @@ class TransactionRepositoryInterpreter implements TransactionRepository {
         });
         return [];
     }
+
     async findById(id: string) {
         let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
         let doc = await model.findOne({ _id: id })
             .populate("owners").exec();
         if (!doc) return monapt.None;
 
-        let transaction = TransactionFactory.create({
-            _id: doc.get("_id"),
-            status: doc.get("status"),
-            events: doc.get("events"),
-            owners: doc.get("owners"),
-            authorizations: doc.get("authorizations"),
-            emails: doc.get("emails"),
-            expired_at: doc.get("expired_at"),
-            inquiry_id: doc.get("inquiry_id"),
-            inquiry_pass: doc.get("inquiry_pass"),
-            queues_imported: doc.get("queues_imported"),
-        });
-
-        return monapt.Option(transaction);
+        return monapt.Option(this.createFromDocument(doc));
     }
 
     async findOneAndUpdate(conditions: Object, update: Object) {
@@ -47,16 +51,7 @@ class TransactionRepositoryInterpreter implements TransactionRepository {
         }).exec();
         if (!doc) return monapt.None;
 
-        return monapt.Option(TransactionFactory.create({
-            _id: doc.get("_id"),
-            status: doc.get("status"),
-            events: doc.get("events"),
-            owners: doc.get("owners"),
-            authorizations: doc.get("authorizations"),
-            expired_at: doc.get("expired_at"),
-            inquiry_id: doc.get("inquiry_id"),
-            inquiry_pass: doc.get("inquiry_pass"),
-        }));
+        return monapt.Option(this.createFromDocument(doc));
     }
 
     async store(transaction: Transaction) {

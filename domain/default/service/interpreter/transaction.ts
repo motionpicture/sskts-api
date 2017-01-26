@@ -8,6 +8,7 @@ import TransactionEvent from "../../model/transactionEvent";
 import TransactionStatus from "../../model/transactionStatus";
 import TransactionEventGroup from "../../model/transactionEventGroup";
 import Authorization from "../../model/authorization";
+import Queue from "../../model/queue";
 import QueueStatus from "../../model/queueStatus";
 import AssetAuthorization from "../../model/authorization/asset";
 
@@ -388,13 +389,38 @@ class TransactionServiceInterpreter implements TransactionService {
         transaction_id: string
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // TODO キューリストを事前作成する
+            // 取引取得
+            let optionTransaction = await transactionRepository.findById(args.transaction_id);
+            if (optionTransaction.isEmpty) throw new Error("transaction not found.");
+            let transaction = optionTransaction.get();
+
+            // キュー作成
+            let queues: Array<Queue> = [];
+            transaction.authorizations.forEach((authorization) => {
+                queues.push(QueueFactory.createSettleAuthorization({
+                    _id: mongoose.Types.ObjectId().toString(),
+                    authorization: authorization,
+                    status: QueueStatus.UNEXECUTED,
+                    executed_at: new Date(), // TODO 調整
+                    count_try: 0
+                }));
+            });
+            transaction.emails.forEach((email) => {
+                queues.push(QueueFactory.createSendEmail({
+                    _id: mongoose.Types.ObjectId().toString(),
+                    email: email,
+                    status: QueueStatus.UNEXECUTED,
+                    executed_at: new Date(), // TODO 調整
+                    count_try: 0
+                }));
+            });
+
             // イベント作成
             let event = new TransactionEvent(
                 mongoose.Types.ObjectId().toString(),
                 TransactionEventGroup.CLOSE,
             );
-
-            // TODO キューリストを事前作成する
 
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
@@ -405,7 +431,10 @@ class TransactionServiceInterpreter implements TransactionService {
                         status: TransactionStatus.CLOSED
                     },
                     $push: {
-                        events: event
+                        events: event,
+                    },
+                    $addToSet: {
+                        queues: { $each: queues }
                     }
                 });
             if (option.isEmpty) throw new Error("processing transaction not found.");
@@ -477,61 +506,18 @@ class TransactionServiceInterpreter implements TransactionService {
     /**
      * キュー出力
      */
-    enqueue() {
+    exportQueues(args: {
+        transaction_id: string
+    }) {
         return async (transactionRepository: TransactionRepository, queueRepository: QueueRepository) => {
-            // 未インポートの取引を取得
-            let option = await transactionRepository.findOneAndUpdate({
-                status: { $in: [TransactionStatus.CLOSED, TransactionStatus.EXPIRED] },
-                queues_imported: false
-            }, {
-                    queues_imported: false
-                });
-            if (option.isEmpty) return;
+            let option = await transactionRepository.findById(args.transaction_id);
+            if (option.isEmpty) throw new Error("transaction not found.");
 
             let transaction = option.get();
-            console.log("transaction is", transaction);
-
-            let promises: Array<Promise<void>> = [];
-            switch (transaction.status) {
-                case TransactionStatus.CLOSED:
-                    // 資産移動キュー作成
-                    promises = promises.concat(transaction.authorizations.map(async (authorization) => {
-                        let queue = QueueFactory.createSettleAuthorization({
-                            status: QueueStatus.UNEXECUTED,
-                            executed_at: new Date(), // TODO いつ実行？
-                            count_try: 0,
-                            authorization: authorization
-                        });
-                        await queueRepository.store(queue);
-                    }));
-
-                    // TODO メール送信キュー作成
-
-                    break;
-
-                case TransactionStatus.EXPIRED:
-                    // 承認解除キュー作成
-                    // promises = promises.concat(transaction.authorizations.map(async (authorization) => {
-                    //     let queue = QueueFactory.createSetttleAuthorization({
-                    //         authorization: authorization
-                    //     });
-                    //     await queueRepository.store(queue);
-                    // }));
-
-                    break;
-                default:
-                    break;
-            }
-
+            let promises = transaction.queues.map(async (queue) => {
+                await queueRepository.store(queue);
+            });
             await Promise.all(promises);
-            console.log("queues created.");
-
-            // 承認を全て作成できたら取引のフラグ変更
-            await transactionRepository.findOneAndUpdate({
-                _id: transaction._id
-            }, {
-                    queues_imported: true
-                });
         }
     }
 

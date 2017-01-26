@@ -241,6 +241,29 @@ class TransactionServiceInterpreter {
     }
     close(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let optionTransaction = yield transactionRepository.findById(args.transaction_id);
+            if (optionTransaction.isEmpty)
+                throw new Error("transaction not found.");
+            let transaction = optionTransaction.get();
+            let queues = [];
+            transaction.authorizations.forEach((authorization) => {
+                queues.push(QueueFactory.createSettleAuthorization({
+                    _id: mongoose.Types.ObjectId().toString(),
+                    authorization: authorization,
+                    status: queueStatus_1.default.UNEXECUTED,
+                    executed_at: new Date(),
+                    count_try: 0
+                }));
+            });
+            transaction.emails.forEach((email) => {
+                queues.push(QueueFactory.createSendEmail({
+                    _id: mongoose.Types.ObjectId().toString(),
+                    email: email,
+                    status: queueStatus_1.default.UNEXECUTED,
+                    executed_at: new Date(),
+                    count_try: 0
+                }));
+            });
             let event = new transactionEvent_1.default(mongoose.Types.ObjectId().toString(), transactionEventGroup_1.default.CLOSE);
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: args.transaction_id,
@@ -250,7 +273,10 @@ class TransactionServiceInterpreter {
                     status: transactionStatus_1.default.CLOSED
                 },
                 $push: {
-                    events: event
+                    events: event,
+                },
+                $addToSet: {
+                    queues: { $each: queues }
                 }
             });
             if (option.isEmpty)
@@ -296,43 +322,16 @@ class TransactionServiceInterpreter {
                 throw new Error("closed transaction not found.");
         });
     }
-    enqueue() {
+    exportQueues(args) {
         return (transactionRepository, queueRepository) => __awaiter(this, void 0, void 0, function* () {
-            let option = yield transactionRepository.findOneAndUpdate({
-                status: { $in: [transactionStatus_1.default.CLOSED, transactionStatus_1.default.EXPIRED] },
-                queues_imported: false
-            }, {
-                queues_imported: false
-            });
+            let option = yield transactionRepository.findById(args.transaction_id);
             if (option.isEmpty)
-                return;
+                throw new Error("transaction not found.");
             let transaction = option.get();
-            console.log("transaction is", transaction);
-            let promises = [];
-            switch (transaction.status) {
-                case transactionStatus_1.default.CLOSED:
-                    promises = promises.concat(transaction.authorizations.map((authorization) => __awaiter(this, void 0, void 0, function* () {
-                        let queue = QueueFactory.createSettleAuthorization({
-                            status: queueStatus_1.default.UNEXECUTED,
-                            executed_at: new Date(),
-                            count_try: 0,
-                            authorization: authorization
-                        });
-                        yield queueRepository.store(queue);
-                    })));
-                    break;
-                case transactionStatus_1.default.EXPIRED:
-                    break;
-                default:
-                    break;
-            }
+            let promises = transaction.queues.map((queue) => __awaiter(this, void 0, void 0, function* () {
+                yield queueRepository.store(queue);
+            }));
             yield Promise.all(promises);
-            console.log("queues created.");
-            yield transactionRepository.findOneAndUpdate({
-                _id: transaction._id
-            }, {
-                queues_imported: true
-            });
         });
     }
     addEmail(args) {
