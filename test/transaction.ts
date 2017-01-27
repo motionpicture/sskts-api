@@ -14,6 +14,8 @@ import moment = require("moment");
 
 async function main() {
     let response: any;
+    let gmoShopId = "tshop00026096";
+    let gmoShopPass = "xbxmkaa6";
 
     // 運営者取得
     response = await request.get({
@@ -197,8 +199,8 @@ async function main() {
     // GMOオーソリ取得
     let orderId = Date.now().toString();
     let entryTranResult = await GMO.CreditService.entryTranInterface.call({
-        shop_id: "tshop00024015",
-        shop_pass: "hf3wsuyy",
+        shop_id: gmoShopId,
+        shop_pass: gmoShopPass,
         order_id: orderId,
         job_cd: GMO.Util.JOB_CD_AUTH,
         amount: totalPrice,
@@ -221,13 +223,13 @@ async function main() {
         body: {
             owner_id_from: anonymousOwnerId,
             owner_id_to: administratorOwnerId,
-            gmo_shop_id: "tshop00024015",
-            gmo_shop_pass: "hf3wsuyy",
+            gmo_shop_id: gmoShopId,
+            gmo_shop_pass: gmoShopPass,
             gmo_order_id: orderId,
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult.access_id,
             gmo_access_pass: entryTranResult.access_pass,
-            gmo_job_cd: GMO.Util.JOB_CD_SALES,
+            gmo_job_cd: GMO.Util.JOB_CD_AUTH,
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
         },
         json: true,
@@ -242,8 +244,8 @@ async function main() {
 
     // GMOオーソリ取消
     let alterTranResult = await GMO.CreditService.alterTranInterface.call({
-        shop_id: "tshop00024015",
-        shop_pass: "hf3wsuyy",
+        shop_id: gmoShopId,
+        shop_pass: gmoShopPass,
         access_id: entryTranResult.access_id,
         access_pass: entryTranResult.access_pass,
         job_cd: GMO.Util.JOB_CD_VOID
@@ -334,8 +336,8 @@ async function main() {
     // GMOオーソリ取得(2回目)
     orderId = Date.now().toString();
     let entryTranResult2 = await GMO.CreditService.entryTranInterface.call({
-        shop_id: "tshop00024015",
-        shop_pass: "hf3wsuyy",
+        shop_id: gmoShopId,
+        shop_pass: gmoShopPass,
         order_id: orderId,
         job_cd: GMO.Util.JOB_CD_AUTH,
         amount: totalPrice,
@@ -358,13 +360,13 @@ async function main() {
         body: {
             owner_id_from: anonymousOwnerId,
             owner_id_to: administratorOwnerId,
-            gmo_shop_id: "tshop00024015",
-            gmo_shop_pass: "hf3wsuyy",
+            gmo_shop_id: gmoShopId,
+            gmo_shop_pass: gmoShopPass,
             gmo_order_id: orderId,
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult2.access_id,
             gmo_access_pass: entryTranResult2.access_pass,
-            gmo_job_cd: GMO.Util.JOB_CD_SALES,
+            gmo_job_cd: GMO.Util.JOB_CD_AUTH,
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
         },
         json: true,

@@ -17,16 +17,6 @@
     "redis_port": "",
     "redis_key": "",
 
-    "mongolab_uri": "mongodb://devsasakiticketmongodbuser:devsasakiticketmongodbuserpassword@ds052819.mlab.com:52819/devsasakiticketmongodb",
-    "mongolab_uri_for_logs": "mongodb://devsasakiticketmlabmongodbuser:N9%2C-%254N~2V7.PqrpMfLJaa%2FWn9%25_MDvG*mb%23di%26m@ds025973.mlab.com:25973/devsasakiticketmlabmongodb",
-
-    "sendgrid_api_key": "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",
-
-    "gmo_payment_site_id": "tsite00022126",
-    "gmo_payment_shop_id": "tshop00024743",
-    "gmo_payment_shop_password": "tawzswh4",
-    "gmo_payment_api_link_multi_entry": "https://pt01.mul-pay.jp/link/tshop00024743/Multi/Entry",
-
     "coa_api_endpoint": "http://coacinema.aa0.netvolante.jp",
     "coa_api_refresh_token": "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ"
 }

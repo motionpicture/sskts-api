@@ -1,11 +1,11 @@
-import NotificationService from "../domain/default/service/interpreter/notification";
+import SalesService from "../domain/default/service/interpreter/sales";
 import QueueRepository from "../domain/default/repository/interpreter/queue";
 import QueueStatus from "../domain/default/model/queueStatus";
-
 import mongoose = require("mongoose");
+import GMO = require("@motionpicture/gmo-service");
+
 mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.connect(process.env.MONGOLAB_URI);
-
 let count = 0;
 
 setInterval(async () => {
@@ -17,7 +17,7 @@ setInterval(async () => {
 
         // 未実行のメール送信キューを取得
         // TODO try_count
-        let option = await queueRepository.findOneSendEmailAndUpdate({
+        let option = await queueRepository.findOneSettleGMOAuthorizationAndUpdate({
             status: QueueStatus.UNEXECUTED,
         }, {
                 status: QueueStatus.RUNNING
@@ -28,7 +28,7 @@ setInterval(async () => {
             console.log("queue is", queue);
 
 
-            await NotificationService.sendEmail(queue.email)
+            await SalesService.settleGMOAuth(queue.authorization)(GMO)
                 .then(async () => {
                     await queueRepository.findOneAndUpdate({
                         _id: queue._id

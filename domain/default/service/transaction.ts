@@ -61,7 +61,7 @@ interface TransactionService {
         gmo_shop_id: string,
         gmo_shop_pass: string,
         gmo_order_id: string,
-        gmo_amount: string,
+        gmo_amount: number,
         gmo_access_id: string,
         gmo_access_pass: string,
         gmo_job_cd: string,

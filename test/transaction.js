@@ -21,6 +21,8 @@ const moment = require("moment");
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         let response;
+        let gmoShopId = "tshop00026096";
+        let gmoShopPass = "xbxmkaa6";
         response = yield request.get({
             url: "http://localhost:8080/owners/administrator",
             body: {},
@@ -149,8 +151,8 @@ function main() {
             throw new Error(response.body.message);
         let orderId = Date.now().toString();
         let entryTranResult = yield GMO.CreditService.entryTranInterface.call({
-            shop_id: "tshop00024015",
-            shop_pass: "hf3wsuyy",
+            shop_id: gmoShopId,
+            shop_pass: gmoShopPass,
             order_id: orderId,
             job_cd: GMO.Util.JOB_CD_AUTH,
             amount: totalPrice,
@@ -170,13 +172,13 @@ function main() {
             body: {
                 owner_id_from: anonymousOwnerId,
                 owner_id_to: administratorOwnerId,
-                gmo_shop_id: "tshop00024015",
-                gmo_shop_pass: "hf3wsuyy",
+                gmo_shop_id: gmoShopId,
+                gmo_shop_pass: gmoShopPass,
                 gmo_order_id: orderId,
                 gmo_amount: totalPrice,
                 gmo_access_id: entryTranResult.access_id,
                 gmo_access_pass: entryTranResult.access_pass,
-                gmo_job_cd: GMO.Util.JOB_CD_SALES,
+                gmo_job_cd: GMO.Util.JOB_CD_AUTH,
                 gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             },
             json: true,
@@ -188,8 +190,8 @@ function main() {
             throw new Error(response.body.message);
         let gmoAuthorizationId = response.body.data._id;
         let alterTranResult = yield GMO.CreditService.alterTranInterface.call({
-            shop_id: "tshop00024015",
-            shop_pass: "hf3wsuyy",
+            shop_id: gmoShopId,
+            shop_pass: gmoShopPass,
             access_id: entryTranResult.access_id,
             access_pass: entryTranResult.access_pass,
             job_cd: GMO.Util.JOB_CD_VOID
@@ -253,8 +255,8 @@ function main() {
             throw new Error(response.body.message);
         orderId = Date.now().toString();
         let entryTranResult2 = yield GMO.CreditService.entryTranInterface.call({
-            shop_id: "tshop00024015",
-            shop_pass: "hf3wsuyy",
+            shop_id: gmoShopId,
+            shop_pass: gmoShopPass,
             order_id: orderId,
             job_cd: GMO.Util.JOB_CD_AUTH,
             amount: totalPrice,
@@ -274,13 +276,13 @@ function main() {
             body: {
                 owner_id_from: anonymousOwnerId,
                 owner_id_to: administratorOwnerId,
-                gmo_shop_id: "tshop00024015",
-                gmo_shop_pass: "hf3wsuyy",
+                gmo_shop_id: gmoShopId,
+                gmo_shop_pass: gmoShopPass,
                 gmo_order_id: orderId,
                 gmo_amount: totalPrice,
                 gmo_access_id: entryTranResult2.access_id,
                 gmo_access_pass: entryTranResult2.access_pass,
-                gmo_job_cd: GMO.Util.JOB_CD_SALES,
+                gmo_job_cd: GMO.Util.JOB_CD_AUTH,
                 gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             },
             json: true,

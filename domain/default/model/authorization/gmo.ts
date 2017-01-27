@@ -5,10 +5,17 @@ import Owner from "../owner";
 export default class GMOAuthorization extends Authorization {
     constructor(
         readonly _id: string,
-        readonly order_id: string,
         readonly price: number,
         readonly owner_from: Owner,
         readonly owner_to: Owner,
+        readonly gmo_shop_id: string,
+        readonly gmo_shop_pass: string,
+        readonly gmo_order_id: string,
+        readonly gmo_amount: number,
+        readonly gmo_access_id: string,
+        readonly gmo_access_pass: string,
+        readonly gmo_job_cd: string,
+        readonly gmo_pay_type: string,
     ) {
         // TODO validation
 

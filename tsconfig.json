@@ -46,7 +46,6 @@
         "locales",
         "logs",
         "node_modules",
-        "public",
-        "typings"
+        "public"
     ]
 }

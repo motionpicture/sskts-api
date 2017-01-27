@@ -7,16 +7,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const GMO = require("@motionpicture/gmo-service");
 class SalesServiceInterpreter {
     cancelGMOAuth(authorization) {
-        return __awaiter(this, void 0, void 0, function* () {
+        return (gmoRepository) => __awaiter(this, void 0, void 0, function* () {
+            console.log(gmoRepository);
             console.log(authorization);
         });
     }
     ;
     settleGMOAuth(authorization) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log(authorization);
+        return (gmoRepository) => __awaiter(this, void 0, void 0, function* () {
+            yield gmoRepository.CreditService.alterTranInterface.call({
+                shop_id: authorization.gmo_shop_id,
+                shop_pass: authorization.gmo_shop_pass,
+                access_id: authorization.gmo_access_id,
+                access_pass: authorization.gmo_access_pass,
+                job_cd: GMO.Util.JOB_CD_SALES,
+                amount: authorization.gmo_amount,
+            });
         });
     }
     ;

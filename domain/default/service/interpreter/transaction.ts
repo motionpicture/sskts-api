@@ -165,7 +165,7 @@ class TransactionServiceInterpreter implements TransactionService {
         gmo_shop_id: string,
         gmo_shop_pass: string,
         gmo_order_id: string,
-        gmo_amount: string,
+        gmo_amount: number,
         gmo_access_id: string,
         gmo_access_pass: string,
         gmo_job_cd: string,
@@ -197,10 +197,17 @@ class TransactionServiceInterpreter implements TransactionService {
             // GMO承認作成
             let authorization = AuthorizationFactory.createGMO({
                 _id: mongoose.Types.ObjectId().toString(),
-                order_id: args.gmo_order_id,
-                price: parseInt(args.gmo_amount),
+                price: args.gmo_amount,
                 owner_from: optionOwnerFrom.get(),
                 owner_to: optionOwnerTo.get(),
+                gmo_shop_id: args.gmo_shop_id,
+                gmo_shop_pass: args.gmo_shop_pass,
+                gmo_order_id: args.gmo_order_id,
+                gmo_amount: args.gmo_amount,
+                gmo_access_id: args.gmo_access_id,
+                gmo_access_pass: args.gmo_access_pass,
+                gmo_job_cd: args.gmo_job_cd,
+                gmo_pay_type: args.gmo_pay_type,
             });
 
             // 永続化

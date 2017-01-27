@@ -1,8 +1,6 @@
 import express = require('express')
 let router = express.Router();
 import mongoose = require("mongoose");
-import conf = require("config");
-let MONGOLAB_URI = conf.get<string>("mongolab_uri");
 
 // middleware that is specific to this router
 // router.use((req, res, next) => {
@@ -23,7 +21,7 @@ router.get("/environmentVariables", (req, res) => {
 
 router.get("/mongoose/connect", (req, res, next) => {
     console.log("ip:", req.ip);
-    mongoose.connect(MONGOLAB_URI, (err) => {
+    mongoose.connect(process.env.MONGOLAB_URI, (err: Error) => {
         if (err) return next(err);
 
         res.status(204).end();
