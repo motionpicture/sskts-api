@@ -8,24 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const TheaterFactory = require("../../factory/theater");
 const theater_1 = require("./mongoose/model/theater");
 class TheaterRepositoryInterpreter {
-    createFromDocument(doc) {
-        return TheaterFactory.create({
-            _id: doc.get("_id"),
-            name: doc.get("name"),
-            name_kana: doc.get("name_kana"),
-            address: doc.get("address"),
-        });
-    }
     findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(theater_1.default.modelName, theater_1.default.schema);
-            let theater = yield model.findOne({ _id: id }).exec();
-            if (!theater)
-                return monapt.None;
-            return monapt.Option(this.createFromDocument(theater));
+            let theater = yield model.findOne({ _id: id }).lean().exec();
+            return (theater) ? monapt.Option(theater) : monapt.None;
         });
     }
     store(theater) {

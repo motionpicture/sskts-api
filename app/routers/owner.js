@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const express = require("express");
 let router = express.Router();
 const owner_1 = require("../../domain/default/repository/interpreter/owner");
-const administrator_1 = require("../../domain/default/repository/interpreter/owner/administrator");
 const transaction_1 = require("../../domain/default/service/interpreter/transaction");
 const mongoose = require("mongoose");
 router.post("/anonymous", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -55,7 +54,7 @@ router.get("/administrator", (req, res, next) => __awaiter(this, void 0, void 0,
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let owner = yield transaction_1.default.getAdministratorOwner()(administrator_1.default(mongoose.connection));
+        let owner = yield transaction_1.default.getAdministratorOwner()(owner_1.default(mongoose.connection));
         res.json({
             data: {
                 type: "owners",

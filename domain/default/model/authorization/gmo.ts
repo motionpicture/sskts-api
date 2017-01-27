@@ -1,10 +1,11 @@
+import ObjectId from "../objectId";
 import AuthorizationGroup from "../authorizationGroup";
 import Authorization from "../authorization";
 import Owner from "../owner";
 
 export default class GMOAuthorization extends Authorization {
     constructor(
-        readonly _id: string,
+        readonly _id: ObjectId,
         readonly price: number,
         readonly owner_from: Owner,
         readonly owner_to: Owner,

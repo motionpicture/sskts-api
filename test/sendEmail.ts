@@ -1,8 +1,9 @@
 import NotificationService from "../domain/default/service/interpreter/notification";
 import Email from "../domain/default/model/email";
+import ObjectId from "../domain/default/model/objectId";
 
 let email = new Email(
-    "test",
+    ObjectId(),
     "test@localhost",
     "ilovegadd@gmail.com",
     "test subject",

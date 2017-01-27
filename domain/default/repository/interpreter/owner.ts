@@ -1,9 +1,12 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
+
+import ObjectId from "../../model/objectId";
 import Owner from "../../model/owner";
-import OwnerRepository from "../owner";
-import * as OwnerFactory from "../../factory/owner";
+import AdministratorOwner from "../../model/owner/administrator";
 import OwnerGroup from "../../model/ownerGroup";
+
+import OwnerRepository from "../owner";
 import OwnerModel from "./mongoose/model/owner";
 
 class OwnerRepositoryInterpreter implements OwnerRepository {
@@ -11,65 +14,31 @@ class OwnerRepositoryInterpreter implements OwnerRepository {
 
     async find(conditions: Object) {
         let model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        let docs = await model.find({ $and: [conditions] }).exec();
-        return docs.map((doc) => {
-            return OwnerFactory.create({
-                _id: doc.get("_id"),
-                group: doc.get("group")
-            });
-        });
+        return <Array<Owner>> await model.find({ $and: [conditions] }).lean().exec();
     }
 
-    async findById(id: string) {
+    async findById(id: ObjectId) {
         let model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        let doc = await model.findOne({ _id: id }).exec();
-        if (!doc) return monapt.None;
+        let owner = <Owner> await model.findOne({ _id: id }).lean().exec();
 
-        let owner: Owner;
-        switch (doc.get("group")) {
-            // TODO
-            // case OwnerGroup.ADMINISTRATOR:
-            //     break;
+        return (owner) ? monapt.Option(owner) : monapt.None;
+    }
 
-            case OwnerGroup.ANONYMOUS:
-                owner = OwnerFactory.createAnonymous({
-                    _id: doc.get("_id"),
-                    name_first: doc.get("name_first"),
-                    name_last: doc.get("name_last"),
-                    email: doc.get("email"),
-                    tel: doc.get("tel"),
-                });
-                break;
+    async findAdministrator() {
+        let model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
+        let owner = <AdministratorOwner> await model.findOne({ group: OwnerGroup.ADMINISTRATOR }).lean().exec();
 
-            // TODO
-            // case OwnerGroup.MEMBER:
-            //     break;
-
-            default:
-                owner = OwnerFactory.create({
-                    _id: doc.get("_id"),
-                    group: doc.get("group")
-                });
-                break;
-        }
-
-        return monapt.Option(owner);
+        return (owner) ? monapt.Option(owner) : monapt.None;
     }
 
     async findOneAndUpdate(conditions: Object, update: Object) {
         let model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        let doc = await model.findOneAndUpdate(conditions, update, {
+        let owner = <Owner> await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
-        }).exec();
-        if (!doc) return monapt.None;
+        }).lean().exec();
 
-        let owner = OwnerFactory.create({
-            _id: doc.get("_id"),
-            group: doc.get("group")
-        });
-
-        return monapt.Option(owner);
+        return (owner) ? monapt.Option(owner) : monapt.None;
     }
 
     async store(owner: Owner) {

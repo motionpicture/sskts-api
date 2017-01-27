@@ -1,3 +1,4 @@
+import ObjectId from "../objectId";
 import Queue from "../queue";
 import QueueGroup from "../queueGroup";
 import QueueStatus from "../queueStatus";
@@ -5,7 +6,7 @@ import Email from "../email";
 
 export default class SendEmailQueue extends Queue {
     constructor(
-        readonly _id: string,
+        readonly _id: ObjectId,
         readonly status: QueueStatus,
         readonly executed_at: Date,
         readonly count_try: number,

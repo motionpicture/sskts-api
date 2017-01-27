@@ -8,18 +8,16 @@ import AdministratorOwner from "../model/owner/administrator";
 
 import OwnerRepository from "../repository/owner";
 import TransactionRepository from "../repository/transaction";
-import AssetAuthorizationRepository from "../repository/authorization/asset";
 import QueueRepository from "../repository/queue";
 import AssetRepository from "../repository/asset";
-import AdministratorOwnerRepository from "../repository/owner/administrator";
 
 type TransactionAndQueueOperation<T> = (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
 type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
-type AssetAuthorizationAndTransactionOperation<T> = (assetAuthorizationRepository: AssetAuthorizationRepository, repository: TransactionRepository) => Promise<T>;
+type AssetAndTransactionOperation<T> = (assetRepository: AssetRepository, repository: TransactionRepository) => Promise<T>;
 type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
 type AssetOperation<T> = (assetRepository: AssetRepository) => Promise<T>;
 type OwnerOperation<T> = (ownerRepository: OwnerRepository) => Promise<T>;
-type AdministratorOwnerOperation<T> = (administratorOwnerRepository: AdministratorOwnerRepository) => Promise<T>;
+type AdministratorOwnerOperation<T> = (ownerRepository: OwnerRepository) => Promise<T>;
 
 /**
  * 取引サービス
@@ -52,7 +50,7 @@ interface TransactionService {
     addAssetAuthorization(args: {
         transaction_id: string,
         authorization_id: string,
-    }): AssetAuthorizationAndTransactionOperation<Authorization>;
+    }): AssetAndTransactionOperation<Authorization>;
     /** GMO資産承認 */
     addGMOAuthorization(args: {
         transaction_id: string,
@@ -132,7 +130,7 @@ interface TransactionService {
     }): TransactionOperation<void>;
     /** キューを出力する */
     exportQueues(args: {
-        transaction_id?: string,
+        transaction_id: string,
     }): TransactionAndQueueOperation<void>;
 }
 

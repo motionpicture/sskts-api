@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const objectId_1 = require("../../model/objectId");
 const AssetFactory = require("../../factory/asset");
 class StockServiceInterpreter {
     unauthorizeAsset(authorization) {
@@ -30,6 +31,7 @@ class StockServiceInterpreter {
         return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
             let promises = authorization.seats.map((seat) => __awaiter(this, void 0, void 0, function* () {
                 let asset = AssetFactory.createSeatReservation({
+                    _id: objectId_1.default(),
                     price: authorization.price,
                     authorizations: [],
                     performance: seat.performance,

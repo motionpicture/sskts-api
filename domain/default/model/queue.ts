@@ -1,9 +1,10 @@
+import ObjectId from "./objectId";
 import QueueGroup from "./queueGroup";
 import QueueStatus from "./queueStatus";
 
 export default class Queue {
     constructor(
-        readonly _id: string,
+        readonly _id: ObjectId,
         readonly group: QueueGroup,
         readonly status: QueueStatus,
         readonly executed_at: Date,

@@ -1,7 +1,8 @@
 import Email from "../model/email";
+import ObjectId from "../model/objectId";
 
 export function create(args: {
-    _id: string,
+    _id: ObjectId,
     from?: string,
     to?: string,
     subject?: string,

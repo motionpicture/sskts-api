@@ -1,7 +1,6 @@
 import express = require("express");
 let router = express.Router();
 import OwnerRepository from "../../domain/default/repository/interpreter/owner";
-import AdministratorOwnerRepository from "../../domain/default/repository/interpreter/owner/administrator";
 import TransactionService from "../../domain/default/service/interpreter/transaction";
 import mongoose = require("mongoose");
 
@@ -55,7 +54,7 @@ router.get("/administrator", async (req, res, next) => {
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let owner = await TransactionService.getAdministratorOwner()(AdministratorOwnerRepository(mongoose.connection));
+        let owner = await TransactionService.getAdministratorOwner()(OwnerRepository(mongoose.connection));
         res.json({
             data: {
                 type: "owners",

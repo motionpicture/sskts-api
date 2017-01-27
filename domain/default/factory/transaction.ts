@@ -1,3 +1,4 @@
+import ObjectId from "../model/objectId";
 import Transaction from "../model/transaction";
 import TransactionStatus from "../model/transactionStatus";
 import TransactionEvent from "../model/transactionEvent";
@@ -8,7 +9,7 @@ import Email from "../model/email";
 import Queue from "../model/queue";
 
 export function create(args: {
-    _id?: string,
+    _id?: ObjectId,
     status: TransactionStatus,
     events?: Array<TransactionEvent>,
     owners: Array<Owner>,
@@ -21,7 +22,7 @@ export function create(args: {
     queues_status?: TransactionQueuesStatus,
 }): Transaction {
     return new Transaction(
-        (args._id === undefined) ? "" : (args._id),
+        (args._id === undefined) ? ObjectId() : (args._id),
         args.status,
         (args.events === undefined) ? [] : (args.events),
         args.owners,

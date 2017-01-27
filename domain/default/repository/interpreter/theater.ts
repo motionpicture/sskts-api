@@ -1,28 +1,17 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Theater from "../../model/theater";
-import * as TheaterFactory from "../../factory/theater";
 import TheaterRepository from "../theater";
 import TheaterModel from "./mongoose/model/theater";
 
 class TheaterRepositoryInterpreter implements TheaterRepository {
     public connection: mongoose.Connection;
 
-    private createFromDocument(doc: mongoose.Document): Theater {
-        return TheaterFactory.create({
-            _id: doc.get("_id"),
-            name: doc.get("name"),
-            name_kana: doc.get("name_kana"),
-            address: doc.get("address"),
-        });
-    }
-
     async findById(id: string) {
         let model = this.connection.model(TheaterModel.modelName, TheaterModel.schema);
-        let theater = await model.findOne({ _id: id }).exec();
-        if (!theater) return monapt.None;
+        let theater = <Theater> await model.findOne({ _id: id }).lean().exec();
 
-        return monapt.Option(this.createFromDocument(theater));
+        return (theater) ? monapt.Option(theater) : monapt.None;
     }
 
     async store(theater: Theater) {

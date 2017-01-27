@@ -1,3 +1,4 @@
+import ObjectId from "../model/objectId";
 import Authorization from "../model/authorization";
 import Email from "../model/email";
 import Queue from "../model/queue";
@@ -7,7 +8,7 @@ import QueueGroup from "../model/queueGroup";
 import QueueStatus from "../model/queueStatus";
 
 export function create(args: {
-    _id: string,
+    _id: ObjectId,
     group: QueueGroup,
     status: QueueStatus,
     executed_at: Date,
@@ -23,7 +24,7 @@ export function create(args: {
 }
 
 export function createSettleAuthorization(args: {
-    _id: string,
+    _id: ObjectId,
     authorization: Authorization,
     status: QueueStatus
     executed_at: Date,
@@ -39,7 +40,7 @@ export function createSettleAuthorization(args: {
 }
 
 export function createSendEmail(args: {
-    _id: string,
+    _id: ObjectId,
     email: Email,
     status: QueueStatus
     executed_at: Date,

@@ -1,3 +1,4 @@
+import ObjectId from "./objectId";
 import Owner from "./owner";
 import Authorization from "./authorization";
 import Email from "./email";
@@ -8,7 +9,7 @@ import TransactionQueuesStatus from "./transactionQueuesStatus";
 
 export default class Transaction {
     constructor(
-        readonly _id: string,
+        readonly _id: ObjectId,
         readonly status: TransactionStatus,
         readonly events: Array<TransactionEvent>,
         readonly owners: Array<Owner>,

@@ -8,52 +8,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const PerformanceFactory = require("../../factory/performance");
 const performance_1 = require("./mongoose/model/performance");
 class PerformanceRepositoryInterpreter {
     find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(performance_1.default.modelName, performance_1.default.schema);
-            let performances = yield model.find(conditions)
+            return yield model.find(conditions)
                 .populate("film")
                 .populate("theater")
                 .populate("screen")
+                .lean()
                 .exec();
-            return performances.map((performance) => {
-                return PerformanceFactory.create({
-                    _id: performance.get("_id"),
-                    theater: performance.get("theater"),
-                    screen: performance.get("screen"),
-                    film: performance.get("film"),
-                    day: performance.get("day"),
-                    time_start: performance.get("time_start"),
-                    time_end: performance.get("time_end"),
-                    canceled: performance.get("canceled"),
-                });
-            });
         });
     }
     findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(performance_1.default.modelName, performance_1.default.schema);
-            let doc = yield model.findOne({ _id: id })
+            let performance = yield model.findOne({ _id: id })
                 .populate("film")
                 .populate("theater")
                 .populate("screen")
+                .lean()
                 .exec();
-            if (!doc)
-                return monapt.None;
-            let performance = PerformanceFactory.create({
-                _id: doc.get("_id"),
-                theater: doc.get("theater"),
-                screen: doc.get("screen"),
-                film: doc.get("film"),
-                day: doc.get("day"),
-                time_start: doc.get("time_start"),
-                time_end: doc.get("time_end"),
-                canceled: doc.get("canceled"),
-            });
-            return monapt.Option(performance);
+            return (performance) ? monapt.Option(performance) : monapt.None;
         });
     }
     store(performance) {

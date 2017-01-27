@@ -33,7 +33,7 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
             console.log("transaction is", transaction);
             console.log("transaction.queues.length is", transaction.queues.length);
             yield transaction_1.default.exportQueues({
-                transaction_id: transaction._id
+                transaction_id: transaction._id.toString()
             })(transactionRepository, queue_1.default(mongoose.connection))
                 .then(() => __awaiter(this, void 0, void 0, function* () {
                 yield transactionRepository.findOneAndUpdate({

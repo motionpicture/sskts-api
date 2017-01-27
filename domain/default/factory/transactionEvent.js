@@ -3,7 +3,7 @@ const transactionEvent_1 = require("../model/transactionEvent");
 const authorize_1 = require("../model/transactionEvent/authorize");
 const unauthorize_1 = require("../model/transactionEvent/unauthorize");
 function create(args) {
-    return new transactionEvent_1.default((args._id === undefined) ? "" : (args._id), args.group);
+    return new transactionEvent_1.default(args._id, args.group);
 }
 exports.create = create;
 function createAuthorize(args) {

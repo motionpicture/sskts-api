@@ -30,7 +30,7 @@ setInterval(async () => {
             console.log("transaction.queues.length is", transaction.queues.length);
 
             await TransactionService.exportQueues({
-                transaction_id: transaction._id
+                transaction_id: transaction._id.toString()
             })(transactionRepository, QueueRepository(mongoose.connection))
                 .then(async () => {
                     await transactionRepository.findOneAndUpdate({

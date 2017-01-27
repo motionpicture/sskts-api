@@ -2,7 +2,6 @@ import mongoose = require("mongoose");
 import monapt = require("monapt");
 import Screen from "../../model/screen";
 import ScreenRepository from "../screen";
-import * as ScreenFactory from "../../factory/screen";
 import ScreenModel from "./mongoose/model/screen";
 
 class ScreenRepositoryInterpreter implements ScreenRepository {
@@ -10,36 +9,20 @@ class ScreenRepositoryInterpreter implements ScreenRepository {
 
     async findById(id: string) {
         let model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
-        let doc = await model.findOne({ _id: id })
+        let screen = <Screen> await model.findOne({ _id: id })
         .populate("theater")
+        .lean()
         .exec();
-        if (!doc) return monapt.None;
 
-        let screen = ScreenFactory.create({
-            _id: doc.get("_id"),
-            theater: doc.get("theater"),
-            coa_screen_code: doc.get("coa_screen_code"),
-            name: doc.get("name"),
-            sections: doc.get("sections")
-        });
-
-        return monapt.Option(screen);
+        return (screen) ? monapt.Option(screen) : monapt.None;
     }
 
     async findByTheater(theaterCode: string) {
         let model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
-        let docs = await model.find({theater: theaterCode})
+        return <Array<Screen>> await model.find({theater: theaterCode})
         .populate("theater")
+        .lean()
         .exec();
-        return docs.map((doc) => {
-            return ScreenFactory.create({
-                _id: doc.get("_id"),
-                theater: doc.get("theater"),
-                coa_screen_code: doc.get("coa_screen_code"),
-                name: doc.get("name"),
-                sections: doc.get("sections")
-            });
-        });
     }
 
     async store(screen: Screen) {

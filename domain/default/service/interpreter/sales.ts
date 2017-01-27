@@ -29,6 +29,8 @@ class SalesServiceInterpreter implements SalesService {
                 job_cd: GMO.Util.JOB_CD_SALES,
                 amount: authorization.gmo_amount,
             });
+
+            // TODO 失敗したら取引状態確認する
         }
     };
 }

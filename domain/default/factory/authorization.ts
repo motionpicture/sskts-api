@@ -1,9 +1,10 @@
+import ObjectId from "../model/objectId";
 import GMOAuthorization from "../model/authorization/gmo";
 import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
 import Owner from "../model/owner";
 
 export function createGMO(args: {
-    _id: string,
+    _id: ObjectId,
     price: number,
     owner_from: Owner,
     owner_to: Owner,
@@ -33,7 +34,7 @@ export function createGMO(args: {
 };
 
 export function createCOASeatReservation(args: {
-    _id: string,
+    _id: ObjectId,
     coa_tmp_reserve_num: string,
     price: number,
     owner_from: Owner,

@@ -1,3 +1,4 @@
+import ObjectId from "../model/objectId";
 import Owner from "../model/owner";
 import AnonymousOwner from "../model/owner/anonymous";
 import AdministratorOwner from "../model/owner/administrator";
@@ -5,7 +6,7 @@ import OwnerGroup from "../model/ownerGroup";
 import MultilingualString from "../model/multilingualString";
 
 export function create(args: {
-    _id: string,
+    _id: ObjectId,
     group: OwnerGroup,
 }) {
     return new Owner(
@@ -20,7 +21,7 @@ export function create(args: {
  * 確実にAnonymousOwnerモデルを作成する責任を持つ
  */
 export function createAnonymous(args: {
-    _id: string,
+    _id: ObjectId,
     name_first?: string,
     name_last?: string,
     email?: string,
@@ -36,7 +37,7 @@ export function createAnonymous(args: {
 }
 
 export function createAdministrator(args: {
-    _id: string,
+    _id: ObjectId,
     name?: MultilingualString,
 }): AdministratorOwner {
     return new AdministratorOwner(

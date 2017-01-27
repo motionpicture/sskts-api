@@ -8,42 +8,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const ScreenFactory = require("../../factory/screen");
 const screen_1 = require("./mongoose/model/screen");
 class ScreenRepositoryInterpreter {
     findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(screen_1.default.modelName, screen_1.default.schema);
-            let doc = yield model.findOne({ _id: id })
+            let screen = yield model.findOne({ _id: id })
                 .populate("theater")
+                .lean()
                 .exec();
-            if (!doc)
-                return monapt.None;
-            let screen = ScreenFactory.create({
-                _id: doc.get("_id"),
-                theater: doc.get("theater"),
-                coa_screen_code: doc.get("coa_screen_code"),
-                name: doc.get("name"),
-                sections: doc.get("sections")
-            });
-            return monapt.Option(screen);
+            return (screen) ? monapt.Option(screen) : monapt.None;
         });
     }
     findByTheater(theaterCode) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(screen_1.default.modelName, screen_1.default.schema);
-            let docs = yield model.find({ theater: theaterCode })
+            return yield model.find({ theater: theaterCode })
                 .populate("theater")
+                .lean()
                 .exec();
-            return docs.map((doc) => {
-                return ScreenFactory.create({
-                    _id: doc.get("_id"),
-                    theater: doc.get("theater"),
-                    coa_screen_code: doc.get("coa_screen_code"),
-                    name: doc.get("name"),
-                    sections: doc.get("sections")
-                });
-            });
         });
     }
     store(screen) {

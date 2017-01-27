@@ -1,9 +1,10 @@
 import AuthorizationGroup from "./authorizationGroup";
 import Owner from "./owner";
+import ObjectId from "./objectId";
 
 export default class Authorization {
     constructor(
-        readonly _id: string,
+        readonly _id: ObjectId,
         /** 承認グループ */
         readonly group: AuthorizationGroup,
         /** 承認価格 */

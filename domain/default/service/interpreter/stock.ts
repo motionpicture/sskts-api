@@ -1,4 +1,5 @@
 import StockService from "../stock";
+import ObjectId from "../../model/objectId";
 import AssetAuthorization from "../../model/authorization/asset";
 import COASeatReservationAuthorization from "../../model/authorization/coaSeatReservation";
 import AssetRepository from "../../repository/asset";
@@ -66,6 +67,7 @@ class StockServiceInterpreter implements StockService {
             let promises = authorization.seats.map(async (seat) => {
                 // 資産作成
                 let asset = AssetFactory.createSeatReservation({
+                    _id: ObjectId(),
                     price: authorization.price,
                     authorizations: [],
                     performance: seat.performance,

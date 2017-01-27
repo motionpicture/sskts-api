@@ -3,7 +3,10 @@ import sendgrid = require("sendgrid");
 import Email from "../../model/email";
 
 class NotificationServiceInterpreter implements NotificationService {
-    /** メール送信 */
+    /**
+     * メール送信
+     * https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
+     */
     async sendEmail(email: Email) {
         let mail = new sendgrid.mail.Mail(
             new sendgrid.mail.Email(email.from),

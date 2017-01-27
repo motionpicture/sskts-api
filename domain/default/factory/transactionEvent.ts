@@ -1,5 +1,4 @@
-// import Transaction from "../model/transaction";
-// import TransactionStatus from "../model/transactionStatus";
+import ObjectId from "../model/objectId";
 import TransactionEvent from "../model/transactionEvent";
 import AuthorizeTransactionEvent from "../model/transactionEvent/authorize";
 import UnauthorizeTransactionEvent from "../model/transactionEvent/unauthorize";
@@ -7,17 +6,17 @@ import TransactionEventGroup from "../model/transactionEventGroup";
 import Authorization from "../model/authorization";
 
 export function create(args: {
-    _id?: string,
+    _id: ObjectId,
     group: TransactionEventGroup,
 }) {
     return new TransactionEvent(
-        (args._id === undefined) ? "" : (args._id),
+        args._id,
         args.group,
     );
 }
 
 export function createAuthorize(args: {
-    _id: string,
+    _id: ObjectId,
     authorization: Authorization,
 }) {
     return new AuthorizeTransactionEvent(
@@ -27,7 +26,7 @@ export function createAuthorize(args: {
 }
 
 export function createUnauthorize(args: {
-    _id: string,
+    _id: ObjectId,
     authorization_id: string,
 }) {
     return new UnauthorizeTransactionEvent(

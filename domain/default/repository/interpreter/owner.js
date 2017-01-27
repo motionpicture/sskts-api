@@ -8,63 +8,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const OwnerFactory = require("../../factory/owner");
 const ownerGroup_1 = require("../../model/ownerGroup");
 const owner_1 = require("./mongoose/model/owner");
 class OwnerRepositoryInterpreter {
     find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(owner_1.default.modelName, owner_1.default.schema);
-            let docs = yield model.find({ $and: [conditions] }).exec();
-            return docs.map((doc) => {
-                return OwnerFactory.create({
-                    _id: doc.get("_id"),
-                    group: doc.get("group")
-                });
-            });
+            return yield model.find({ $and: [conditions] }).lean().exec();
         });
     }
     findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(owner_1.default.modelName, owner_1.default.schema);
-            let doc = yield model.findOne({ _id: id }).exec();
-            if (!doc)
-                return monapt.None;
-            let owner;
-            switch (doc.get("group")) {
-                case ownerGroup_1.default.ANONYMOUS:
-                    owner = OwnerFactory.createAnonymous({
-                        _id: doc.get("_id"),
-                        name_first: doc.get("name_first"),
-                        name_last: doc.get("name_last"),
-                        email: doc.get("email"),
-                        tel: doc.get("tel"),
-                    });
-                    break;
-                default:
-                    owner = OwnerFactory.create({
-                        _id: doc.get("_id"),
-                        group: doc.get("group")
-                    });
-                    break;
-            }
-            return monapt.Option(owner);
+            let owner = yield model.findOne({ _id: id }).lean().exec();
+            return (owner) ? monapt.Option(owner) : monapt.None;
+        });
+    }
+    findAdministrator() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let model = this.connection.model(owner_1.default.modelName, owner_1.default.schema);
+            let owner = yield model.findOne({ group: ownerGroup_1.default.ADMINISTRATOR }).lean().exec();
+            return (owner) ? monapt.Option(owner) : monapt.None;
         });
     }
     findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(owner_1.default.modelName, owner_1.default.schema);
-            let doc = yield model.findOneAndUpdate(conditions, update, {
+            let owner = yield model.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
-            }).exec();
-            if (!doc)
-                return monapt.None;
-            let owner = OwnerFactory.create({
-                _id: doc.get("_id"),
-                group: doc.get("group")
-            });
-            return monapt.Option(owner);
+            }).lean().exec();
+            return (owner) ? monapt.Option(owner) : monapt.None;
         });
     }
     store(owner) {
