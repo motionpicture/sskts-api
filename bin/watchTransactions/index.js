@@ -10,11 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const mongoose = require("mongoose");
 mongoose.set('debug', true);
 mongoose.connect(process.env.MONGOLAB_URI);
-const transaction_1 = require("../domain/default/service/interpreter/transaction");
-const transaction_2 = require("../domain/default/repository/interpreter/transaction");
-const queue_1 = require("../domain/default/repository/interpreter/queue");
-const transactionStatus_1 = require("../domain/default/model/transactionStatus");
-const transactionQueuesStatus_1 = require("../domain/default/model/transactionQueuesStatus");
+const transaction_1 = require("../../domain/default/service/interpreter/transaction");
+const transaction_2 = require("../../domain/default/repository/interpreter/transaction");
+const queue_1 = require("../../domain/default/repository/interpreter/queue");
+const transactionStatus_1 = require("../../domain/default/model/transactionStatus");
+const transactionQueuesStatus_1 = require("../../domain/default/model/transactionQueuesStatus");
 let count = 0;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
     if (count > 10)

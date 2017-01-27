@@ -7,9 +7,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const notification_1 = require("../domain/default/service/interpreter/notification");
-const queue_1 = require("../domain/default/repository/interpreter/queue");
-const queueStatus_1 = require("../domain/default/model/queueStatus");
+const stock_1 = require("../../domain/default/service/interpreter/stock");
+const queue_1 = require("../../domain/default/repository/interpreter/queue");
+const asset_1 = require("../../domain/default/repository/interpreter/asset");
+const queueStatus_1 = require("../../domain/default/model/queueStatus");
 const mongoose = require("mongoose");
 mongoose.set('debug', true);
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -20,7 +21,8 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
     count++;
     try {
         let queueRepository = queue_1.default(mongoose.connection);
-        let option = yield queueRepository.findOneSendEmailAndUpdate({
+        let assetRepository = asset_1.default(mongoose.connection);
+        let option = yield queueRepository.findOneSettleCOASeatReservationAuthorizationAndUpdate({
             status: queueStatus_1.default.UNEXECUTED,
         }, {
             status: queueStatus_1.default.RUNNING
@@ -28,7 +30,7 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (!option.isEmpty) {
             let queue = option.get();
             console.log("queue is", queue);
-            yield notification_1.default.sendEmail(queue.email)
+            yield stock_1.default.transferCOASeatReservation(queue.authorization)(assetRepository)
                 .then(() => __awaiter(this, void 0, void 0, function* () {
                 yield queueRepository.findOneAndUpdate({
                     _id: queue._id

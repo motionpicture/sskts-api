@@ -2,12 +2,12 @@ import mongoose = require("mongoose");
 mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.connect(process.env.MONGOLAB_URI);
 
-import TransactionService from "../domain/default/service/interpreter/transaction";
-import TransactionRepository from "../domain/default/repository/interpreter/transaction";
-import QueueRepository from "../domain/default/repository/interpreter/queue";
+import TransactionService from "../../domain/default/service/interpreter/transaction";
+import TransactionRepository from "../../domain/default/repository/interpreter/transaction";
+import QueueRepository from "../../domain/default/repository/interpreter/queue";
 
-import TransactionStatus from "../domain/default/model/transactionStatus";
-import TransactionQueuesStatus from "../domain/default/model/transactionQueuesStatus";
+import TransactionStatus from "../../domain/default/model/transactionStatus";
+import TransactionQueuesStatus from "../../domain/default/model/transactionQueuesStatus";
 
 let count = 0;
 

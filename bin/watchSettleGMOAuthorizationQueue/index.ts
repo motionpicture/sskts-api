@@ -1,9 +1,8 @@
-import StockService from "../domain/default/service/interpreter/stock";
-import QueueRepository from "../domain/default/repository/interpreter/queue";
-import AssetRepository from "../domain/default/repository/interpreter/asset";
-import QueueStatus from "../domain/default/model/queueStatus";
+import SalesService from "../../domain/default/service/interpreter/sales";
+import QueueRepository from "../../domain/default/repository/interpreter/queue";
+import QueueStatus from "../../domain/default/model/queueStatus";
 import mongoose = require("mongoose");
-// import COA = require("@motionpicture/coa-service");
+import GMO = require("@motionpicture/gmo-service");
 
 mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -15,11 +14,10 @@ setInterval(async () => {
 
     try {
         let queueRepository = QueueRepository(mongoose.connection);
-        let assetRepository = AssetRepository(mongoose.connection);
 
         // 未実行のメール送信キューを取得
         // TODO try_count
-        let option = await queueRepository.findOneSettleCOASeatReservationAuthorizationAndUpdate({
+        let option = await queueRepository.findOneSettleGMOAuthorizationAndUpdate({
             status: QueueStatus.UNEXECUTED,
         }, {
                 status: QueueStatus.RUNNING
@@ -29,7 +27,8 @@ setInterval(async () => {
             let queue = option.get();
             console.log("queue is", queue);
 
-            await StockService.transferCOASeatReservation(queue.authorization)(assetRepository)
+
+            await SalesService.settleGMOAuth(queue.authorization)(GMO)
                 .then(async () => {
                     await queueRepository.findOneAndUpdate({
                         _id: queue._id
