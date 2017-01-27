@@ -27,7 +27,7 @@ export function createAuthorize(args: {
 
 export function createUnauthorize(args: {
     _id: ObjectId,
-    authorization_id: string,
+    authorization_id: ObjectId,
 }) {
     return new UnauthorizeTransactionEvent(
         args._id,

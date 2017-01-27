@@ -13,6 +13,7 @@ import AssetRepository from "../repository/asset";
 
 type TransactionAndQueueOperation<T> = (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
 type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
+type OwnerAndTransactionAndQueueOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
 type AssetAndTransactionOperation<T> = (assetRepository: AssetRepository, repository: TransactionRepository) => Promise<T>;
 type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
 type AssetOperation<T> = (assetRepository: AssetRepository) => Promise<T>;
@@ -43,7 +44,7 @@ interface TransactionService {
     start(args: {
         expired_at: Date,
         owner_ids: Array<string>
-    }): OwnerAndTransactionOperation<Transaction>;
+    }): OwnerAndTransactionAndQueueOperation<Transaction>;
     /** 資産承認 */
     authorizeAsset(authorization: AssetAuthorization): AssetOperation<void>;
     /** 内部資産承認 */

@@ -7,13 +7,8 @@ let schema = new mongoose.Schema({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: owner_1.default.modelName,
-        required: true
     },
-    authorizations: [
-        {
-            type: mongoose.Schema.Types.Mixed,
-        }
-    ],
+    authorizations: [mongoose.Schema.Types.Mixed],
     group: String,
     price: Number,
     performance: {
@@ -22,6 +17,14 @@ let schema = new mongoose.Schema({
     },
     section: String,
     seat_code: String,
+    ticket_code: String,
+    ticket_name_ja: String,
+    ticket_name_en: String,
+    ticket_name_kana: String,
+    std_price: Number,
+    add_price: Number,
+    dis_price: Number,
+    sale_price: Number,
 }, {
     collection: "assets",
     timestamps: {

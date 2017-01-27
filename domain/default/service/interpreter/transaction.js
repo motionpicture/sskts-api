@@ -18,6 +18,7 @@ const TransactionEventFactory = require("../../factory/transactionEvent");
 const QueueFactory = require("../../factory/queue");
 const EmailFactory = require("../../factory/email");
 const OwnerFactory = require("../../factory/owner");
+const AssetFactory = require("../../factory/asset");
 class TransactionServiceInterpreter {
     createAnonymousOwner() {
         return (repository) => __awaiter(this, void 0, void 0, function* () {
@@ -58,7 +59,7 @@ class TransactionServiceInterpreter {
         });
     }
     start(args) {
-        return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+        return (ownerRepository, transactionRepository, queueRepository) => __awaiter(this, void 0, void 0, function* () {
             let owners = [];
             let promises = args.owner_ids.map((ownerId) => __awaiter(this, void 0, void 0, function* () {
                 let option = yield ownerRepository.findById(objectId_1.default(ownerId));
@@ -79,6 +80,14 @@ class TransactionServiceInterpreter {
                 expired_at: args.expired_at
             });
             yield transactionRepository.store(transaction);
+            let queue = QueueFactory.createExpireTransaction({
+                _id: objectId_1.default(),
+                transaction_id: transaction._id,
+                status: queueStatus_1.default.UNEXECUTED,
+                executed_at: transaction.expired_at,
+                count_try: 0,
+            });
+            yield queueRepository.store(queue);
             return transaction;
         });
     }
@@ -159,7 +168,24 @@ class TransactionServiceInterpreter {
                 price: args.price,
                 owner_from: optionOwnerFrom.get(),
                 owner_to: optionOwnerTo.get(),
-                seats: args.seats
+                assets: args.seats.map((seat) => {
+                    return AssetFactory.createSeatReservation({
+                        _id: objectId_1.default(),
+                        owner: optionOwnerTo.get(),
+                        authorizations: [],
+                        performance: seat.performance,
+                        section: seat.section,
+                        seat_code: seat.seat_code,
+                        ticket_code: seat.ticket_code,
+                        ticket_name_ja: seat.ticket_name_ja,
+                        ticket_name_en: seat.ticket_name_en,
+                        ticket_name_kana: seat.ticket_name_kana,
+                        std_price: seat.std_price,
+                        add_price: seat.add_price,
+                        dis_price: seat.dis_price,
+                        sale_price: seat.sale_price,
+                    });
+                })
             });
             yield this.pushAuthorization({
                 transaction_id: args.transaction_id,
@@ -193,7 +219,7 @@ class TransactionServiceInterpreter {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = TransactionEventFactory.createUnauthorize({
                 _id: objectId_1.default(),
-                authorization_id: args.authorization_id,
+                authorization_id: objectId_1.default(args.authorization_id),
             });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
@@ -273,13 +299,11 @@ class TransactionServiceInterpreter {
                 status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {
-                    status: transactionStatus_1.default.CLOSED
+                    status: transactionStatus_1.default.CLOSED,
+                    queues: queues
                 },
                 $push: {
                     events: event,
-                },
-                $addToSet: {
-                    queues: { $each: queues }
                 }
             });
             if (option.isEmpty)
@@ -288,6 +312,20 @@ class TransactionServiceInterpreter {
     }
     expire(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let optionTransaction = yield transactionRepository.findById(objectId_1.default(args.transaction_id));
+            if (optionTransaction.isEmpty)
+                throw new Error("transaction not found.");
+            let transaction = optionTransaction.get();
+            let queues = [];
+            transaction.authorizations.forEach((authorization) => {
+                queues.push(QueueFactory.createCancelAuthorization({
+                    _id: objectId_1.default(),
+                    authorization: authorization,
+                    status: queueStatus_1.default.UNEXECUTED,
+                    executed_at: new Date(),
+                    count_try: 0
+                }));
+            });
             let event = TransactionEventFactory.create({
                 _id: objectId_1.default(),
                 group: transactionEventGroup_1.default.EXPIRE,
@@ -297,7 +335,8 @@ class TransactionServiceInterpreter {
                 status: transactionStatus_1.default.PROCESSING
             }, {
                 $set: {
-                    status: transactionStatus_1.default.EXPIRED
+                    status: transactionStatus_1.default.EXPIRED,
+                    queues: queues
                 },
                 $push: {
                     events: event

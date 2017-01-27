@@ -1,11 +1,8 @@
 import StockService from "../stock";
-import ObjectId from "../../model/objectId";
 import AssetAuthorization from "../../model/authorization/asset";
 import COASeatReservationAuthorization from "../../model/authorization/coaSeatReservation";
 import AssetRepository from "../../repository/asset";
 // import COA = require("@motionpicture/coa-service");
-
-import * as AssetFactory from "../../factory/asset";
 
 /**
  * 在庫サービス
@@ -39,18 +36,18 @@ class StockServiceInterpreter implements StockService {
             // ウェブフロントで事前に本予約済みなので不要
             // let performance = authorization.seats[0].performance;
             // await COA.updateReserveInterface.call({
-            //     theater_code: "001", // TODO
-            //     date_jouei: "20170131", // TODO
-            //     title_code: "8513", // TODO
-            //     title_branch_num: "0", // TODO
-            //     time_begin: "1010", // TODO
+            //     theater_code: "001",
+            //     date_jouei: "20170131",
+            //     title_code: "8513",
+            //     title_branch_num: "0",
+            //     time_begin: "1010",
             //     // screen_code: "2",
             //     tmp_reserve_num: authorization.coa_tmp_reserve_num,
-            //     reserve_name: "山崎 哲", // TODO
-            //     reserve_name_jkana: "ヤマザキ テツ", // TODO
-            //     tel_num: "09012345678", // TODO
-            //     mail_addr: "yamazaki@motionpicture.jp", // TODO
-            //     reserve_amount: authorization.price, // 適当な金額
+            //     reserve_name: "",
+            //     reserve_name_jkana: "",
+            //     tel_num: "09012345678",
+            //     mail_addr: "",
+            //     reserve_amount: authorization.price,
             //     list_ticket: authorization.seats.map((seat) => {
             //         return {
             //             ticket_code: seat.ticket_code,
@@ -64,18 +61,8 @@ class StockServiceInterpreter implements StockService {
             //     })
             // });
 
-            let promises = authorization.seats.map(async (seat) => {
-                // 資産作成
-                let asset = AssetFactory.createSeatReservation({
-                    _id: ObjectId(),
-                    price: authorization.price,
-                    authorizations: [],
-                    performance: seat.performance,
-                    section: seat.section,
-                    seat_code: seat.seat_code,
-                })
-
-                // 永続化
+            let promises = authorization.assets.map(async (asset) => {
+                // 資産永続化
                 assetRepository.store(asset);
             });
 

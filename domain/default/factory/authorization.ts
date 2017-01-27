@@ -2,6 +2,7 @@ import ObjectId from "../model/objectId";
 import GMOAuthorization from "../model/authorization/gmo";
 import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
 import Owner from "../model/owner";
+import SeatReservationAsset from "../model/asset/seatReservation";
 
 export function createGMO(args: {
     _id: ObjectId,
@@ -39,19 +40,7 @@ export function createCOASeatReservation(args: {
     price: number,
     owner_from: Owner,
     owner_to: Owner,
-    seats: Array<{
-        performance: string,
-        section: string,
-        seat_code: string,
-        ticket_code: string,
-        ticket_name_ja: string,
-        ticket_name_en: string,
-        ticket_name_kana: string,
-        std_price: number,
-        add_price: number,
-        dis_price: number,
-        sale_price: number,
-    }>
+    assets: Array<SeatReservationAsset>
 }) {
     return new COASeatReservationAuthorization(
         args._id,
@@ -59,6 +48,6 @@ export function createCOASeatReservation(args: {
         args.price,
         args.owner_from,
         args.owner_to,
-        args.seats
+        args.assets
     )
 };

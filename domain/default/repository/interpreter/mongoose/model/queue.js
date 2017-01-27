@@ -1,11 +1,12 @@
 "use strict";
 const mongoose = require("mongoose");
 let schema = new mongoose.Schema({
-    _id: String,
     group: String,
     authorization: mongoose.Schema.Types.Mixed,
     email: mongoose.Schema.Types.Mixed,
     status: String,
+    transaction_id: mongoose.Schema.Types.ObjectId,
+    executed_at: Date,
 }, {
     collection: "queues",
     timestamps: {

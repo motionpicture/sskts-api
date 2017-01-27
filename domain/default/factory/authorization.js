@@ -7,7 +7,7 @@ function createGMO(args) {
 exports.createGMO = createGMO;
 ;
 function createCOASeatReservation(args) {
-    return new coaSeatReservation_1.default(args._id, args.coa_tmp_reserve_num, args.price, args.owner_from, args.owner_to, args.seats);
+    return new coaSeatReservation_1.default(args._id, args.coa_tmp_reserve_num, args.price, args.owner_from, args.owner_to, args.assets);
 }
 exports.createCOASeatReservation = createCOASeatReservation;
 ;

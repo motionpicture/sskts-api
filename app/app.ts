@@ -71,7 +71,7 @@ app.use(i18n.init);
 
 
 
-mongoose.set('debug', true); // TODO 本番でははずす
+// mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.connect(process.env.MONGOLAB_URI);
 // process.on("SIGINT", function() {
 //     mongoose.disconnect(() => {

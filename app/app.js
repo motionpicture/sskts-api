@@ -31,7 +31,6 @@ i18n.configure({
     updateFiles: false
 });
 app.use(i18n.init);
-mongoose.set('debug', true);
 mongoose.connect(process.env.MONGOLAB_URI);
 const dev_1 = require("./routers/dev");
 const theater_1 = require("./routers/theater");

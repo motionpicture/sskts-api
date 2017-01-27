@@ -2,6 +2,7 @@ import ObjectId from "../objectId";
 import AuthorizationGroup from "../authorizationGroup";
 import Authorization from "../authorization";
 import Owner from "../owner";
+import SeatReservationAsset from "../asset/seatReservation";
 
 export default class COASeatReservationAuthorization extends Authorization {
     constructor(
@@ -10,19 +11,8 @@ export default class COASeatReservationAuthorization extends Authorization {
         readonly price: number,
         readonly owner_from: Owner,
         readonly owner_to: Owner,
-        readonly seats: Array<{
-            performance: string,
-            section: string,
-            seat_code: string,
-            ticket_code: string,
-            ticket_name_ja: string,
-            ticket_name_en: string,
-            ticket_name_kana: string,
-            std_price: number,
-            add_price: number,
-            dis_price: number,
-            sale_price: number,
-        }>
+        /** 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため) */
+        readonly assets: Array<SeatReservationAsset>
     ) {
         // TODO validation
 

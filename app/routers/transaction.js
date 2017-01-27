@@ -11,6 +11,7 @@ const express = require("express");
 let router = express.Router();
 const owner_1 = require("../../domain/default/repository/interpreter/owner");
 const transaction_1 = require("../../domain/default/repository/interpreter/transaction");
+const queue_1 = require("../../domain/default/repository/interpreter/queue");
 const transaction_2 = require("../../domain/default/service/interpreter/transaction");
 const mongoose = require("mongoose");
 router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -52,7 +53,7 @@ router.post("", (req, res, next) => __awaiter(this, void 0, void 0, function* ()
         let transaction = yield transaction_2.default.start({
             expired_at: new Date(parseInt(req.body.expired_at) * 1000),
             owner_ids: ownerIds
-        })(owner_1.default(mongoose.connection), transaction_1.default(mongoose.connection));
+        })(owner_1.default(mongoose.connection), transaction_1.default(mongoose.connection), queue_1.default(mongoose.connection));
         res.status(201);
         res.setHeader("Location", `https://${req.headers["host"]}/transactions/${transaction._id}`);
         res.json({

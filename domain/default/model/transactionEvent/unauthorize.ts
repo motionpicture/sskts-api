@@ -5,7 +5,7 @@ import TransactionEventGroup from "../transactionEventGroup";
 export default class Unauthorize extends TransactionEvent {
     constructor(
         readonly _id: ObjectId,
-        readonly authorization_id: string
+        readonly authorization_id: ObjectId
     ) {
         // TODO validation
 

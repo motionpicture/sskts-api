@@ -22,6 +22,7 @@ import * as TransactionEventFactory from "../../factory/transactionEvent";
 import * as QueueFactory from "../../factory/queue";
 import * as EmailFactory from "../../factory/email";
 import * as OwnerFactory from "../../factory/owner";
+import * as AssetFactory from "../../factory/asset";
 
 class TransactionServiceInterpreter implements TransactionService {
     /**
@@ -96,7 +97,7 @@ class TransactionServiceInterpreter implements TransactionService {
         expired_at: Date,
         owner_ids: Array<string>
     }) {
-        return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
+        return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository, queueRepository: QueueRepository) => {
             // 所有者取得
             let owners: Array<Owner> = [];
             let promises = args.owner_ids.map(async (ownerId) => {
@@ -123,6 +124,19 @@ class TransactionServiceInterpreter implements TransactionService {
 
             // 永続化
             await transactionRepository.store(transaction);
+
+            // 期限切れキュー作成
+            let queue = QueueFactory.createExpireTransaction({
+                _id: ObjectId(),
+                transaction_id: transaction._id,
+                status: QueueStatus.UNEXECUTED,
+                executed_at: transaction.expired_at,
+                count_try: 0,
+            });
+
+            // 永続化
+            await queueRepository.store(queue);
+
             return transaction;
         }
     }
@@ -250,13 +264,31 @@ class TransactionServiceInterpreter implements TransactionService {
             if (optionOwnerTo.isEmpty) throw new Error(`owner[${args.owner_id_to}] not found.`);
 
             // 承認作成
+            // あらかじめ資産形式に変換しておく(後に、資産移動でassetデータに追加される)
             let authorization = AuthorizationFactory.createCOASeatReservation({
                 _id: ObjectId(),
                 coa_tmp_reserve_num: args.coa_tmp_reserve_num,
                 price: args.price,
                 owner_from: optionOwnerFrom.get(),
                 owner_to: optionOwnerTo.get(),
-                seats: args.seats
+                assets: args.seats.map((seat) => {
+                    return AssetFactory.createSeatReservation({
+                        _id: ObjectId(),
+                        owner: optionOwnerTo.get(),
+                        authorizations: [],
+                        performance: seat.performance,
+                        section: seat.section,
+                        seat_code: seat.seat_code,
+                        ticket_code: seat.ticket_code,
+                        ticket_name_ja: seat.ticket_name_ja,
+                        ticket_name_en: seat.ticket_name_en,
+                        ticket_name_kana: seat.ticket_name_kana,
+                        std_price: seat.std_price,
+                        add_price: seat.add_price,
+                        dis_price: seat.dis_price,
+                        sale_price: seat.sale_price,
+                    });
+                })
             });
 
             // 永続化
@@ -311,7 +343,7 @@ class TransactionServiceInterpreter implements TransactionService {
             // イベント作成
             let event = TransactionEventFactory.createUnauthorize({
                 _id: ObjectId(),
-                authorization_id: args.authorization_id,
+                authorization_id: ObjectId(args.authorization_id),
             });
 
             // 永続化
@@ -382,13 +414,12 @@ class TransactionServiceInterpreter implements TransactionService {
         transaction_id: string
     }) {
         return async (transactionRepository: TransactionRepository) => {
-            // TODO キューリストを事前作成する
             // 取引取得
             let optionTransaction = await transactionRepository.findById(ObjectId(args.transaction_id));
             if (optionTransaction.isEmpty) throw new Error("transaction not found.");
             let transaction = optionTransaction.get();
 
-            // キュー作成
+            // キューリストを事前作成
             let queues: Array<Queue> = [];
             transaction.authorizations.forEach((authorization) => {
                 queues.push(QueueFactory.createSettleAuthorization({
@@ -421,13 +452,11 @@ class TransactionServiceInterpreter implements TransactionService {
                 status: TransactionStatus.PROCESSING
             }, {
                     $set: {
-                        status: TransactionStatus.CLOSED
+                        status: TransactionStatus.CLOSED,
+                        queues: queues
                     },
                     $push: {
                         events: event,
-                    },
-                    $addToSet: {
-                        queues: { $each: queues }
                     }
                 });
             if (option.isEmpty) throw new Error("processing transaction not found.");
@@ -441,13 +470,28 @@ class TransactionServiceInterpreter implements TransactionService {
         transaction_id: string
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // 取引取得
+            let optionTransaction = await transactionRepository.findById(ObjectId(args.transaction_id));
+            if (optionTransaction.isEmpty) throw new Error("transaction not found.");
+            let transaction = optionTransaction.get();
+
+            // キューリストを事前作成
+            let queues: Array<Queue> = [];
+            transaction.authorizations.forEach((authorization) => {
+                queues.push(QueueFactory.createCancelAuthorization({
+                    _id: ObjectId(),
+                    authorization: authorization,
+                    status: QueueStatus.UNEXECUTED,
+                    executed_at: new Date(), // TODO 調整
+                    count_try: 0
+                }));
+            });
+
             // イベント作成
             let event = TransactionEventFactory.create({
                 _id: ObjectId(),
                 group: TransactionEventGroup.EXPIRE,
             });
-
-            // TODO キューリストを事前作成する
 
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
@@ -455,7 +499,8 @@ class TransactionServiceInterpreter implements TransactionService {
                 status: TransactionStatus.PROCESSING
             }, {
                     $set: {
-                        status: TransactionStatus.EXPIRED
+                        status: TransactionStatus.EXPIRED,
+                        queues: queues
                     },
                     $push: {
                         events: event

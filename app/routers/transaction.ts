@@ -3,6 +3,8 @@ let router = express.Router();
 
 import OwnerRepository from "../../domain/default/repository/interpreter/owner";
 import TransactionRepository from "../../domain/default/repository/interpreter/transaction";
+import QueueRepository from "../../domain/default/repository/interpreter/queue";
+
 import TransactionService from "../../domain/default/service/interpreter/transaction";
 import mongoose = require("mongoose");
 
@@ -67,7 +69,7 @@ router.post("", async (req, res, next) => {
         let transaction = await TransactionService.start({
             expired_at: new Date(parseInt(req.body.expired_at) * 1000),
             owner_ids: ownerIds
-        })(OwnerRepository(mongoose.connection), TransactionRepository(mongoose.connection));
+        })(OwnerRepository(mongoose.connection), TransactionRepository(mongoose.connection), QueueRepository(mongoose.connection));
 
         res.status(201);
         res.setHeader("Location", `https://${req.headers["host"]}/transactions/${transaction._id}`);

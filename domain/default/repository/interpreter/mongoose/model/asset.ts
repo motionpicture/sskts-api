@@ -10,13 +10,8 @@ let schema = new mongoose.Schema({
     owner: { // 所有者
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.modelName,
-        required: true
     },
-    authorizations: [ // 承認リスト
-        {
-            type: mongoose.Schema.Types.Mixed,
-        }
-    ],
+    authorizations: [mongoose.Schema.Types.Mixed], // 承認リスト
 
     group: String, // 資産グループ
     price: Number,
@@ -26,6 +21,14 @@ let schema = new mongoose.Schema({
     },
     section: String,
     seat_code: String,
+    ticket_code: String,
+    ticket_name_ja: String,
+    ticket_name_en: String,
+    ticket_name_kana: String,
+    std_price: Number,
+    add_price: Number,
+    dis_price: Number,
+    sale_price: Number,
 },{
     collection: "assets",
     timestamps: { 
