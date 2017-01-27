@@ -111,6 +111,37 @@ class QueueRepositoryInterpreter {
             });
         });
     }
+    findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions, update) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
+            let doc = yield model.findOneAndUpdate({
+                $and: [
+                    {
+                        "group": queueGroup_1.default.SETTLE_AUTHORIZATION,
+                        "authorization.group": authorizationGroup_1.default.COA_SEAT_RESERVATION
+                    },
+                    conditions
+                ]
+            }, update, {
+                new: true,
+                upsert: false
+            }).exec();
+            if (!doc)
+                return monapt.None;
+            let authorization = AuthorizationFactory.createCOASeatReservation({
+                _id: doc.get("authorization")._id,
+                coa_tmp_reserve_num: doc.get("authorization").coa_tmp_reserve_num,
+                price: doc.get("authorization").price,
+                owner_from: doc.get("authorization").owner_from,
+                owner_to: doc.get("authorization").owner_to,
+                seats: doc.get("authorization").seats,
+            });
+            return monapt.Option({
+                _id: doc.get("_id"),
+                authorization: authorization
+            });
+        });
+    }
     store(queue) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);

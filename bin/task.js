@@ -13,14 +13,8 @@ const film_1 = require("../domain/default/repository/interpreter/film");
 const screen_1 = require("../domain/default/repository/interpreter/screen");
 const theater_1 = require("../domain/default/repository/interpreter/theater");
 const performance_1 = require("../domain/default/repository/interpreter/performance");
-const config = require("config");
 const mongoose = require("mongoose");
 mongoose.set('debug', true);
-const COA = require("@motionpicture/coa-service");
-COA.initialize({
-    endpoint: config.get("coa_api_endpoint"),
-    refresh_token: config.get("coa_api_refresh_token")
-});
 program
     .version("0.0.1");
 program

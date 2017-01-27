@@ -163,6 +163,7 @@ async function main() {
 
 
 
+
     // COA仮予約削除
     await COA.deleteTmpReserveInterface.call({
         theater_code: "001",
@@ -332,7 +333,6 @@ async function main() {
 
 
 
-
     // GMOオーソリ取得(2回目)
     orderId = Date.now().toString();
     let entryTranResult2 = await GMO.CreditService.entryTranInterface.call({
@@ -417,7 +417,7 @@ async function main() {
         reserve_name_jkana: "ヤマザキ テツ",
         tel_num: "09012345678",
         mail_addr: "yamazaki@motionpicture.jp",
-        reserve_amount: 1800, // 適当な金額
+        reserve_amount: totalPrice,
         list_ticket: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
             return {
                 ticket_code: salesTicketResult.list_ticket[0].ticket_code,

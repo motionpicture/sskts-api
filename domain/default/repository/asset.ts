@@ -1,5 +1,8 @@
+// import monapt = require("monapt");
+import Asset from "../model/asset";
+
 interface AssetRepository {
-    updateAuthority(): Promise<void>;
+    store(asset: Asset): Promise<void>;
 }
 
 export default AssetRepository;

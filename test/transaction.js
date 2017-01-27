@@ -317,7 +317,7 @@ function main() {
             reserve_name_jkana: "ヤマザキ テツ",
             tel_num: "09012345678",
             mail_addr: "yamazaki@motionpicture.jp",
-            reserve_amount: 1800,
+            reserve_amount: totalPrice,
             list_ticket: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
                 return {
                     ticket_code: salesTicketResult.list_ticket[0].ticket_code,

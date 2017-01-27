@@ -1,11 +1,11 @@
 import Email from "../model/email";
 
 export function create(args: {
-    readonly _id: string,
-    readonly from?: string,
-    readonly to?: string,
-    readonly subject?: string,
-    readonly body?: string,
+    _id: string,
+    from?: string,
+    to?: string,
+    subject?: string,
+    body?: string,
 }) {
     return new Email(
         args._id,

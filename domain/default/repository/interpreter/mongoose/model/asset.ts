@@ -1,27 +1,31 @@
 import mongoose = require("mongoose");
 import OwnerModel from "./owner";
-import TransactionModel from "./transaction";
+import PerformanceModel from "./performance";
 
 /**
  * 資産スキーマ
  */
 let schema = new mongoose.Schema({
+    _id: String,
     owner: { // 所有者
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.modelName,
         required: true
     },
-    transactions: [ // 承認リスト
+    authorizations: [ // 承認リスト
         {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: TransactionModel.modelName,
+            type: mongoose.Schema.Types.Mixed,
         }
     ],
 
-    group: Number, // 資産グループ
-    price: Number, // 金額
-
-
+    group: String, // 資産グループ
+    price: Number,
+    performance: {
+        type: String,
+        ref: PerformanceModel.modelName
+    },
+    section: String,
+    seat_code: String,
 },{
     collection: "assets",
     timestamps: { 

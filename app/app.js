@@ -2,7 +2,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const expressValidator = require("express-validator");
-const config = require("config");
 const mongoose = require("mongoose");
 const i18n = require("i18n");
 let app = express();
@@ -34,15 +33,6 @@ i18n.configure({
 app.use(i18n.init);
 mongoose.set('debug', true);
 mongoose.connect(process.env.MONGOLAB_URI);
-const COA = require("@motionpicture/coa-service");
-COA.initialize({
-    endpoint: config.get("coa_api_endpoint"),
-    refresh_token: config.get("coa_api_refresh_token")
-});
-const GMO = require("@motionpicture/gmo-service");
-GMO.initialize({
-    endpoint: "https://pt01.mul-pay.jp",
-});
 const dev_1 = require("./routers/dev");
 const theater_1 = require("./routers/theater");
 const film_1 = require("./routers/film");

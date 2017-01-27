@@ -1,7 +1,9 @@
 import AssetAuthorization from "../model/authorization/asset";
 import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
 import AssetRepository from "../repository/asset";
+// import COA = require("@motionpicture/coa-service");
 type AssetOperation<T> = (assetRepository: AssetRepository) => Promise<T>;
+// type COAAndAssetOperation<T> = (coaRepository: typeof COA, assetRepository: AssetRepository) => Promise<T>;
 
 /**
  * 在庫サービス

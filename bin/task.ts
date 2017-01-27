@@ -9,7 +9,7 @@ import PerformanceRepository from "../domain/default/repository/interpreter/perf
 
 // let env = process.env.NODE_ENV || "dev";
 
-import config = require("config");
+// import config = require("config");
 
 import mongoose = require("mongoose");
 mongoose.set('debug', true); // TODO 本番でははずす
@@ -21,11 +21,11 @@ mongoose.set('debug', true); // TODO 本番でははずす
 //     });
 // });
 
-import COA = require("@motionpicture/coa-service");
-COA.initialize({
-    endpoint: config.get<string>("coa_api_endpoint"),
-    refresh_token: config.get<string>("coa_api_refresh_token")
-});
+// import COA = require("@motionpicture/coa-service");
+// COA.initialize({
+//     endpoint: config.get<string>("coa_api_endpoint"),
+//     refresh_token: config.get<string>("coa_api_refresh_token")
+// });
 
 
 program

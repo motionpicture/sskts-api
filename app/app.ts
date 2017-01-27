@@ -1,7 +1,7 @@
 import express = require("express");
 import bodyParser = require("body-parser");
 import expressValidator = require("express-validator");
-import config = require("config");
+// import config = require("config");
 import mongoose = require("mongoose");
 import i18n = require("i18n");
 // import passport = require("passport");
@@ -102,17 +102,15 @@ mongoose.connect(process.env.MONGOLAB_URI);
 
 
 
-import COA = require("@motionpicture/coa-service");
-COA.initialize({
-    endpoint: config.get<string>("coa_api_endpoint"),
-    refresh_token: config.get<string>("coa_api_refresh_token")
-});
-
-
-import GMO = require("@motionpicture/gmo-service")
-GMO.initialize({
-    endpoint: "https://pt01.mul-pay.jp",
-});
+// import COA = require("@motionpicture/coa-service");
+// COA.initialize({
+//     endpoint: config.get<string>("coa_api_endpoint"),
+//     refresh_token: config.get<string>("coa_api_refresh_token")
+// });
+// import GMO = require("@motionpicture/gmo-service")
+// GMO.initialize({
+//     endpoint: "https://pt01.mul-pay.jp",
+// });
 
 
 

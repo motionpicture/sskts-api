@@ -106,6 +106,37 @@ class QueueRepositoryInterpreter implements QueueRepository {
         });
     }
 
+    async findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
+        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        let doc = await model.findOneAndUpdate({
+            $and: [
+                {
+                    "group": QueueGroup.SETTLE_AUTHORIZATION,
+                    "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION
+                },
+                conditions
+            ]
+        }, update, {
+                new: true,
+                upsert: false
+            }).exec();
+        if (!doc) return monapt.None;
+
+        let authorization = AuthorizationFactory.createCOASeatReservation({
+            _id: doc.get("authorization")._id,
+            coa_tmp_reserve_num: doc.get("authorization").coa_tmp_reserve_num,
+            price: doc.get("authorization").price,
+            owner_from: doc.get("authorization").owner_from,
+            owner_to: doc.get("authorization").owner_to,
+            seats: doc.get("authorization").seats,
+        });
+
+        return monapt.Option({
+            _id: doc.get("_id"),
+            authorization: authorization
+        });
+    }
+
     async store(queue: Queue) {
         let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         await model.findOneAndUpdate({ _id: queue._id }, queue, {
