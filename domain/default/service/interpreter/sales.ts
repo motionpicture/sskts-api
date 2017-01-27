@@ -11,8 +11,17 @@ class SalesServiceInterpreter implements SalesService {
      */
     cancelGMOAuth(authorization: GMOAuthorization) {
         return async (gmoRepository: typeof GMO) => {
-            console.log(gmoRepository);
             console.log(authorization);
+            await gmoRepository.CreditService.alterTranInterface.call({
+                shop_id: authorization.gmo_shop_id,
+                shop_pass: authorization.gmo_shop_pass,
+                access_id: authorization.gmo_access_id,
+                access_pass: authorization.gmo_access_pass,
+                job_cd: GMO.Util.JOB_CD_VOID,
+                amount: authorization.gmo_amount,
+            });
+
+            // TODO 失敗したら取引状態確認する?
         }
     };
 
@@ -30,7 +39,7 @@ class SalesServiceInterpreter implements SalesService {
                 amount: authorization.gmo_amount,
             });
 
-            // TODO 失敗したら取引状態確認する
+            // TODO 失敗したら取引状態確認する?
         }
     };
 }

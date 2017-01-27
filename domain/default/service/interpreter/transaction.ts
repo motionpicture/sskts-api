@@ -494,7 +494,7 @@ class TransactionServiceInterpreter implements TransactionService {
             });
 
             // 永続化
-            let option = await transactionRepository.findOneAndUpdate({
+            await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
                 status: TransactionStatus.PROCESSING
             }, {
@@ -506,7 +506,9 @@ class TransactionServiceInterpreter implements TransactionService {
                         events: event
                     }
                 });
-            if (option.isEmpty) throw new Error("processing transaction not found.");
+
+            // 永続化結果がemptyの場合は、もう取引中ステータスではないということなので、期限切れタスクとしては成功
+            // if (option.isEmpty) throw new Error("processing transaction not found.");
         }
     }
 

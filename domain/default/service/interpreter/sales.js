@@ -11,8 +11,15 @@ const GMO = require("@motionpicture/gmo-service");
 class SalesServiceInterpreter {
     cancelGMOAuth(authorization) {
         return (gmoRepository) => __awaiter(this, void 0, void 0, function* () {
-            console.log(gmoRepository);
             console.log(authorization);
+            yield gmoRepository.CreditService.alterTranInterface.call({
+                shop_id: authorization.gmo_shop_id,
+                shop_pass: authorization.gmo_shop_pass,
+                access_id: authorization.gmo_access_id,
+                access_pass: authorization.gmo_access_pass,
+                job_cd: GMO.Util.JOB_CD_VOID,
+                amount: authorization.gmo_amount,
+            });
         });
     }
     ;

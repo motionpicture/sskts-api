@@ -7,34 +7,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const stock_1 = require("../../domain/default/service/interpreter/stock");
+const sales_1 = require("../../domain/default/service/interpreter/sales");
 const queue_1 = require("../../domain/default/repository/interpreter/queue");
-const asset_1 = require("../../domain/default/repository/interpreter/asset");
 const queueStatus_1 = require("../../domain/default/model/queueStatus");
 const mongoose = require("mongoose");
+const GMO = require("@motionpicture/gmo-service");
 mongoose.set('debug', true);
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
 let queueRepository = queue_1.default(mongoose.connection);
-let assetRepository = asset_1.default(mongoose.connection);
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
     if (count > 10)
         return;
     count++;
-    let option = yield queueRepository.findOneSettleCOASeatReservationAuthorizationAndUpdate({
+    let option = yield queueRepository.findOneCancelGMOAuthorizationAndUpdate({
         status: queueStatus_1.default.UNEXECUTED,
         executed_at: { $lt: new Date() }
     }, { status: queueStatus_1.default.RUNNING });
     if (!option.isEmpty) {
         let queue = option.get();
         console.log("queue is", queue);
-        yield stock_1.default.transferCOASeatReservation(queue.authorization)(assetRepository)
+        yield sales_1.default.cancelGMOAuth(queue.authorization)(GMO)
             .then(() => __awaiter(this, void 0, void 0, function* () {
             yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
         }))
             .catch((err) => __awaiter(this, void 0, void 0, function* () {
             console.error(err);
-            yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.UNEXECUTED });
+            yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.UNEXECUTED, });
         }));
     }
     count--;

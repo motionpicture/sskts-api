@@ -330,7 +330,7 @@ class TransactionServiceInterpreter {
                 _id: objectId_1.default(),
                 group: transactionEventGroup_1.default.EXPIRE,
             });
-            let option = yield transactionRepository.findOneAndUpdate({
+            yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
                 status: transactionStatus_1.default.PROCESSING
             }, {
@@ -342,8 +342,6 @@ class TransactionServiceInterpreter {
                     events: event
                 }
             });
-            if (option.isEmpty)
-                throw new Error("processing transaction not found.");
         });
     }
     cancel(args) {

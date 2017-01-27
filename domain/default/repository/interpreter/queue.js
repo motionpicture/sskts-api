@@ -90,6 +90,39 @@ class QueueRepositoryInterpreter {
             return (queue) ? monapt.Option(queue) : monapt.None;
         });
     }
+    findOneCancelGMOAuthorizationAndUpdate(conditions, update) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
+            let queue = yield model.findOneAndUpdate({
+                $and: [
+                    {
+                        "group": queueGroup_1.default.CANCEL_AUTHORIZATION,
+                        "authorization.group": authorizationGroup_1.default.GMO
+                    },
+                    conditions
+                ]
+            }, update, {
+                new: true,
+                upsert: false
+            }).lean().exec();
+            return (queue) ? monapt.Option(queue) : monapt.None;
+        });
+    }
+    findOneExpireTransactionAndUpdate(conditions, update) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
+            let queue = yield model.findOneAndUpdate({
+                $and: [
+                    { group: queueGroup_1.default.EXPIRE_TRANSACTION },
+                    conditions
+                ]
+            }, update, {
+                new: true,
+                upsert: false
+            }).lean().exec();
+            return (queue) ? monapt.Option(queue) : monapt.None;
+        });
+    }
     store(queue) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);

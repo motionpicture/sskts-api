@@ -7,6 +7,7 @@ import ObjectId from "../../model/objectId";
 import Queue from "../../model/queue";
 import QueueGroup from "../../model/queueGroup";
 import SendEmailQueue from "../../model/queue/sendEmail";
+import ExpireTransactionQueue from "../../model/queue/expireTransaction";
 import AuthorizationGroup from "../../model/authorizationGroup";
 import GMOAuthorization from "../../model/authorization/gmo";
 import COASeatReservationAuthorization from "../../model/authorization/coaSeatReservation";
@@ -60,7 +61,7 @@ class QueueRepositoryInterpreter implements QueueRepository {
     async findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
         let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         let queue = <{
-            _id: string,
+            _id: ObjectId,
             authorization: GMOAuthorization
         }> await model.findOneAndUpdate({
             $and: [
@@ -81,7 +82,7 @@ class QueueRepositoryInterpreter implements QueueRepository {
     async findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
         let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         let queue = <{
-            _id: string,
+            _id: ObjectId,
             authorization: COASeatReservationAuthorization
         }> await model.findOneAndUpdate({
             $and: [
@@ -89,6 +90,42 @@ class QueueRepositoryInterpreter implements QueueRepository {
                     "group": QueueGroup.SETTLE_AUTHORIZATION,
                     "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION
                 },
+                conditions
+            ]
+        }, update, {
+                new: true,
+                upsert: false
+            }).lean().exec();
+
+        return (queue) ? monapt.Option(queue) : monapt.None;
+    }
+
+    async findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
+        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        let queue = <{
+            _id: ObjectId,
+            authorization: GMOAuthorization
+        }> await model.findOneAndUpdate({
+            $and: [
+                {
+                    "group": QueueGroup.CANCEL_AUTHORIZATION,
+                    "authorization.group": AuthorizationGroup.GMO
+                },
+                conditions
+            ]
+        }, update, {
+                new: true,
+                upsert: false
+            }).lean().exec();
+
+        return (queue) ? monapt.Option(queue) : monapt.None;
+    }
+
+    async findOneExpireTransactionAndUpdate(conditions: Object, update: Object) {
+        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        let queue = <ExpireTransactionQueue> await model.findOneAndUpdate({
+            $and: [
+                { group: QueueGroup.EXPIRE_TRANSACTION },
                 conditions
             ]
         }, update, {
