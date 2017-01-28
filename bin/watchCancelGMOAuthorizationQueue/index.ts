@@ -7,18 +7,33 @@ import GMO = require("@motionpicture/gmo-service");
 mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
-let queueRepository = QueueRepository(mongoose.connection);
 
 setInterval(async () => {
     if (count > 10) return;
     count++;
 
+    try {
+        await execute();
+    } catch (error) {
+        console.error(error.message);
+    }
+
+    count--;
+}, 500);
+
+async function execute() {
     // 未実行のGMOオーソリ取消キューを取得
-    // TODO try_count
-    let option = await queueRepository.findOneCancelGMOAuthorizationAndUpdate({
-        status: QueueStatus.UNEXECUTED,
-        executed_at: { $lt: new Date() } // TODO 実行日時チェック
-    }, { status: QueueStatus.RUNNING });
+    let queueRepository = QueueRepository(mongoose.connection);
+    let option = await queueRepository.findOneCancelGMOAuthorizationAndUpdate(
+        {
+            status: QueueStatus.UNEXECUTED,
+            executed_at: { $lt: new Date() },
+        },
+        {
+            status: QueueStatus.RUNNING,
+            $inc: { count_try: 1 }
+        }
+    );
 
     if (!option.isEmpty) {
         let queue = option.get();
@@ -33,6 +48,4 @@ setInterval(async () => {
                 await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.UNEXECUTED, });
             });
     }
-
-    count--;
-}, 500);
+}

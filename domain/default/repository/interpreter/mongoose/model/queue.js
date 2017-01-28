@@ -7,6 +7,7 @@ let schema = new mongoose.Schema({
     status: String,
     transaction_id: mongoose.Schema.Types.ObjectId,
     executed_at: Date,
+    count_try: Number,
 }, {
     collection: "queues",
     timestamps: {

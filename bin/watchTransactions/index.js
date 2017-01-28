@@ -16,27 +16,39 @@ const queue_1 = require("../../domain/default/repository/interpreter/queue");
 const transactionStatus_1 = require("../../domain/default/model/transactionStatus");
 const transactionQueuesStatus_1 = require("../../domain/default/model/transactionQueuesStatus");
 let count = 0;
-let transactionRepository = transaction_2.default(mongoose.connection);
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
     if (count > 10)
         return;
     count++;
-    let option = yield transactionRepository.findOneAndUpdate({
-        status: { $in: [transactionStatus_1.default.CLOSED, transactionStatus_1.default.EXPIRED] },
-        queues_status: transactionQueuesStatus_1.default.UNEXPORTED
-    }, { queues_status: transactionQueuesStatus_1.default.EXPORTING });
-    if (!option.isEmpty) {
-        let transaction = option.get();
-        yield transaction_1.default.exportQueues({
-            transaction_id: transaction._id.toString()
-        })(transactionRepository, queue_1.default(mongoose.connection))
-            .then(() => __awaiter(this, void 0, void 0, function* () {
-            yield transactionRepository.findOneAndUpdate({ _id: transaction._id }, { queues_status: transactionQueuesStatus_1.default.EXPORTED });
-        }))
-            .catch((err) => __awaiter(this, void 0, void 0, function* () {
-            console.error(err);
-            yield transactionRepository.findOneAndUpdate({ _id: transaction._id }, { queues_status: transactionQueuesStatus_1.default.EXPORTED });
-        }));
+    try {
+        yield execute();
+    }
+    catch (error) {
+        console.error(error.message);
     }
     count--;
 }), 500);
+function execute() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let transactionRepository = transaction_2.default(mongoose.connection);
+        let option = yield transactionRepository.findOneAndUpdate({
+            status: { $in: [transactionStatus_1.default.CLOSED, transactionStatus_1.default.EXPIRED] },
+            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+        }, {
+            queues_status: transactionQueuesStatus_1.default.EXPORTING
+        });
+        if (!option.isEmpty) {
+            let transaction = option.get();
+            yield transaction_1.default.exportQueues({
+                transaction_id: transaction._id.toString()
+            })(transactionRepository, queue_1.default(mongoose.connection))
+                .then(() => __awaiter(this, void 0, void 0, function* () {
+                yield transactionRepository.findOneAndUpdate({ _id: transaction._id }, { queues_status: transactionQueuesStatus_1.default.EXPORTED });
+            }))
+                .catch((err) => __awaiter(this, void 0, void 0, function* () {
+                console.error(err);
+                yield transactionRepository.findOneAndUpdate({ _id: transaction._id }, { queues_status: transactionQueuesStatus_1.default.EXPORTED });
+            }));
+        }
+    });
+}

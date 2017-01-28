@@ -10,16 +10,32 @@ import TransactionStatus from "../../domain/default/model/transactionStatus";
 import TransactionQueuesStatus from "../../domain/default/model/transactionQueuesStatus";
 
 let count = 0;
-let transactionRepository = TransactionRepository(mongoose.connection);
 
 setInterval(async () => {
     if (count > 10) return;
     count++;
 
-    let option = await transactionRepository.findOneAndUpdate({
-        status: { $in: [TransactionStatus.CLOSED, TransactionStatus.EXPIRED] },
-        queues_status: TransactionQueuesStatus.UNEXPORTED
-    }, { queues_status: TransactionQueuesStatus.EXPORTING });
+    try {
+        await execute();
+    } catch (error) {
+        console.error(error.message);
+    }
+
+    count--;
+}, 500);
+
+async function execute() {
+    let transactionRepository = TransactionRepository(mongoose.connection);
+
+    let option = await transactionRepository.findOneAndUpdate(
+        {
+            status: { $in: [TransactionStatus.CLOSED, TransactionStatus.EXPIRED] },
+            queues_status: TransactionQueuesStatus.UNEXPORTED
+        },
+        {
+            queues_status: TransactionQueuesStatus.EXPORTING
+        }
+    );
 
     if (!option.isEmpty) {
         let transaction = option.get();
@@ -35,6 +51,4 @@ setInterval(async () => {
                 await transactionRepository.findOneAndUpdate({ _id: transaction._id }, { queues_status: TransactionQueuesStatus.EXPORTED });
             });
     }
-
-    count--;
-}, 500);
+}

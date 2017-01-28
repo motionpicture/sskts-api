@@ -1,2 +1,2 @@
 cd D:\home\site\wwwroot
-node bin/watchSendEmailQueue\index
+node bin/watchSendEmailQueue/index

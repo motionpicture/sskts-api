@@ -10,6 +10,7 @@ let schema = new mongoose.Schema({
     status: String,
     transaction_id: mongoose.Schema.Types.ObjectId, // 取引期限切れに利用
     executed_at: Date,
+    count_try: Number,
 },{
     collection: "queues",
     timestamps: { 

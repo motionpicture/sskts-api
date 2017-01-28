@@ -326,6 +326,19 @@ class TransactionServiceInterpreter {
                     count_try: 0
                 }));
             });
+            queues.push(QueueFactory.createSendEmail({
+                _id: objectId_1.default(),
+                email: EmailFactory.create({
+                    _id: objectId_1.default(),
+                    from: "noreply@localhost",
+                    to: "hello@motionpicture.jp",
+                    subject: "transaction expired",
+                    body: `取引[${transaction._id}]の期限がきれました`
+                }),
+                status: queueStatus_1.default.UNEXECUTED,
+                executed_at: new Date(),
+                count_try: 0
+            }));
             let event = TransactionEventFactory.create({
                 _id: objectId_1.default(),
                 group: transactionEventGroup_1.default.EXPIRE,

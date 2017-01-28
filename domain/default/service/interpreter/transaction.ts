@@ -482,10 +482,23 @@ class TransactionServiceInterpreter implements TransactionService {
                     _id: ObjectId(),
                     authorization: authorization,
                     status: QueueStatus.UNEXECUTED,
-                    executed_at: new Date(), // TODO 調整
+                    executed_at: new Date(),
                     count_try: 0
                 }));
             });
+            queues.push(QueueFactory.createSendEmail({ // TODO おそらく開発時のみ
+                _id: ObjectId(),
+                email: EmailFactory.create({
+                    _id: ObjectId(),
+                    from: "noreply@localhost",
+                    to: "hello@motionpicture.jp",
+                    subject: "transaction expired",
+                    body: `取引[${transaction._id}]の期限がきれました`
+                }),
+                status: QueueStatus.UNEXECUTED,
+                executed_at: new Date(),
+                count_try: 0
+            }));
 
             // イベント作成
             let event = TransactionEventFactory.create({

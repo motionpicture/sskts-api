@@ -122,32 +122,6 @@ program
     });
 
 // program
-//     .command("settleAuthorization")
-//     .description("import authorizations from transaction.")
-//     .action(async () => {
-//         mongoose.connect(MONGOLAB_URI);
-
-//         try {
-//             let option = await QueueRepository.findOneAndUpdate({
-//                 status: QueueStatus.UNEXECUTED,
-//                 group: QueueGroup.SETTLE_AUTHORIZATION
-//             }, { status: QueueStatus.RUNNING });
-//             if (option.isEmpty) return;
-
-//             // TODO 資産移動処理
-//             let queue = option.get();
-//             console.log("queue is", queue);
-//             await AssetService.transfer(queue.authorization);
-
-//             await QueueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
-//         } catch (error) {
-//             console.error(error.message);
-//         }
-
-//         mongoose.disconnect();
-//     });
-
-// program
 //     .command("importSeatAvailability <theaterCode> <day_start> <day_end>")
 //     .description("import seat availability.")
 //     .action((theaterCode, start, end) => {
