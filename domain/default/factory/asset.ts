@@ -1,11 +1,11 @@
 import SeatReservationAsset from "../model/asset/seatReservation";
 import Authorization from "../model/authorization";
 import ObjectId from "../model/objectId";
-import Owner from "../model/owner";
+import Ownership from "../model/ownership";
 
 export function createSeatReservation(args: {
     _id: ObjectId,
-    owner: Owner,
+    ownership: Ownership,
     authorizations: Array<Authorization>,
     performance: string,
     section: string,
@@ -21,7 +21,7 @@ export function createSeatReservation(args: {
 }) {
     return new SeatReservationAsset(
         args._id,
-        args.owner,
+        args.ownership,
         args.authorizations,
         args.performance,
         args.section,

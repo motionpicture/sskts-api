@@ -1,9 +1,9 @@
 "use strict";
 class Asset {
-    constructor(_id, group, owner, price, authorizations) {
+    constructor(_id, group, ownership, price, authorizations) {
         this._id = _id;
         this.group = group;
-        this.owner = owner;
+        this.ownership = ownership;
         this.price = price;
         this.authorizations = authorizations;
     }

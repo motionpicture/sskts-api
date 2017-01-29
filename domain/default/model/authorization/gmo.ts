@@ -3,6 +3,9 @@ import AuthorizationGroup from "../authorizationGroup";
 import Authorization from "../authorization";
 import Owner from "../owner";
 
+/**
+ * GMOオーソリ
+ */
 export default class GMOAuthorization extends Authorization {
     constructor(
         readonly _id: ObjectId,

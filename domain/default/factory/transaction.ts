@@ -4,8 +4,6 @@ import TransactionStatus from "../model/transactionStatus";
 import TransactionEvent from "../model/transactionEvent";
 import TransactionQueuesStatus from "../model/transactionQueuesStatus";
 import Owner from "../model/owner";
-import Authorization from "../model/authorization";
-import Email from "../model/email";
 import Queue from "../model/queue";
 
 export function create(args: {
@@ -13,8 +11,6 @@ export function create(args: {
     status: TransactionStatus,
     events?: Array<TransactionEvent>,
     owners: Array<Owner>,
-    authorizations?: Array<Authorization>,
-    emails?: Array<Email>,
     queues?: Array<Queue>,
     expired_at: Date,
     inquiry_id?: string,
@@ -26,8 +22,6 @@ export function create(args: {
         args.status,
         (args.events === undefined) ? [] : (args.events),
         args.owners,
-        (args.authorizations === undefined) ? [] : (args.authorizations),
-        (args.emails === undefined) ? [] : (args.emails),
         (args.queues === undefined) ? [] : (args.queues),
         args.expired_at,
         (args.inquiry_id === undefined) ? "" : (args.inquiry_id),

@@ -79,7 +79,6 @@ class TransactionServiceInterpreter {
                 owners: owners,
                 expired_at: args.expired_at
             });
-            yield transactionRepository.store(transaction);
             let queue = QueueFactory.createExpireTransaction({
                 _id: objectId_1.default(),
                 transaction_id: transaction._id,
@@ -87,6 +86,7 @@ class TransactionServiceInterpreter {
                 executed_at: transaction.expired_at,
                 count_try: 0,
             });
+            yield transactionRepository.store(transaction);
             yield queueRepository.store(queue);
             return transaction;
         });
@@ -171,7 +171,11 @@ class TransactionServiceInterpreter {
                 assets: args.seats.map((seat) => {
                     return AssetFactory.createSeatReservation({
                         _id: objectId_1.default(),
-                        owner: optionOwnerTo.get(),
+                        ownership: {
+                            _id: objectId_1.default(),
+                            owner: optionOwnerTo.get(),
+                            authenticated: false
+                        },
                         authorizations: [],
                         performance: seat.performance,
                         section: seat.section,
@@ -207,9 +211,6 @@ class TransactionServiceInterpreter {
                 $push: {
                     events: event,
                 },
-                $addToSet: {
-                    authorizations: args.authorization,
-                }
             });
             if (option.isEmpty)
                 throw new Error("processing transaction not found.");
@@ -228,11 +229,6 @@ class TransactionServiceInterpreter {
                 $push: {
                     events: event,
                 },
-                $pull: {
-                    authorizations: {
-                        _id: objectId_1.default(args.authorization_id)
-                    },
-                }
             });
             if (option.isEmpty)
                 throw new Error("processing transaction not found.");
@@ -272,7 +268,7 @@ class TransactionServiceInterpreter {
                 throw new Error("transaction not found.");
             let transaction = optionTransaction.get();
             let queues = [];
-            transaction.authorizations.forEach((authorization) => {
+            transaction.authorizations().forEach((authorization) => {
                 queues.push(QueueFactory.createSettleAuthorization({
                     _id: objectId_1.default(),
                     authorization: authorization,
@@ -281,7 +277,7 @@ class TransactionServiceInterpreter {
                     count_try: 0
                 }));
             });
-            transaction.emails.forEach((email) => {
+            transaction.emails().forEach((email) => {
                 queues.push(QueueFactory.createSendEmail({
                     _id: objectId_1.default(),
                     email: email,
@@ -300,10 +296,10 @@ class TransactionServiceInterpreter {
             }, {
                 $set: {
                     status: transactionStatus_1.default.CLOSED,
-                    queues: queues
                 },
                 $push: {
                     events: event,
+                    queues: queues
                 }
             });
             if (option.isEmpty)
@@ -317,7 +313,7 @@ class TransactionServiceInterpreter {
                 throw new Error("transaction not found.");
             let transaction = optionTransaction.get();
             let queues = [];
-            transaction.authorizations.forEach((authorization) => {
+            transaction.authorizations().forEach((authorization) => {
                 queues.push(QueueFactory.createCancelAuthorization({
                     _id: objectId_1.default(),
                     authorization: authorization,
@@ -331,7 +327,7 @@ class TransactionServiceInterpreter {
                 email: EmailFactory.create({
                     _id: objectId_1.default(),
                     from: "noreply@localhost",
-                    to: "hello@motionpicture.jp",
+                    to: "system@motionpicture.jp",
                     subject: "transaction expired",
                     body: `取引[${transaction._id}]の期限がきれました`
                 }),
@@ -349,33 +345,12 @@ class TransactionServiceInterpreter {
             }, {
                 $set: {
                     status: transactionStatus_1.default.EXPIRED,
+                },
+                $push: {
+                    events: event,
                     queues: queues
-                },
-                $push: {
-                    events: event
                 }
             });
-        });
-    }
-    cancel(args) {
-        return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = TransactionEventFactory.create({
-                _id: objectId_1.default(),
-                group: transactionEventGroup_1.default.CANCEL,
-            });
-            let option = yield transactionRepository.findOneAndUpdate({
-                _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.CLOSED
-            }, {
-                $set: {
-                    status: transactionStatus_1.default.CANCELED
-                },
-                $push: {
-                    events: event
-                }
-            });
-            if (option.isEmpty)
-                throw new Error("closed transaction not found.");
         });
     }
     exportQueues(args) {
@@ -399,13 +374,17 @@ class TransactionServiceInterpreter {
                 subject: args.subject,
                 body: args.body,
             });
+            let event = TransactionEventFactory.createEmailAdd({
+                _id: objectId_1.default(),
+                email: email,
+            });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.PROCESSING,
             }, {
-                $addToSet: {
-                    emails: email,
-                }
+                $push: {
+                    events: event,
+                },
             });
             if (option.isEmpty)
                 throw new Error("processing transaction not found.");
@@ -414,15 +393,17 @@ class TransactionServiceInterpreter {
     }
     removeEmail(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let event = TransactionEventFactory.createEmailRemove({
+                _id: objectId_1.default(),
+                email_id: objectId_1.default(args.email_id),
+            });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.PROCESSING,
             }, {
-                $pull: {
-                    emails: {
-                        _id: objectId_1.default(args.email_id)
-                    },
-                }
+                $push: {
+                    events: event,
+                },
             });
             if (option.isEmpty)
                 throw new Error("processing transaction not found.");

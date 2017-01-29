@@ -9,8 +9,6 @@ let schema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: owner_1.default.modelName,
         }],
-    authorizations: [mongoose.Schema.Types.Mixed],
-    emails: [mongoose.Schema.Types.Mixed],
     queues: [mongoose.Schema.Types.Mixed],
     inquiry_id: String,
     inquiry_pass: String,

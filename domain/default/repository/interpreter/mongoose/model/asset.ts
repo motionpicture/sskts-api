@@ -7,14 +7,18 @@ import PerformanceModel from "./performance";
  */
 let schema = new mongoose.Schema({
     _id: String,
-    owner: { // 所有者
-        type: mongoose.Schema.Types.ObjectId,
-        ref: OwnerModel.modelName,
+    ownership: { // 所有権
+        owner: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: OwnerModel.modelName,
+        },
+        authenticated: Boolean,
     },
     authorizations: [mongoose.Schema.Types.Mixed], // 承認リスト
-
     group: String, // 資産グループ
     price: Number,
+
+
     performance: {
         type: String,
         ref: PerformanceModel.modelName
@@ -29,6 +33,8 @@ let schema = new mongoose.Schema({
     add_price: Number,
     dis_price: Number,
     sale_price: Number,
+
+
 },{
     collection: "assets",
     timestamps: { 

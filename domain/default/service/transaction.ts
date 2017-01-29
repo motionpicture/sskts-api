@@ -125,10 +125,6 @@ interface TransactionService {
     expire(args: {
         transaction_id: string,
     }): TransactionOperation<void>;
-    /** 取引取消 */
-    cancel(args: {
-        transaction_id: string,
-    }): TransactionOperation<void>;
     /** キューを出力する */
     exportQueues(args: {
         transaction_id: string,

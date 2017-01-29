@@ -8,37 +8,42 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
-const transaction_1 = require("./mongoose/model/transaction");
+const transaction_1 = require("../../model/transaction");
+const transaction_2 = require("./mongoose/model/transaction");
 class TransactionRepositoryInterpreter {
+    createFromDocument(doc) {
+        return new transaction_1.default(doc.get("_id"), doc.get("status"), doc.get("events"), doc.get("owners"), doc.get("queues"), doc.get("expired_at"), doc.get("inquiry_id"), doc.get("inquiry_pass"), doc.get("queues_status"));
+    }
     find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
-            let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
-            return yield model.find(conditions)
+            let model = this.connection.model(transaction_2.default.modelName, transaction_2.default.schema);
+            let docs = yield model.find(conditions)
                 .populate("owner")
-                .lean().exec();
+                .exec();
+            return docs.map(this.createFromDocument);
         });
     }
     findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
-            let transaction = yield model.findOne({ _id: id })
-                .populate("owners").lean().exec();
-            return (transaction) ? monapt.Option(transaction) : monapt.None;
+            let model = this.connection.model(transaction_2.default.modelName, transaction_2.default.schema);
+            let doc = yield model.findOne({ _id: id })
+                .populate("owners").exec();
+            return (doc) ? monapt.Option(this.createFromDocument(doc)) : monapt.None;
         });
     }
     findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
-            let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
-            let transaction = yield model.findOneAndUpdate(conditions, update, {
+            let model = this.connection.model(transaction_2.default.modelName, transaction_2.default.schema);
+            let doc = yield model.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
-            }).lean().exec();
-            return (transaction) ? monapt.Option(transaction) : monapt.None;
+            }).exec();
+            return (doc) ? monapt.Option(this.createFromDocument(doc)) : monapt.None;
         });
     }
     store(transaction) {
         return __awaiter(this, void 0, void 0, function* () {
-            let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
+            let model = this.connection.model(transaction_2.default.modelName, transaction_2.default.schema);
             yield model.findOneAndUpdate({ _id: transaction._id }, transaction, {
                 new: true,
                 upsert: true

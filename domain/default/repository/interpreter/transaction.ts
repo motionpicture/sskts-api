@@ -8,29 +8,45 @@ import TransactionModel from "./mongoose/model/transaction";
 class TransactionRepositoryInterpreter implements TransactionRepository {
     public connection: mongoose.Connection;
 
+    private createFromDocument(doc: mongoose.Document) {
+        return new Transaction(
+            doc.get("_id"),
+            doc.get("status"),
+            doc.get("events"),
+            doc.get("owners"),
+            doc.get("queues"),
+            doc.get("expired_at"),
+            doc.get("inquiry_id"),
+            doc.get("inquiry_pass"),
+            doc.get("queues_status"),
+        );
+    }
+
     async find(conditions: Object) {
         let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
-        return <Array<Transaction>>await model.find(conditions)
+        let docs = await model.find(conditions)
             .populate("owner")
-            .lean().exec();
+            .exec();
+
+        return docs.map(this.createFromDocument);
     }
 
     async findById(id: ObjectId) {
         let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
-        let transaction = <Transaction>await model.findOne({ _id: id })
-            .populate("owners").lean().exec();
+        let doc = await model.findOne({ _id: id })
+            .populate("owners").exec();
 
-        return (transaction) ? monapt.Option(transaction) : monapt.None;
+        return (doc) ? monapt.Option(this.createFromDocument(doc)) : monapt.None;
     }
 
     async findOneAndUpdate(conditions: Object, update: Object) {
         let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
-        let transaction = <Transaction>await model.findOneAndUpdate(conditions, update, {
+        let doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
-        }).lean().exec();
+        }).exec();
 
-        return (transaction) ? monapt.Option(transaction) : monapt.None;
+        return (doc) ? monapt.Option(this.createFromDocument(doc)) : monapt.None;
     }
 
     async store(transaction: Transaction) {

@@ -99,6 +99,7 @@ class TransactionServiceInterpreter implements TransactionService {
     }) {
         return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository, queueRepository: QueueRepository) => {
             // 所有者取得
+            // TODO 所有者リストを持つ必要はあるか？
             let owners: Array<Owner> = [];
             let promises = args.owner_ids.map(async (ownerId) => {
                 let option = await ownerRepository.findById(ObjectId(ownerId));
@@ -122,9 +123,6 @@ class TransactionServiceInterpreter implements TransactionService {
                 expired_at: args.expired_at
             });
 
-            // 永続化
-            await transactionRepository.store(transaction);
-
             // 期限切れキュー作成
             let queue = QueueFactory.createExpireTransaction({
                 _id: ObjectId(),
@@ -135,6 +133,7 @@ class TransactionServiceInterpreter implements TransactionService {
             });
 
             // 永続化
+            await transactionRepository.store(transaction);
             await queueRepository.store(queue);
 
             return transaction;
@@ -145,6 +144,8 @@ class TransactionServiceInterpreter implements TransactionService {
         return async (assetRepository: AssetRepository) => {
             console.log(authorization);
             console.log(assetRepository);
+
+            // TODO おそらく、取引の期限でunauthorizeするqueueをたてる
         }
     }
 
@@ -274,7 +275,11 @@ class TransactionServiceInterpreter implements TransactionService {
                 assets: args.seats.map((seat) => {
                     return AssetFactory.createSeatReservation({
                         _id: ObjectId(),
-                        owner: optionOwnerTo.get(),
+                        ownership: { // TODO factory
+                            _id: ObjectId(),
+                            owner: optionOwnerTo.get(),
+                            authenticated: false
+                        },
                         authorizations: [],
                         performance: seat.performance,
                         section: seat.section,
@@ -323,11 +328,7 @@ class TransactionServiceInterpreter implements TransactionService {
                     $push: {
                         events: event,
                     },
-                    $addToSet: {
-                        authorizations: args.authorization,
-                    }
                 });
-
             if (option.isEmpty) throw new Error("processing transaction not found.");
         }
     }
@@ -354,11 +355,6 @@ class TransactionServiceInterpreter implements TransactionService {
                     $push: {
                         events: event,
                     },
-                    $pull: {
-                        authorizations: {
-                            _id: ObjectId(args.authorization_id)
-                        },
-                    }
                 });
             if (option.isEmpty) throw new Error("processing transaction not found.");
         }
@@ -419,23 +415,25 @@ class TransactionServiceInterpreter implements TransactionService {
             if (optionTransaction.isEmpty) throw new Error("transaction not found.");
             let transaction = optionTransaction.get();
 
+            // TODO 条件が対等かどうかチェック
+
             // キューリストを事前作成
             let queues: Array<Queue> = [];
-            transaction.authorizations.forEach((authorization) => {
+            transaction.authorizations().forEach((authorization) => {
                 queues.push(QueueFactory.createSettleAuthorization({
                     _id: ObjectId(),
                     authorization: authorization,
                     status: QueueStatus.UNEXECUTED,
-                    executed_at: new Date(), // TODO 調整
+                    executed_at: new Date(), // なるはやで実行
                     count_try: 0
                 }));
             });
-            transaction.emails.forEach((email) => {
+            transaction.emails().forEach((email) => {
                 queues.push(QueueFactory.createSendEmail({
                     _id: ObjectId(),
                     email: email,
                     status: QueueStatus.UNEXECUTED,
-                    executed_at: new Date(), // TODO 調整
+                    executed_at: new Date(), // TODO emailのsent_atを指定
                     count_try: 0
                 }));
             });
@@ -453,10 +451,10 @@ class TransactionServiceInterpreter implements TransactionService {
             }, {
                     $set: {
                         status: TransactionStatus.CLOSED,
-                        queues: queues
                     },
                     $push: {
                         events: event,
+                        queues: queues
                     }
                 });
             if (option.isEmpty) throw new Error("processing transaction not found.");
@@ -477,7 +475,7 @@ class TransactionServiceInterpreter implements TransactionService {
 
             // キューリストを事前作成
             let queues: Array<Queue> = [];
-            transaction.authorizations.forEach((authorization) => {
+            transaction.authorizations().forEach((authorization) => {
                 queues.push(QueueFactory.createCancelAuthorization({
                     _id: ObjectId(),
                     authorization: authorization,
@@ -491,7 +489,7 @@ class TransactionServiceInterpreter implements TransactionService {
                 email: EmailFactory.create({
                     _id: ObjectId(),
                     from: "noreply@localhost",
-                    to: "hello@motionpicture.jp",
+                    to: "system@motionpicture.jp",
                     subject: "transaction expired",
                     body: `取引[${transaction._id}]の期限がきれました`
                 }),
@@ -513,46 +511,15 @@ class TransactionServiceInterpreter implements TransactionService {
             }, {
                     $set: {
                         status: TransactionStatus.EXPIRED,
-                        queues: queues
                     },
                     $push: {
-                        events: event
+                        events: event,
+                        queues: queues
                     }
                 });
 
             // 永続化結果がemptyの場合は、もう取引中ステータスではないということなので、期限切れタスクとしては成功
             // if (option.isEmpty) throw new Error("processing transaction not found.");
-        }
-    }
-
-    /**
-     * 取引取消
-     */
-    cancel(args: {
-        transaction_id: string
-    }) {
-        return async (transactionRepository: TransactionRepository) => {
-            // イベント作成
-            let event = TransactionEventFactory.create({
-                _id: ObjectId(),
-                group: TransactionEventGroup.CANCEL,
-            });
-
-            // TODO キューリストを事前作成する
-
-            // 永続化
-            let option = await transactionRepository.findOneAndUpdate({
-                _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.CLOSED
-            }, {
-                    $set: {
-                        status: TransactionStatus.CANCELED
-                    },
-                    $push: {
-                        events: event
-                    }
-                });
-            if (option.isEmpty) throw new Error("closed transaction not found.");
         }
     }
 
@@ -594,14 +561,20 @@ class TransactionServiceInterpreter implements TransactionService {
                 body: args.body,
             });
 
+            // イベント作成
+            let event = TransactionEventFactory.createEmailAdd({
+                _id: ObjectId(),
+                email: email,
+            });
+
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.PROCESSING
+                status: TransactionStatus.PROCESSING,
             }, {
-                    $addToSet: {
-                        emails: email,
-                    }
+                    $push: {
+                        events: event,
+                    },
                 });
 
             if (option.isEmpty) throw new Error("processing transaction not found.");
@@ -618,17 +591,22 @@ class TransactionServiceInterpreter implements TransactionService {
         email_id: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // イベント作成
+            let event = TransactionEventFactory.createEmailRemove({
+                _id: ObjectId(),
+                email_id: ObjectId(args.email_id),
+            });
+
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.PROCESSING
+                status: TransactionStatus.PROCESSING,
             }, {
-                    $pull: {
-                        emails: {
-                            _id: ObjectId(args.email_id)
-                        },
-                    }
+                    $push: {
+                        events: event,
+                    },
                 });
+
             if (option.isEmpty) throw new Error("processing transaction not found.");
         }
     }

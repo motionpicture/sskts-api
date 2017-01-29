@@ -2,17 +2,23 @@ import Asset from "../asset";
 import AssetGroup from "../assetGroup";
 import Authorization from "../authorization";
 import ObjectId from "../objectId";
-import Owner from "../owner";
+import Ownership from "../ownership";
 
 // TODO 座席予約資産の属性はこれでよいか
 export default class SeatReservationAsset extends Asset {
     constructor(
         readonly _id: ObjectId,
-        readonly owner: Owner,
+        /** 所有権 */
+        readonly ownership: Ownership,
+        /** 承認リスト */
         readonly authorizations: Array<Authorization>,
+        /** パフォーマンス */
         readonly performance: string,
+        /** スクリーンセクション */
         readonly section: string,
+        /** 座席コード */
         readonly seat_code: string,
+        /** 券種コード */
         readonly ticket_code: string,
         readonly ticket_name_ja: string,
         readonly ticket_name_en: string,
@@ -27,7 +33,7 @@ export default class SeatReservationAsset extends Asset {
         super(
             _id,
             AssetGroup.SEAT_RESERVATION,
-            owner,
+            ownership,
             sale_price,
             authorizations
         );

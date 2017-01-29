@@ -4,9 +4,12 @@ const owner_1 = require("./owner");
 const performance_1 = require("./performance");
 let schema = new mongoose.Schema({
     _id: String,
-    owner: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: owner_1.default.modelName,
+    ownership: {
+        owner: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: owner_1.default.modelName,
+        },
+        authenticated: Boolean,
     },
     authorizations: [mongoose.Schema.Types.Mixed],
     group: String,

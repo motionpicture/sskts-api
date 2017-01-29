@@ -2,10 +2,10 @@
 const asset_1 = require("../asset");
 const assetGroup_1 = require("../assetGroup");
 class SeatReservationAsset extends asset_1.default {
-    constructor(_id, owner, authorizations, performance, section, seat_code, ticket_code, ticket_name_ja, ticket_name_en, ticket_name_kana, std_price, add_price, dis_price, sale_price) {
-        super(_id, assetGroup_1.default.SEAT_RESERVATION, owner, sale_price, authorizations);
+    constructor(_id, ownership, authorizations, performance, section, seat_code, ticket_code, ticket_name_ja, ticket_name_en, ticket_name_kana, std_price, add_price, dis_price, sale_price) {
+        super(_id, assetGroup_1.default.SEAT_RESERVATION, ownership, sale_price, authorizations);
         this._id = _id;
-        this.owner = owner;
+        this.ownership = ownership;
         this.authorizations = authorizations;
         this.performance = performance;
         this.section = section;

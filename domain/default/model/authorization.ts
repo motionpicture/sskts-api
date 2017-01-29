@@ -2,6 +2,12 @@ import AuthorizationGroup from "./authorizationGroup";
 import Owner from "./owner";
 import ObjectId from "./objectId";
 
+/**
+ * 承認
+ * 
+ * 誰が、誰に対して、何の所有を、承認するのか
+ * 何の所有を、というのは承認グループによって異なる
+ */
 export default class Authorization {
     constructor(
         readonly _id: ObjectId,

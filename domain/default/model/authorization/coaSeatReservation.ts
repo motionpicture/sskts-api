@@ -4,6 +4,9 @@ import Authorization from "../authorization";
 import Owner from "../owner";
 import SeatReservationAsset from "../asset/seatReservation";
 
+/**
+ * COA座席仮予約
+ */
 export default class COASeatReservationAuthorization extends Authorization {
     constructor(
         readonly _id: ObjectId,
