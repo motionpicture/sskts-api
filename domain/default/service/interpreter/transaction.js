@@ -296,10 +296,10 @@ class TransactionServiceInterpreter {
             }, {
                 $set: {
                     status: transactionStatus_1.default.CLOSED,
+                    queues: queues
                 },
                 $push: {
                     events: event,
-                    queues: queues
                 }
             });
             if (option.isEmpty)
@@ -345,10 +345,10 @@ class TransactionServiceInterpreter {
             }, {
                 $set: {
                     status: transactionStatus_1.default.EXPIRED,
+                    queues: queues
                 },
                 $push: {
                     events: event,
-                    queues: queues
                 }
             });
         });

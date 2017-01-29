@@ -451,10 +451,10 @@ class TransactionServiceInterpreter implements TransactionService {
             }, {
                     $set: {
                         status: TransactionStatus.CLOSED,
+                        queues: queues
                     },
                     $push: {
                         events: event,
-                        queues: queues
                     }
                 });
             if (option.isEmpty) throw new Error("processing transaction not found.");
@@ -511,10 +511,10 @@ class TransactionServiceInterpreter implements TransactionService {
             }, {
                     $set: {
                         status: TransactionStatus.EXPIRED,
+                        queues: queues
                     },
                     $push: {
                         events: event,
-                        queues: queues
                     }
                 });
 

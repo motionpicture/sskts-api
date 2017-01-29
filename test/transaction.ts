@@ -49,10 +49,11 @@ async function main() {
     // 取引開始
     // 30分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
+    console.log("starting transaction...");
     response = await request.post({
         url: "http://localhost:8080/transactions",
         body: {
-            expired_at: moment().add("minutes", 30).unix(),
+            expired_at: moment().add(30, "minutes").unix(),
             owners: [administratorOwnerId, anonymousOwnerId]
         },
         json: true,
@@ -70,13 +71,25 @@ async function main() {
 
 
 
+
+    // 空席なくなったら変更する
+    let theaterCode = "001";
+    let dateJouei = "20170131";
+    let titleCode = "8513";
+    let titleBranchNum = "0";
+    let timeBegin = "2030";
+    let screenCode = "2";
+
+
+
+
     // 販売可能チケット検索
     let salesTicketResult = await COA.salesTicketInterface.call({
-        theater_code: "001",
-        date_jouei: "20170131",
-        title_code: "8513",
-        title_branch_num: "0",
-        time_begin: "1010",
+        theater_code: theaterCode,
+        date_jouei: dateJouei,
+        title_code: titleCode,
+        title_branch_num: titleBranchNum,
+        time_begin: timeBegin,
     });
     console.log("salesTicketResult:", salesTicketResult);
 
@@ -89,12 +102,12 @@ async function main() {
 
     // COA空席確認
     let getStateReserveSeatResult = await COA.getStateReserveSeatInterface.call({
-        theater_code: "001",
-        date_jouei: "20170131",
-        title_code: "8513",
-        title_branch_num: "0",
-        time_begin: "1010",
-        screen_code: "2"
+        theater_code: theaterCode,
+        date_jouei: dateJouei,
+        title_code: titleCode,
+        title_branch_num: titleBranchNum,
+        time_begin: timeBegin,
+        screen_code: screenCode
     })
     let sectionCode = getStateReserveSeatResult.list_seat[0].seat_section;
     let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
@@ -107,12 +120,12 @@ async function main() {
 
     // COA仮予約
     let reserveSeatsTemporarilyResult = await COA.reserveSeatsTemporarilyInterface.call({
-        theater_code: "001",
-        date_jouei: "20170131",
-        title_code: "8513",
-        title_branch_num: "0",
-        time_begin: "1010",
-        screen_code: "2",
+        theater_code: theaterCode,
+        date_jouei: dateJouei,
+        title_code: titleCode,
+        title_branch_num: titleBranchNum,
+        time_begin: timeBegin,
+        screen_code: screenCode,
         list_seat: [{
             seat_section: sectionCode,
             seat_num: freeSeatCodes[0]
@@ -124,6 +137,7 @@ async function main() {
     console.log(reserveSeatsTemporarilyResult);
 
     // COAオーソリ追加
+    console.log("adding authorizations coaSeatReservation...");
     let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
@@ -166,17 +180,18 @@ async function main() {
 
     // COA仮予約削除
     await COA.deleteTmpReserveInterface.call({
-        theater_code: "001",
-        date_jouei: "20170131",
-        title_code: "8513",
-        title_branch_num: "0",
-        time_begin: "1010",
-        // screen_code: "2",
+        theater_code: theaterCode,
+        date_jouei: dateJouei,
+        title_code: titleCode,
+        title_branch_num: titleBranchNum,
+        time_begin: timeBegin,
+        // screen_code: screenCode,
         tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
     })
     console.log("deleteTmpReserveResult:", true);
 
     // COAオーソリ削除
+    console.log("removing authorizations coaSeatReservation...");
     response = await request.del({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
         body: {
@@ -219,6 +234,7 @@ async function main() {
     console.log(execTranResult);
 
     // GMOオーソリ追加
+    console.log("adding authorizations gmo...");
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
@@ -254,6 +270,7 @@ async function main() {
     console.log("alterTranResult:", alterTranResult);
 
     // GMOオーソリ削除
+    console.log("removing authorizations gmo...");
     response = await request.del({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
         body: {
@@ -277,12 +294,12 @@ async function main() {
 
     // COA仮予約2回目
     let reserveSeatsTemporarilyResult2 = await COA.reserveSeatsTemporarilyInterface.call({
-        theater_code: "001",
-        date_jouei: "20170131",
-        title_code: "8513",
-        title_branch_num: "0",
-        time_begin: "1010",
-        screen_code: "2",
+        theater_code: theaterCode,
+        date_jouei: dateJouei,
+        title_code: titleCode,
+        title_branch_num: titleBranchNum,
+        time_begin: timeBegin,
+        screen_code: screenCode,
         list_seat: [{
             seat_section: sectionCode,
             seat_num: freeSeatCodes[0]
@@ -294,6 +311,7 @@ async function main() {
     console.log("reserveSeatsTemporarilyResult2:", reserveSeatsTemporarilyResult2);
 
     // COAオーソリ追加
+    console.log("adding authorizations coaSeatReservation...");
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
@@ -355,6 +373,7 @@ async function main() {
     console.log("execTranResult2:", execTranResult2);
 
     // GMOオーソリ追加
+    console.log("adding authorizations gmo...");
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
@@ -382,6 +401,7 @@ async function main() {
 
 
     // 購入者情報登録
+    console.log("updating anonymous...");
     response = await request.patch({
         url: `http://localhost:8080/owners/anonymous/${anonymousOwnerId}`,
         body: {
@@ -406,12 +426,12 @@ async function main() {
     // COA本予約
     let tel = "09012345678";
     let updateReserveResult = await COA.updateReserveInterface.call({
-        theater_code: "001",
-        date_jouei: "20170131",
-        title_code: "8513",
-        title_branch_num: "0",
-        time_begin: "1010",
-        // screen_code: "2",
+        theater_code: theaterCode,
+        date_jouei: dateJouei,
+        title_code: titleCode,
+        title_branch_num: titleBranchNum,
+        time_begin: timeBegin,
+        // screen_code: screenCode,
         tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num.toString(),
         reserve_name: "山崎 哲",
         reserve_name_jkana: "ヤマザキ テツ",
@@ -438,6 +458,7 @@ async function main() {
 
 
     // 照会情報登録(購入番号と電話番号で照会する場合)
+    console.log("enabling inquiry...");
     response = await request.patch({
         url: `http://localhost:8080/transactions/${transactionId}/enableInquiry`,
         body: {
@@ -466,24 +487,18 @@ async function main() {
 <title>購入完了</title>
 </head>
 <body>
-<div style="padding:0 30px;font-family:'游ゴシック',meiryo,sans-serif;">
-    <p style="font-size:14px;">
-        この度はご購入いただき誠にありがとうございます。<br>
-    </p>
-    <hr style="margin:1em 0;">
-    <div style="margin-bottom:1em;">
-        <h3 style="font-weight:normal;font-size:14px;margin:0;">購入番号 (Transaction number) :</h3>
-        <strong>${updateReserveResult.reserve_num}</strong>
-    </div>
-</div>
+<h1>この度はご購入いただき誠にありがとうございます。</h1>
+<h3>購入番号 (Transaction number) :</h3>
+<strong>${updateReserveResult.reserve_num}</strong>
 </body>
 </html>
 `;
+    console.log("adding email...");
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/emails`,
         body: {
             from: "noreply@localhost",
-            to: "ilovegadd",
+            to: "system@motionpicture.jp",
             subject: "購入完了",
             body: emailBody,
         },
@@ -496,6 +511,7 @@ async function main() {
     let emailId = response.body.data._id;
 
     // メール削除
+    console.log("removing email...");
     response = await request.del({
         url: `http://localhost:8080/transactions/${transactionId}/emails/${emailId}`,
         body: {
@@ -508,11 +524,12 @@ async function main() {
     if (response.statusCode !== 204) throw new Error(response.body.message);
 
     // 再度メール追加
+    console.log("adding email...");
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/emails`,
         body: {
             from: "noreply@localhost",
-            to: "ilovegadd@gmail.com",
+            to: "system@motionpicture.jp",
             subject: "購入完了",
             body: emailBody,
         },
@@ -530,6 +547,7 @@ async function main() {
 
 
     // 取引成立
+    console.log("closing transaction...");
     response = await request.patch({
         url: `http://localhost:8080/transactions/${transactionId}/close`,
         body: {
@@ -541,23 +559,6 @@ async function main() {
     console.log("close result:", response.statusCode, response.body);
     if (response.statusCode !== 204) throw new Error(response.body.message);
 }
-
-
-// options = {
-//     url: "http://localhost:8080/transactions/586d8cc2fe0c971cd4b714f2/unauthorize",
-//     body: {
-//         authorizations: ["586d9190ffe1bd0f9c2281cb", "586d9190ffe1bd0f9c2281cc"],
-//     },
-//     json: true
-// };
-
-// options = {
-//     url: "http://localhost:8080/transactions/586ee23af94ed12254c284fd/update",
-//     body: {
-//         expired_at: moment().add(+30, 'minutes').unix()
-//     },
-//     json: true
-// };
 
 main().then(() => {
     console.log("main processed.");

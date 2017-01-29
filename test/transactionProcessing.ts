@@ -12,9 +12,6 @@ COA.initialize({
 
 import moment = require("moment");
 
-/**
- * 進行中取引をつくりだす
- */
 async function main() {
     let response: any;
     let gmoShopId = "tshop00026096";
@@ -50,12 +47,12 @@ async function main() {
 
 
     // 取引開始
-    // 1分後に期限切れする
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
+    console.log("starting transaction...");
     response = await request.post({
         url: "http://localhost:8080/transactions",
         body: {
-            expired_at: moment().add("minutes", 1).unix(),
+            expired_at: moment().add(1, "minutes").unix(),
             owners: [administratorOwnerId, anonymousOwnerId]
         },
         json: true,
@@ -73,13 +70,25 @@ async function main() {
 
 
 
+
+    // 空席なくなったら変更する
+    let theaterCode = "001";
+    let dateJouei = "20170131";
+    let titleCode = "8513";
+    let titleBranchNum = "0";
+    let timeBegin = "2030";
+    let screenCode = "2";
+
+
+
+
     // 販売可能チケット検索
     let salesTicketResult = await COA.salesTicketInterface.call({
-        theater_code: "001",
-        date_jouei: "20170131",
-        title_code: "8513",
-        title_branch_num: "0",
-        time_begin: "1010",
+        theater_code: theaterCode,
+        date_jouei: dateJouei,
+        title_code: titleCode,
+        title_branch_num: titleBranchNum,
+        time_begin: timeBegin,
     });
     console.log("salesTicketResult:", salesTicketResult);
 
@@ -92,12 +101,12 @@ async function main() {
 
     // COA空席確認
     let getStateReserveSeatResult = await COA.getStateReserveSeatInterface.call({
-        theater_code: "001",
-        date_jouei: "20170131",
-        title_code: "8513",
-        title_branch_num: "0",
-        time_begin: "1010",
-        screen_code: "2"
+        theater_code: theaterCode,
+        date_jouei: dateJouei,
+        title_code: titleCode,
+        title_branch_num: titleBranchNum,
+        time_begin: timeBegin,
+        screen_code: screenCode
     })
     let sectionCode = getStateReserveSeatResult.list_seat[0].seat_section;
     let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
@@ -110,12 +119,12 @@ async function main() {
 
     // COA仮予約
     let reserveSeatsTemporarilyResult = await COA.reserveSeatsTemporarilyInterface.call({
-        theater_code: "001",
-        date_jouei: "20170131",
-        title_code: "8513",
-        title_branch_num: "0",
-        time_begin: "1010",
-        screen_code: "2",
+        theater_code: theaterCode,
+        date_jouei: dateJouei,
+        title_code: titleCode,
+        title_branch_num: titleBranchNum,
+        time_begin: timeBegin,
+        screen_code: screenCode,
         list_seat: [{
             seat_section: sectionCode,
             seat_num: freeSeatCodes[0]
@@ -127,6 +136,7 @@ async function main() {
     console.log(reserveSeatsTemporarilyResult);
 
     // COAオーソリ追加
+    console.log("adding authorizations coaSeatReservation...");
     let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
@@ -168,9 +178,6 @@ async function main() {
 
 
 
-
-
-
     // GMOオーソリ取得
     let orderId = Date.now().toString();
     let entryTranResult = await GMO.CreditService.entryTranInterface.call({
@@ -193,6 +200,7 @@ async function main() {
     console.log(execTranResult);
 
     // GMOオーソリ追加
+    console.log("adding authorizations gmo...");
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
@@ -214,6 +222,8 @@ async function main() {
     console.log("addGMOAuthorization result:", response.statusCode, response.body);
     if (response.statusCode !== 200) throw new Error(response.body.message);
     // let gmoAuthorizationId = response.body.data._id;
+
+
 }
 
 main().then(() => {

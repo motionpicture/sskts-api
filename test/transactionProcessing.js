@@ -47,10 +47,11 @@ function main() {
             throw new Error(response.body.message);
         let anonymousOwnerId = response.body.data._id;
         console.log("anonymousOwnerId:", anonymousOwnerId);
+        console.log("starting transaction...");
         response = yield request.post({
             url: "http://localhost:8080/transactions",
             body: {
-                expired_at: moment().add("minutes", 1).unix(),
+                expired_at: moment().add(1, "minutes").unix(),
                 owners: [administratorOwnerId, anonymousOwnerId]
             },
             json: true,
@@ -61,21 +62,27 @@ function main() {
         if (response.statusCode !== 201)
             throw new Error(response.body.message);
         let transactionId = response.body.data._id;
+        let theaterCode = "001";
+        let dateJouei = "20170131";
+        let titleCode = "8513";
+        let titleBranchNum = "0";
+        let timeBegin = "2030";
+        let screenCode = "2";
         let salesTicketResult = yield COA.salesTicketInterface.call({
-            theater_code: "001",
-            date_jouei: "20170131",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
+            theater_code: theaterCode,
+            date_jouei: dateJouei,
+            title_code: titleCode,
+            title_branch_num: titleBranchNum,
+            time_begin: timeBegin,
         });
         console.log("salesTicketResult:", salesTicketResult);
         let getStateReserveSeatResult = yield COA.getStateReserveSeatInterface.call({
-            theater_code: "001",
-            date_jouei: "20170131",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
-            screen_code: "2"
+            theater_code: theaterCode,
+            date_jouei: dateJouei,
+            title_code: titleCode,
+            title_branch_num: titleBranchNum,
+            time_begin: timeBegin,
+            screen_code: screenCode
         });
         let sectionCode = getStateReserveSeatResult.list_seat[0].seat_section;
         let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
@@ -83,12 +90,12 @@ function main() {
         });
         console.log(freeSeatCodes);
         let reserveSeatsTemporarilyResult = yield COA.reserveSeatsTemporarilyInterface.call({
-            theater_code: "001",
-            date_jouei: "20170131",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
-            screen_code: "2",
+            theater_code: theaterCode,
+            date_jouei: dateJouei,
+            title_code: titleCode,
+            title_branch_num: titleBranchNum,
+            time_begin: timeBegin,
+            screen_code: screenCode,
             list_seat: [{
                     seat_section: sectionCode,
                     seat_num: freeSeatCodes[0]
@@ -98,6 +105,7 @@ function main() {
                 }]
         });
         console.log(reserveSeatsTemporarilyResult);
+        console.log("adding authorizations coaSeatReservation...");
         let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
@@ -147,6 +155,7 @@ function main() {
             security_code: "123",
         });
         console.log(execTranResult);
+        console.log("adding authorizations gmo...");
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {

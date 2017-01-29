@@ -47,10 +47,11 @@ function main() {
             throw new Error(response.body.message);
         let anonymousOwnerId = response.body.data._id;
         console.log("anonymousOwnerId:", anonymousOwnerId);
+        console.log("starting transaction...");
         response = yield request.post({
             url: "http://localhost:8080/transactions",
             body: {
-                expired_at: moment().add("minutes", 30).unix(),
+                expired_at: moment().add(30, "minutes").unix(),
                 owners: [administratorOwnerId, anonymousOwnerId]
             },
             json: true,
@@ -61,21 +62,27 @@ function main() {
         if (response.statusCode !== 201)
             throw new Error(response.body.message);
         let transactionId = response.body.data._id;
+        let theaterCode = "001";
+        let dateJouei = "20170131";
+        let titleCode = "8513";
+        let titleBranchNum = "0";
+        let timeBegin = "2030";
+        let screenCode = "2";
         let salesTicketResult = yield COA.salesTicketInterface.call({
-            theater_code: "001",
-            date_jouei: "20170131",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
+            theater_code: theaterCode,
+            date_jouei: dateJouei,
+            title_code: titleCode,
+            title_branch_num: titleBranchNum,
+            time_begin: timeBegin,
         });
         console.log("salesTicketResult:", salesTicketResult);
         let getStateReserveSeatResult = yield COA.getStateReserveSeatInterface.call({
-            theater_code: "001",
-            date_jouei: "20170131",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
-            screen_code: "2"
+            theater_code: theaterCode,
+            date_jouei: dateJouei,
+            title_code: titleCode,
+            title_branch_num: titleBranchNum,
+            time_begin: timeBegin,
+            screen_code: screenCode
         });
         let sectionCode = getStateReserveSeatResult.list_seat[0].seat_section;
         let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
@@ -83,12 +90,12 @@ function main() {
         });
         console.log(freeSeatCodes);
         let reserveSeatsTemporarilyResult = yield COA.reserveSeatsTemporarilyInterface.call({
-            theater_code: "001",
-            date_jouei: "20170131",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
-            screen_code: "2",
+            theater_code: theaterCode,
+            date_jouei: dateJouei,
+            title_code: titleCode,
+            title_branch_num: titleBranchNum,
+            time_begin: timeBegin,
+            screen_code: screenCode,
             list_seat: [{
                     seat_section: sectionCode,
                     seat_num: freeSeatCodes[0]
@@ -98,6 +105,7 @@ function main() {
                 }]
         });
         console.log(reserveSeatsTemporarilyResult);
+        console.log("adding authorizations coaSeatReservation...");
         let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
@@ -131,14 +139,15 @@ function main() {
             throw new Error(response.body.message);
         let coaAuthorizationId = response.body.data._id;
         yield COA.deleteTmpReserveInterface.call({
-            theater_code: "001",
-            date_jouei: "20170131",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
+            theater_code: theaterCode,
+            date_jouei: dateJouei,
+            title_code: titleCode,
+            title_branch_num: titleBranchNum,
+            time_begin: timeBegin,
             tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
         });
         console.log("deleteTmpReserveResult:", true);
+        console.log("removing authorizations coaSeatReservation...");
         response = yield request.del({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
             body: {},
@@ -167,6 +176,7 @@ function main() {
             security_code: "123",
         });
         console.log(execTranResult);
+        console.log("adding authorizations gmo...");
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {
@@ -197,6 +207,7 @@ function main() {
             job_cd: GMO.Util.JOB_CD_VOID
         });
         console.log("alterTranResult:", alterTranResult);
+        console.log("removing authorizations gmo...");
         response = yield request.del({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
             body: {},
@@ -208,12 +219,12 @@ function main() {
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
         let reserveSeatsTemporarilyResult2 = yield COA.reserveSeatsTemporarilyInterface.call({
-            theater_code: "001",
-            date_jouei: "20170131",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
-            screen_code: "2",
+            theater_code: theaterCode,
+            date_jouei: dateJouei,
+            title_code: titleCode,
+            title_branch_num: titleBranchNum,
+            time_begin: timeBegin,
+            screen_code: screenCode,
             list_seat: [{
                     seat_section: sectionCode,
                     seat_num: freeSeatCodes[0]
@@ -223,6 +234,7 @@ function main() {
                 }]
         });
         console.log("reserveSeatsTemporarilyResult2:", reserveSeatsTemporarilyResult2);
+        console.log("adding authorizations coaSeatReservation...");
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
             body: {
@@ -271,6 +283,7 @@ function main() {
             security_code: "123",
         });
         console.log("execTranResult2:", execTranResult2);
+        console.log("adding authorizations gmo...");
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {
@@ -291,6 +304,7 @@ function main() {
         console.log("addGMOAuthorization result:", response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
+        console.log("updating anonymous...");
         response = yield request.patch({
             url: `http://localhost:8080/owners/anonymous/${anonymousOwnerId}`,
             body: {
@@ -307,11 +321,11 @@ function main() {
             throw new Error(response.body.message);
         let tel = "09012345678";
         let updateReserveResult = yield COA.updateReserveInterface.call({
-            theater_code: "001",
-            date_jouei: "20170131",
-            title_code: "8513",
-            title_branch_num: "0",
-            time_begin: "1010",
+            theater_code: theaterCode,
+            date_jouei: dateJouei,
+            title_code: titleCode,
+            title_branch_num: titleBranchNum,
+            time_begin: timeBegin,
             tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num.toString(),
             reserve_name: "山崎 哲",
             reserve_name_jkana: "ヤマザキ テツ",
@@ -331,6 +345,7 @@ function main() {
             })
         });
         console.log("updateReserveResult:", updateReserveResult);
+        console.log("enabling inquiry...");
         response = yield request.patch({
             url: `http://localhost:8080/transactions/${transactionId}/enableInquiry`,
             body: {
@@ -352,24 +367,18 @@ function main() {
 <title>購入完了</title>
 </head>
 <body>
-<div style="padding:0 30px;font-family:'游ゴシック',meiryo,sans-serif;">
-    <p style="font-size:14px;">
-        この度はご購入いただき誠にありがとうございます。<br>
-    </p>
-    <hr style="margin:1em 0;">
-    <div style="margin-bottom:1em;">
-        <h3 style="font-weight:normal;font-size:14px;margin:0;">購入番号 (Transaction number) :</h3>
-        <strong>${updateReserveResult.reserve_num}</strong>
-    </div>
-</div>
+<h1>この度はご購入いただき誠にありがとうございます。</h1>
+<h3>購入番号 (Transaction number) :</h3>
+<strong>${updateReserveResult.reserve_num}</strong>
 </body>
 </html>
 `;
+        console.log("adding email...");
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/emails`,
             body: {
                 from: "noreply@localhost",
-                to: "ilovegadd",
+                to: "system@motionpicture.jp",
                 subject: "購入完了",
                 body: emailBody,
             },
@@ -381,6 +390,7 @@ function main() {
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
         let emailId = response.body.data._id;
+        console.log("removing email...");
         response = yield request.del({
             url: `http://localhost:8080/transactions/${transactionId}/emails/${emailId}`,
             body: {},
@@ -391,11 +401,12 @@ function main() {
         console.log("removeEmail result:", response.statusCode, response.body);
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
+        console.log("adding email...");
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/emails`,
             body: {
                 from: "noreply@localhost",
-                to: "ilovegadd@gmail.com",
+                to: "system@motionpicture.jp",
                 subject: "購入完了",
                 body: emailBody,
             },
@@ -406,6 +417,7 @@ function main() {
         console.log("addEmail result:", response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
+        console.log("closing transaction...");
         response = yield request.patch({
             url: `http://localhost:8080/transactions/${transactionId}/close`,
             body: {},
