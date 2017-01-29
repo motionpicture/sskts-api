@@ -17,43 +17,17 @@ async function main() {
     let gmoShopId = "tshop00026096";
     let gmoShopPass = "xbxmkaa6";
 
-    // 運営者取得
-    response = await request.get({
-        url: "http://localhost:8080/owners/administrator",
-        body: {
-        },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true,
-    });
-    console.log("/owners/administrator result:", response.statusCode, response.body);
-    if (response.statusCode !== 200) throw new Error(response.body.message);
-    let administratorOwnerId = response.body.data._id;
-    console.log("administratorOwnerId:", administratorOwnerId);
 
-    // 一般所有者作成
-    response = await request.post({
-        url: "http://localhost:8080/owners/anonymous",
-        body: {
-        },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true,
-    });
-    console.log("/owners/anonymous result:", response.statusCode, response.body);
-    if (response.statusCode !== 201) throw new Error(response.body.message);
-    let anonymousOwnerId = response.body.data._id;
-    console.log("anonymousOwnerId:", anonymousOwnerId);
 
 
     // 取引開始
+    // 30分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
     console.log("starting transaction...");
     response = await request.post({
         url: "http://localhost:8080/transactions",
         body: {
-            expired_at: moment().add(1, "minutes").unix(),
-            owners: [administratorOwnerId, anonymousOwnerId]
+            expired_at: moment().add(30, "minutes").unix(),
         },
         json: true,
         simple: false,
@@ -63,6 +37,17 @@ async function main() {
     if (response.statusCode !== 201) throw new Error(response.body.message);
     let transactionId = response.body.data._id;
 
+    let owners: Array<{
+        _id: string,
+        group: string
+    }> = response.body.data.attributes.owners;
+
+    let administratorOwnerId = owners.filter((owner) => {
+        return owner.group === "ADMINISTRATOR";
+    })[0]._id;
+    let anonymousOwnerId = owners.filter((owner) => {
+        return owner.group === "ANONYMOUS";
+    })[0]._id;
 
 
 
@@ -168,8 +153,6 @@ async function main() {
     console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
     if (response.statusCode !== 200) throw new Error(response.body.message);
     // let coaAuthorizationId = response.body.data._id;
-
-
 
 
 

@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const monapt = require("monapt");
 const objectId_1 = require("../../model/objectId");
+const ownerGroup_1 = require("../../model/ownerGroup");
 const transactionStatus_1 = require("../../model/transactionStatus");
 const transactionEventGroup_1 = require("../../model/transactionEventGroup");
 const queueStatus_1 = require("../../model/queueStatus");
@@ -18,21 +19,22 @@ const TransactionEventFactory = require("../../factory/transactionEvent");
 const QueueFactory = require("../../factory/queue");
 const EmailFactory = require("../../factory/email");
 const OwnerFactory = require("../../factory/owner");
+const OwnershipFactory = require("../../factory/ownership");
 const AssetFactory = require("../../factory/asset");
 class TransactionServiceInterpreter {
-    createAnonymousOwner() {
-        return (repository) => __awaiter(this, void 0, void 0, function* () {
-            let owner = OwnerFactory.createAnonymous({
-                _id: objectId_1.default()
-            });
-            yield repository.store(owner);
-            return owner;
-        });
-    }
     updateAnonymousOwner(args) {
-        return (repository) => __awaiter(this, void 0, void 0, function* () {
-            let option = yield repository.findOneAndUpdate({
-                _id: args._id,
+        return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let optionTransaction = yield transactionRepository.findById(objectId_1.default(args.transaction_id));
+            if (optionTransaction.isEmpty)
+                throw new Error(`transaction[${objectId_1.default(args.transaction_id)}] not found.`);
+            let transaction = optionTransaction.get();
+            let anonymousOwners = transaction.owners.filter((owner) => {
+                return owner.group === ownerGroup_1.default.ANONYMOUS;
+            });
+            if (anonymousOwners.length === 0)
+                throw new Error("anonymous owner not found.");
+            let option = yield ownerRepository.findOneAndUpdate({
+                _id: anonymousOwners[0]._id,
             }, {
                 $set: {
                     name_first: args.name_first,
@@ -45,14 +47,6 @@ class TransactionServiceInterpreter {
                 throw new Error("owner not found.");
         });
     }
-    getAdministratorOwner() {
-        return (repository) => __awaiter(this, void 0, void 0, function* () {
-            let option = yield repository.findAdministrator();
-            if (option.isEmpty)
-                throw new Error("administrator owner not found.");
-            return option.get();
-        });
-    }
     findById(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             return yield transactionRepository.findById(objectId_1.default(args.transaction_id));
@@ -60,14 +54,13 @@ class TransactionServiceInterpreter {
     }
     start(args) {
         return (ownerRepository, transactionRepository, queueRepository) => __awaiter(this, void 0, void 0, function* () {
-            let owners = [];
-            let promises = args.owner_ids.map((ownerId) => __awaiter(this, void 0, void 0, function* () {
-                let option = yield ownerRepository.findById(objectId_1.default(ownerId));
-                if (option.isEmpty)
-                    throw new Error("owner not found.");
-                owners.push(option.get());
-            }));
-            yield Promise.all(promises);
+            let anonymousOwner = OwnerFactory.createAnonymous({
+                _id: objectId_1.default()
+            });
+            let option = yield ownerRepository.findAdministrator();
+            if (option.isEmpty)
+                throw new Error("administrator owner not found.");
+            let administratorOwner = option.get();
             let event = TransactionEventFactory.create({
                 _id: objectId_1.default(),
                 group: transactionEventGroup_1.default.START,
@@ -76,7 +69,7 @@ class TransactionServiceInterpreter {
                 _id: objectId_1.default(),
                 status: transactionStatus_1.default.PROCESSING,
                 events: [event],
-                owners: owners,
+                owners: [administratorOwner, anonymousOwner],
                 expired_at: args.expired_at
             });
             let queue = QueueFactory.createExpireTransaction({
@@ -86,6 +79,7 @@ class TransactionServiceInterpreter {
                 executed_at: transaction.expired_at,
                 count_try: 0,
             });
+            yield ownerRepository.store(anonymousOwner);
             yield transactionRepository.store(transaction);
             yield queueRepository.store(queue);
             return transaction;
@@ -171,11 +165,11 @@ class TransactionServiceInterpreter {
                 assets: args.seats.map((seat) => {
                     return AssetFactory.createSeatReservation({
                         _id: objectId_1.default(),
-                        ownership: {
+                        ownership: OwnershipFactory.create({
                             _id: objectId_1.default(),
                             owner: optionOwnerTo.get(),
                             authenticated: false
-                        },
+                        }),
                         authorizations: [],
                         performance: seat.performance,
                         section: seat.section,
@@ -327,7 +321,7 @@ class TransactionServiceInterpreter {
                 email: EmailFactory.create({
                     _id: objectId_1.default(),
                     from: "noreply@localhost",
-                    to: "system@motionpicture.jp",
+                    to: "hello@motionpicture.jp",
                     subject: "transaction expired",
                     body: `取引[${transaction._id}]の期限がきれました`
                 }),

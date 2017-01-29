@@ -120,14 +120,12 @@ import theaterRouter from "./routers/theater";
 import filmRouter from "./routers/film";
 import performanceRouter from "./routers/performance";
 import screenRouter from "./routers/screen";
-import ownerRouter from "./routers/owner";
 import transactionRouter from "./routers/transaction";
 app.use("/dev", devRouter);
 app.use("/theaters", theaterRouter);
 app.use("/films", filmRouter);
 app.use("/screens", screenRouter);
 app.use("/performances", performanceRouter);
-app.use("/owners", ownerRouter);
 app.use("/transactions", transactionRouter);
 
 // 404

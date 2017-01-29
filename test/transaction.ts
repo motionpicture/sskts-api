@@ -17,33 +17,7 @@ async function main() {
     let gmoShopId = "tshop00026096";
     let gmoShopPass = "xbxmkaa6";
 
-    // 運営者取得
-    response = await request.get({
-        url: "http://localhost:8080/owners/administrator",
-        body: {
-        },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true,
-    });
-    console.log("/owners/administrator result:", response.statusCode, response.body);
-    if (response.statusCode !== 200) throw new Error(response.body.message);
-    let administratorOwnerId = response.body.data._id;
-    console.log("administratorOwnerId:", administratorOwnerId);
 
-    // 一般所有者作成
-    response = await request.post({
-        url: "http://localhost:8080/owners/anonymous",
-        body: {
-        },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true,
-    });
-    console.log("/owners/anonymous result:", response.statusCode, response.body);
-    if (response.statusCode !== 201) throw new Error(response.body.message);
-    let anonymousOwnerId = response.body.data._id;
-    console.log("anonymousOwnerId:", anonymousOwnerId);
 
 
     // 取引開始
@@ -54,7 +28,6 @@ async function main() {
         url: "http://localhost:8080/transactions",
         body: {
             expired_at: moment().add(30, "minutes").unix(),
-            owners: [administratorOwnerId, anonymousOwnerId]
         },
         json: true,
         simple: false,
@@ -64,6 +37,17 @@ async function main() {
     if (response.statusCode !== 201) throw new Error(response.body.message);
     let transactionId = response.body.data._id;
 
+    let owners: Array<{
+        _id: string,
+        group: string
+    }> = response.body.data.attributes.owners;
+
+    let administratorOwnerId = owners.filter((owner) => {
+        return owner.group === "ADMINISTRATOR";
+    })[0]._id;
+    let anonymousOwnerId = owners.filter((owner) => {
+        return owner.group === "ANONYMOUS";
+    })[0]._id;
 
 
 
@@ -403,17 +387,17 @@ async function main() {
     // 購入者情報登録
     console.log("updating anonymous...");
     response = await request.patch({
-        url: `http://localhost:8080/owners/anonymous/${anonymousOwnerId}`,
+        url: `http://localhost:8080/transactions/${transactionId}/anonymousOwner`,
         body: {
             name_first: "Tetsu",
             name_last: "Yamazaki",
             tel: "09012345678",
-            email: "yamazaki@motionpicture.jp",
+            email: "hello@motionpicture.jp",
         },
         json: true,
         resolveWithFullResponse: true,
     });
-    console.log("/owners/anonymous/${anonymousOwnerId} result:", response.statusCode, response.body);
+    console.log("anonymousOwner updated.", response.statusCode, response.body);
     if (response.statusCode !== 204) throw new Error(response.body.message);
 
 
@@ -498,7 +482,7 @@ async function main() {
         url: `http://localhost:8080/transactions/${transactionId}/emails`,
         body: {
             from: "noreply@localhost",
-            to: "system@motionpicture.jp",
+            to: "hello@motionpicture.jp",
             subject: "購入完了",
             body: emailBody,
         },
@@ -529,7 +513,7 @@ async function main() {
         url: `http://localhost:8080/transactions/${transactionId}/emails`,
         body: {
             from: "noreply@localhost",
-            to: "system@motionpicture.jp",
+            to: "hello@motionpicture.jp",
             subject: "購入完了",
             body: emailBody,
         },

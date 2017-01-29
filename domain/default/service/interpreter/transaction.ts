@@ -3,7 +3,7 @@ import monapt = require("monapt");
 import TransactionService from "../transaction";
 
 import ObjectId from "../../model/objectId";
-import Owner from "../../model/owner";
+import OwnerGroup from "../../model/ownerGroup";
 import TransactionStatus from "../../model/transactionStatus";
 import TransactionEventGroup from "../../model/transactionEventGroup";
 import Authorization from "../../model/authorization";
@@ -22,38 +22,34 @@ import * as TransactionEventFactory from "../../factory/transactionEvent";
 import * as QueueFactory from "../../factory/queue";
 import * as EmailFactory from "../../factory/email";
 import * as OwnerFactory from "../../factory/owner";
+import * as OwnershipFactory from "../../factory/ownership";
 import * as AssetFactory from "../../factory/asset";
 
 class TransactionServiceInterpreter implements TransactionService {
     /**
-     * 匿名所有者作成
-     */
-    createAnonymousOwner() {
-        return async (repository: OwnerRepository) => {
-            let owner = OwnerFactory.createAnonymous({
-                _id: ObjectId()
-            });
-
-            // 永続化
-            await repository.store(owner);
-            return owner;
-        };
-    }
-
-    /**
      * 匿名所有者更新
      */
     updateAnonymousOwner(args: {
-        _id: string,
+        transaction_id: string,
         name_first?: string,
         name_last?: string,
         email?: string,
         tel?: string,
     }) {
-        return async (repository: OwnerRepository) => {
+        return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
+            // 取引取得
+            let optionTransaction = await transactionRepository.findById(ObjectId(args.transaction_id));
+            if (optionTransaction.isEmpty) throw new Error(`transaction[${ObjectId(args.transaction_id)}] not found.`);
+            let transaction = optionTransaction.get();
+
+            let anonymousOwners = transaction.owners.filter((owner) => {
+                return owner.group === OwnerGroup.ANONYMOUS;
+            });
+            if (anonymousOwners.length === 0) throw new Error("anonymous owner not found.");
+
             // 永続化
-            let option = await repository.findOneAndUpdate({
-                _id: args._id,
+            let option = await ownerRepository.findOneAndUpdate({
+                _id: anonymousOwners[0]._id,
             }, {
                     $set: {
                         name_first: args.name_first,
@@ -63,19 +59,6 @@ class TransactionServiceInterpreter implements TransactionService {
                     }
                 });
             if (option.isEmpty) throw new Error("owner not found.");
-        };
-    }
-
-    /**
-     * 運営者を取得する
-     */
-    getAdministratorOwner() {
-        return async (repository: OwnerRepository) => {
-            // 運営者取得
-            let option = await repository.findAdministrator();
-            if (option.isEmpty) throw new Error("administrator owner not found.");
-
-            return option.get();
         };
     }
 
@@ -95,18 +78,17 @@ class TransactionServiceInterpreter implements TransactionService {
      */
     start(args: {
         expired_at: Date,
-        owner_ids: Array<string>
     }) {
         return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository, queueRepository: QueueRepository) => {
-            // 所有者取得
-            // TODO 所有者リストを持つ必要はあるか？
-            let owners: Array<Owner> = [];
-            let promises = args.owner_ids.map(async (ownerId) => {
-                let option = await ownerRepository.findById(ObjectId(ownerId));
-                if (option.isEmpty) throw new Error("owner not found.");
-                owners.push(option.get());
+            // 一般所有者作成
+            let anonymousOwner = OwnerFactory.createAnonymous({
+                _id: ObjectId()
             });
-            await Promise.all(promises);
+
+            // 管理者取得
+            let option = await ownerRepository.findAdministrator();
+            if (option.isEmpty) throw new Error("administrator owner not found.");
+            let administratorOwner = option.get();
 
             // イベント作成
             let event = TransactionEventFactory.create({
@@ -119,7 +101,7 @@ class TransactionServiceInterpreter implements TransactionService {
                 _id: ObjectId(),
                 status: TransactionStatus.PROCESSING,
                 events: [event],
-                owners: owners,
+                owners: [administratorOwner, anonymousOwner],
                 expired_at: args.expired_at
             });
 
@@ -133,6 +115,7 @@ class TransactionServiceInterpreter implements TransactionService {
             });
 
             // 永続化
+            await ownerRepository.store(anonymousOwner);
             await transactionRepository.store(transaction);
             await queueRepository.store(queue);
 
@@ -275,11 +258,11 @@ class TransactionServiceInterpreter implements TransactionService {
                 assets: args.seats.map((seat) => {
                     return AssetFactory.createSeatReservation({
                         _id: ObjectId(),
-                        ownership: { // TODO factory
+                        ownership: OwnershipFactory.create({
                             _id: ObjectId(),
                             owner: optionOwnerTo.get(),
                             authenticated: false
-                        },
+                        }),
                         authorizations: [],
                         performance: seat.performance,
                         section: seat.section,
@@ -489,7 +472,7 @@ class TransactionServiceInterpreter implements TransactionService {
                 email: EmailFactory.create({
                     _id: ObjectId(),
                     from: "noreply@localhost",
-                    to: "system@motionpicture.jp",
+                    to: "hello@motionpicture.jp",
                     subject: "transaction expired",
                     body: `取引[${transaction._id}]の期限がきれました`
                 }),

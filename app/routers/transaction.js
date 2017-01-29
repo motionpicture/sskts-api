@@ -49,10 +49,8 @@ router.post("", (req, res, next) => __awaiter(this, void 0, void 0, function* ()
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let ownerIds = req.body.owners;
         let transaction = yield transaction_2.default.start({
             expired_at: new Date(parseInt(req.body.expired_at) * 1000),
-            owner_ids: ownerIds
         })(owner_1.default(mongoose.connection), transaction_1.default(mongoose.connection), queue_1.default(mongoose.connection));
         res.status(201);
         res.setHeader("Location", `https://${req.headers["host"]}/transactions/${transaction._id}`);
@@ -63,6 +61,24 @@ router.post("", (req, res, next) => __awaiter(this, void 0, void 0, function* ()
                 attributes: transaction
             }
         });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+router.patch("/:id/anonymousOwner", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    let validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty())
+        return next(new Error(validatorResult.array()[0].msg));
+    try {
+        yield transaction_2.default.updateAnonymousOwner({
+            transaction_id: req.params.id,
+            name_first: req.body.name_first,
+            name_last: req.body.name_last,
+            tel: req.body.tel,
+            email: req.body.email,
+        })(owner_1.default(mongoose.connection), transaction_1.default(mongoose.connection));
+        res.status(204).end();
     }
     catch (error) {
         next(error);

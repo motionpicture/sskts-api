@@ -23,36 +23,11 @@ function main() {
         let response;
         let gmoShopId = "tshop00026096";
         let gmoShopPass = "xbxmkaa6";
-        response = yield request.get({
-            url: "http://localhost:8080/owners/administrator",
-            body: {},
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true,
-        });
-        console.log("/owners/administrator result:", response.statusCode, response.body);
-        if (response.statusCode !== 200)
-            throw new Error(response.body.message);
-        let administratorOwnerId = response.body.data._id;
-        console.log("administratorOwnerId:", administratorOwnerId);
-        response = yield request.post({
-            url: "http://localhost:8080/owners/anonymous",
-            body: {},
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true,
-        });
-        console.log("/owners/anonymous result:", response.statusCode, response.body);
-        if (response.statusCode !== 201)
-            throw new Error(response.body.message);
-        let anonymousOwnerId = response.body.data._id;
-        console.log("anonymousOwnerId:", anonymousOwnerId);
         console.log("starting transaction...");
         response = yield request.post({
             url: "http://localhost:8080/transactions",
             body: {
-                expired_at: moment().add(1, "minutes").unix(),
-                owners: [administratorOwnerId, anonymousOwnerId]
+                expired_at: moment().add(30, "minutes").unix(),
             },
             json: true,
             simple: false,
@@ -62,6 +37,13 @@ function main() {
         if (response.statusCode !== 201)
             throw new Error(response.body.message);
         let transactionId = response.body.data._id;
+        let owners = response.body.data.attributes.owners;
+        let administratorOwnerId = owners.filter((owner) => {
+            return owner.group === "ADMINISTRATOR";
+        })[0]._id;
+        let anonymousOwnerId = owners.filter((owner) => {
+            return owner.group === "ANONYMOUS";
+        })[0]._id;
         let theaterCode = "001";
         let dateJouei = "20170131";
         let titleCode = "8513";

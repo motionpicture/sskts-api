@@ -3,8 +3,6 @@ import monapt = require("monapt");
 import Authorization from "../model/authorization";
 import Email from "../model/email";
 import Transaction from "../model/transaction";
-import AnonymousOwner from "../model/owner/anonymous";
-import AdministratorOwner from "../model/owner/administrator";
 
 import OwnerRepository from "../repository/owner";
 import TransactionRepository from "../repository/transaction";
@@ -17,25 +15,19 @@ type OwnerAndTransactionAndQueueOperation<T> = (ownerRepository: OwnerRepository
 type AssetAndTransactionOperation<T> = (assetRepository: AssetRepository, repository: TransactionRepository) => Promise<T>;
 type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
 type AssetOperation<T> = (assetRepository: AssetRepository) => Promise<T>;
-type OwnerOperation<T> = (ownerRepository: OwnerRepository) => Promise<T>;
-type AdministratorOwnerOperation<T> = (ownerRepository: OwnerRepository) => Promise<T>;
 
 /**
  * 取引サービス
  */
 interface TransactionService {
-    /** 匿名所有者を発行する */
-    createAnonymousOwner(): OwnerOperation<AnonymousOwner>;
     /** 匿名所有者の情報を更新する */
     updateAnonymousOwner(args: {
-        _id: string,
+        transaction_id: string,
         name_first?: string,
         name_last?: string,
         email?: string,
         tel?: string,
-    }): OwnerOperation<void>;
-    /** 運営者を取得する */
-    getAdministratorOwner(): AdministratorOwnerOperation<AdministratorOwner>;
+    }): OwnerAndTransactionOperation<void>;
     /** 取引詳細取得 */
     findById(args: {
         transaction_id: string,
@@ -43,7 +35,6 @@ interface TransactionService {
     /** 取引開始 */
     start(args: {
         expired_at: Date,
-        owner_ids: Array<string>
     }): OwnerAndTransactionAndQueueOperation<Transaction>;
     /** 資産承認 */
     authorizeAsset(authorization: AssetAuthorization): AssetOperation<void>;

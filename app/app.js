@@ -37,14 +37,12 @@ const theater_1 = require("./routers/theater");
 const film_1 = require("./routers/film");
 const performance_1 = require("./routers/performance");
 const screen_1 = require("./routers/screen");
-const owner_1 = require("./routers/owner");
 const transaction_1 = require("./routers/transaction");
 app.use("/dev", dev_1.default);
 app.use("/theaters", theater_1.default);
 app.use("/films", film_1.default);
 app.use("/screens", screen_1.default);
 app.use("/performances", performance_1.default);
-app.use("/owners", owner_1.default);
 app.use("/transactions", transaction_1.default);
 app.use((req, res) => {
     res.status(404);

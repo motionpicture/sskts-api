@@ -65,10 +65,8 @@ router.post("", async (req, res, next) => {
     // expired_atはsecondsのタイムスタンプで
 
     try {
-        let ownerIds: Array<string> = req.body.owners;
         let transaction = await TransactionService.start({
             expired_at: new Date(parseInt(req.body.expired_at) * 1000),
-            owner_ids: ownerIds
         })(OwnerRepository(mongoose.connection), TransactionRepository(mongoose.connection), QueueRepository(mongoose.connection));
 
         res.status(201);
@@ -80,6 +78,27 @@ router.post("", async (req, res, next) => {
                 attributes: transaction
             }
         });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.patch("/:id/anonymousOwner", async (req, res, next) => {
+    // req.checkBody("group", "invalid group.").notEmpty();
+
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        await TransactionService.updateAnonymousOwner({
+            transaction_id: req.params.id,
+            name_first: req.body.name_first,
+            name_last: req.body.name_last,
+            tel: req.body.tel,
+            email: req.body.email,
+        })(OwnerRepository(mongoose.connection), TransactionRepository(mongoose.connection));
+
+        res.status(204).end();
     } catch (error) {
         next(error);
     }
