@@ -41,13 +41,15 @@ async function main() {
         _id: string,
         group: string
     }> = response.body.data.attributes.owners;
+    let promoterOwner = owners.find((owner) => {
+        return (owner.group === "PROMOTER");
+    });
+    let promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
+    let anonymousOwner = owners.find((owner) => {
+        return (owner.group === "ANONYMOUS");
+    });
+    let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
 
-    let administratorOwnerId = owners.filter((owner) => {
-        return owner.group === "ADMINISTRATOR";
-    })[0]._id;
-    let anonymousOwnerId = owners.filter((owner) => {
-        return owner.group === "ANONYMOUS";
-    })[0]._id;
 
 
 
@@ -75,7 +77,6 @@ async function main() {
         title_branch_num: titleBranchNum,
         time_begin: timeBegin,
     });
-    console.log("salesTicketResult:", salesTicketResult);
 
 
 
@@ -97,8 +98,8 @@ async function main() {
     let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
         return freeSeat.seat_num;
     });
-    console.log(freeSeatCodes);
-
+    console.log("freeSeatCodes count", freeSeatCodes.length);
+    if (getStateReserveSeatResult.cnt_reserve_free === 0) throw new Error("no available seats.");
 
 
 
@@ -126,7 +127,7 @@ async function main() {
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
-            owner_id_from: administratorOwnerId,
+            owner_id_from: promoterOwnerId,
             owner_id_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
             seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
@@ -223,7 +224,7 @@ async function main() {
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
             owner_id_from: anonymousOwnerId,
-            owner_id_to: administratorOwnerId,
+            owner_id_to: promoterOwnerId,
             gmo_shop_id: gmoShopId,
             gmo_shop_pass: gmoShopPass,
             gmo_order_id: orderId,
@@ -299,7 +300,7 @@ async function main() {
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
-            owner_id_from: administratorOwnerId,
+            owner_id_from: promoterOwnerId,
             owner_id_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
             seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
@@ -362,7 +363,7 @@ async function main() {
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
             owner_id_from: anonymousOwnerId,
-            owner_id_to: administratorOwnerId,
+            owner_id_to: promoterOwnerId,
             gmo_shop_id: gmoShopId,
             gmo_shop_pass: gmoShopPass,
             gmo_order_id: orderId,

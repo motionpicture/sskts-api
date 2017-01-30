@@ -1,15 +1,15 @@
 type OwnerGroup =
     "ANONYMOUS"
-    | "ADMINISTRATOR"
+    | "PROMOTER"
     | "MEMBER"
     ;
 
 namespace OwnerGroup {
-    /** 匿名グループ */
+    /** 匿名 */
     export const ANONYMOUS = "ANONYMOUS";
-    /** 運営者グループ */
-    export const ADMINISTRATOR = "ADMINISTRATOR";
-    /** 会員グループ */
+    /** 興行主 */
+    export const PROMOTER = "PROMOTER";
+    /** 会員 */
     export const MEMBER = "MEMBER";
 }
 

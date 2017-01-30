@@ -11,49 +11,59 @@ import Email from "../model/email";
 export function create(args: {
     _id: ObjectId,
     group: TransactionEventGroup,
+    occurred_at: Date,
 }) {
     return new TransactionEvent(
         args._id,
         args.group,
+        args.occurred_at,
     );
 }
 
 export function createAuthorize(args: {
     _id: ObjectId,
+    occurred_at: Date,
     authorization: Authorization,
 }) {
     return new AuthorizeTransactionEvent(
         args._id,
+        args.occurred_at,
         args.authorization,
     );
 }
 
 export function createUnauthorize(args: {
     _id: ObjectId,
+    occurred_at: Date,
     authorization_id: ObjectId,
 }) {
     return new UnauthorizeTransactionEvent(
         args._id,
+        args.occurred_at,
         args.authorization_id,
     );
 }
 
 export function createEmailAdd(args: {
     _id: ObjectId,
+    occurred_at: Date,
     email: Email,
 }) {
     return new EmailAddTransactionEvent(
         args._id,
+        args.occurred_at,
         args.email,
     );
 }
 
 export function createEmailRemove(args: {
     _id: ObjectId,
+    occurred_at: Date,
     email_id: ObjectId,
 }) {
     return new EmailRemoveTransactionEvent(
         args._id,
+        args.occurred_at,
         args.email_id,
     );
 }

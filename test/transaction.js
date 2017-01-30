@@ -38,12 +38,14 @@ function main() {
             throw new Error(response.body.message);
         let transactionId = response.body.data._id;
         let owners = response.body.data.attributes.owners;
-        let administratorOwnerId = owners.filter((owner) => {
-            return owner.group === "ADMINISTRATOR";
-        })[0]._id;
-        let anonymousOwnerId = owners.filter((owner) => {
-            return owner.group === "ANONYMOUS";
-        })[0]._id;
+        let promoterOwner = owners.find((owner) => {
+            return (owner.group === "PROMOTER");
+        });
+        let promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
+        let anonymousOwner = owners.find((owner) => {
+            return (owner.group === "ANONYMOUS");
+        });
+        let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
         let theaterCode = "001";
         let dateJouei = "20170131";
         let titleCode = "8513";
@@ -57,7 +59,6 @@ function main() {
             title_branch_num: titleBranchNum,
             time_begin: timeBegin,
         });
-        console.log("salesTicketResult:", salesTicketResult);
         let getStateReserveSeatResult = yield COA.getStateReserveSeatInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -70,7 +71,9 @@ function main() {
         let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
             return freeSeat.seat_num;
         });
-        console.log(freeSeatCodes);
+        console.log("freeSeatCodes count", freeSeatCodes.length);
+        if (getStateReserveSeatResult.cnt_reserve_free === 0)
+            throw new Error("no available seats.");
         let reserveSeatsTemporarilyResult = yield COA.reserveSeatsTemporarilyInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -92,7 +95,7 @@ function main() {
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
             body: {
-                owner_id_from: administratorOwnerId,
+                owner_id_from: promoterOwnerId,
                 owner_id_to: anonymousOwnerId,
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
                 seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
@@ -163,7 +166,7 @@ function main() {
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {
                 owner_id_from: anonymousOwnerId,
-                owner_id_to: administratorOwnerId,
+                owner_id_to: promoterOwnerId,
                 gmo_shop_id: gmoShopId,
                 gmo_shop_pass: gmoShopPass,
                 gmo_order_id: orderId,
@@ -220,7 +223,7 @@ function main() {
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
             body: {
-                owner_id_from: administratorOwnerId,
+                owner_id_from: promoterOwnerId,
                 owner_id_to: anonymousOwnerId,
                 coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
                 seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
@@ -270,7 +273,7 @@ function main() {
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {
                 owner_id_from: anonymousOwnerId,
-                owner_id_to: administratorOwnerId,
+                owner_id_to: promoterOwnerId,
                 gmo_shop_id: gmoShopId,
                 gmo_shop_pass: gmoShopPass,
                 gmo_order_id: orderId,

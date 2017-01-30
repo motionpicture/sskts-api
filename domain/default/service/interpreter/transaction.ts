@@ -85,15 +85,16 @@ class TransactionServiceInterpreter implements TransactionService {
                 _id: ObjectId()
             });
 
-            // 管理者取得
-            let option = await ownerRepository.findAdministrator();
-            if (option.isEmpty) throw new Error("administrator owner not found.");
-            let administratorOwner = option.get();
+            // 興行主取得
+            let option = await ownerRepository.findPromoter();
+            if (option.isEmpty) throw new Error("promoter not found.");
+            let promoter = option.get();
 
             // イベント作成
             let event = TransactionEventFactory.create({
                 _id: ObjectId(),
                 group: TransactionEventGroup.START,
+                occurred_at: new Date(),
             });
 
             // 取引作成
@@ -101,7 +102,7 @@ class TransactionServiceInterpreter implements TransactionService {
                 _id: ObjectId(),
                 status: TransactionStatus.PROCESSING,
                 events: [event],
-                owners: [administratorOwner, anonymousOwner],
+                owners: [promoter, anonymousOwner],
                 expired_at: args.expired_at
             });
 
@@ -300,6 +301,7 @@ class TransactionServiceInterpreter implements TransactionService {
             // イベント作成
             let event = TransactionEventFactory.createAuthorize({
                 _id: ObjectId(),
+                occurred_at: new Date(),
                 authorization: args.authorization,
             });
 
@@ -327,6 +329,7 @@ class TransactionServiceInterpreter implements TransactionService {
             // イベント作成
             let event = TransactionEventFactory.createUnauthorize({
                 _id: ObjectId(),
+                occurred_at: new Date(),
                 authorization_id: ObjectId(args.authorization_id),
             });
 
@@ -425,6 +428,7 @@ class TransactionServiceInterpreter implements TransactionService {
             let event = TransactionEventFactory.create({
                 _id: ObjectId(),
                 group: TransactionEventGroup.CLOSE,
+                occurred_at: new Date(),
             });
 
             // 永続化
@@ -467,14 +471,21 @@ class TransactionServiceInterpreter implements TransactionService {
                     count_try: 0
                 }));
             });
-            queues.push(QueueFactory.createSendEmail({ // TODO おそらく開発時のみ
+
+            // TODO おそらく開発時のみ
+            let eventStart = transaction.events.find((event) => { return (event.group === TransactionEventGroup.START) });
+            queues.push(QueueFactory.createSendEmail({
                 _id: ObjectId(),
                 email: EmailFactory.create({
                     _id: ObjectId(),
                     from: "noreply@localhost",
                     to: "hello@motionpicture.jp",
                     subject: "transaction expired",
-                    body: `取引[${transaction._id}]の期限がきれました`
+                    body: `
+取引の期限がきれました
+_id: ${transaction._id}
+created_at: ${(eventStart) ? eventStart.occurred_at : ""}
+`
                 }),
                 status: QueueStatus.UNEXECUTED,
                 executed_at: new Date(),
@@ -485,6 +496,7 @@ class TransactionServiceInterpreter implements TransactionService {
             let event = TransactionEventFactory.create({
                 _id: ObjectId(),
                 group: TransactionEventGroup.EXPIRE,
+                occurred_at: new Date(),
             });
 
             // 永続化
@@ -547,6 +559,7 @@ class TransactionServiceInterpreter implements TransactionService {
             // イベント作成
             let event = TransactionEventFactory.createEmailAdd({
                 _id: ObjectId(),
+                occurred_at: new Date(),
                 email: email,
             });
 
@@ -577,6 +590,7 @@ class TransactionServiceInterpreter implements TransactionService {
             // イベント作成
             let event = TransactionEventFactory.createEmailRemove({
                 _id: ObjectId(),
+                occurred_at: new Date(),
                 email_id: ObjectId(args.email_id),
             });
 

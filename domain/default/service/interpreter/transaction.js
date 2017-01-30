@@ -57,19 +57,20 @@ class TransactionServiceInterpreter {
             let anonymousOwner = OwnerFactory.createAnonymous({
                 _id: objectId_1.default()
             });
-            let option = yield ownerRepository.findAdministrator();
+            let option = yield ownerRepository.findPromoter();
             if (option.isEmpty)
-                throw new Error("administrator owner not found.");
-            let administratorOwner = option.get();
+                throw new Error("promoter not found.");
+            let promoter = option.get();
             let event = TransactionEventFactory.create({
                 _id: objectId_1.default(),
                 group: transactionEventGroup_1.default.START,
+                occurred_at: new Date(),
             });
             let transaction = TransactionFactory.create({
                 _id: objectId_1.default(),
                 status: transactionStatus_1.default.PROCESSING,
                 events: [event],
-                owners: [administratorOwner, anonymousOwner],
+                owners: [promoter, anonymousOwner],
                 expired_at: args.expired_at
             });
             let queue = QueueFactory.createExpireTransaction({
@@ -196,6 +197,7 @@ class TransactionServiceInterpreter {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = TransactionEventFactory.createAuthorize({
                 _id: objectId_1.default(),
+                occurred_at: new Date(),
                 authorization: args.authorization,
             });
             let option = yield transactionRepository.findOneAndUpdate({
@@ -214,6 +216,7 @@ class TransactionServiceInterpreter {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = TransactionEventFactory.createUnauthorize({
                 _id: objectId_1.default(),
+                occurred_at: new Date(),
                 authorization_id: objectId_1.default(args.authorization_id),
             });
             let option = yield transactionRepository.findOneAndUpdate({
@@ -283,6 +286,7 @@ class TransactionServiceInterpreter {
             let event = TransactionEventFactory.create({
                 _id: objectId_1.default(),
                 group: transactionEventGroup_1.default.CLOSE,
+                occurred_at: new Date(),
             });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
@@ -316,6 +320,7 @@ class TransactionServiceInterpreter {
                     count_try: 0
                 }));
             });
+            let eventStart = transaction.events.find((event) => { return (event.group === transactionEventGroup_1.default.START); });
             queues.push(QueueFactory.createSendEmail({
                 _id: objectId_1.default(),
                 email: EmailFactory.create({
@@ -323,7 +328,11 @@ class TransactionServiceInterpreter {
                     from: "noreply@localhost",
                     to: "hello@motionpicture.jp",
                     subject: "transaction expired",
-                    body: `取引[${transaction._id}]の期限がきれました`
+                    body: `
+取引の期限がきれました
+_id: ${transaction._id}
+created_at: ${(eventStart) ? eventStart.occurred_at : ""}
+`
                 }),
                 status: queueStatus_1.default.UNEXECUTED,
                 executed_at: new Date(),
@@ -332,6 +341,7 @@ class TransactionServiceInterpreter {
             let event = TransactionEventFactory.create({
                 _id: objectId_1.default(),
                 group: transactionEventGroup_1.default.EXPIRE,
+                occurred_at: new Date(),
             });
             yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
@@ -370,6 +380,7 @@ class TransactionServiceInterpreter {
             });
             let event = TransactionEventFactory.createEmailAdd({
                 _id: objectId_1.default(),
+                occurred_at: new Date(),
                 email: email,
             });
             let option = yield transactionRepository.findOneAndUpdate({
@@ -389,6 +400,7 @@ class TransactionServiceInterpreter {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let event = TransactionEventFactory.createEmailRemove({
                 _id: objectId_1.default(),
+                occurred_at: new Date(),
                 email_id: objectId_1.default(args.email_id),
             });
             let option = yield transactionRepository.findOneAndUpdate({

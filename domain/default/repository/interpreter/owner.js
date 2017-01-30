@@ -24,10 +24,10 @@ class OwnerRepositoryInterpreter {
             return (owner) ? monapt.Option(owner) : monapt.None;
         });
     }
-    findAdministrator() {
+    findPromoter() {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(owner_1.default.modelName, owner_1.default.schema);
-            let owner = yield model.findOne({ group: ownerGroup_1.default.ADMINISTRATOR }).lean().exec();
+            let owner = yield model.findOne({ group: ownerGroup_1.default.PROMOTER }).lean().exec();
             return (owner) ? monapt.Option(owner) : monapt.None;
         });
     }

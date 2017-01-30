@@ -3,7 +3,7 @@ import monapt = require("monapt");
 
 import ObjectId from "../../model/objectId";
 import Owner from "../../model/owner";
-import AdministratorOwner from "../../model/owner/administrator";
+import PromoterOwner from "../../model/owner/promoter";
 import OwnerGroup from "../../model/ownerGroup";
 
 import OwnerRepository from "../owner";
@@ -24,9 +24,9 @@ class OwnerRepositoryInterpreter implements OwnerRepository {
         return (owner) ? monapt.Option(owner) : monapt.None;
     }
 
-    async findAdministrator() {
+    async findPromoter() {
         let model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        let owner = <AdministratorOwner> await model.findOne({ group: OwnerGroup.ADMINISTRATOR }).lean().exec();
+        let owner = <PromoterOwner> await model.findOne({ group: OwnerGroup.PROMOTER }).lean().exec();
 
         return (owner) ? monapt.Option(owner) : monapt.None;
     }

@@ -6,10 +6,11 @@ import TransactionEventGroup from "../transactionEventGroup";
 export default class EmailAddTransactionEvent extends TransactionEvent {
     constructor(
         readonly _id: ObjectId,
+        readonly occurred_at: Date,
         readonly email: Email
     ) {
         // TODO validation
 
-        super(_id, TransactionEventGroup.EMAIL_ADD);
+        super(_id, TransactionEventGroup.EMAIL_ADD, occurred_at);
     }
 }

@@ -1,7 +1,7 @@
 "use strict";
 const owner_1 = require("../model/owner");
 const anonymous_1 = require("../model/owner/anonymous");
-const administrator_1 = require("../model/owner/administrator");
+const promoter_1 = require("../model/owner/promoter");
 function create(args) {
     return new owner_1.default(args._id, args.group);
 }
@@ -11,6 +11,6 @@ function createAnonymous(args) {
 }
 exports.createAnonymous = createAnonymous;
 function createAdministrator(args) {
-    return new administrator_1.default(args._id, (args.name) ? args.name : { ja: "", en: "" });
+    return new promoter_1.default(args._id, (args.name) ? args.name : { ja: "", en: "" });
 }
 exports.createAdministrator = createAdministrator;

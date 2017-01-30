@@ -1,7 +1,7 @@
 import ObjectId from "../model/objectId";
 import Owner from "../model/owner";
 import AnonymousOwner from "../model/owner/anonymous";
-import AdministratorOwner from "../model/owner/administrator";
+import PromoterOwner from "../model/owner/promoter";
 import OwnerGroup from "../model/ownerGroup";
 import MultilingualString from "../model/multilingualString";
 
@@ -39,8 +39,8 @@ export function createAnonymous(args: {
 export function createAdministrator(args: {
     _id: ObjectId,
     name?: MultilingualString,
-}): AdministratorOwner {
-    return new AdministratorOwner(
+}): PromoterOwner {
+    return new PromoterOwner(
         args._id,
         (args.name) ? args.name : {ja: "", en: ""},
     );
