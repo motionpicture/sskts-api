@@ -7,11 +7,13 @@ import ObjectId from "../../model/objectId";
 import Queue from "../../model/queue";
 import SettleAuthorizationQueue from "../../model/queue/settleAuthorization";
 import QueueGroup from "../../model/queueGroup";
-import SendEmailQueue from "../../model/queue/sendEmail";
-import ExpireTransactionQueue from "../../model/queue/expireTransaction";
 import AuthorizationGroup from "../../model/authorizationGroup";
 import GMOAuthorization from "../../model/authorization/gmo";
 import COASeatReservationAuthorization from "../../model/authorization/coaSeatReservation";
+import NotificationPushQueue from "../../model/queue/notificationPush";
+import EmailNotification from "../../model/notification/email";
+import NotificationGroup from "../../model/notificationGroup";
+
 import * as QueueFactory from "../../factory/queue";
 
 import QueueModel from "./mongoose/model/queue";
@@ -48,14 +50,13 @@ class QueueRepositoryInterpreter implements QueueRepository {
 
     async findOneSendEmailAndUpdate(conditions: Object, update: Object) {
         let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
-        let queue = <SendEmailQueue>await model.findOneAndUpdate({
-            $and: [
-                { group: QueueGroup.SEND_EMAIL },
-                conditions
-            ]
-        }, update, {
-                new: true,
-                upsert: false
+        let queue = <NotificationPushQueue<EmailNotification>>await model.findOneAndUpdate(conditions, update, {
+            new: true,
+            upsert: false
+        })
+            .where({
+                "group": QueueGroup.NOTIFICATION_PUSH,
+                "notification.group": NotificationGroup.EMAIL
             }).lean().exec();
 
         return (queue) ? monapt.Option(queue) : monapt.None;
@@ -128,21 +129,6 @@ class QueueRepositoryInterpreter implements QueueRepository {
                     "group": QueueGroup.CANCEL_AUTHORIZATION,
                     "authorization.group": AuthorizationGroup.GMO
                 },
-                conditions
-            ]
-        }, update, {
-                new: true,
-                upsert: false
-            }).lean().exec();
-
-        return (queue) ? monapt.Option(queue) : monapt.None;
-    }
-
-    async findOneExpireTransactionAndUpdate(conditions: Object, update: Object) {
-        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
-        let queue = <ExpireTransactionQueue>await model.findOneAndUpdate({
-            $and: [
-                { group: QueueGroup.EXPIRE_TRANSACTION },
                 conditions
             ]
         }, update, {

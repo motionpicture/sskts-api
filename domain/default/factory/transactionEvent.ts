@@ -2,11 +2,11 @@ import ObjectId from "../model/objectId";
 import TransactionEvent from "../model/transactionEvent";
 import AuthorizeTransactionEvent from "../model/transactionEvent/authorize";
 import UnauthorizeTransactionEvent from "../model/transactionEvent/unauthorize";
-import EmailAddTransactionEvent from "../model/transactionEvent/emailAdd";
-import EmailRemoveTransactionEvent from "../model/transactionEvent/emailRemove";
+import NotificationAddTransactionEvent from "../model/transactionEvent/notificationAdd";
+import NotificationRemoveTransactionEvent from "../model/transactionEvent/notificationRemove";
 import TransactionEventGroup from "../model/transactionEventGroup";
 import Authorization from "../model/authorization";
-import Email from "../model/email";
+import Notification from "../model/notification";
 
 export function create(args: {
     _id: ObjectId,
@@ -44,26 +44,26 @@ export function createUnauthorize(args: {
     );
 }
 
-export function createEmailAdd(args: {
+export function createNotificationAdd<T extends Notification>(args: {
     _id: ObjectId,
     occurred_at: Date,
-    email: Email,
+    notification: T,
 }) {
-    return new EmailAddTransactionEvent(
+    return new NotificationAddTransactionEvent<T>(
         args._id,
         args.occurred_at,
-        args.email,
+        args.notification,
     );
 }
 
-export function createEmailRemove(args: {
+export function createNotificationRemove<T extends Notification>(args: {
     _id: ObjectId,
     occurred_at: Date,
-    email_id: ObjectId,
+    notification: T,
 }) {
-    return new EmailRemoveTransactionEvent(
+    return new NotificationRemoveTransactionEvent<T>(
         args._id,
         args.occurred_at,
-        args.email_id,
+        args.notification,
     );
 }

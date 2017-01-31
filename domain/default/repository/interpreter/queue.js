@@ -11,6 +11,7 @@ const monapt = require("monapt");
 const settleAuthorization_1 = require("../../model/queue/settleAuthorization");
 const queueGroup_1 = require("../../model/queueGroup");
 const authorizationGroup_1 = require("../../model/authorizationGroup");
+const notificationGroup_1 = require("../../model/notificationGroup");
 const QueueFactory = require("../../factory/queue");
 const queue_1 = require("./mongoose/model/queue");
 class QueueRepositoryInterpreter {
@@ -45,14 +46,13 @@ class QueueRepositoryInterpreter {
     findOneSendEmailAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
-            let queue = yield model.findOneAndUpdate({
-                $and: [
-                    { group: queueGroup_1.default.SEND_EMAIL },
-                    conditions
-                ]
-            }, update, {
+            let queue = yield model.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
+            })
+                .where({
+                "group": queueGroup_1.default.NOTIFICATION_PUSH,
+                "notification.group": notificationGroup_1.default.EMAIL
             }).lean().exec();
             return (queue) ? monapt.Option(queue) : monapt.None;
         });
@@ -114,21 +114,6 @@ class QueueRepositoryInterpreter {
                         "group": queueGroup_1.default.CANCEL_AUTHORIZATION,
                         "authorization.group": authorizationGroup_1.default.GMO
                     },
-                    conditions
-                ]
-            }, update, {
-                new: true,
-                upsert: false
-            }).lean().exec();
-            return (queue) ? monapt.Option(queue) : monapt.None;
-        });
-    }
-    findOneExpireTransactionAndUpdate(conditions, update) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
-            let queue = yield model.findOneAndUpdate({
-                $and: [
-                    { group: queueGroup_1.default.EXPIRE_TRANSACTION },
                     conditions
                 ]
             }, update, {

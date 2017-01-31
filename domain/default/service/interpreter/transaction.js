@@ -17,7 +17,7 @@ const AuthorizationFactory = require("../../factory/authorization");
 const TransactionFactory = require("../../factory/transaction");
 const TransactionEventFactory = require("../../factory/transactionEvent");
 const QueueFactory = require("../../factory/queue");
-const EmailFactory = require("../../factory/email");
+const NotificationFactory = require("../../factory/notification");
 const OwnerFactory = require("../../factory/owner");
 const OwnershipFactory = require("../../factory/ownership");
 const AssetFactory = require("../../factory/asset");
@@ -276,10 +276,10 @@ class TransactionServiceInterpreter {
                     count_try: 0
                 }));
             });
-            transaction.emails().forEach((email) => {
-                queues.push(QueueFactory.createSendEmail({
+            transaction.notifications().forEach((notification) => {
+                queues.push(QueueFactory.createNotificationPush({
                     _id: objectId_1.default(),
-                    email: email,
+                    notification: notification,
                     status: queueStatus_1.default.UNEXECUTED,
                     executed_at: new Date(),
                     count_try: 0
@@ -323,14 +323,14 @@ class TransactionServiceInterpreter {
                 }));
             });
             let eventStart = transaction.events.find((event) => { return (event.group === transactionEventGroup_1.default.START); });
-            queues.push(QueueFactory.createSendEmail({
+            queues.push(QueueFactory.createNotificationPush({
                 _id: objectId_1.default(),
-                email: EmailFactory.create({
+                notification: NotificationFactory.createEmail({
                     _id: objectId_1.default(),
                     from: "noreply@localhost",
                     to: "hello@motionpicture.jp",
                     subject: "transaction expired",
-                    body: `
+                    content: `
 取引の期限がきれました
 _id: ${transaction._id}
 created_at: ${(eventStart) ? eventStart.occurred_at : ""}
@@ -373,17 +373,17 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
     }
     addEmail(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let email = EmailFactory.create({
+            let notification = NotificationFactory.createEmail({
                 _id: objectId_1.default(),
                 from: args.from,
                 to: args.to,
                 subject: args.subject,
-                body: args.body,
+                content: args.content,
             });
-            let event = TransactionEventFactory.createEmailAdd({
+            let event = TransactionEventFactory.createNotificationAdd({
                 _id: objectId_1.default(),
                 occurred_at: new Date(),
-                email: email,
+                notification: notification,
             });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
@@ -395,15 +395,25 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             });
             if (option.isEmpty)
                 throw new Error("UNDERWAY transaction not found.");
-            return email;
+            return notification;
         });
     }
     removeEmail(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let event = TransactionEventFactory.createEmailRemove({
+            let optionTransacton = yield transactionRepository.findById(objectId_1.default(args.transaction_id));
+            if (optionTransacton.isEmpty)
+                throw new Error("tranasction not found.");
+            let transaction = optionTransacton.get();
+            let notifications = transaction.notifications();
+            let notification = notifications.find((notification) => {
+                return (notification._id.toString() === args.notification_id);
+            });
+            if (!notification)
+                throw new Error(`notification [${args.notification_id}] not found in the transaction.`);
+            let event = TransactionEventFactory.createNotificationRemove({
                 _id: objectId_1.default(),
                 occurred_at: new Date(),
-                email_id: objectId_1.default(args.email_id),
+                notification: notification,
             });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),

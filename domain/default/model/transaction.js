@@ -27,19 +27,19 @@ class Transaction {
             return removedAuthorizationIds.indexOf(authorization._id.toString()) < 0;
         });
     }
-    emails() {
-        let emails = this.events.filter((event) => {
-            return event.group === transactionEventGroup_1.default.EMAIL_ADD;
+    notifications() {
+        let notifications = this.events.filter((event) => {
+            return event.group === transactionEventGroup_1.default.NOTIFICATION_ADD;
         }).map((event) => {
-            return event.email;
+            return event.notification;
         });
-        let removedEmailIds = this.events.filter((event) => {
-            return event.group === transactionEventGroup_1.default.EMAIL_REMOVE;
+        let removedNotificationIds = this.events.filter((event) => {
+            return event.group === transactionEventGroup_1.default.NOTIFICATION_REMOVE;
         }).map((event) => {
-            return event.email_id.toString();
+            return event.notification.toString();
         });
-        return emails.filter((email) => {
-            return removedEmailIds.indexOf(email._id.toString()) < 0;
+        return notifications.filter((notification) => {
+            return removedNotificationIds.indexOf(notification._id.toString()) < 0;
         });
     }
 }

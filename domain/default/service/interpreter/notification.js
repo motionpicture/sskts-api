@@ -11,7 +11,7 @@ const sendgrid = require("sendgrid");
 class NotificationServiceInterpreter {
     sendEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            let mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(email.from), email.subject, new sendgrid.mail.Email(email.to), new sendgrid.mail.Content("text/html", email.body));
+            let mail = new sendgrid.mail.Mail(new sendgrid.mail.Email(email.from), email.subject, new sendgrid.mail.Email(email.to), new sendgrid.mail.Content("text/html", email.content));
             let sg = sendgrid(process.env.SENDGRID_API_KEY);
             let request = sg.emptyRequest({
                 host: "api.sendgrid.com",

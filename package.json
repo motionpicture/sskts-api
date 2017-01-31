@@ -23,6 +23,7 @@
     "@types/redis": "^0.12.34",
     "@types/request": "0.0.36",
     "@types/request-promise-native": "^1.0.2",
+    "@types/validator": "^5.7.35",
     "body-parser": "latest",
     "commander": "^2.9.0",
     "config": "^1.24.0",
@@ -41,7 +42,8 @@
     "redis": "^2.6.3",
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",
-    "sendgrid": "^4.7.1"
+    "sendgrid": "^4.7.1",
+    "validator": "^6.2.1"
   },
   "devDependencies": {},
   "repository": {},

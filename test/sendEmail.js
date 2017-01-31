@@ -1,6 +1,6 @@
 "use strict";
 const notification_1 = require("../domain/default/service/interpreter/notification");
-const email_1 = require("../domain/default/model/email");
+const email_1 = require("../domain/default/model/notification/email");
 const objectId_1 = require("../domain/default/model/objectId");
 let email = new email_1.default(objectId_1.default(), "test@localhost", "ilovegadd@gmail.com", "test subject", `
 <!DOCTYPE html>

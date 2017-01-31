@@ -177,24 +177,24 @@ router.patch("/:id/enableInquiry", async (req, res, next) => {
     }
 });
 
-router.post("/:id/emails", async (req, res, next) => {
+router.post("/:id/notifications/email", async (req, res, next) => {
     // TODO validations
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let email = await TransactionService.addEmail({
+        let notification = await TransactionService.addEmail({
             transaction_id: req.params.id,
             from: req.body.from,
             to: req.body.to,
             subject: req.body.subject,
-            body: req.body.body,
+            content: req.body.content,
         })(TransactionRepository(mongoose.connection));
 
         res.status(200).json({
             data: {
-                type: "emails",
-                _id: email._id
+                type: "notification_id",
+                _id: notification._id
             }
         });
     } catch (error) {
@@ -202,7 +202,7 @@ router.post("/:id/emails", async (req, res, next) => {
     }
 });
 
-router.delete("/:id/emails/:email_id", async (req, res, next) => {
+router.delete("/:id/notifications/:notification_id", async (req, res, next) => {
     // TODO validations
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
@@ -210,7 +210,7 @@ router.delete("/:id/emails/:email_id", async (req, res, next) => {
     try {
         await TransactionService.removeEmail({
             transaction_id: req.params.id,
-            email_id: req.params.email_id,
+            notification_id: req.params.notification_id,
         })(TransactionRepository(mongoose.connection));
 
         res.status(204).end();

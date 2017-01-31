@@ -464,7 +464,7 @@ async function main() {
 
 
     // メール追加
-    let emailBody = `
+    let content = `
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -480,12 +480,12 @@ async function main() {
 `;
     console.log("adding email...");
     response = await request.post({
-        url: `http://localhost:8080/transactions/${transactionId}/emails`,
+        url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
         body: {
             from: "noreply@localhost",
             to: "hello@motionpicture.jp",
             subject: "購入完了",
-            body: emailBody,
+            content: content,
         },
         json: true,
         simple: false,
@@ -493,12 +493,12 @@ async function main() {
     });
     console.log("addEmail result:", response.statusCode, response.body);
     if (response.statusCode !== 200) throw new Error(response.body.message);
-    let emailId = response.body.data._id;
+    let notificationId = response.body.data._id;
 
     // メール削除
     console.log("removing email...");
     response = await request.del({
-        url: `http://localhost:8080/transactions/${transactionId}/emails/${emailId}`,
+        url: `http://localhost:8080/transactions/${transactionId}/notifications/${notificationId}`,
         body: {
         },
         json: true,
@@ -511,12 +511,12 @@ async function main() {
     // 再度メール追加
     console.log("adding email...");
     response = await request.post({
-        url: `http://localhost:8080/transactions/${transactionId}/emails`,
+        url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
         body: {
             from: "noreply@localhost",
             to: "hello@motionpicture.jp",
             subject: "購入完了",
-            body: emailBody,
+            content: content,
         },
         json: true,
         simple: false,

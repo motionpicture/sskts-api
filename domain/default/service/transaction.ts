@@ -1,7 +1,7 @@
 import AssetAuthorization from "../model/authorization/asset";
 import monapt = require("monapt");
 import Authorization from "../model/authorization";
-import Email from "../model/email";
+import Notification from "../model/notification";
 import Transaction from "../model/transaction";
 
 import OwnerRepository from "../repository/owner";
@@ -100,12 +100,12 @@ interface TransactionService {
         from: string,
         to: string,
         subject: string,
-        body: string,
-    }): TransactionOperation<Email>;
+        content: string,
+    }): TransactionOperation<Notification>;
     /** メール削除 */
     removeEmail(args: {
         transaction_id: string,
-        email_id: string,
+        notification_id: string,
     }): TransactionOperation<void>;
     /** 取引成立 */
     close(args: {

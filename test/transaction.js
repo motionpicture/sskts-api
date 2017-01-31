@@ -344,7 +344,7 @@ function main() {
         console.log("enableInquiry result:", response.statusCode, response.body);
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
-        let emailBody = `
+        let content = `
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -360,12 +360,12 @@ function main() {
 `;
         console.log("adding email...");
         response = yield request.post({
-            url: `http://localhost:8080/transactions/${transactionId}/emails`,
+            url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
             body: {
                 from: "noreply@localhost",
                 to: "hello@motionpicture.jp",
                 subject: "購入完了",
-                body: emailBody,
+                content: content,
             },
             json: true,
             simple: false,
@@ -374,10 +374,10 @@ function main() {
         console.log("addEmail result:", response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
-        let emailId = response.body.data._id;
+        let notificationId = response.body.data._id;
         console.log("removing email...");
         response = yield request.del({
-            url: `http://localhost:8080/transactions/${transactionId}/emails/${emailId}`,
+            url: `http://localhost:8080/transactions/${transactionId}/notifications/${notificationId}`,
             body: {},
             json: true,
             simple: false,
@@ -388,12 +388,12 @@ function main() {
             throw new Error(response.body.message);
         console.log("adding email...");
         response = yield request.post({
-            url: `http://localhost:8080/transactions/${transactionId}/emails`,
+            url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
             body: {
                 from: "noreply@localhost",
                 to: "hello@motionpicture.jp",
                 subject: "購入完了",
-                body: emailBody,
+                content: content,
             },
             json: true,
             simple: false,

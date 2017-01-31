@@ -167,22 +167,22 @@ router.patch("/:id/enableInquiry", (req, res, next) => __awaiter(this, void 0, v
         next(error);
     }
 }));
-router.post("/:id/emails", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post("/:id/notifications/email", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let email = yield transaction_2.default.addEmail({
+        let notification = yield transaction_2.default.addEmail({
             transaction_id: req.params.id,
             from: req.body.from,
             to: req.body.to,
             subject: req.body.subject,
-            body: req.body.body,
+            content: req.body.content,
         })(transaction_1.default(mongoose.connection));
         res.status(200).json({
             data: {
-                type: "emails",
-                _id: email._id
+                type: "notification_id",
+                _id: notification._id
             }
         });
     }
@@ -190,14 +190,14 @@ router.post("/:id/emails", (req, res, next) => __awaiter(this, void 0, void 0, f
         next(error);
     }
 }));
-router.delete("/:id/emails/:email_id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.delete("/:id/notifications/:notification_id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
         yield transaction_2.default.removeEmail({
             transaction_id: req.params.id,
-            email_id: req.params.email_id,
+            notification_id: req.params.notification_id,
         })(transaction_1.default(mongoose.connection));
         res.status(204).end();
     }

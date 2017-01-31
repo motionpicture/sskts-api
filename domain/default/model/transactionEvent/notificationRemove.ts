@@ -1,15 +1,16 @@
 import ObjectId from "../objectId";
+import Notification from "../notification";
 import TransactionEvent from "../transactionEvent";
 import TransactionEventGroup from "../transactionEventGroup";
 
-export default class EmailRemoveTransactionEvent extends TransactionEvent {
+export default class NotificationRemoveTransactionEvent<T extends Notification> extends TransactionEvent {
     constructor(
         readonly _id: ObjectId,
         readonly occurred_at: Date,
-        readonly email_id: ObjectId
+        readonly notification: T
     ) {
         // TODO validation
 
-        super(_id, TransactionEventGroup.EMAIL_REMOVE, occurred_at);
+        super(_id, TransactionEventGroup.NOTIFICATION_REMOVE, occurred_at);
     }
 }

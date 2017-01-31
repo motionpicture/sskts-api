@@ -1,11 +1,12 @@
 import ObjectId from "../model/objectId";
+
 import Authorization from "../model/authorization";
-import Email from "../model/email";
+import Notification from "../model/notification";
+
 import Queue from "../model/queue";
 import SettleAuthorizationQueue from "../model/queue/settleAuthorization";
 import CancelAuthorizationQueue from "../model/queue/cancelAuthorization";
-import SendEmailQueue from "../model/queue/sendEmail";
-import ExpireTransactionQueue from "../model/queue/expireTransaction";
+import NotificationPushQueue from "../model/queue/notificationPush";
 import QueueGroup from "../model/queueGroup";
 import QueueStatus from "../model/queueStatus";
 
@@ -57,34 +58,18 @@ export function createCancelAuthorization<T extends Authorization>(args: {
     );
 }
 
-export function createExpireTransaction(args: {
+export function createNotificationPush<T extends Notification>(args: {
     _id: ObjectId,
-    transaction_id: ObjectId,
+    notification: T,
     status: QueueStatus
     executed_at: Date,
     count_try: number,
 }) {
-    return new ExpireTransactionQueue(
+    return new NotificationPushQueue<T>(
         args._id,
         args.status,
         args.executed_at,
         args.count_try,
-        args.transaction_id,
-    );
-}
-
-export function createSendEmail(args: {
-    _id: ObjectId,
-    email: Email,
-    status: QueueStatus
-    executed_at: Date,
-    count_try: number,
-}) {
-    return new SendEmailQueue(
-        args._id,
-        args.status,
-        args.executed_at,
-        args.count_try,
-        args.email,
+        args.notification,
     );
 }

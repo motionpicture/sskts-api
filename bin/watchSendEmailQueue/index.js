@@ -39,7 +39,7 @@ function execute() {
         if (!option.isEmpty) {
             let queue = option.get();
             console.log("queue is", queue);
-            yield notification_1.default.sendEmail(queue.email);
+            yield notification_1.default.sendEmail(queue.notification);
             yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
         }
     });

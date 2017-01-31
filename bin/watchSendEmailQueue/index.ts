@@ -40,7 +40,7 @@ async function execute() {
         console.log("queue is", queue);
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        await NotificationService.sendEmail(queue.email);
+        await NotificationService.sendEmail(queue.notification);
         await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
     }
 }

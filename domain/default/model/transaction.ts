@@ -5,10 +5,11 @@ import TransactionEvent from "./transactionEvent";
 import TransactionEventGroup from "./transactionEventGroup";
 import AuthorizeTransactionEvent from "./transactionEvent/authorize";
 import UnauthorizeTransactionEvent from "./transactionEvent/unauthorize";
-import EmailAddTransactionEvent from "./transactionEvent/emailAdd";
-import EmailRemoveTransactionEvent from "./transactionEvent/emailRemove";
+import NotificationAddTransactionEvent from "./transactionEvent/notificationAdd";
+import NotificationRemoveTransactionEvent from "./transactionEvent/notificationRemove";
 import TransactionStatus from "./transactionStatus";
 import TransactionQueuesStatus from "./transactionQueuesStatus";
+import Notification from "./notification";
 
 export default class Transaction {
     constructor(
@@ -49,25 +50,24 @@ export default class Transaction {
     }
 
     /**
-     * イベントから承認リストを取得する
+     * イベントから通知リストを取得する
      */
-    emails() {
-        // メール追加イベント
-        let emails = this.events.filter((event) => {
-            return event.group === TransactionEventGroup.EMAIL_ADD;
-        }).map((event: EmailAddTransactionEvent) => {
-            return event.email;
+    notifications() {
+        let notifications = this.events.filter((event) => {
+            return event.group === TransactionEventGroup.NOTIFICATION_ADD;
+        }).map((event: NotificationAddTransactionEvent<Notification>) => {
+            return event.notification;
         });
 
         // メール削除イベント
-        let removedEmailIds = this.events.filter((event) => {
-            return event.group === TransactionEventGroup.EMAIL_REMOVE;
-        }).map((event: EmailRemoveTransactionEvent) => {
-            return event.email_id.toString();
+        let removedNotificationIds = this.events.filter((event) => {
+            return event.group === TransactionEventGroup.NOTIFICATION_REMOVE;
+        }).map((event: NotificationRemoveTransactionEvent<Notification>) => {
+            return event.notification.toString();
         });
 
-        return emails.filter((email) => {
-            return removedEmailIds.indexOf(email._id.toString()) < 0;
+        return notifications.filter((notification) => {
+            return removedNotificationIds.indexOf(notification._id.toString()) < 0;
         });
     }
 }

@@ -20,7 +20,7 @@ import * as AuthorizationFactory from "../../factory/authorization";
 import * as TransactionFactory from "../../factory/transaction";
 import * as TransactionEventFactory from "../../factory/transactionEvent";
 import * as QueueFactory from "../../factory/queue";
-import * as EmailFactory from "../../factory/email";
+import * as NotificationFactory from "../../factory/notification";
 import * as OwnerFactory from "../../factory/owner";
 import * as OwnershipFactory from "../../factory/ownership";
 import * as AssetFactory from "../../factory/asset";
@@ -415,10 +415,10 @@ class TransactionServiceInterpreter implements TransactionService {
                     count_try: 0
                 }));
             });
-            transaction.emails().forEach((email) => {
-                queues.push(QueueFactory.createSendEmail({
+            transaction.notifications().forEach((notification) => {
+                queues.push(QueueFactory.createNotificationPush({
                     _id: ObjectId(),
-                    email: email,
+                    notification: notification,
                     status: QueueStatus.UNEXECUTED,
                     executed_at: new Date(), // TODO emailのsent_atを指定
                     count_try: 0
@@ -475,14 +475,14 @@ class TransactionServiceInterpreter implements TransactionService {
 
             // TODO おそらく開発時のみ
             let eventStart = transaction.events.find((event) => { return (event.group === TransactionEventGroup.START) });
-            queues.push(QueueFactory.createSendEmail({
+            queues.push(QueueFactory.createNotificationPush({
                 _id: ObjectId(),
-                email: EmailFactory.create({
+                notification: NotificationFactory.createEmail({
                     _id: ObjectId(),
                     from: "noreply@localhost",
                     to: "hello@motionpicture.jp",
                     subject: "transaction expired",
-                    body: `
+                    content: `
 取引の期限がきれました
 _id: ${transaction._id}
 created_at: ${(eventStart) ? eventStart.occurred_at : ""}
@@ -545,23 +545,23 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
         from: string,
         to: string,
         subject: string,
-        body: string,
+        content: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
             // メール作成
-            let email = EmailFactory.create({
+            let notification = NotificationFactory.createEmail({
                 _id: ObjectId(),
                 from: args.from,
                 to: args.to,
                 subject: args.subject,
-                body: args.body,
+                content: args.content,
             });
 
             // イベント作成
-            let event = TransactionEventFactory.createEmailAdd({
+            let event = TransactionEventFactory.createNotificationAdd({
                 _id: ObjectId(),
                 occurred_at: new Date(),
-                email: email,
+                notification: notification,
             });
 
             // 永続化
@@ -576,7 +576,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
 
             if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
 
-            return email;
+            return notification;
         }
     }
 
@@ -585,14 +585,26 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
      */
     removeEmail(args: {
         transaction_id: string,
-        email_id: string,
+        notification_id: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // 取引取得
+            let optionTransacton = await transactionRepository.findById(ObjectId(args.transaction_id));
+            if (optionTransacton.isEmpty) throw new Error("tranasction not found."); 
+
+            let transaction = optionTransacton.get();
+            let notifications = transaction.notifications();
+            let notification = notifications.find((notification) => {
+                return (notification._id.toString() === args.notification_id);
+            });
+            if (!notification) throw new Error(`notification [${args.notification_id}] not found in the transaction.`); 
+
+
             // イベント作成
-            let event = TransactionEventFactory.createEmailRemove({
+            let event = TransactionEventFactory.createNotificationRemove({
                 _id: ObjectId(),
                 occurred_at: new Date(),
-                email_id: ObjectId(args.email_id),
+                notification: notification,
             });
 
             // 永続化

@@ -5,12 +5,13 @@ import mongoose = require("mongoose");
  */
 let schema = new mongoose.Schema({
     group: String,
-    authorization: mongoose.Schema.Types.Mixed,
-    email: mongoose.Schema.Types.Mixed,
     status: String,
     transaction_id: mongoose.Schema.Types.ObjectId, // 取引期限切れに利用
     executed_at: Date,
     count_try: Number,
+
+    authorization: mongoose.Schema.Types.Mixed, // オーソリタスク
+    notification: mongoose.Schema.Types.Mixed, // 通知タスク
 },{
     collection: "queues",
     timestamps: { 
