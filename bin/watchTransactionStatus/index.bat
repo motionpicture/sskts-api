@@ -1,2 +1,2 @@
 cd D:\home\site\wwwroot
-node bin/watchTransactions/index
+node bin/watchTransactionStatus/index
