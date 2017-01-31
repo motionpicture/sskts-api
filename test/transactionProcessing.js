@@ -18,7 +18,20 @@ COA.initialize({
     refresh_token: "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ"
 });
 const moment = require("moment");
-function main() {
+let count = 0;
+setInterval(() => __awaiter(this, void 0, void 0, function* () {
+    if (count > 10)
+        return;
+    count++;
+    try {
+        yield execute();
+    }
+    catch (error) {
+        console.error(error.message);
+    }
+    count--;
+}), 1000);
+function execute() {
     return __awaiter(this, void 0, void 0, function* () {
         let response;
         let gmoShopId = "tshop00026096";
@@ -48,10 +61,10 @@ function main() {
         let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
         let theaterCode = "001";
         let dateJouei = "20170131";
-        let titleCode = "8513";
+        let titleCode = "8561";
         let titleBranchNum = "0";
-        let timeBegin = "2030";
-        let screenCode = "2";
+        let timeBegin = "1210";
+        let screenCode = "3";
         let salesTicketResult = yield COA.salesTicketInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -164,8 +177,3 @@ function main() {
             throw new Error(response.body.message);
     });
 }
-main().then(() => {
-    console.log("main processed.");
-}).catch((err) => {
-    console.error(err.message);
-});

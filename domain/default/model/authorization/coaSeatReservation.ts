@@ -1,7 +1,6 @@
 import ObjectId from "../objectId";
 import AuthorizationGroup from "../authorizationGroup";
 import Authorization from "../authorization";
-import Owner from "../owner";
 import SeatReservationAsset from "../asset/seatReservation";
 
 /**
@@ -12,8 +11,8 @@ export default class COASeatReservationAuthorization extends Authorization {
         readonly _id: ObjectId,
         readonly coa_tmp_reserve_num: string,
         readonly price: number,
-        readonly owner_from: Owner,
-        readonly owner_to: Owner,
+        readonly owner_from: ObjectId,
+        readonly owner_to: ObjectId,
         /** 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため) */
         readonly assets: Array<SeatReservationAsset>
     ) {

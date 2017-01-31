@@ -41,14 +41,8 @@ function execute() {
         if (!option.isEmpty) {
             let queue = option.get();
             console.log("queue is", queue);
-            yield stock_1.default.transferCOASeatReservation(queue.authorization)(assetRepository)
-                .then(() => __awaiter(this, void 0, void 0, function* () {
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
-            }))
-                .catch((err) => __awaiter(this, void 0, void 0, function* () {
-                console.error(err);
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.UNEXECUTED });
-            }));
+            yield stock_1.default.transferCOASeatReservation(queue.authorization)(assetRepository);
+            yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
         }
     });
 }

@@ -40,7 +40,7 @@ export default class Transaction {
         let removedAuthorizationIds = this.events.filter((event) => {
             return event.group === TransactionEventGroup.UNAUTHORIZE;
         }).map((event: UnauthorizeTransactionEvent) => {
-            return event.authorization_id.toString();
+            return event.authorization._id.toString();
         });
 
         return authorizations.filter((authorization) => {

@@ -35,12 +35,12 @@ export function createAuthorize(args: {
 export function createUnauthorize(args: {
     _id: ObjectId,
     occurred_at: Date,
-    authorization_id: ObjectId,
+    authorization: Authorization,
 }) {
     return new UnauthorizeTransactionEvent(
         args._id,
         args.occurred_at,
-        args.authorization_id,
+        args.authorization,
     );
 }
 

@@ -40,14 +40,8 @@ function execute() {
         if (!option.isEmpty) {
             let queue = option.get();
             console.log("queue is", queue);
-            yield sales_1.default.cancelGMOAuth(queue.authorization)(GMO)
-                .then(() => __awaiter(this, void 0, void 0, function* () {
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
-            }))
-                .catch((err) => __awaiter(this, void 0, void 0, function* () {
-                console.error(err);
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.UNEXECUTED, });
-            }));
+            yield sales_1.default.cancelGMOAuth(queue.authorization)(GMO);
+            yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
         }
     });
 }

@@ -42,14 +42,14 @@ class TransactionServiceInterpreter implements TransactionService {
             if (optionTransaction.isEmpty) throw new Error(`transaction[${ObjectId(args.transaction_id)}] not found.`);
             let transaction = optionTransaction.get();
 
-            let anonymousOwners = transaction.owners.filter((owner) => {
-                return owner.group === OwnerGroup.ANONYMOUS;
+            let anonymousOwner = transaction.owners.find((owner) => {
+                return (owner.group === OwnerGroup.ANONYMOUS);
             });
-            if (anonymousOwners.length === 0) throw new Error("anonymous owner not found.");
+            if (!anonymousOwner) throw new Error("anonymous owner not found.");
 
             // 永続化
             let option = await ownerRepository.findOneAndUpdate({
-                _id: anonymousOwners[0]._id,
+                _id: anonymousOwner._id,
             }, {
                     $set: {
                         name_first: args.name_first,
@@ -79,7 +79,7 @@ class TransactionServiceInterpreter implements TransactionService {
     start(args: {
         expired_at: Date,
     }) {
-        return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository, queueRepository: QueueRepository) => {
+        return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
             // 一般所有者作成
             let anonymousOwner = OwnerFactory.createAnonymous({
                 _id: ObjectId()
@@ -100,25 +100,15 @@ class TransactionServiceInterpreter implements TransactionService {
             // 取引作成
             let transaction = TransactionFactory.create({
                 _id: ObjectId(),
-                status: TransactionStatus.PROCESSING,
+                status: TransactionStatus.UNDERWAY,
                 events: [event],
                 owners: [promoter, anonymousOwner],
                 expired_at: args.expired_at
             });
 
-            // 期限切れキュー作成
-            let queue = QueueFactory.createExpireTransaction({
-                _id: ObjectId(),
-                transaction_id: transaction._id,
-                status: QueueStatus.UNEXECUTED,
-                executed_at: transaction.expired_at,
-                count_try: 0,
-            });
-
             // 永続化
             await ownerRepository.store(anonymousOwner);
             await transactionRepository.store(transaction);
-            await queueRepository.store(queue);
 
             return transaction;
         }
@@ -184,8 +174,8 @@ class TransactionServiceInterpreter implements TransactionService {
             let authorization = AuthorizationFactory.createGMO({
                 _id: ObjectId(),
                 price: args.gmo_amount,
-                owner_from: optionOwnerFrom.get(),
-                owner_to: optionOwnerTo.get(),
+                owner_from: optionOwnerFrom.get()._id,
+                owner_to: optionOwnerTo.get()._id,
                 gmo_shop_id: args.gmo_shop_id,
                 gmo_shop_pass: args.gmo_shop_pass,
                 gmo_order_id: args.gmo_order_id,
@@ -254,8 +244,8 @@ class TransactionServiceInterpreter implements TransactionService {
                 _id: ObjectId(),
                 coa_tmp_reserve_num: args.coa_tmp_reserve_num,
                 price: args.price,
-                owner_from: optionOwnerFrom.get(),
-                owner_to: optionOwnerTo.get(),
+                owner_from: optionOwnerFrom.get()._id,
+                owner_to: optionOwnerTo.get()._id,
                 assets: args.seats.map((seat) => {
                     return AssetFactory.createSeatReservation({
                         _id: ObjectId(),
@@ -308,13 +298,13 @@ class TransactionServiceInterpreter implements TransactionService {
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.PROCESSING,
+                status: TransactionStatus.UNDERWAY,
             }, {
                     $push: {
                         events: event,
                     },
                 });
-            if (option.isEmpty) throw new Error("processing transaction not found.");
+            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
         }
     }
 
@@ -326,23 +316,34 @@ class TransactionServiceInterpreter implements TransactionService {
         authorization_id: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
+            // 取引取得
+            let optionTransacton = await transactionRepository.findById(ObjectId(args.transaction_id));
+            if (optionTransacton.isEmpty) throw new Error("tranasction not found."); 
+
+            let transaction = optionTransacton.get();
+            let authorizations = transaction.authorizations();
+            let authorization = authorizations.find((authorization) => {
+                return (authorization._id.toString() === args.authorization_id);
+            });
+            if (!authorization) throw new Error(`authorization [${args.authorization_id}] not found in the transaction.`); 
+
             // イベント作成
             let event = TransactionEventFactory.createUnauthorize({
                 _id: ObjectId(),
                 occurred_at: new Date(),
-                authorization_id: ObjectId(args.authorization_id),
+                authorization: authorization,
             });
 
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.PROCESSING
+                status: TransactionStatus.UNDERWAY
             }, {
                     $push: {
                         events: event,
                     },
                 });
-            if (option.isEmpty) throw new Error("processing transaction not found.");
+            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
         }
     }
 
@@ -358,14 +359,14 @@ class TransactionServiceInterpreter implements TransactionService {
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.PROCESSING
+                status: TransactionStatus.UNDERWAY
             }, {
                     $set: {
                         inquiry_id: args.inquiry_id,
                         inquiry_pass: args.inquiry_pass,
                     },
                 });
-            if (option.isEmpty) throw new Error("processing transaction not found.");
+            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
         };
     }
 
@@ -434,7 +435,7 @@ class TransactionServiceInterpreter implements TransactionService {
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.PROCESSING
+                status: TransactionStatus.UNDERWAY
             }, {
                     $set: {
                         status: TransactionStatus.CLOSED,
@@ -444,7 +445,7 @@ class TransactionServiceInterpreter implements TransactionService {
                         events: event,
                     }
                 });
-            if (option.isEmpty) throw new Error("processing transaction not found.");
+            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
         }
     }
 
@@ -502,7 +503,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             // 永続化
             await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.PROCESSING
+                status: TransactionStatus.UNDERWAY
             }, {
                     $set: {
                         status: TransactionStatus.EXPIRED,
@@ -514,7 +515,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
                 });
 
             // 永続化結果がemptyの場合は、もう取引中ステータスではないということなので、期限切れタスクとしては成功
-            // if (option.isEmpty) throw new Error("processing transaction not found.");
+            // if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
         }
     }
 
@@ -566,14 +567,14 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.PROCESSING,
+                status: TransactionStatus.UNDERWAY,
             }, {
                     $push: {
                         events: event,
                     },
                 });
 
-            if (option.isEmpty) throw new Error("processing transaction not found.");
+            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
 
             return email;
         }
@@ -597,14 +598,14 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             // 永続化
             let option = await transactionRepository.findOneAndUpdate({
                 _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.PROCESSING,
+                status: TransactionStatus.UNDERWAY,
             }, {
                     $push: {
                         events: event,
                     },
                 });
 
-            if (option.isEmpty) throw new Error("processing transaction not found.");
+            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
         }
     }
 }

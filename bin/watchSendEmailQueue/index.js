@@ -39,14 +39,8 @@ function execute() {
         if (!option.isEmpty) {
             let queue = option.get();
             console.log("queue is", queue);
-            yield notification_1.default.sendEmail(queue.email)
-                .then(() => __awaiter(this, void 0, void 0, function* () {
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
-            }))
-                .catch((err) => __awaiter(this, void 0, void 0, function* () {
-                console.error(err);
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.UNEXECUTED });
-            }));
+            yield notification_1.default.sendEmail(queue.email);
+            yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
         }
     });
 }

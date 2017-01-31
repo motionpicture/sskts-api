@@ -28,13 +28,13 @@ class TransactionServiceInterpreter {
             if (optionTransaction.isEmpty)
                 throw new Error(`transaction[${objectId_1.default(args.transaction_id)}] not found.`);
             let transaction = optionTransaction.get();
-            let anonymousOwners = transaction.owners.filter((owner) => {
-                return owner.group === ownerGroup_1.default.ANONYMOUS;
+            let anonymousOwner = transaction.owners.find((owner) => {
+                return (owner.group === ownerGroup_1.default.ANONYMOUS);
             });
-            if (anonymousOwners.length === 0)
+            if (!anonymousOwner)
                 throw new Error("anonymous owner not found.");
             let option = yield ownerRepository.findOneAndUpdate({
-                _id: anonymousOwners[0]._id,
+                _id: anonymousOwner._id,
             }, {
                 $set: {
                     name_first: args.name_first,
@@ -53,7 +53,7 @@ class TransactionServiceInterpreter {
         });
     }
     start(args) {
-        return (ownerRepository, transactionRepository, queueRepository) => __awaiter(this, void 0, void 0, function* () {
+        return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let anonymousOwner = OwnerFactory.createAnonymous({
                 _id: objectId_1.default()
             });
@@ -68,21 +68,13 @@ class TransactionServiceInterpreter {
             });
             let transaction = TransactionFactory.create({
                 _id: objectId_1.default(),
-                status: transactionStatus_1.default.PROCESSING,
+                status: transactionStatus_1.default.UNDERWAY,
                 events: [event],
                 owners: [promoter, anonymousOwner],
                 expired_at: args.expired_at
             });
-            let queue = QueueFactory.createExpireTransaction({
-                _id: objectId_1.default(),
-                transaction_id: transaction._id,
-                status: queueStatus_1.default.UNEXECUTED,
-                executed_at: transaction.expired_at,
-                count_try: 0,
-            });
             yield ownerRepository.store(anonymousOwner);
             yield transactionRepository.store(transaction);
-            yield queueRepository.store(queue);
             return transaction;
         });
     }
@@ -120,8 +112,8 @@ class TransactionServiceInterpreter {
             let authorization = AuthorizationFactory.createGMO({
                 _id: objectId_1.default(),
                 price: args.gmo_amount,
-                owner_from: optionOwnerFrom.get(),
-                owner_to: optionOwnerTo.get(),
+                owner_from: optionOwnerFrom.get()._id,
+                owner_to: optionOwnerTo.get()._id,
                 gmo_shop_id: args.gmo_shop_id,
                 gmo_shop_pass: args.gmo_shop_pass,
                 gmo_order_id: args.gmo_order_id,
@@ -161,8 +153,8 @@ class TransactionServiceInterpreter {
                 _id: objectId_1.default(),
                 coa_tmp_reserve_num: args.coa_tmp_reserve_num,
                 price: args.price,
-                owner_from: optionOwnerFrom.get(),
-                owner_to: optionOwnerTo.get(),
+                owner_from: optionOwnerFrom.get()._id,
+                owner_to: optionOwnerTo.get()._id,
                 assets: args.seats.map((seat) => {
                     return AssetFactory.createSeatReservation({
                         _id: objectId_1.default(),
@@ -202,40 +194,50 @@ class TransactionServiceInterpreter {
             });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.PROCESSING,
+                status: transactionStatus_1.default.UNDERWAY,
             }, {
                 $push: {
                     events: event,
                 },
             });
             if (option.isEmpty)
-                throw new Error("processing transaction not found.");
+                throw new Error("UNDERWAY transaction not found.");
         });
     }
     removeAuthorization(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
+            let optionTransacton = yield transactionRepository.findById(objectId_1.default(args.transaction_id));
+            if (optionTransacton.isEmpty)
+                throw new Error("tranasction not found.");
+            let transaction = optionTransacton.get();
+            let authorizations = transaction.authorizations();
+            let authorization = authorizations.find((authorization) => {
+                return (authorization._id.toString() === args.authorization_id);
+            });
+            if (!authorization)
+                throw new Error(`authorization [${args.authorization_id}] not found in the transaction.`);
             let event = TransactionEventFactory.createUnauthorize({
                 _id: objectId_1.default(),
                 occurred_at: new Date(),
-                authorization_id: objectId_1.default(args.authorization_id),
+                authorization: authorization,
             });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.UNDERWAY
             }, {
                 $push: {
                     events: event,
                 },
             });
             if (option.isEmpty)
-                throw new Error("processing transaction not found.");
+                throw new Error("UNDERWAY transaction not found.");
         });
     }
     enableInquiry(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.UNDERWAY
             }, {
                 $set: {
                     inquiry_id: args.inquiry_id,
@@ -243,7 +245,7 @@ class TransactionServiceInterpreter {
                 },
             });
             if (option.isEmpty)
-                throw new Error("processing transaction not found.");
+                throw new Error("UNDERWAY transaction not found.");
         });
     }
     inquiry(args) {
@@ -290,7 +292,7 @@ class TransactionServiceInterpreter {
             });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.UNDERWAY
             }, {
                 $set: {
                     status: transactionStatus_1.default.CLOSED,
@@ -301,7 +303,7 @@ class TransactionServiceInterpreter {
                 }
             });
             if (option.isEmpty)
-                throw new Error("processing transaction not found.");
+                throw new Error("UNDERWAY transaction not found.");
         });
     }
     expire(args) {
@@ -345,7 +347,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             });
             yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.PROCESSING
+                status: transactionStatus_1.default.UNDERWAY
             }, {
                 $set: {
                     status: transactionStatus_1.default.EXPIRED,
@@ -385,14 +387,14 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.PROCESSING,
+                status: transactionStatus_1.default.UNDERWAY,
             }, {
                 $push: {
                     events: event,
                 },
             });
             if (option.isEmpty)
-                throw new Error("processing transaction not found.");
+                throw new Error("UNDERWAY transaction not found.");
             return email;
         });
     }
@@ -405,14 +407,14 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             });
             let option = yield transactionRepository.findOneAndUpdate({
                 _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.PROCESSING,
+                status: transactionStatus_1.default.UNDERWAY,
             }, {
                 $push: {
                     events: event,
                 },
             });
             if (option.isEmpty)
-                throw new Error("processing transaction not found.");
+                throw new Error("UNDERWAY transaction not found.");
         });
     }
 }

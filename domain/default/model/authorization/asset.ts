@@ -2,7 +2,6 @@ import ObjectId from "../objectId";
 import Asset from "../asset";
 import AuthorizationGroup from "../authorizationGroup";
 import Authorization from "../authorization";
-import Owner from "../owner";
 
 /**
  * 資産承認
@@ -17,9 +16,9 @@ export default class AssetAuthorization extends Authorization {
         /** 資産価値 */
         readonly price: number,
         /** 誰が */
-        readonly owner_from: Owner,
+        readonly owner_from: ObjectId,
         /** 誰に対して */
-        readonly owner_to: Owner,
+        readonly owner_to: ObjectId,
     ) {
         // TODO validation
 

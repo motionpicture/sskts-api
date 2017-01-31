@@ -3,15 +3,16 @@ import monapt = require("monapt");
 import Film from "../../model/film";
 import FilmRepository from "../film";
 import FilmModel from "./mongoose/model/film";
+import * as FilmFactory from "../../factory/film";
 
 class FilmRepositoryInterpreter implements FilmRepository {
     public connection: mongoose.Connection;
 
     async findById(id: string) {
         let model = this.connection.model(FilmModel.modelName, FilmModel.schema);
-        let film = <Film> await model.findOne({ _id: id }).lean().exec();
+        let doc = <any>await model.findOne({ _id: id }).lean().exec();
 
-        return (film) ? monapt.Option(film) : monapt.None;
+        return (doc) ? monapt.Option(FilmFactory.create(doc)) : monapt.None;
     }
 
     async store(film: Film) {

@@ -7,7 +7,7 @@ import OwnerModel from "./owner";
 let schema = new mongoose.Schema({
     expired_at: Date,
     status: String,
-    events: [mongoose.Schema.Types.Mixed], // イベントリスト
+    events: [mongoose.Schema.Types.Mixed], // イベントリスト TODO スキーマ固定化
     owners: [{ // 取引の対象所有者リスト
         type: mongoose.Schema.Types.ObjectId,
         ref: OwnerModel.modelName,

@@ -9,12 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const monapt = require("monapt");
 const film_1 = require("./mongoose/model/film");
+const FilmFactory = require("../../factory/film");
 class FilmRepositoryInterpreter {
     findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(film_1.default.modelName, film_1.default.schema);
-            let film = yield model.findOne({ _id: id }).lean().exec();
-            return (film) ? monapt.Option(film) : monapt.None;
+            let doc = yield model.findOne({ _id: id }).lean().exec();
+            return (doc) ? monapt.Option(FilmFactory.create(doc)) : monapt.None;
         });
     }
     store(film) {

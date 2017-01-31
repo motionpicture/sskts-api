@@ -4,13 +4,13 @@ import QueueGroup from "../queueGroup";
 import QueueStatus from "../queueStatus";
 import Authorization from "../authorization";
 
-export default class CancelAuthorizationQueue extends Queue {
+export default class CancelAuthorizationQueue<T extends Authorization> extends Queue {
     constructor(
         readonly _id: ObjectId,
         readonly status: QueueStatus,
         readonly executed_at: Date,
         readonly count_try: number,
-        readonly authorization: Authorization,
+        readonly authorization: T,
     ) {
         // TODO validation
 

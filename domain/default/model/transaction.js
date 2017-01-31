@@ -21,7 +21,7 @@ class Transaction {
         let removedAuthorizationIds = this.events.filter((event) => {
             return event.group === transactionEventGroup_1.default.UNAUTHORIZE;
         }).map((event) => {
-            return event.authorization_id.toString();
+            return event.authorization._id.toString();
         });
         return authorizations.filter((authorization) => {
             return removedAuthorizationIds.indexOf(authorization._id.toString()) < 0;

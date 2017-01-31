@@ -40,15 +40,10 @@ async function execute() {
     if (!option.isEmpty) {
         let transaction = option.get();
 
+        // 失敗してもここでは戻さない(RUNNINGのまま待機)
         await TransactionService.exportQueues({
             transaction_id: transaction._id.toString()
-        })(transactionRepository, QueueRepository(mongoose.connection))
-            .then(async () => {
-                await transactionRepository.findOneAndUpdate({ _id: transaction._id }, { queues_status: TransactionQueuesStatus.EXPORTED });
-            })
-            .catch(async (err) => {
-                console.error(err);
-                await transactionRepository.findOneAndUpdate({ _id: transaction._id }, { queues_status: TransactionQueuesStatus.EXPORTED });
-            });
+        })(transactionRepository, QueueRepository(mongoose.connection));
+        await transactionRepository.findOneAndUpdate({ _id: transaction._id }, { queues_status: TransactionQueuesStatus.EXPORTED });
     }
 }

@@ -3,27 +3,9 @@ let router = express.Router();
 
 import OwnerRepository from "../../domain/default/repository/interpreter/owner";
 import TransactionRepository from "../../domain/default/repository/interpreter/transaction";
-import QueueRepository from "../../domain/default/repository/interpreter/queue";
 
 import TransactionService from "../../domain/default/service/interpreter/transaction";
 import mongoose = require("mongoose");
-
-// router.get("", (req, res, next) => {
-//     req.getValidationResult().then((result) => {
-//         if (!result.isEmpty()) return next(new Error(result.array()[0].msg));
-
-//         TransactionRepository.find({}).then((transactions) => {
-//             res.json({
-//                 message: null,
-//                 transactions: transactions
-//             });
-//         }, (err) => {
-//             res.json({
-//                 message: err.message
-//             });
-//         });
-//     });
-// });
 
 router.get("/:id", async (req, res, next) => {
     // TODO validation
@@ -67,7 +49,7 @@ router.post("", async (req, res, next) => {
     try {
         let transaction = await TransactionService.start({
             expired_at: new Date(parseInt(req.body.expired_at) * 1000),
-        })(OwnerRepository(mongoose.connection), TransactionRepository(mongoose.connection), QueueRepository(mongoose.connection));
+        })(OwnerRepository(mongoose.connection), TransactionRepository(mongoose.connection));
 
         res.status(201);
         res.setHeader("Location", `https://${req.headers["host"]}/transactions/${transaction._id}`);

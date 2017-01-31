@@ -13,7 +13,7 @@ function createAuthorize(args) {
 }
 exports.createAuthorize = createAuthorize;
 function createUnauthorize(args) {
-    return new unauthorize_1.default(args._id, args.occurred_at, args.authorization_id);
+    return new unauthorize_1.default(args._id, args.occurred_at, args.authorization);
 }
 exports.createUnauthorize = createUnauthorize;
 function createEmailAdd(args) {

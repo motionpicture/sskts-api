@@ -39,13 +39,8 @@ async function execute() {
         let queue = option.get();
         console.log("queue is", queue);
 
-        await NotificationService.sendEmail(queue.email)
-            .then(async () => {
-                await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
-            })
-            .catch(async (err: Error) => {
-                console.error(err);
-                await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.UNEXECUTED });
-            });
+        // 失敗してもここでは戻さない(RUNNINGのまま待機)
+        await NotificationService.sendEmail(queue.email);
+        await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
     }
 }

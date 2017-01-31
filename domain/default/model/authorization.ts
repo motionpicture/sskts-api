@@ -1,5 +1,4 @@
 import AuthorizationGroup from "./authorizationGroup";
-import Owner from "./owner";
 import ObjectId from "./objectId";
 
 /**
@@ -16,9 +15,9 @@ export default class Authorization {
         /** 承認価格 */
         readonly price: number,
         /** 資産を差し出す所有者 */
-        readonly owner_from: Owner,
+        readonly owner_from: ObjectId,
         /** 資産を受け取る所有者 */
-        readonly owner_to: Owner,
+        readonly owner_to: ObjectId,
     ) {
         // TODO validation
     }

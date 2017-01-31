@@ -25,14 +25,14 @@ export function create(args: {
     );
 }
 
-export function createSettleAuthorization(args: {
+export function createSettleAuthorization<T extends Authorization>(args: {
     _id: ObjectId,
-    authorization: Authorization,
+    authorization: T,
     status: QueueStatus
     executed_at: Date,
     count_try: number,
 }) {
-    return new SettleAuthorizationQueue(
+    return new SettleAuthorizationQueue<T>(
         args._id,
         args.status,
         args.executed_at,
@@ -41,14 +41,14 @@ export function createSettleAuthorization(args: {
     );
 }
 
-export function createCancelAuthorization(args: {
+export function createCancelAuthorization<T extends Authorization>(args: {
     _id: ObjectId,
-    authorization: Authorization,
+    authorization: T,
     status: QueueStatus
     executed_at: Date,
     count_try: number,
 }) {
-    return new CancelAuthorizationQueue(
+    return new CancelAuthorizationQueue<T>(
         args._id,
         args.status,
         args.executed_at,

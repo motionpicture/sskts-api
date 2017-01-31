@@ -31,8 +31,8 @@ async function execute() {
             executed_at: { $lt: new Date() },
         },
         {
-            status: QueueStatus.RUNNING,
-            $inc: { count_try: 1 }
+            status: QueueStatus.RUNNING, // 実行中に変更
+            $inc: { count_try: 1 } // トライ回数増やす
         }
     );
 
@@ -40,13 +40,9 @@ async function execute() {
         let queue = option.get();
         console.log("queue is", queue);
 
-        await SalesService.settleGMOAuth(queue.authorization)(GMO)
-            .then(async () => {
-                await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
-            })
-            .catch(async (err: Error) => {
-                console.error(err);
-                await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.UNEXECUTED });
-            });
+        // 失敗してもここでは戻さない(RUNNINGのまま待機)
+        await SalesService.settleGMOAuth(queue.authorization)(GMO);
+        // 実行済みに変更
+        await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
     }
 }

@@ -4,7 +4,6 @@ var TransactionEventGroup;
     TransactionEventGroup.START = "START";
     TransactionEventGroup.CLOSE = "CLOSE";
     TransactionEventGroup.EXPIRE = "EXPIRE";
-    TransactionEventGroup.CANCEL = "CANCEL";
     TransactionEventGroup.AUTHORIZE = "AUTHORIZE";
     TransactionEventGroup.UNAUTHORIZE = "UNAUTHORIZE";
     TransactionEventGroup.EMAIL_ADD = "EMAIL_ADD";

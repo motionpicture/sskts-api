@@ -12,7 +12,23 @@ COA.initialize({
 
 import moment = require("moment");
 
-async function main() {
+let count = 0;
+
+setInterval(async () => {
+    if (count > 10) return;
+    count++;
+
+    try {
+        await execute();
+    } catch (error) {
+        console.error(error.message);
+    }
+
+    count--;
+}, 1000);
+
+
+async function execute() {
     let response: any;
     let gmoShopId = "tshop00026096";
     let gmoShopPass = "xbxmkaa6";
@@ -59,10 +75,10 @@ async function main() {
     // 空席なくなったら変更する
     let theaterCode = "001";
     let dateJouei = "20170131";
-    let titleCode = "8513";
+    let titleCode = "8561";
     let titleBranchNum = "0";
-    let timeBegin = "2030";
-    let screenCode = "2";
+    let timeBegin = "1210";
+    let screenCode = "3";
 
 
 
@@ -208,9 +224,3 @@ async function main() {
 
 
 }
-
-main().then(() => {
-    console.log("main processed.");
-}).catch((err) => {
-    console.error(err.message);
-});

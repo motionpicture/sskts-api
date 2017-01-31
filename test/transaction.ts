@@ -61,10 +61,10 @@ async function main() {
     // 空席なくなったら変更する
     let theaterCode = "001";
     let dateJouei = "20170131";
-    let titleCode = "8513";
+    let titleCode = "8561";
     let titleBranchNum = "0";
-    let timeBegin = "2030";
-    let screenCode = "2";
+    let timeBegin = "1210";
+    let screenCode = "3";
 
 
 

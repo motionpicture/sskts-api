@@ -39,13 +39,9 @@ async function execute() {
         let queue = option.get();
         console.log("queue is", queue);
 
-        await SalesService.cancelGMOAuth(queue.authorization)(GMO)
-            .then(async () => {
-                await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
-            })
-            .catch(async (err) => {
-                console.error(err);
-                await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.UNEXECUTED, });
-            });
+        // 失敗してもここでは戻さない(RUNNINGのまま待機)
+        await SalesService.cancelGMOAuth(queue.authorization)(GMO);
+        // 実行済みに変更
+        await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
     }
 }

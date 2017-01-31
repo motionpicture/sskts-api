@@ -8,14 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const monapt = require("monapt");
+const settleAuthorization_1 = require("../../model/queue/settleAuthorization");
 const queueGroup_1 = require("../../model/queueGroup");
 const authorizationGroup_1 = require("../../model/authorizationGroup");
+const QueueFactory = require("../../factory/queue");
 const queue_1 = require("./mongoose/model/queue");
 class QueueRepositoryInterpreter {
     find(conditions) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
-            let docs = yield model.find(conditions).exec();
+            let docs = yield model.find().where(conditions).exec();
             yield docs.map((doc) => {
                 console.log(doc);
             });
@@ -25,18 +27,19 @@ class QueueRepositoryInterpreter {
     findById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
-            let queue = yield model.findOne({ _id: id }).lean().exec();
-            return (queue) ? monapt.Option(queue) : monapt.None;
+            let doc = yield model.findOne()
+                .where("_id").equals(id).lean().exec();
+            return (doc) ? monapt.Option(QueueFactory.create(doc)) : monapt.None;
         });
     }
     findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
-            let queue = yield model.findOneAndUpdate(conditions, update, {
+            let doc = yield model.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             }).lean().exec();
-            return (queue) ? monapt.Option(queue) : monapt.None;
+            return (doc) ? monapt.Option(QueueFactory.create(doc)) : monapt.None;
         });
     }
     findOneSendEmailAndUpdate(conditions, update) {
@@ -54,40 +57,52 @@ class QueueRepositoryInterpreter {
             return (queue) ? monapt.Option(queue) : monapt.None;
         });
     }
-    findOneSettleGMOAuthorizationAndUpdate(conditions, update) {
+    findOneSettleAuthorizationAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
-            let queue = yield model.findOneAndUpdate({
+            let doc = yield model.findOneAndUpdate({
                 $and: [
                     {
                         "group": queueGroup_1.default.SETTLE_AUTHORIZATION,
-                        "authorization.group": authorizationGroup_1.default.GMO
                     },
                     conditions
                 ]
             }, update, {
                 new: true,
                 upsert: false
+            })
+                .exec();
+            if (!doc)
+                return monapt.None;
+            return monapt.Option(new settleAuthorization_1.default(doc.get("_id"), doc.get("status"), doc.get("executed_at"), doc.get("count_try"), doc.get("authorization")));
+        });
+    }
+    findOneSettleGMOAuthorizationAndUpdate(conditions, update) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
+            let doc = yield model.findOneAndUpdate(conditions, update, {
+                new: true,
+                upsert: false
+            })
+                .where({
+                "group": queueGroup_1.default.SETTLE_AUTHORIZATION,
+                "authorization.group": authorizationGroup_1.default.GMO
             }).lean().exec();
-            return (queue) ? monapt.Option(queue) : monapt.None;
+            return (doc) ? monapt.Option(QueueFactory.createSettleAuthorization(doc)) : monapt.None;
         });
     }
     findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
-            let queue = yield model.findOneAndUpdate({
-                $and: [
-                    {
-                        "group": queueGroup_1.default.SETTLE_AUTHORIZATION,
-                        "authorization.group": authorizationGroup_1.default.COA_SEAT_RESERVATION
-                    },
-                    conditions
-                ]
-            }, update, {
+            let doc = yield model.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
+            })
+                .where({
+                "group": queueGroup_1.default.SETTLE_AUTHORIZATION,
+                "authorization.group": authorizationGroup_1.default.COA_SEAT_RESERVATION
             }).lean().exec();
-            return (queue) ? monapt.Option(queue) : monapt.None;
+            return (doc) ? monapt.Option(QueueFactory.createSettleAuthorization(doc)) : monapt.None;
         });
     }
     findOneCancelGMOAuthorizationAndUpdate(conditions, update) {

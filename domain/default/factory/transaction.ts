@@ -6,13 +6,17 @@ import TransactionQueuesStatus from "../model/transactionQueuesStatus";
 import Owner from "../model/owner";
 import Queue from "../model/queue";
 
+// import * as TransactionEventFactory from "../factory/transactionEvent";
+// import * as OwnerFactory from "../factory/owner";
+// import * as QueueFactory from "../factory/queue";
+
 export function create(args: {
     _id?: ObjectId,
     status: TransactionStatus,
-    events?: Array<TransactionEvent>,
     owners: Array<Owner>,
-    queues?: Array<Queue>,
     expired_at: Date,
+    events?: Array<TransactionEvent>,
+    queues?: Array<Queue>,
     inquiry_id?: string,
     inquiry_pass?: string,
     queues_status?: TransactionQueuesStatus,
