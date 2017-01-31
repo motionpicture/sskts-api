@@ -61,10 +61,10 @@ function execute() {
         let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
         let theaterCode = "001";
         let dateJouei = "20170131";
-        let titleCode = "8561";
+        let titleCode = "8513";
         let titleBranchNum = "0";
-        let timeBegin = "1210";
-        let screenCode = "3";
+        let timeBegin = "1515";
+        let screenCode = "2";
         let salesTicketResult = yield COA.salesTicketInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
