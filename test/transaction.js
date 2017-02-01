@@ -47,10 +47,10 @@ function main() {
         });
         let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
         let theaterCode = "001";
-        let dateJouei = "20170131";
+        let dateJouei = "20170210";
         let titleCode = "8513";
         let titleBranchNum = "0";
-        let timeBegin = "1515";
+        let timeBegin = "1010";
         let screenCode = "2";
         let salesTicketResult = yield COA.salesTicketInterface.call({
             theater_code: theaterCode,

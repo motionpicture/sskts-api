@@ -74,10 +74,10 @@ async function execute() {
 
     // 空席なくなったら変更する
     let theaterCode = "001";
-    let dateJouei = "20170131";
+    let dateJouei = "20170210";
     let titleCode = "8513";
     let titleBranchNum = "0";
-    let timeBegin = "1515";
+    let timeBegin = "1010";
     let screenCode = "2";
 
 

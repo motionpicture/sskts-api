@@ -36,10 +36,25 @@ class Transaction {
         let removedNotificationIds = this.events.filter((event) => {
             return event.group === transactionEventGroup_1.default.NOTIFICATION_REMOVE;
         }).map((event) => {
-            return event.notification.toString();
+            return event.notification._id.toString();
         });
         return notifications.filter((notification) => {
             return removedNotificationIds.indexOf(notification._id.toString()) < 0;
+        });
+    }
+    canBeClosed() {
+        let authorizations = this.authorizations();
+        let pricesByOwner = {};
+        authorizations.forEach((authorization) => {
+            if (!pricesByOwner[authorization.owner_from.toString()])
+                pricesByOwner[authorization.owner_from.toString()] = 0;
+            if (!pricesByOwner[authorization.owner_to.toString()])
+                pricesByOwner[authorization.owner_to.toString()] = 0;
+            pricesByOwner[authorization.owner_from.toString()] -= authorization.price;
+            pricesByOwner[authorization.owner_to.toString()] += authorization.price;
+        });
+        return Object.keys(pricesByOwner).every((ownerId) => {
+            return pricesByOwner[ownerId] === 0;
         });
     }
 }

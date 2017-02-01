@@ -63,11 +63,33 @@ export default class Transaction {
         let removedNotificationIds = this.events.filter((event) => {
             return event.group === TransactionEventGroup.NOTIFICATION_REMOVE;
         }).map((event: NotificationRemoveTransactionEvent<Notification>) => {
-            return event.notification.toString();
+            return event.notification._id.toString();
         });
 
         return notifications.filter((notification) => {
             return removedNotificationIds.indexOf(notification._id.toString()) < 0;
+        });
+    }
+
+    /**
+     * 成立可能かどうか
+     */
+    canBeClosed() {
+        let authorizations = this.authorizations();
+        let pricesByOwner:{
+            [ownerId: string]: number
+        } = {}
+
+        authorizations.forEach((authorization) => {
+            if (!pricesByOwner[authorization.owner_from.toString()]) pricesByOwner[authorization.owner_from.toString()] = 0;
+            if (!pricesByOwner[authorization.owner_to.toString()]) pricesByOwner[authorization.owner_to.toString()] = 0;
+
+            pricesByOwner[authorization.owner_from.toString()] -= authorization.price;
+            pricesByOwner[authorization.owner_to.toString()] += authorization.price;
+        });
+
+        return Object.keys(pricesByOwner).every((ownerId) => {
+            return pricesByOwner[ownerId] === 0;
         });
     }
 }

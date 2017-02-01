@@ -404,7 +404,8 @@ class TransactionServiceInterpreter implements TransactionService {
             if (optionTransaction.isEmpty) throw new Error("transaction not found.");
             let transaction = optionTransaction.get();
 
-            // TODO 条件が対等かどうかチェック
+            // 条件が対等かどうかチェック
+            if (!transaction.canBeClosed()) throw new Error("transaction cannot be closed.");
 
             // キューリストを事前作成
             let queues: Array<Queue> = [];

@@ -266,6 +266,8 @@ class TransactionServiceInterpreter {
             if (optionTransaction.isEmpty)
                 throw new Error("transaction not found.");
             let transaction = optionTransaction.get();
+            if (!transaction.canBeClosed())
+                throw new Error("transaction cannot be closed.");
             let queues = [];
             transaction.authorizations().forEach((authorization) => {
                 queues.push(QueueFactory.createSettleAuthorization({
