@@ -35,7 +35,13 @@ export function createGMO(args: {
 
 export function createCOASeatReservation(args: {
     _id: ObjectId,
-    coa_tmp_reserve_num: string,
+    coa_tmp_reserve_num: number,
+    coa_theater_code: string,
+    coa_date_jouei: string,
+    coa_title_code: string,
+    coa_title_branch_num: string,
+    coa_time_begin: string,
+    coa_screen_code: string,
     price: number,
     owner_from: ObjectId,
     owner_to: ObjectId,
@@ -44,6 +50,12 @@ export function createCOASeatReservation(args: {
     return new COASeatReservationAuthorization(
         args._id,
         args.coa_tmp_reserve_num,
+        args.coa_theater_code,
+        args.coa_date_jouei,
+        args.coa_title_code,
+        args.coa_title_branch_num,
+        args.coa_time_begin,
+        args.coa_screen_code,
         args.price,
         args.owner_from,
         args.owner_to,

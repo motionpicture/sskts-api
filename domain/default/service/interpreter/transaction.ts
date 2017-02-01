@@ -9,7 +9,6 @@ import TransactionEventGroup from "../../model/transactionEventGroup";
 import Authorization from "../../model/authorization";
 import Queue from "../../model/queue";
 import QueueStatus from "../../model/queueStatus";
-import AssetAuthorization from "../../model/authorization/asset";
 
 import AssetRepository from "../../repository/asset";
 import TransactionRepository from "../../repository/transaction";
@@ -114,15 +113,6 @@ class TransactionServiceInterpreter implements TransactionService {
         }
     }
 
-    authorizeAsset(authorization: AssetAuthorization) {
-        return async (assetRepository: AssetRepository) => {
-            console.log(authorization);
-            console.log(assetRepository);
-
-            // TODO おそらく、取引の期限でunauthorizeするqueueをたてる
-        }
-    }
-
     /** 内部資産承認 */
     addAssetAuthorization(args: {
         transaction_id: string,
@@ -201,7 +191,13 @@ class TransactionServiceInterpreter implements TransactionService {
         transaction_id: string,
         owner_id_from: string,
         owner_id_to: string,
-        coa_tmp_reserve_num: string,
+        coa_tmp_reserve_num: number,
+        coa_theater_code: string,
+        coa_date_jouei: string,
+        coa_title_code: string,
+        coa_title_branch_num: string,
+        coa_time_begin: string,
+        coa_screen_code: string,
         price: number,
         seats: Array<{
             performance: string,
@@ -243,6 +239,12 @@ class TransactionServiceInterpreter implements TransactionService {
             let authorization = AuthorizationFactory.createCOASeatReservation({
                 _id: ObjectId(),
                 coa_tmp_reserve_num: args.coa_tmp_reserve_num,
+                coa_theater_code: args.coa_theater_code,
+                coa_date_jouei: args.coa_date_jouei,
+                coa_title_code: args.coa_title_code,
+                coa_title_branch_num: args.coa_title_branch_num,
+                coa_time_begin: args.coa_time_begin,
+                coa_screen_code: args.coa_screen_code,
                 price: args.price,
                 owner_from: optionOwnerFrom.get()._id,
                 owner_to: optionOwnerTo.get()._id,
@@ -318,14 +320,14 @@ class TransactionServiceInterpreter implements TransactionService {
         return async (transactionRepository: TransactionRepository) => {
             // 取引取得
             let optionTransacton = await transactionRepository.findById(ObjectId(args.transaction_id));
-            if (optionTransacton.isEmpty) throw new Error("tranasction not found."); 
+            if (optionTransacton.isEmpty) throw new Error("tranasction not found.");
 
             let transaction = optionTransacton.get();
             let authorizations = transaction.authorizations();
             let authorization = authorizations.find((authorization) => {
                 return (authorization._id.toString() === args.authorization_id);
             });
-            if (!authorization) throw new Error(`authorization [${args.authorization_id}] not found in the transaction.`); 
+            if (!authorization) throw new Error(`authorization [${args.authorization_id}] not found in the transaction.`);
 
             // イベント作成
             let event = TransactionEventFactory.createUnauthorize({
@@ -590,14 +592,14 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
         return async (transactionRepository: TransactionRepository) => {
             // 取引取得
             let optionTransacton = await transactionRepository.findById(ObjectId(args.transaction_id));
-            if (optionTransacton.isEmpty) throw new Error("tranasction not found."); 
+            if (optionTransacton.isEmpty) throw new Error("tranasction not found.");
 
             let transaction = optionTransacton.get();
             let notifications = transaction.notifications();
             let notification = notifications.find((notification) => {
                 return (notification._id.toString() === args.notification_id);
             });
-            if (!notification) throw new Error(`notification [${args.notification_id}] not found in the transaction.`); 
+            if (!notification) throw new Error(`notification [${args.notification_id}] not found in the transaction.`);
 
 
             // イベント作成

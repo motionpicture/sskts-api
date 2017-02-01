@@ -5,7 +5,6 @@ import QueueRepository from "../queue";
 
 import ObjectId from "../../model/objectId";
 import Queue from "../../model/queue";
-import SettleAuthorizationQueue from "../../model/queue/settleAuthorization";
 import QueueGroup from "../../model/queueGroup";
 import AuthorizationGroup from "../../model/authorizationGroup";
 import GMOAuthorization from "../../model/authorization/gmo";
@@ -62,34 +61,6 @@ class QueueRepositoryInterpreter implements QueueRepository {
         return (queue) ? monapt.Option(queue) : monapt.None;
     }
 
-    async findOneSettleAuthorizationAndUpdate(conditions: Object, update: Object) {
-        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
-        let doc = await model.findOneAndUpdate(
-            {
-                $and: [
-                    {
-                        "group": QueueGroup.SETTLE_AUTHORIZATION,
-                    },
-                    conditions
-                ]
-            },
-            update,
-            {
-                new: true,
-                upsert: false
-            })
-            .exec();
-        if (!doc) return monapt.None;
-
-        return monapt.Option(new SettleAuthorizationQueue(
-            doc.get("_id"),
-            doc.get("status"),
-            doc.get("executed_at"),
-            doc.get("count_try"),
-            doc.get("authorization"),
-        ));
-    }
-
     async findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
         let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         let doc = <any>await model.findOneAndUpdate(conditions, update, {
@@ -99,7 +70,8 @@ class QueueRepositoryInterpreter implements QueueRepository {
             .where({
                 "group": QueueGroup.SETTLE_AUTHORIZATION,
                 "authorization.group": AuthorizationGroup.GMO
-            }).lean().exec();
+            })
+            .lean().exec();
 
         return (doc) ? monapt.Option(QueueFactory.createSettleAuthorization<GMOAuthorization>(doc)) : monapt.None;
     }
@@ -113,30 +85,40 @@ class QueueRepositoryInterpreter implements QueueRepository {
             .where({
                 "group": QueueGroup.SETTLE_AUTHORIZATION,
                 "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION
-            }).lean().exec();
+            })
+            .lean().exec();
 
         return (doc) ? monapt.Option(QueueFactory.createSettleAuthorization<COASeatReservationAuthorization>(doc)) : monapt.None;
     }
 
     async findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
         let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
-        let queue = <{
-            _id: ObjectId,
-            authorization: GMOAuthorization
-        }>await model.findOneAndUpdate({
-            $and: [
-                {
-                    "group": QueueGroup.CANCEL_AUTHORIZATION,
-                    "authorization.group": AuthorizationGroup.GMO
-                },
-                conditions
-            ]
-        }, update, {
-                new: true,
-                upsert: false
-            }).lean().exec();
+        let doc = <any>await model.findOneAndUpdate(conditions, update, {
+            new: true,
+            upsert: false
+        })
+            .where({
+                "group": QueueGroup.CANCEL_AUTHORIZATION,
+                "authorization.group": AuthorizationGroup.GMO
+            })
+            .lean().exec();
 
-        return (queue) ? monapt.Option(queue) : monapt.None;
+        return (doc) ? monapt.Option(QueueFactory.createCancelAuthorization<GMOAuthorization>(doc)) : monapt.None;
+    }
+
+    async findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
+        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        let doc = <any>await model.findOneAndUpdate(conditions, update, {
+            new: true,
+            upsert: false
+        })
+            .where({
+                "group": QueueGroup.CANCEL_AUTHORIZATION,
+                "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION
+            })
+            .lean().exec();
+
+        return (doc) ? monapt.Option(QueueFactory.createCancelAuthorization<COASeatReservationAuthorization>(doc)) : monapt.None;
     }
 
     async store(queue: Queue) {

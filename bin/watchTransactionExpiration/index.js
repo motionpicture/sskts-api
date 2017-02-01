@@ -12,6 +12,7 @@ const transaction_2 = require("../../domain/default/repository/interpreter/trans
 const transactionStatus_1 = require("../../domain/default/model/transactionStatus");
 const mongoose = require("mongoose");
 mongoose.set('debug', true);
+mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {

@@ -72,6 +72,8 @@ app.use(i18n.init);
 
 
 // mongoose.set('debug', true); // TODO 本番でははずす
+// Use native promises
+mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 // process.on("SIGINT", function() {
 //     mongoose.disconnect(() => {

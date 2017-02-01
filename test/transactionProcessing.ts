@@ -145,6 +145,12 @@ async function execute() {
             owner_id_from: promoterOwnerId,
             owner_id_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
+            coa_theater_code: theaterCode,
+            coa_date_jouei: dateJouei,
+            coa_title_code: titleCode,
+            coa_title_branch_num: titleBranchNum,
+            coa_time_begin: timeBegin,
+            coa_screen_code: screenCode,
             seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                 return {
                     performance: "001201701208513021010",

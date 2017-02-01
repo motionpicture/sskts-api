@@ -12,6 +12,7 @@ const queue_1 = require("../../domain/default/repository/interpreter/queue");
 const queueStatus_1 = require("../../domain/default/model/queueStatus");
 const mongoose = require("mongoose");
 mongoose.set('debug', true);
+mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {

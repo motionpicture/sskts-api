@@ -22,6 +22,7 @@ program
     .description("import theater from COA.")
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
     try {
+        mongoose.Promise = global.Promise;
         mongoose.connect(process.env.MONGOLAB_URI);
         yield master_1.default.importTheater({
             theater_code: theaterCode
@@ -38,6 +39,7 @@ program
     .description("import films from COA.")
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
     try {
+        mongoose.Promise = global.Promise;
         mongoose.connect(process.env.MONGOLAB_URI);
         yield master_1.default.importFilms({
             theater_code: theaterCode
@@ -54,6 +56,7 @@ program
     .description("import screens from COA.")
     .action((theaterCode) => __awaiter(this, void 0, void 0, function* () {
     try {
+        mongoose.Promise = global.Promise;
         mongoose.connect(process.env.MONGOLAB_URI);
         yield master_1.default.importScreens({
             theater_code: theaterCode
@@ -70,6 +73,7 @@ program
     .description("import performances from COA.")
     .action((theaterCode, start, end) => __awaiter(this, void 0, void 0, function* () {
     try {
+        mongoose.Promise = global.Promise;
         mongoose.connect(process.env.MONGOLAB_URI);
         yield master_1.default.importPerformances({
             theater_code: theaterCode,

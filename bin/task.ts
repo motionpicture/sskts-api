@@ -36,6 +36,7 @@ program
     .description("import theater from COA.")
     .action(async (theaterCode) => {
         try {
+            mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI);
 
             await MasterService.importTheater({
@@ -54,6 +55,7 @@ program
     .description("import films from COA.")
     .action(async (theaterCode) => {
         try {
+            mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI);
 
             await MasterService.importFilms({
@@ -72,6 +74,7 @@ program
     .description("import screens from COA.")
     .action(async (theaterCode) => {
         try {
+            mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI);
 
             await MasterService.importScreens({
@@ -90,6 +93,7 @@ program
     .description("import performances from COA.")
     .action(async (theaterCode, start, end) => {
         try {
+            mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI);
 
             await MasterService.importPerformances({

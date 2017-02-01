@@ -7,11 +7,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const sales_1 = require("../../domain/default/service/interpreter/sales");
+const notification_1 = require("../../domain/default/service/interpreter/notification");
 const queue_1 = require("../../domain/default/repository/interpreter/queue");
 const queueStatus_1 = require("../../domain/default/model/queueStatus");
 const mongoose = require("mongoose");
-const GMO = require("@motionpicture/gmo-service");
+const COA = require("@motionpicture/coa-service");
+const stock_1 = require("../../domain/default/service/interpreter/stock");
+const NotificationFactory = require("../../domain/default/factory/notification");
+const objectId_1 = require("../../domain/default/model/objectId");
 mongoose.set('debug', true);
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -31,7 +34,7 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
         let queueRepository = queue_1.default(mongoose.connection);
-        let option = yield queueRepository.findOneSettleGMOAuthorizationAndUpdate({
+        let option = yield queueRepository.findOneCancelCOASeatReservationAuthorizationAndUpdate({
             status: queueStatus_1.default.UNEXECUTED,
             executed_at: { $lt: new Date() },
         }, {
@@ -41,8 +44,18 @@ function execute() {
         if (!option.isEmpty) {
             let queue = option.get();
             console.log("queue is", queue);
-            yield sales_1.default.settleGMOAuth(queue.authorization)(GMO);
+            yield stock_1.default.unauthorizeCOASeatReservation(queue.authorization)(COA);
             yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
+            yield notification_1.default.sendEmail(NotificationFactory.createEmail({
+                _id: objectId_1.default(),
+                from: "noreply@localhost",
+                to: "hello@motionpicture.jp",
+                subject: "COA仮予約削除のお知らせ",
+                content: `
+COA仮予約を削除しました。<br>
+queue.authorization: ${queue.authorization}
+`
+            }));
         }
     });
 }

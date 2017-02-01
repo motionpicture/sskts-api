@@ -1,9 +1,12 @@
-import StockService from "../../domain/default/service/interpreter/stock";
+import NotificationService from "../../domain/default/service/interpreter/notification";
 import QueueRepository from "../../domain/default/repository/interpreter/queue";
-import AssetRepository from "../../domain/default/repository/interpreter/asset";
 import QueueStatus from "../../domain/default/model/queueStatus";
 import mongoose = require("mongoose");
-// import COA = require("@motionpicture/coa-service");
+import COA = require("@motionpicture/coa-service");
+
+import StockService from "../../domain/default/service/interpreter/stock";
+import * as NotificationFactory from "../../domain/default/factory/notification";
+import ObjectId from "../../domain/default/model/objectId";
 
 mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.Promise = global.Promise;
@@ -24,11 +27,9 @@ setInterval(async () => {
 }, 500);
 
 async function execute() {
+    // 未実行のCOA仮予約取消キューを取得
     let queueRepository = QueueRepository(mongoose.connection);
-    let assetRepository = AssetRepository(mongoose.connection);
-
-    // 未実行のCOA資産移動キューを取得
-    let option = await queueRepository.findOneSettleCOASeatReservationAuthorizationAndUpdate(
+    let option = await queueRepository.findOneCancelCOASeatReservationAuthorizationAndUpdate(
         {
             status: QueueStatus.UNEXECUTED,
             executed_at: { $lt: new Date() },
@@ -44,7 +45,20 @@ async function execute() {
         console.log("queue is", queue);
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        await StockService.transferCOASeatReservation(queue.authorization)(assetRepository);
+        await StockService.unauthorizeCOASeatReservation(queue.authorization)(COA);
+        // 実行済みに変更
         await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
+
+        // メール通知 TODO 開発中だけ？
+        await NotificationService.sendEmail(NotificationFactory.createEmail({
+            _id: ObjectId(),
+            from: "noreply@localhost",
+            to: "hello@motionpicture.jp",
+            subject: "COA仮予約削除のお知らせ",
+            content: `
+COA仮予約を削除しました。<br>
+queue.authorization: ${queue.authorization}
+`
+        }));
     }
 }

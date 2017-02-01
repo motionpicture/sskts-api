@@ -7,7 +7,7 @@ function createGMO(args) {
 exports.createGMO = createGMO;
 ;
 function createCOASeatReservation(args) {
-    return new coaSeatReservation_1.default(args._id, args.coa_tmp_reserve_num, args.price, args.owner_from, args.owner_to, args.assets);
+    return new coaSeatReservation_1.default(args._id, args.coa_tmp_reserve_num, args.coa_theater_code, args.coa_date_jouei, args.coa_title_code, args.coa_title_branch_num, args.coa_time_begin, args.coa_screen_code, args.price, args.owner_from, args.owner_to, args.assets);
 }
 exports.createCOASeatReservation = createCOASeatReservation;
 ;

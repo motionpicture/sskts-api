@@ -4,6 +4,7 @@ import QueueStatus from "../../domain/default/model/queueStatus";
 
 import mongoose = require("mongoose");
 mongoose.set('debug', true); // TODO 本番でははずす
+mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
 

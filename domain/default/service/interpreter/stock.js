@@ -12,17 +12,26 @@ class StockServiceInterpreter {
         return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
             console.log(authorization);
             console.log(assetRepository);
+            throw new Error("not implemented.");
         });
     }
     transferAssset(authorization) {
         return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
             console.log(authorization);
             console.log(assetRepository);
+            throw new Error("not implemented.");
         });
     }
     unauthorizeCOASeatReservation(authorization) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log(authorization);
+        return (coaRepository) => __awaiter(this, void 0, void 0, function* () {
+            yield coaRepository.deleteTmpReserveInterface.call({
+                theater_code: authorization.coa_theater_code,
+                date_jouei: authorization.coa_date_jouei,
+                title_code: authorization.coa_title_code,
+                title_branch_num: authorization.coa_title_branch_num,
+                time_begin: authorization.coa_time_begin,
+                tmp_reserve_num: authorization.coa_tmp_reserve_num,
+            });
         });
     }
     transferCOASeatReservation(authorization) {

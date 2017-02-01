@@ -1,4 +1,3 @@
-import AssetAuthorization from "../model/authorization/asset";
 import monapt = require("monapt");
 import Authorization from "../model/authorization";
 import Notification from "../model/notification";
@@ -13,7 +12,6 @@ type TransactionAndQueueOperation<T> = (transastionRepository: TransactionReposi
 type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
 type AssetAndTransactionOperation<T> = (assetRepository: AssetRepository, repository: TransactionRepository) => Promise<T>;
 type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
-type AssetOperation<T> = (assetRepository: AssetRepository) => Promise<T>;
 
 /**
  * 取引サービス
@@ -35,8 +33,6 @@ interface TransactionService {
     start(args: {
         expired_at: Date,
     }): OwnerAndTransactionOperation<Transaction>;
-    /** 資産承認 */
-    authorizeAsset(authorization: AssetAuthorization): AssetOperation<void>;
     /** 内部資産承認 */
     addAssetAuthorization(args: {
         transaction_id: string,
@@ -62,7 +58,13 @@ interface TransactionService {
         transaction_id: string,
         owner_id_from: string,
         owner_id_to: string,
-        coa_tmp_reserve_num: string,
+        coa_tmp_reserve_num: number,
+        coa_theater_code: string,
+        coa_date_jouei: string,
+        coa_title_code: string,
+        coa_title_branch_num: string,
+        coa_time_begin: string,
+        coa_screen_code: string,
         price: number,
         seats: Array<{
             performance: string,

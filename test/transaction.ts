@@ -130,6 +130,12 @@ async function main() {
             owner_id_from: promoterOwnerId,
             owner_id_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
+            coa_theater_code: theaterCode,
+            coa_date_jouei: dateJouei,
+            coa_title_code: titleCode,
+            coa_title_branch_num: titleBranchNum,
+            coa_time_begin: timeBegin,
+            coa_screen_code: screenCode,
             seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                 return {
                     performance: "001201701208513021010",
@@ -171,7 +177,7 @@ async function main() {
         title_branch_num: titleBranchNum,
         time_begin: timeBegin,
         // screen_code: screenCode,
-        tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num.toString()
+        tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num
     })
     console.log("deleteTmpReserveResult:", true);
 
@@ -303,6 +309,12 @@ async function main() {
             owner_id_from: promoterOwnerId,
             owner_id_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
+            coa_theater_code: theaterCode,
+            coa_date_jouei: dateJouei,
+            coa_title_code: titleCode,
+            coa_title_branch_num: titleBranchNum,
+            coa_time_begin: timeBegin,
+            coa_screen_code: screenCode,
             seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
                 return {
                     performance: "001201701208513021010",
@@ -417,7 +429,7 @@ async function main() {
         title_branch_num: titleBranchNum,
         time_begin: timeBegin,
         // screen_code: screenCode,
-        tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num.toString(),
+        tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
         reserve_name: "山崎 哲",
         reserve_name_jkana: "ヤマザキ テツ",
         tel_num: "09012345678",

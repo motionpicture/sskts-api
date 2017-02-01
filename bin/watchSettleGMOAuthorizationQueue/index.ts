@@ -5,6 +5,7 @@ import mongoose = require("mongoose");
 import GMO = require("@motionpicture/gmo-service");
 
 mongoose.set('debug', true); // TODO 本番でははずす
+mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
 

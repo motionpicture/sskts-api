@@ -78,12 +78,6 @@ class TransactionServiceInterpreter {
             return transaction;
         });
     }
-    authorizeAsset(authorization) {
-        return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
-            console.log(authorization);
-            console.log(assetRepository);
-        });
-    }
     addAssetAuthorization(args) {
         return (assetRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             console.log(args, assetRepository, transactionRepository);
@@ -152,6 +146,12 @@ class TransactionServiceInterpreter {
             let authorization = AuthorizationFactory.createCOASeatReservation({
                 _id: objectId_1.default(),
                 coa_tmp_reserve_num: args.coa_tmp_reserve_num,
+                coa_theater_code: args.coa_theater_code,
+                coa_date_jouei: args.coa_date_jouei,
+                coa_title_code: args.coa_title_code,
+                coa_title_branch_num: args.coa_title_branch_num,
+                coa_time_begin: args.coa_time_begin,
+                coa_screen_code: args.coa_screen_code,
                 price: args.price,
                 owner_from: optionOwnerFrom.get()._id,
                 owner_to: optionOwnerTo.get()._id,

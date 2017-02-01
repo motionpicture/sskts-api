@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const mongoose = require("mongoose");
 mongoose.set('debug', true);
+mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 const transaction_1 = require("../../domain/default/service/interpreter/transaction");
 const transaction_2 = require("../../domain/default/repository/interpreter/transaction");
