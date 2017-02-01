@@ -2,12 +2,15 @@
 const queue_1 = require("../queue");
 const queueGroup_1 = require("../queueGroup");
 class CancelAuthorizationQueue extends queue_1.default {
-    constructor(_id, status, executed_at, count_try, authorization) {
-        super(_id, queueGroup_1.default.CANCEL_AUTHORIZATION, status, executed_at, count_try);
+    constructor(_id, status, run_at, max_count_retry, last_tried_at, count_tried, results, authorization) {
+        super(_id, queueGroup_1.default.CANCEL_AUTHORIZATION, status, run_at, max_count_retry, last_tried_at, count_tried, results);
         this._id = _id;
         this.status = status;
-        this.executed_at = executed_at;
-        this.count_try = count_try;
+        this.run_at = run_at;
+        this.max_count_retry = max_count_retry;
+        this.last_tried_at = last_tried_at;
+        this.count_tried = count_tried;
+        this.results = results;
         this.authorization = authorization;
     }
 }

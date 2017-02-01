@@ -34,16 +34,26 @@ function execute() {
         let assetRepository = asset_1.default(mongoose.connection);
         let option = yield queueRepository.findOneSettleCOASeatReservationAuthorizationAndUpdate({
             status: queueStatus_1.default.UNEXECUTED,
-            executed_at: { $lt: new Date() },
+            run_at: { $lt: new Date() },
         }, {
             status: queueStatus_1.default.RUNNING,
-            $inc: { count_try: 1 }
+            last_tried_at: new Date(),
+            $inc: { count_tried: 1 }
         });
         if (!option.isEmpty) {
             let queue = option.get();
             console.log("queue is", queue);
-            yield stock_1.default.transferCOASeatReservation(queue.authorization)(assetRepository);
-            yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
+            try {
+                yield stock_1.default.transferCOASeatReservation(queue.authorization)(assetRepository);
+                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
+            }
+            catch (error) {
+                yield queueRepository.findOneAndUpdate({ _id: queue._id }, {
+                    $push: {
+                        results: error.stack
+                    }
+                });
+            }
         }
     });
 }

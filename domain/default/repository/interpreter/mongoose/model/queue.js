@@ -3,9 +3,11 @@ const mongoose = require("mongoose");
 let schema = new mongoose.Schema({
     group: String,
     status: String,
-    transaction_id: mongoose.Schema.Types.ObjectId,
-    executed_at: Date,
-    count_try: Number,
+    run_at: Date,
+    max_count_retry: Number,
+    last_tried_at: Date,
+    count_tried: Number,
+    results: [String],
     authorization: mongoose.Schema.Types.Mixed,
     notification: mongoose.Schema.Types.Mixed,
 }, {

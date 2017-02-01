@@ -14,62 +14,86 @@ export function create(args: {
     _id: ObjectId,
     group: QueueGroup,
     status: QueueStatus,
-    executed_at: Date,
-    count_try: number,
+    run_at: Date,
+    max_count_retry: number,
+    last_tried_at: Date | null,
+    count_tried: number,
+    results: Array<string>
 }) {
     return new Queue(
         args._id,
         args.group,
         args.status,
-        args.executed_at,
-        args.count_try,
+        args.run_at,
+        args.max_count_retry,
+        args.last_tried_at,
+        args.count_tried,
+        args.results,
     );
 }
 
 export function createSettleAuthorization<T extends Authorization>(args: {
     _id: ObjectId,
     authorization: T,
-    status: QueueStatus
-    executed_at: Date,
-    count_try: number,
+    status: QueueStatus,
+    run_at: Date,
+    max_count_retry: number,
+    last_tried_at: Date | null,
+    count_tried: number,
+    results: Array<string>
 }) {
     return new SettleAuthorizationQueue<T>(
         args._id,
         args.status,
-        args.executed_at,
-        args.count_try,
-        args.authorization,
+        args.run_at,
+        args.max_count_retry,
+        args.last_tried_at,
+        args.count_tried,
+        args.results,
+        args.authorization
     );
 }
 
 export function createCancelAuthorization<T extends Authorization>(args: {
     _id: ObjectId,
     authorization: T,
-    status: QueueStatus
-    executed_at: Date,
-    count_try: number,
+    status: QueueStatus,
+    run_at: Date,
+    max_count_retry: number,
+    last_tried_at: Date | null,
+    count_tried: number,
+    results: Array<string>
 }) {
     return new CancelAuthorizationQueue<T>(
         args._id,
         args.status,
-        args.executed_at,
-        args.count_try,
-        args.authorization,
+        args.run_at,
+        args.max_count_retry,
+        args.last_tried_at,
+        args.count_tried,
+        args.results,
+        args.authorization
     );
 }
 
 export function createNotificationPush<T extends Notification>(args: {
     _id: ObjectId,
     notification: T,
-    status: QueueStatus
-    executed_at: Date,
-    count_try: number,
+    status: QueueStatus,
+    run_at: Date,
+    max_count_retry: number,
+    last_tried_at: Date | null,
+    count_tried: number,
+    results: Array<string>
 }) {
     return new NotificationPushQueue<T>(
         args._id,
         args.status,
-        args.executed_at,
-        args.count_try,
+        args.run_at,
+        args.max_count_retry,
+        args.last_tried_at,
+        args.count_tried,
+        args.results,
         args.notification,
     );
 }

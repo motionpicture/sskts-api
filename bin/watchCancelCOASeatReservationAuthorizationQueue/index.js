@@ -36,26 +36,36 @@ function execute() {
         let queueRepository = queue_1.default(mongoose.connection);
         let option = yield queueRepository.findOneCancelCOASeatReservationAuthorizationAndUpdate({
             status: queueStatus_1.default.UNEXECUTED,
-            executed_at: { $lt: new Date() },
+            run_at: { $lt: new Date() },
         }, {
             status: queueStatus_1.default.RUNNING,
-            $inc: { count_try: 1 }
+            last_tried_at: new Date(),
+            $inc: { count_tried: 1 }
         });
         if (!option.isEmpty) {
             let queue = option.get();
             console.log("queue is", queue);
-            yield stock_1.default.unauthorizeCOASeatReservation(queue.authorization)(COA);
-            yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
-            yield notification_1.default.sendEmail(NotificationFactory.createEmail({
-                _id: objectId_1.default(),
-                from: "noreply@localhost",
-                to: "hello@motionpicture.jp",
-                subject: "COA仮予約削除のお知らせ",
-                content: `
+            try {
+                yield stock_1.default.unauthorizeCOASeatReservation(queue.authorization)(COA);
+                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
+                yield notification_1.default.sendEmail(NotificationFactory.createEmail({
+                    _id: objectId_1.default(),
+                    from: "noreply@localhost",
+                    to: "hello@motionpicture.jp",
+                    subject: "COA仮予約削除のお知らせ",
+                    content: `
 COA仮予約を削除しました。<br>
 queue.authorization: ${queue.authorization}
 `
-            }));
+                }));
+            }
+            catch (error) {
+                yield queueRepository.findOneAndUpdate({ _id: queue._id }, {
+                    $push: {
+                        results: error.stack
+                    }
+                });
+            }
         }
     });
 }

@@ -8,12 +8,24 @@ export default class CancelAuthorizationQueue<T extends Authorization> extends Q
     constructor(
         readonly _id: ObjectId,
         readonly status: QueueStatus,
-        readonly executed_at: Date,
-        readonly count_try: number,
+        readonly run_at: Date,
+        readonly max_count_retry: number,
+        readonly last_tried_at: Date | null,
+        readonly count_tried: number,
+        readonly results: Array<string>,
         readonly authorization: T,
     ) {
-        // TODO validation
+        super(
+            _id,
+            QueueGroup.CANCEL_AUTHORIZATION,
+            status,
+            run_at,
+            max_count_retry,
+            last_tried_at,
+            count_tried,
+            results,
+        );
 
-        super(_id, QueueGroup.CANCEL_AUTHORIZATION, status, executed_at, count_try);
+        // TODO validation
     }
 }

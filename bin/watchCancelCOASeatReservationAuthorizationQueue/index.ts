@@ -32,11 +32,12 @@ async function execute() {
     let option = await queueRepository.findOneCancelCOASeatReservationAuthorizationAndUpdate(
         {
             status: QueueStatus.UNEXECUTED,
-            executed_at: { $lt: new Date() },
+            run_at: { $lt: new Date() },
         },
         {
-            status: QueueStatus.RUNNING,
-            $inc: { count_try: 1 }
+            status: QueueStatus.RUNNING, // 実行中に変更
+            last_tried_at: new Date(),
+            $inc: { count_tried: 1 } // トライ回数増やす
         }
     );
 
@@ -44,21 +45,30 @@ async function execute() {
         let queue = option.get();
         console.log("queue is", queue);
 
-        // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        await StockService.unauthorizeCOASeatReservation(queue.authorization)(COA);
-        // 実行済みに変更
-        await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
+        try {
+            // 失敗してもここでは戻さない(RUNNINGのまま待機)
+            await StockService.unauthorizeCOASeatReservation(queue.authorization)(COA);
+            // 実行済みに変更
+            await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
 
-        // メール通知 TODO 開発中だけ？
-        await NotificationService.sendEmail(NotificationFactory.createEmail({
-            _id: ObjectId(),
-            from: "noreply@localhost",
-            to: "hello@motionpicture.jp",
-            subject: "COA仮予約削除のお知らせ",
-            content: `
+            // メール通知 TODO 開発中だけ？
+            await NotificationService.sendEmail(NotificationFactory.createEmail({
+                _id: ObjectId(),
+                from: "noreply@localhost",
+                to: "hello@motionpicture.jp",
+                subject: "COA仮予約削除のお知らせ",
+                content: `
 COA仮予約を削除しました。<br>
 queue.authorization: ${queue.authorization}
 `
-        }));
+            }));
+        } catch (error) {
+            // 実行結果追加
+            await queueRepository.findOneAndUpdate({ _id: queue._id }, {
+                $push: {
+                    results: error.stack
+                }
+            });
+        }
     }
 }

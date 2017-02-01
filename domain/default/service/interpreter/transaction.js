@@ -274,8 +274,11 @@ class TransactionServiceInterpreter {
                     _id: objectId_1.default(),
                     authorization: authorization,
                     status: queueStatus_1.default.UNEXECUTED,
-                    executed_at: new Date(),
-                    count_try: 0
+                    run_at: new Date(),
+                    max_count_retry: 10,
+                    last_tried_at: null,
+                    count_tried: 0,
+                    results: []
                 }));
             });
             transaction.notifications().forEach((notification) => {
@@ -283,8 +286,11 @@ class TransactionServiceInterpreter {
                     _id: objectId_1.default(),
                     notification: notification,
                     status: queueStatus_1.default.UNEXECUTED,
-                    executed_at: new Date(),
-                    count_try: 0
+                    run_at: new Date(),
+                    max_count_retry: 10,
+                    last_tried_at: null,
+                    count_tried: 0,
+                    results: []
                 }));
             });
             let event = TransactionEventFactory.create({
@@ -320,8 +326,11 @@ class TransactionServiceInterpreter {
                     _id: objectId_1.default(),
                     authorization: authorization,
                     status: queueStatus_1.default.UNEXECUTED,
-                    executed_at: new Date(),
-                    count_try: 0
+                    run_at: new Date(),
+                    max_count_retry: 10,
+                    last_tried_at: null,
+                    count_tried: 0,
+                    results: []
                 }));
             });
             let eventStart = transaction.events.find((event) => { return (event.group === transactionEventGroup_1.default.START); });
@@ -339,8 +348,11 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
 `
                 }),
                 status: queueStatus_1.default.UNEXECUTED,
-                executed_at: new Date(),
-                count_try: 0
+                run_at: new Date(),
+                max_count_retry: 10,
+                last_tried_at: null,
+                count_tried: 0,
+                results: []
             }));
             let event = TransactionEventFactory.create({
                 _id: objectId_1.default(),

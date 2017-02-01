@@ -414,8 +414,11 @@ class TransactionServiceInterpreter implements TransactionService {
                     _id: ObjectId(),
                     authorization: authorization,
                     status: QueueStatus.UNEXECUTED,
-                    executed_at: new Date(), // なるはやで実行
-                    count_try: 0
+                    run_at: new Date(), // なるはやで実行
+                    max_count_retry: 10,
+                    last_tried_at: null,
+                    count_tried: 0,
+                    results: []
                 }));
             });
             transaction.notifications().forEach((notification) => {
@@ -423,8 +426,11 @@ class TransactionServiceInterpreter implements TransactionService {
                     _id: ObjectId(),
                     notification: notification,
                     status: QueueStatus.UNEXECUTED,
-                    executed_at: new Date(), // TODO emailのsent_atを指定
-                    count_try: 0
+                    run_at: new Date(), // TODO emailのsent_atを指定
+                    max_count_retry: 10,
+                    last_tried_at: null,
+                    count_tried: 0,
+                    results: []
                 }));
             });
 
@@ -471,8 +477,11 @@ class TransactionServiceInterpreter implements TransactionService {
                     _id: ObjectId(),
                     authorization: authorization,
                     status: QueueStatus.UNEXECUTED,
-                    executed_at: new Date(),
-                    count_try: 0
+                    run_at: new Date(),
+                    max_count_retry: 10,
+                    last_tried_at: null,
+                    count_tried: 0,
+                    results: []
                 }));
             });
 
@@ -492,8 +501,11 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
 `
                 }),
                 status: QueueStatus.UNEXECUTED,
-                executed_at: new Date(),
-                count_try: 0
+                run_at: new Date(),
+                max_count_retry: 10,
+                last_tried_at: null,
+                count_tried: 0,
+                results: []
             }));
 
             // イベント作成

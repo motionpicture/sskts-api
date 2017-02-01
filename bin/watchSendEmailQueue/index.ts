@@ -28,11 +28,12 @@ async function execute() {
     let option = await queueRepository.findOneSendEmailAndUpdate(
         {
             status: QueueStatus.UNEXECUTED,
-            executed_at: { $lt: new Date() },
+            run_at: { $lt: new Date() },
         },
         {
-            status: QueueStatus.RUNNING,
-            $inc: { count_try: 1 }
+            status: QueueStatus.RUNNING, // 実行中に変更
+            last_tried_at: new Date(),
+            $inc: { count_tried: 1 } // トライ回数増やす
         }
     );
 
@@ -40,8 +41,17 @@ async function execute() {
         let queue = option.get();
         console.log("queue is", queue);
 
-        // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        await NotificationService.sendEmail(queue.notification);
-        await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
+        try {
+            // 失敗してもここでは戻さない(RUNNINGのまま待機)
+            await NotificationService.sendEmail(queue.notification);
+            await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
+        } catch (error) {
+            // 実行結果追加
+            await queueRepository.findOneAndUpdate({ _id: queue._id }, {
+                $push: {
+                    results: error.stack
+                }
+            });
+        }
     }
 }
