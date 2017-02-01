@@ -10,6 +10,7 @@ let schema = new mongoose.Schema({
             ref: owner_1.default.modelName,
         }],
     queues: [mongoose.Schema.Types.Mixed],
+    inquiry_theater: String,
     inquiry_id: String,
     inquiry_pass: String,
     queues_status: String,

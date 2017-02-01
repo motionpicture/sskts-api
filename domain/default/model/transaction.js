@@ -1,13 +1,14 @@
 "use strict";
 const transactionEventGroup_1 = require("./transactionEventGroup");
 class Transaction {
-    constructor(_id, status, events, owners, queues, expired_at, inquiry_id, inquiry_pass, queues_status) {
+    constructor(_id, status, events, owners, queues, expired_at, inquiry_theater, inquiry_id, inquiry_pass, queues_status) {
         this._id = _id;
         this.status = status;
         this.events = events;
         this.owners = owners;
         this.queues = queues;
         this.expired_at = expired_at;
+        this.inquiry_theater = inquiry_theater;
         this.inquiry_id = inquiry_id;
         this.inquiry_pass = inquiry_pass;
         this.queues_status = queues_status;
@@ -41,6 +42,9 @@ class Transaction {
         return notifications.filter((notification) => {
             return removedNotificationIds.indexOf(notification._id.toString()) < 0;
         });
+    }
+    isInquiryAvailable() {
+        return (this.inquiry_theater && this.inquiry_id && this.inquiry_pass);
     }
     canBeClosed() {
         let authorizations = this.authorizations();

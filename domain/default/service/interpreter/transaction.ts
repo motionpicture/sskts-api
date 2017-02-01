@@ -1,5 +1,3 @@
-import monapt = require("monapt");
-
 import TransactionService from "../transaction";
 
 import ObjectId from "../../model/objectId";
@@ -354,6 +352,7 @@ class TransactionServiceInterpreter implements TransactionService {
      */
     enableInquiry(args: {
         transaction_id: string,
+        inquiry_theater: string,
         inquiry_id: string,
         inquiry_pass: string,
     }) {
@@ -364,6 +363,7 @@ class TransactionServiceInterpreter implements TransactionService {
                 status: TransactionStatus.UNDERWAY
             }, {
                     $set: {
+                        inquiry_theater: args.inquiry_theater,
                         inquiry_id: args.inquiry_id,
                         inquiry_pass: args.inquiry_pass,
                     },
@@ -375,20 +375,19 @@ class TransactionServiceInterpreter implements TransactionService {
     /**
      * 照合する
      */
-    inquiry(args: {
+    makeInquiry(args: {
+        inquiry_theater: string,
         inquiry_id: string,
         inquiry_pass: string,
     }) {
         return async (transactionRepository: TransactionRepository) => {
             // 取引取得
-            let transactions = await transactionRepository.find({
+            return await transactionRepository.findOne({
+                inquiry_theater: args.inquiry_theater,
                 inquiry_id: args.inquiry_id,
                 inquiry_pass: args.inquiry_pass,
                 status: TransactionStatus.CLOSED
             });
-            if (transactions.length === 0) return monapt.None;
-
-            return monapt.Option(transactions[0]);
         };
     }
 
@@ -403,6 +402,9 @@ class TransactionServiceInterpreter implements TransactionService {
             let optionTransaction = await transactionRepository.findById(ObjectId(args.transaction_id));
             if (optionTransaction.isEmpty) throw new Error("transaction not found.");
             let transaction = optionTransaction.get();
+
+            // 照会可能になっているかどうか
+            if (!transaction.isInquiryAvailable()) throw new Error("inquiry is not available.");
 
             // 条件が対等かどうかチェック
             if (!transaction.canBeClosed()) throw new Error("transaction cannot be closed.");

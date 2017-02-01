@@ -7,6 +7,41 @@ import TransactionRepository from "../../domain/default/repository/interpreter/t
 import TransactionService from "../../domain/default/service/interpreter/transaction";
 import mongoose = require("mongoose");
 
+router.post("/makeInquiry", async (req, res, next) => {
+    // TODO validation
+
+    let validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+
+    try {
+        let option = await TransactionService.makeInquiry({
+            inquiry_theater: req.body.inquiry_theater,
+            inquiry_id: req.body.inquiry_id,
+            inquiry_pass: req.body.inquiry_pass,
+        })(TransactionRepository(mongoose.connection));
+
+        option.match({
+            Some: (transaction) => {
+                res.json({
+                    data: {
+                        type: "transactions",
+                        _id: transaction._id,
+                        attributes: transaction
+                    }
+                });
+            },
+            None: () => {
+                res.status(404);
+                res.json({
+                    data: null
+                });
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 router.get("/:id", async (req, res, next) => {
     // TODO validation
 
@@ -173,6 +208,7 @@ router.patch("/:id/enableInquiry", async (req, res, next) => {
     try {
         await TransactionService.enableInquiry({
             transaction_id: req.params.id,
+            inquiry_theater: req.body.inquiry_theater,
             inquiry_id: req.body.inquiry_id,
             inquiry_pass: req.body.inquiry_pass,
         })(TransactionRepository(mongoose.connection));

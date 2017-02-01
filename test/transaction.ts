@@ -459,6 +459,7 @@ async function main() {
     response = await request.patch({
         url: `http://localhost:8080/transactions/${transactionId}/enableInquiry`,
         body: {
+            inquiry_theater: theaterCode,
             inquiry_id: updateReserveResult.reserve_num,
             inquiry_pass: tel
         },
@@ -555,6 +556,27 @@ async function main() {
     });
     console.log("close result:", response.statusCode, response.body);
     if (response.statusCode !== 204) throw new Error(response.body.message);
+
+
+
+
+
+
+
+
+    // 照会してみる
+    response = await request.post({
+        url: `http://localhost:8080/transactions/makeInquiry`,
+        body: {
+            inquiry_theater: theaterCode,
+            inquiry_id: updateReserveResult.reserve_num,
+            inquiry_pass: tel
+        },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true,
+    });
+    console.log("makeInquiry result:", response.statusCode, response.body);
 }
 
 main().then(() => {

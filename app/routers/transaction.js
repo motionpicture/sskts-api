@@ -13,6 +13,38 @@ const owner_1 = require("../../domain/default/repository/interpreter/owner");
 const transaction_1 = require("../../domain/default/repository/interpreter/transaction");
 const transaction_2 = require("../../domain/default/service/interpreter/transaction");
 const mongoose = require("mongoose");
+router.post("/makeInquiry", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    let validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty())
+        return next(new Error(validatorResult.array()[0].msg));
+    try {
+        let option = yield transaction_2.default.makeInquiry({
+            inquiry_theater: req.body.inquiry_theater,
+            inquiry_id: req.body.inquiry_id,
+            inquiry_pass: req.body.inquiry_pass,
+        })(transaction_1.default(mongoose.connection));
+        option.match({
+            Some: (transaction) => {
+                res.json({
+                    data: {
+                        type: "transactions",
+                        _id: transaction._id,
+                        attributes: transaction
+                    }
+                });
+            },
+            None: () => {
+                res.status(404);
+                res.json({
+                    data: null
+                });
+            }
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
@@ -164,6 +196,7 @@ router.patch("/:id/enableInquiry", (req, res, next) => __awaiter(this, void 0, v
     try {
         yield transaction_2.default.enableInquiry({
             transaction_id: req.params.id,
+            inquiry_theater: req.body.inquiry_theater,
             inquiry_id: req.body.inquiry_id,
             inquiry_pass: req.body.inquiry_pass,
         })(transaction_1.default(mongoose.connection));

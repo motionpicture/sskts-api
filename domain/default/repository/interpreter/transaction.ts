@@ -29,6 +29,13 @@ class TransactionRepositoryInterpreter implements TransactionRepository {
         return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
     }
 
+    async findOne(conditions: Object) {
+        let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        let doc = <any>await model.findOne(conditions).lean().exec();
+
+        return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
+    }
+
     async findOneAndUpdate(conditions: Object, update: Object) {
         let model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
         let doc = <any>await model.findOneAndUpdate(conditions, update, {

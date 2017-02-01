@@ -31,6 +31,13 @@ class TransactionRepositoryInterpreter {
             return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
         });
     }
+    findOne(conditions) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);
+            let doc = yield model.findOne(conditions).lean().exec();
+            return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
+        });
+    }
     findOneAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(transaction_1.default.modelName, transaction_1.default.schema);

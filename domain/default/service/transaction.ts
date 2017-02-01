@@ -88,11 +88,13 @@ interface TransactionService {
     /** 照会を可能にする */
     enableInquiry(args: {
         transaction_id: string,
+        inquiry_theater: string,
         inquiry_id: string,
         inquiry_pass: string,
     }): TransactionOperation<void>;
     /** 照会する */
-    inquiry(args: {
+    makeInquiry(args: {
+        inquiry_theater: string,
         inquiry_id: string,
         inquiry_pass: string,
     }): TransactionOperation<monapt.Option<Transaction>>;

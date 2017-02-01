@@ -13,6 +13,7 @@ let schema = new mongoose.Schema({
         ref: OwnerModel.modelName,
     }],
     queues: [mongoose.Schema.Types.Mixed],
+    inquiry_theater: String, // 照会劇場コード
     inquiry_id: String, // 照会ID
     inquiry_pass: String, // 照会PASS
     queues_status: String,

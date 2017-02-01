@@ -19,6 +19,7 @@ export default class Transaction {
         readonly owners: Array<Owner>,
         readonly queues: Array<Queue>,
         readonly expired_at: Date,
+        readonly inquiry_theater: string,
         readonly inquiry_id: string,
         readonly inquiry_pass: string,
         readonly queues_status: TransactionQueuesStatus,
@@ -69,6 +70,13 @@ export default class Transaction {
         return notifications.filter((notification) => {
             return removedNotificationIds.indexOf(notification._id.toString()) < 0;
         });
+    }
+
+    /**
+     * 照会可能かどうか
+     */
+    isInquiryAvailable() {
+        return (this.inquiry_theater && this.inquiry_id && this.inquiry_pass);
     }
 
     /**

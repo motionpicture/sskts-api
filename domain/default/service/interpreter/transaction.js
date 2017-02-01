@@ -7,7 +7,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const monapt = require("monapt");
 const objectId_1 = require("../../model/objectId");
 const ownerGroup_1 = require("../../model/ownerGroup");
 const transactionStatus_1 = require("../../model/transactionStatus");
@@ -240,6 +239,7 @@ class TransactionServiceInterpreter {
                 status: transactionStatus_1.default.UNDERWAY
             }, {
                 $set: {
+                    inquiry_theater: args.inquiry_theater,
                     inquiry_id: args.inquiry_id,
                     inquiry_pass: args.inquiry_pass,
                 },
@@ -248,16 +248,14 @@ class TransactionServiceInterpreter {
                 throw new Error("UNDERWAY transaction not found.");
         });
     }
-    inquiry(args) {
+    makeInquiry(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let transactions = yield transactionRepository.find({
+            return yield transactionRepository.findOne({
+                inquiry_theater: args.inquiry_theater,
                 inquiry_id: args.inquiry_id,
                 inquiry_pass: args.inquiry_pass,
                 status: transactionStatus_1.default.CLOSED
             });
-            if (transactions.length === 0)
-                return monapt.None;
-            return monapt.Option(transactions[0]);
         });
     }
     close(args) {
@@ -266,6 +264,8 @@ class TransactionServiceInterpreter {
             if (optionTransaction.isEmpty)
                 throw new Error("transaction not found.");
             let transaction = optionTransaction.get();
+            if (!transaction.isInquiryAvailable())
+                throw new Error("inquiry is not available.");
             if (!transaction.canBeClosed())
                 throw new Error("transaction cannot be closed.");
             let queues = [];
