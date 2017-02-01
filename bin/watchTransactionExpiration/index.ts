@@ -40,8 +40,6 @@ async function execute() {
         console.log("transaction is", transaction);
 
         // 期限切れにする
-        await TransactionService.expire({
-            transaction_id: transaction._id.toString()
-        })(transactionRepository);
+        await TransactionService.expire({ transaction_id: transaction._id.toString() })(transactionRepository);
     }
 }

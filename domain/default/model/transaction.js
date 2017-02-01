@@ -1,5 +1,7 @@
 "use strict";
 const transactionEventGroup_1 = require("./transactionEventGroup");
+const authorizationGroup_1 = require("./authorizationGroup");
+const monapt = require("monapt");
 class Transaction {
     constructor(_id, status, events, owners, queues, expired_at, inquiry_theater, inquiry_id, inquiry_pass, queues_status) {
         this._id = _id;
@@ -12,6 +14,12 @@ class Transaction {
         this.inquiry_id = inquiry_id;
         this.inquiry_pass = inquiry_pass;
         this.queues_status = queues_status;
+    }
+    getCoaSeatReservationAuthorization() {
+        let authorization = this.authorizations().find((authorization) => {
+            return (authorization.group === authorizationGroup_1.default.COA_SEAT_RESERVATION);
+        });
+        return (authorization) ? monapt.Option(authorization) : monapt.None;
     }
     authorizations() {
         let authorizations = this.events.filter((event) => {

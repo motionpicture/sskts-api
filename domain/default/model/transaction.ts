@@ -10,6 +10,9 @@ import NotificationRemoveTransactionEvent from "./transactionEvent/notificationR
 import TransactionStatus from "./transactionStatus";
 import TransactionQueuesStatus from "./transactionQueuesStatus";
 import Notification from "./notification";
+import AuthorizationGroup from "./authorizationGroup";
+import COASeatReservationAuthorization from "./authorization/coaSeatReservation";
+import monapt = require("monapt");
 
 export default class Transaction {
     constructor(
@@ -25,6 +28,17 @@ export default class Transaction {
         readonly queues_status: TransactionQueuesStatus,
     ) {
         // TODO validation
+    }
+
+    /**
+     * COA座席仮予約を取得する
+     */
+    getCoaSeatReservationAuthorization() {
+        let authorization = this.authorizations().find((authorization) => {
+            return (authorization.group === AuthorizationGroup.COA_SEAT_RESERVATION);
+        });
+
+        return (authorization) ? monapt.Option(<COASeatReservationAuthorization>authorization) : monapt.None;
     }
 
     /**
@@ -84,7 +98,7 @@ export default class Transaction {
      */
     canBeClosed() {
         let authorizations = this.authorizations();
-        let pricesByOwner:{
+        let pricesByOwner: {
             [ownerId: string]: number
         } = {}
 

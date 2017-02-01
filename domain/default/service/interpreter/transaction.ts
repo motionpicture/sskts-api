@@ -22,6 +22,8 @@ import * as OwnerFactory from "../../factory/owner";
 import * as OwnershipFactory from "../../factory/ownership";
 import * as AssetFactory from "../../factory/asset";
 
+import COA = require("@motionpicture/coa-service");
+
 class TransactionServiceInterpreter implements TransactionService {
     /**
      * 匿名所有者更新
@@ -373,6 +375,44 @@ class TransactionServiceInterpreter implements TransactionService {
     }
 
     /**
+     * 照会を無効にする
+     */
+    disableInquiry(args: {
+        transaction_id: string,
+    }) {
+        return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
+            // 取引取得
+            let option = await transactionRepository.findById(ObjectId(args.transaction_id));
+            if (option.isEmpty) throw new Error("transaction not found.");
+
+            let tranasction = option.get();
+
+            // COAから内容抽出
+            await coaRepository.stateReserveInterface.call({
+                theater_code: tranasction.inquiry_theater,
+                reserve_num: parseInt(tranasction.inquiry_id),
+                tel_num: tranasction.inquiry_pass,
+            })
+
+            // TODO COA購入チケット取消
+
+            // 永続化
+            await transactionRepository.findOneAndUpdate(
+                {
+                    _id: ObjectId(args.transaction_id),
+                    status: TransactionStatus.UNDERWAY
+                },
+                {
+                    $set: {
+                        inquiry_theater: "",
+                        inquiry_id: "",
+                        inquiry_pass: "",
+                    },
+                });
+        };
+    }
+
+    /**
      * 照合する
      */
     makeInquiry(args: {
@@ -486,6 +526,20 @@ class TransactionServiceInterpreter implements TransactionService {
                     results: []
                 }));
             });
+
+            // COA本予約があれば取消
+            if (transaction.inquiry_id) {
+                queues.push(QueueFactory.createTransactionDisableInquiry({
+                    _id: ObjectId(),
+                    transaction_id: transaction._id,
+                    status: QueueStatus.UNEXECUTED,
+                    run_at: new Date(),
+                    max_count_try: 10,
+                    last_tried_at: null,
+                    count_tried: 0,
+                    results: []
+                }));
+            }
 
             // TODO おそらく開発時のみ
             let eventStart = transaction.events.find((event) => { return (event.group === TransactionEventGroup.START) });

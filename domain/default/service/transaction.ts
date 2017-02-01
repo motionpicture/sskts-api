@@ -1,4 +1,5 @@
 import monapt = require("monapt");
+import COA = require("@motionpicture/coa-service");
 import Authorization from "../model/authorization";
 import Notification from "../model/notification";
 import Transaction from "../model/transaction";
@@ -12,6 +13,7 @@ type TransactionAndQueueOperation<T> = (transastionRepository: TransactionReposi
 type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
 type AssetAndTransactionOperation<T> = (assetRepository: AssetRepository, repository: TransactionRepository) => Promise<T>;
 type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
+type TransactionAndCOAOperation<T> = (repository: TransactionRepository, coaRepository: typeof COA) => Promise<T>;
 
 /**
  * 取引サービス
@@ -92,6 +94,10 @@ interface TransactionService {
         inquiry_id: string,
         inquiry_pass: string,
     }): TransactionOperation<void>;
+    /** 照会を無効にする */
+    disableInquiry(args: {
+        transaction_id: string,
+    }): TransactionAndCOAOperation<void>;
     /** 照会する */
     makeInquiry(args: {
         inquiry_theater: string,

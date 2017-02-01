@@ -39,9 +39,7 @@ function execute() {
         if (!option.isEmpty) {
             let transaction = option.get();
             console.log("transaction is", transaction);
-            yield transaction_1.default.expire({
-                transaction_id: transaction._id.toString()
-            })(transactionRepository);
+            yield transaction_1.default.expire({ transaction_id: transaction._id.toString() })(transactionRepository);
         }
     });
 }
