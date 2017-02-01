@@ -15,7 +15,7 @@ export default class Queue {
         /** 実行予定日時 */
         readonly run_at: Date,
         /** 最大リトライ回数 */
-        readonly max_count_retry: number,
+        readonly max_count_try: number,
         /** 最終試行日時 */
         readonly last_tried_at: Date | null,
         /** 試行回数 */

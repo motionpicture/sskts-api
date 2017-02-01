@@ -275,7 +275,7 @@ class TransactionServiceInterpreter {
                     authorization: authorization,
                     status: queueStatus_1.default.UNEXECUTED,
                     run_at: new Date(),
-                    max_count_retry: 10,
+                    max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
                     results: []
@@ -287,7 +287,7 @@ class TransactionServiceInterpreter {
                     notification: notification,
                     status: queueStatus_1.default.UNEXECUTED,
                     run_at: new Date(),
-                    max_count_retry: 10,
+                    max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
                     results: []
@@ -327,7 +327,7 @@ class TransactionServiceInterpreter {
                     authorization: authorization,
                     status: queueStatus_1.default.UNEXECUTED,
                     run_at: new Date(),
-                    max_count_retry: 10,
+                    max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
                     results: []
@@ -349,7 +349,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
                 }),
                 status: queueStatus_1.default.UNEXECUTED,
                 run_at: new Date(),
-                max_count_retry: 10,
+                max_count_try: 10,
                 last_tried_at: null,
                 count_tried: 0,
                 results: []

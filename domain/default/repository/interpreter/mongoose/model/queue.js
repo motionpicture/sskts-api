@@ -4,7 +4,7 @@ let schema = new mongoose.Schema({
     group: String,
     status: String,
     run_at: Date,
-    max_count_retry: Number,
+    max_count_try: Number,
     last_tried_at: Date,
     count_tried: Number,
     results: [String],

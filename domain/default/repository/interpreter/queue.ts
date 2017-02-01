@@ -9,7 +9,6 @@ import QueueGroup from "../../model/queueGroup";
 import AuthorizationGroup from "../../model/authorizationGroup";
 import GMOAuthorization from "../../model/authorization/gmo";
 import COASeatReservationAuthorization from "../../model/authorization/coaSeatReservation";
-import NotificationPushQueue from "../../model/queue/notificationPush";
 import EmailNotification from "../../model/notification/email";
 import NotificationGroup from "../../model/notificationGroup";
 
@@ -49,7 +48,7 @@ class QueueRepositoryInterpreter implements QueueRepository {
 
     async findOneSendEmailAndUpdate(conditions: Object, update: Object) {
         let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
-        let queue = <NotificationPushQueue<EmailNotification>>await model.findOneAndUpdate(conditions, update, {
+        let doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -58,7 +57,7 @@ class QueueRepositoryInterpreter implements QueueRepository {
                 "notification.group": NotificationGroup.EMAIL
             }).lean().exec();
 
-        return (queue) ? monapt.Option(queue) : monapt.None;
+        return (doc) ? monapt.Option(QueueFactory.createNotificationPush<EmailNotification>(doc)) : monapt.None;
     }
 
     async findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object) {

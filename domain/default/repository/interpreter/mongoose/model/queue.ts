@@ -9,7 +9,7 @@ let schema = new mongoose.Schema({
     /** 実行予定日時 */
     run_at: Date,
     /** 最大リトライ回数 */
-    max_count_retry: Number,
+    max_count_try: Number,
     /** 最終試行日時 */
     last_tried_at: Date,
     /** 試行回数 */

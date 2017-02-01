@@ -45,7 +45,7 @@ class QueueRepositoryInterpreter {
     findOneSendEmailAndUpdate(conditions, update) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
-            let queue = yield model.findOneAndUpdate(conditions, update, {
+            let doc = yield model.findOneAndUpdate(conditions, update, {
                 new: true,
                 upsert: false
             })
@@ -53,7 +53,7 @@ class QueueRepositoryInterpreter {
                 "group": queueGroup_1.default.NOTIFICATION_PUSH,
                 "notification.group": notificationGroup_1.default.EMAIL
             }).lean().exec();
-            return (queue) ? monapt.Option(queue) : monapt.None;
+            return (doc) ? monapt.Option(QueueFactory.createNotificationPush(doc)) : monapt.None;
         });
     }
     findOneSettleGMOAuthorizationAndUpdate(conditions, update) {

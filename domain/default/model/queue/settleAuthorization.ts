@@ -9,7 +9,7 @@ export default class SettleAuthorizationQueue<T extends Authorization> extends Q
         readonly _id: ObjectId,
         readonly status: QueueStatus,
         readonly run_at: Date,
-        readonly max_count_retry: number,
+        readonly max_count_try: number,
         readonly last_tried_at: Date | null,
         readonly count_tried: number,
         readonly results: Array<string>,
@@ -20,7 +20,7 @@ export default class SettleAuthorizationQueue<T extends Authorization> extends Q
             QueueGroup.SETTLE_AUTHORIZATION,
             status,
             run_at,
-            max_count_retry,
+            max_count_try,
             last_tried_at,
             count_tried,
             results

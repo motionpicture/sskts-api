@@ -415,7 +415,7 @@ class TransactionServiceInterpreter implements TransactionService {
                     authorization: authorization,
                     status: QueueStatus.UNEXECUTED,
                     run_at: new Date(), // なるはやで実行
-                    max_count_retry: 10,
+                    max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
                     results: []
@@ -427,7 +427,7 @@ class TransactionServiceInterpreter implements TransactionService {
                     notification: notification,
                     status: QueueStatus.UNEXECUTED,
                     run_at: new Date(), // TODO emailのsent_atを指定
-                    max_count_retry: 10,
+                    max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
                     results: []
@@ -478,7 +478,7 @@ class TransactionServiceInterpreter implements TransactionService {
                     authorization: authorization,
                     status: QueueStatus.UNEXECUTED,
                     run_at: new Date(),
-                    max_count_retry: 10,
+                    max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
                     results: []
@@ -502,7 +502,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
                 }),
                 status: QueueStatus.UNEXECUTED,
                 run_at: new Date(),
-                max_count_retry: 10,
+                max_count_try: 10,
                 last_tried_at: null,
                 count_tried: 0,
                 results: []
