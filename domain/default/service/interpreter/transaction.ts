@@ -463,67 +463,8 @@ class TransactionServiceInterpreter implements TransactionService {
     /**
      * 取引期限切れ
      */
-    expire(args: {
-        transaction_id: string
-    }) {
+    expireOne() {
         return async (transactionRepository: TransactionRepository) => {
-            // 取引取得
-            let optionTransaction = await transactionRepository.findById(ObjectId(args.transaction_id));
-            if (optionTransaction.isEmpty) throw new Error("transaction not found.");
-            let transaction = optionTransaction.get();
-
-            // キューリストを事前作成
-            let queues: Array<Queue> = [];
-            transaction.authorizations().forEach((authorization) => {
-                queues.push(QueueFactory.createCancelAuthorization({
-                    _id: ObjectId(),
-                    authorization: authorization,
-                    status: QueueStatus.UNEXECUTED,
-                    run_at: new Date(),
-                    max_count_try: 10,
-                    last_tried_at: null,
-                    count_tried: 0,
-                    results: []
-                }));
-            });
-
-            // COA本予約があれば取消
-            if (transaction.isInquiryAvailable()) {
-                queues.push(QueueFactory.createDisableTransactionInquiry({
-                    _id: ObjectId(),
-                    transaction_id: transaction._id,
-                    status: QueueStatus.UNEXECUTED,
-                    run_at: new Date(),
-                    max_count_try: 10,
-                    last_tried_at: null,
-                    count_tried: 0,
-                    results: []
-                }));
-            }
-
-            // TODO おそらく開発時のみ
-            let eventStart = transaction.events.find((event) => { return (event.group === TransactionEventGroup.START) });
-            queues.push(QueueFactory.createPushNotification({
-                _id: ObjectId(),
-                notification: NotificationFactory.createEmail({
-                    _id: ObjectId(),
-                    from: "noreply@localhost",
-                    to: "hello@motionpicture.jp",
-                    subject: "transaction expired",
-                    content: `
-取引の期限がきれました
-_id: ${transaction._id}
-created_at: ${(eventStart) ? eventStart.occurred_at : ""}
-`
-                }),
-                status: QueueStatus.UNEXECUTED,
-                run_at: new Date(),
-                max_count_try: 10,
-                last_tried_at: null,
-                count_tried: 0,
-                results: []
-            }));
-
             // イベント作成
             let event = TransactionEventFactory.create({
                 _id: ObjectId(),
@@ -533,12 +474,11 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
 
             // 永続化
             await transactionRepository.findOneAndUpdate({
-                _id: ObjectId(args.transaction_id),
-                status: TransactionStatus.UNDERWAY
+                status: TransactionStatus.UNDERWAY,
+                expired_at: { $lt: new Date() },
             }, {
                     $set: {
                         status: TransactionStatus.EXPIRED,
-                        queues: queues
                     },
                     $push: {
                         events: event,
@@ -546,7 +486,6 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
                 });
 
             // 永続化結果がemptyの場合は、もう取引中ステータスではないということなので、期限切れタスクとしては成功
-            // if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
         }
     }
 
@@ -561,7 +500,74 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             if (option.isEmpty) throw new Error("transaction not found.");
 
             let transaction = option.get();
-            let promises = transaction.queues.map(async (queue) => {
+
+            let queues: Array<Queue>;
+            switch (transaction.status) {
+                // 成立の場合は、あらかじめキューリストが作成されている
+                case TransactionStatus.CLOSED:
+                    queues = transaction.queues;
+                    break;
+
+                // 期限切れの場合は、キューリストを作成する
+                case TransactionStatus.EXPIRED:
+                    queues = [];
+                    transaction.authorizations().forEach((authorization) => {
+                        queues.push(QueueFactory.createCancelAuthorization({
+                            _id: ObjectId(),
+                            authorization: authorization,
+                            status: QueueStatus.UNEXECUTED,
+                            run_at: new Date(),
+                            max_count_try: 10,
+                            last_tried_at: null,
+                            count_tried: 0,
+                            results: []
+                        }));
+                    });
+
+                    // COA本予約があれば取消
+                    if (transaction.isInquiryAvailable()) {
+                        queues.push(QueueFactory.createDisableTransactionInquiry({
+                            _id: ObjectId(),
+                            transaction_id: transaction._id,
+                            status: QueueStatus.UNEXECUTED,
+                            run_at: new Date(),
+                            max_count_try: 10,
+                            last_tried_at: null,
+                            count_tried: 0,
+                            results: []
+                        }));
+                    }
+
+                    // TODO おそらく開発時のみ
+                    let eventStart = transaction.events.find((event) => { return (event.group === TransactionEventGroup.START) });
+                    queues.push(QueueFactory.createPushNotification({
+                        _id: ObjectId(),
+                        notification: NotificationFactory.createEmail({
+                            _id: ObjectId(),
+                            from: "noreply@localhost",
+                            to: "hello@motionpicture.jp",
+                            subject: "transaction expired",
+                            content: `
+取引の期限がきれました
+_id: ${transaction._id}
+created_at: ${(eventStart) ? eventStart.occurred_at : ""}
+`
+                        }),
+                        status: QueueStatus.UNEXECUTED,
+                        run_at: new Date(),
+                        max_count_try: 10,
+                        last_tried_at: null,
+                        count_tried: 0,
+                        results: []
+                    }));
+
+                    break;
+
+                default:
+                    throw new Error("transaction group not implemented.");
+            }
+
+            let promises = queues.map(async (queue) => {
                 await queueRepository.store(queue);
             });
             await Promise.all(promises);

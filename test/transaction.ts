@@ -541,7 +541,6 @@ async function main() {
 
 
 
-// throw new Error("test");
 
 
     // 取引成立

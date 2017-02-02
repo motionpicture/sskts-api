@@ -314,70 +314,19 @@ class TransactionServiceInterpreter {
                 throw new Error("UNDERWAY transaction not found.");
         });
     }
-    expire(args) {
+    expireOne() {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            let optionTransaction = yield transactionRepository.findById(objectId_1.default(args.transaction_id));
-            if (optionTransaction.isEmpty)
-                throw new Error("transaction not found.");
-            let transaction = optionTransaction.get();
-            let queues = [];
-            transaction.authorizations().forEach((authorization) => {
-                queues.push(QueueFactory.createCancelAuthorization({
-                    _id: objectId_1.default(),
-                    authorization: authorization,
-                    status: queueStatus_1.default.UNEXECUTED,
-                    run_at: new Date(),
-                    max_count_try: 10,
-                    last_tried_at: null,
-                    count_tried: 0,
-                    results: []
-                }));
-            });
-            if (transaction.isInquiryAvailable()) {
-                queues.push(QueueFactory.createDisableTransactionInquiry({
-                    _id: objectId_1.default(),
-                    transaction_id: transaction._id,
-                    status: queueStatus_1.default.UNEXECUTED,
-                    run_at: new Date(),
-                    max_count_try: 10,
-                    last_tried_at: null,
-                    count_tried: 0,
-                    results: []
-                }));
-            }
-            let eventStart = transaction.events.find((event) => { return (event.group === transactionEventGroup_1.default.START); });
-            queues.push(QueueFactory.createPushNotification({
-                _id: objectId_1.default(),
-                notification: NotificationFactory.createEmail({
-                    _id: objectId_1.default(),
-                    from: "noreply@localhost",
-                    to: "hello@motionpicture.jp",
-                    subject: "transaction expired",
-                    content: `
-取引の期限がきれました
-_id: ${transaction._id}
-created_at: ${(eventStart) ? eventStart.occurred_at : ""}
-`
-                }),
-                status: queueStatus_1.default.UNEXECUTED,
-                run_at: new Date(),
-                max_count_try: 10,
-                last_tried_at: null,
-                count_tried: 0,
-                results: []
-            }));
             let event = TransactionEventFactory.create({
                 _id: objectId_1.default(),
                 group: transactionEventGroup_1.default.EXPIRE,
                 occurred_at: new Date(),
             });
             yield transactionRepository.findOneAndUpdate({
-                _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.UNDERWAY
+                status: transactionStatus_1.default.UNDERWAY,
+                expired_at: { $lt: new Date() },
             }, {
                 $set: {
                     status: transactionStatus_1.default.EXPIRED,
-                    queues: queues
                 },
                 $push: {
                     events: event,
@@ -391,7 +340,63 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             if (option.isEmpty)
                 throw new Error("transaction not found.");
             let transaction = option.get();
-            let promises = transaction.queues.map((queue) => __awaiter(this, void 0, void 0, function* () {
+            let queues;
+            switch (transaction.status) {
+                case transactionStatus_1.default.CLOSED:
+                    queues = transaction.queues;
+                    break;
+                case transactionStatus_1.default.EXPIRED:
+                    queues = [];
+                    transaction.authorizations().forEach((authorization) => {
+                        queues.push(QueueFactory.createCancelAuthorization({
+                            _id: objectId_1.default(),
+                            authorization: authorization,
+                            status: queueStatus_1.default.UNEXECUTED,
+                            run_at: new Date(),
+                            max_count_try: 10,
+                            last_tried_at: null,
+                            count_tried: 0,
+                            results: []
+                        }));
+                    });
+                    if (transaction.isInquiryAvailable()) {
+                        queues.push(QueueFactory.createDisableTransactionInquiry({
+                            _id: objectId_1.default(),
+                            transaction_id: transaction._id,
+                            status: queueStatus_1.default.UNEXECUTED,
+                            run_at: new Date(),
+                            max_count_try: 10,
+                            last_tried_at: null,
+                            count_tried: 0,
+                            results: []
+                        }));
+                    }
+                    let eventStart = transaction.events.find((event) => { return (event.group === transactionEventGroup_1.default.START); });
+                    queues.push(QueueFactory.createPushNotification({
+                        _id: objectId_1.default(),
+                        notification: NotificationFactory.createEmail({
+                            _id: objectId_1.default(),
+                            from: "noreply@localhost",
+                            to: "hello@motionpicture.jp",
+                            subject: "transaction expired",
+                            content: `
+取引の期限がきれました
+_id: ${transaction._id}
+created_at: ${(eventStart) ? eventStart.occurred_at : ""}
+`
+                        }),
+                        status: queueStatus_1.default.UNEXECUTED,
+                        run_at: new Date(),
+                        max_count_try: 10,
+                        last_tried_at: null,
+                        count_tried: 0,
+                        results: []
+                    }));
+                    break;
+                default:
+                    throw new Error("transaction group not implemented.");
+            }
+            let promises = queues.map((queue) => __awaiter(this, void 0, void 0, function* () {
                 yield queueRepository.store(queue);
             }));
             yield Promise.all(promises);

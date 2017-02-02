@@ -116,9 +116,7 @@ interface TransactionService {
         transaction_id: string,
     }): TransactionOperation<void>;
     /** 取引期限切れ */
-    expire(args: {
-        transaction_id: string,
-    }): TransactionOperation<void>;
+    expireOne(): TransactionOperation<void>;
     /** キューを出力する */
     exportQueues(args: {
         transaction_id: string,

@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const transaction_1 = require("../../domain/default/service/interpreter/transaction");
 const transaction_2 = require("../../domain/default/repository/interpreter/transaction");
-const transactionStatus_1 = require("../../domain/default/model/transactionStatus");
 const mongoose = require("mongoose");
 mongoose.set('debug', true);
 mongoose.Promise = global.Promise;
@@ -29,17 +28,6 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 }), 500);
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        let transactionRepository = transaction_2.default(mongoose.connection);
-        let option = yield transactionRepository.findOneAndUpdate({
-            status: transactionStatus_1.default.UNDERWAY,
-            expired_at: { $lt: new Date() },
-        }, {
-            status: transactionStatus_1.default.UNDERWAY,
-        });
-        if (!option.isEmpty) {
-            let transaction = option.get();
-            console.log("transaction is", transaction);
-            yield transaction_1.default.expire({ transaction_id: transaction._id.toString() })(transactionRepository);
-        }
+        yield transaction_1.default.expireOne()(transaction_2.default(mongoose.connection));
     });
 }
