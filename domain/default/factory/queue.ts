@@ -6,8 +6,8 @@ import Notification from "../model/notification";
 import Queue from "../model/queue";
 import SettleAuthorizationQueue from "../model/queue/settleAuthorization";
 import CancelAuthorizationQueue from "../model/queue/cancelAuthorization";
-import NotificationPushQueue from "../model/queue/notificationPush";
-import TransactionDisableInquiryQueue from "../model/queue/transactionDisableInquiry";
+import PushNotificationQueue from "../model/queue/pushNotification";
+import DisableTransactionInquiryQueue from "../model/queue/disableTransactionInquiry";
 import QueueGroup from "../model/queueGroup";
 import QueueStatus from "../model/queueStatus";
 
@@ -77,7 +77,7 @@ export function createCancelAuthorization<T extends Authorization>(args: {
     );
 }
 
-export function createNotificationPush<T extends Notification>(args: {
+export function createPushNotification<T extends Notification>(args: {
     _id: ObjectId,
     notification: T,
     status: QueueStatus,
@@ -87,7 +87,7 @@ export function createNotificationPush<T extends Notification>(args: {
     count_tried: number,
     results: Array<string>
 }) {
-    return new NotificationPushQueue<T>(
+    return new PushNotificationQueue<T>(
         args._id,
         args.status,
         args.run_at,
@@ -99,7 +99,7 @@ export function createNotificationPush<T extends Notification>(args: {
     );
 }
 
-export function createTransactionDisableInquiry(args: {
+export function createDisableTransactionInquiry(args: {
     _id: ObjectId,
     transaction_id: ObjectId,
     status: QueueStatus,
@@ -109,7 +109,7 @@ export function createTransactionDisableInquiry(args: {
     count_tried: number,
     results: Array<string>
 }) {
-    return new TransactionDisableInquiryQueue(
+    return new DisableTransactionInquiryQueue(
         args._id,
         args.status,
         args.run_at,

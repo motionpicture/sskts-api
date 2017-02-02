@@ -1,7 +1,10 @@
 import StockService from "../stock";
+import ObjectId from "../../model/objectId";
 import AssetAuthorization from "../../model/authorization/asset";
 import COASeatReservationAuthorization from "../../model/authorization/coaSeatReservation";
+import TransactionStatus from "../../model/transactionStatus";
 import AssetRepository from "../../repository/asset";
+import TransactionRepository from "../../repository/transaction";
 import COA = require("@motionpicture/coa-service");
 
 /**
@@ -55,6 +58,55 @@ class StockServiceInterpreter implements StockService {
 
             await Promise.all(promises);
         }
+    }
+
+    /**
+     * 取引照会を無効にする
+     * COAのゴミ購入データを削除する
+     */
+    disableTransactionInquiry(args: {
+        transaction_id: string,
+    }) {
+        return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
+            // 取引取得
+            let option = await transactionRepository.findById(ObjectId(args.transaction_id));
+            if (option.isEmpty) throw new Error("transaction not found.");
+
+            let tranasction = option.get();
+
+            // COAから内容抽出
+            let reservation = await coaRepository.stateReserveInterface.call({
+                theater_code: tranasction.inquiry_theater,
+                reserve_num: parseInt(tranasction.inquiry_id),
+                tel_num: tranasction.inquiry_pass,
+            });
+
+            // COA購入チケット取消
+            await coaRepository.deleteReserveInterface.call({
+                theater_code: tranasction.inquiry_theater,
+                reserve_num: parseInt(tranasction.inquiry_id),
+                tel_num: tranasction.inquiry_pass,
+                date_jouei: reservation.date_jouei,
+                title_code: reservation.title_code,
+                title_branch_num: reservation.title_branch_num,
+                time_begin: reservation.time_begin,
+                list_seat: reservation.list_ticket
+            });
+
+            // 永続化
+            await transactionRepository.findOneAndUpdate(
+                {
+                    _id: ObjectId(args.transaction_id),
+                    status: TransactionStatus.UNDERWAY
+                },
+                {
+                    $set: {
+                        inquiry_theater: "",
+                        inquiry_id: "",
+                        inquiry_pass: "",
+                    },
+                });
+        };
     }
 }
 

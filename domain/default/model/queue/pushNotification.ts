@@ -4,7 +4,7 @@ import QueueGroup from "../queueGroup";
 import QueueStatus from "../queueStatus";
 import Notification from "../notification";
 
-export default class NotificationPushQueue<T extends Notification> extends Queue {
+export default class PushNotificationQueue<T extends Notification> extends Queue {
     constructor(
         readonly _id: ObjectId,
         readonly status: QueueStatus,
@@ -17,7 +17,7 @@ export default class NotificationPushQueue<T extends Notification> extends Queue
     ) {
         super(
             _id,
-            QueueGroup.NOTIFICATION_PUSH,
+            QueueGroup.PUSH_NOTIFICATION,
             status,
             run_at,
             max_count_try,

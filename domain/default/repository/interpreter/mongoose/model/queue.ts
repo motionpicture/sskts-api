@@ -19,6 +19,7 @@ let schema = new mongoose.Schema({
 
     authorization: mongoose.Schema.Types.Mixed, // オーソリタスク
     notification: mongoose.Schema.Types.Mixed, // 通知タスク
+    transaction_id: mongoose.Schema.Types.ObjectId, // 取引タスク
 }, {
         collection: "queues",
         timestamps: {

@@ -3,7 +3,7 @@ import ObjectId from "../model/objectId";
 import Queue from "../model/queue";
 import GMOAuthorization from "../model/authorization/gmo";
 import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
-import NotificationPushQueue from "../model/queue/notificationPush";
+import PushNotificationQueue from "../model/queue/pushNotification";
 import EmailNotification from "../model/notification/email";
 import SettleAuthorizationQueue from "../model/queue/settleAuthorization";
 import CancelAuthorizationQueue from "../model/queue/cancelAuthorization";
@@ -36,7 +36,7 @@ interface QueueRepository {
     find(conditions: Object): Promise<Array<Queue>>;
     findById(id: ObjectId): Promise<monapt.Option<Queue>>;
     findOneAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue>>;
-    findOneSendEmailAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<NotificationPushQueue<EmailNotification>>>;
+    findOneSendEmailAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<PushNotificationQueue<EmailNotification>>>;
     findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<SettleAuthorizationQueue<GMOAuthorization>>>;
     findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<CancelAuthorizationQueue<GMOAuthorization>>>;
     findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<SettleAuthorizationQueue<COASeatReservationAuthorization>>>;

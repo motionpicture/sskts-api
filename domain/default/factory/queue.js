@@ -2,8 +2,8 @@
 const queue_1 = require("../model/queue");
 const settleAuthorization_1 = require("../model/queue/settleAuthorization");
 const cancelAuthorization_1 = require("../model/queue/cancelAuthorization");
-const notificationPush_1 = require("../model/queue/notificationPush");
-const transactionDisableInquiry_1 = require("../model/queue/transactionDisableInquiry");
+const pushNotification_1 = require("../model/queue/pushNotification");
+const disableTransactionInquiry_1 = require("../model/queue/disableTransactionInquiry");
 function create(args) {
     return new queue_1.default(args._id, args.group, args.status, args.run_at, args.max_count_try, args.last_tried_at, args.count_tried, args.results);
 }
@@ -16,11 +16,11 @@ function createCancelAuthorization(args) {
     return new cancelAuthorization_1.default(args._id, args.status, args.run_at, args.max_count_try, args.last_tried_at, args.count_tried, args.results, args.authorization);
 }
 exports.createCancelAuthorization = createCancelAuthorization;
-function createNotificationPush(args) {
-    return new notificationPush_1.default(args._id, args.status, args.run_at, args.max_count_try, args.last_tried_at, args.count_tried, args.results, args.notification);
+function createPushNotification(args) {
+    return new pushNotification_1.default(args._id, args.status, args.run_at, args.max_count_try, args.last_tried_at, args.count_tried, args.results, args.notification);
 }
-exports.createNotificationPush = createNotificationPush;
-function createTransactionDisableInquiry(args) {
-    return new transactionDisableInquiry_1.default(args._id, args.status, args.run_at, args.max_count_try, args.last_tried_at, args.count_tried, args.results, args.transaction_id);
+exports.createPushNotification = createPushNotification;
+function createDisableTransactionInquiry(args) {
+    return new disableTransactionInquiry_1.default(args._id, args.status, args.run_at, args.max_count_try, args.last_tried_at, args.count_tried, args.results, args.transaction_id);
 }
-exports.createTransactionDisableInquiry = createTransactionDisableInquiry;
+exports.createDisableTransactionInquiry = createDisableTransactionInquiry;

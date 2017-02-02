@@ -10,6 +10,7 @@ let schema = new mongoose.Schema({
     results: [String],
     authorization: mongoose.Schema.Types.Mixed,
     notification: mongoose.Schema.Types.Mixed,
+    transaction_id: mongoose.Schema.Types.ObjectId,
 }, {
     collection: "queues",
     timestamps: {

@@ -248,29 +248,6 @@ class TransactionServiceInterpreter {
                 throw new Error("UNDERWAY transaction not found.");
         });
     }
-    disableInquiry(args) {
-        return (transactionRepository, coaRepository) => __awaiter(this, void 0, void 0, function* () {
-            let option = yield transactionRepository.findById(objectId_1.default(args.transaction_id));
-            if (option.isEmpty)
-                throw new Error("transaction not found.");
-            let tranasction = option.get();
-            yield coaRepository.stateReserveInterface.call({
-                theater_code: tranasction.inquiry_theater,
-                reserve_num: parseInt(tranasction.inquiry_id),
-                tel_num: tranasction.inquiry_pass,
-            });
-            yield transactionRepository.findOneAndUpdate({
-                _id: objectId_1.default(args.transaction_id),
-                status: transactionStatus_1.default.UNDERWAY
-            }, {
-                $set: {
-                    inquiry_theater: "",
-                    inquiry_id: "",
-                    inquiry_pass: "",
-                },
-            });
-        });
-    }
     makeInquiry(args) {
         return (transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             return yield transactionRepository.findOne({
@@ -305,7 +282,7 @@ class TransactionServiceInterpreter {
                 }));
             });
             transaction.notifications().forEach((notification) => {
-                queues.push(QueueFactory.createNotificationPush({
+                queues.push(QueueFactory.createPushNotification({
                     _id: objectId_1.default(),
                     notification: notification,
                     status: queueStatus_1.default.UNEXECUTED,
@@ -356,8 +333,8 @@ class TransactionServiceInterpreter {
                     results: []
                 }));
             });
-            if (transaction.inquiry_id) {
-                queues.push(QueueFactory.createTransactionDisableInquiry({
+            if (transaction.isInquiryAvailable()) {
+                queues.push(QueueFactory.createDisableTransactionInquiry({
                     _id: objectId_1.default(),
                     transaction_id: transaction._id,
                     status: queueStatus_1.default.UNEXECUTED,
@@ -369,7 +346,7 @@ class TransactionServiceInterpreter {
                 }));
             }
             let eventStart = transaction.events.find((event) => { return (event.group === transactionEventGroup_1.default.START); });
-            queues.push(QueueFactory.createNotificationPush({
+            queues.push(QueueFactory.createPushNotification({
                 _id: objectId_1.default(),
                 notification: NotificationFactory.createEmail({
                     _id: objectId_1.default(),

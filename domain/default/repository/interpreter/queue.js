@@ -50,10 +50,10 @@ class QueueRepositoryInterpreter {
                 upsert: false
             })
                 .where({
-                "group": queueGroup_1.default.NOTIFICATION_PUSH,
+                "group": queueGroup_1.default.PUSH_NOTIFICATION,
                 "notification.group": notificationGroup_1.default.EMAIL
             }).lean().exec();
-            return (doc) ? monapt.Option(QueueFactory.createNotificationPush(doc)) : monapt.None;
+            return (doc) ? monapt.Option(QueueFactory.createPushNotification(doc)) : monapt.None;
         });
     }
     findOneSettleGMOAuthorizationAndUpdate(conditions, update) {
@@ -114,6 +114,20 @@ class QueueRepositoryInterpreter {
             })
                 .lean().exec();
             return (doc) ? monapt.Option(QueueFactory.createCancelAuthorization(doc)) : monapt.None;
+        });
+    }
+    findOneDisableTransactionInquiryAndUpdate(conditions, update) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let model = this.connection.model(queue_1.default.modelName, queue_1.default.schema);
+            let doc = yield model.findOneAndUpdate(conditions, update, {
+                new: true,
+                upsert: false
+            })
+                .where({
+                "group": queueGroup_1.default.DISABLE_TRANSACTION_INQUIRY,
+            })
+                .lean().exec();
+            return (doc) ? monapt.Option(QueueFactory.createDisableTransactionInquiry(doc)) : monapt.None;
         });
     }
     store(queue) {

@@ -1,9 +1,9 @@
 "use strict";
 const queue_1 = require("../queue");
 const queueGroup_1 = require("../queueGroup");
-class TransactionDisableInquiryQueue extends queue_1.default {
+class DisableTransactionInquiryQueue extends queue_1.default {
     constructor(_id, status, run_at, max_count_try, last_tried_at, count_tried, results, transaction_id) {
-        super(_id, queueGroup_1.default.TRANSACTION_DISABLE_INQUIRY, status, run_at, max_count_try, last_tried_at, count_tried, results);
+        super(_id, queueGroup_1.default.DISABLE_TRANSACTION_INQUIRY, status, run_at, max_count_try, last_tried_at, count_tried, results);
         this._id = _id;
         this.status = status;
         this.run_at = run_at;
@@ -15,4 +15,4 @@ class TransactionDisableInquiryQueue extends queue_1.default {
     }
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = TransactionDisableInquiryQueue;
+exports.default = DisableTransactionInquiryQueue;

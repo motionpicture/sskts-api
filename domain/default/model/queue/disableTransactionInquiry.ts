@@ -3,7 +3,7 @@ import Queue from "../queue";
 import QueueGroup from "../queueGroup";
 import QueueStatus from "../queueStatus";
 
-export default class TransactionDisableInquiryQueue extends Queue {
+export default class DisableTransactionInquiryQueue extends Queue {
     constructor(
         readonly _id: ObjectId,
         readonly status: QueueStatus,
@@ -16,7 +16,7 @@ export default class TransactionDisableInquiryQueue extends Queue {
     ) {
         super(
             _id,
-            QueueGroup.TRANSACTION_DISABLE_INQUIRY,
+            QueueGroup.DISABLE_TRANSACTION_INQUIRY,
             status,
             run_at,
             max_count_try,

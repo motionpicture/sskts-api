@@ -53,11 +53,11 @@ class QueueRepositoryInterpreter implements QueueRepository {
             upsert: false
         })
             .where({
-                "group": QueueGroup.NOTIFICATION_PUSH,
+                "group": QueueGroup.PUSH_NOTIFICATION,
                 "notification.group": NotificationGroup.EMAIL
             }).lean().exec();
 
-        return (doc) ? monapt.Option(QueueFactory.createNotificationPush<EmailNotification>(doc)) : monapt.None;
+        return (doc) ? monapt.Option(QueueFactory.createPushNotification<EmailNotification>(doc)) : monapt.None;
     }
 
     async findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
@@ -118,6 +118,20 @@ class QueueRepositoryInterpreter implements QueueRepository {
             .lean().exec();
 
         return (doc) ? monapt.Option(QueueFactory.createCancelAuthorization<COASeatReservationAuthorization>(doc)) : monapt.None;
+    }
+
+    async findOneDisableTransactionInquiryAndUpdate(conditions: Object, update: Object) {
+        let model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        let doc = <any>await model.findOneAndUpdate(conditions, update, {
+            new: true,
+            upsert: false
+        })
+            .where({
+                "group": QueueGroup.DISABLE_TRANSACTION_INQUIRY,
+            })
+            .lean().exec();
+
+        return (doc) ? monapt.Option(QueueFactory.createDisableTransactionInquiry(doc)) : monapt.None;
     }
 
     async store(queue: Queue) {
