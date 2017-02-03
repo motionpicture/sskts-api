@@ -12,6 +12,7 @@ const queue_1 = require("../../domain/default/repository/interpreter/queue");
 const queueStatus_1 = require("../../domain/default/model/queueStatus");
 const mongoose = require("mongoose");
 const COA = require("@motionpicture/coa-service");
+const sendgrid = require("sendgrid");
 const stock_1 = require("../../domain/default/service/interpreter/stock");
 const NotificationFactory = require("../../domain/default/factory/notification");
 const objectId_1 = require("../../domain/default/model/objectId");
@@ -57,7 +58,7 @@ function execute() {
 COA仮予約を削除しました。<br>
 queue.authorization: ${queue.authorization}
 `
-                }));
+                }))(sendgrid);
             }
             catch (error) {
                 yield queueRepository.findOneAndUpdate({ _id: queue._id }, {

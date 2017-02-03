@@ -4,21 +4,43 @@ import Authorization from "../authorization";
 import ObjectId from "../objectId";
 import Ownership from "../ownership";
 
-// TODO 座席予約資産の属性はこれでよいか
+/**
+ * 座席予約資産
+ * 
+ * TODO 座席予約資産の属性はこれでよいか
+ * 
+ * @export
+ * @class SeatReservationAsset
+ * @extends {Asset}
+ */
 export default class SeatReservationAsset extends Asset {
+    /**
+     * Creates an instance of SeatReservationAsset.
+     * 
+     * @param {ObjectId} _id
+     * @param {Ownership} ownership 所有権
+     * @param {Array<Authorization>} authorizations 承認リスト
+     * @param {string} performance パフォーマンス
+     * @param {string} section スクリーンセクション
+     * @param {string} seat_code 座席コード
+     * @param {string} ticket_code 券種コード
+     * @param {string} ticket_name_ja
+     * @param {string} ticket_name_en
+     * @param {string} ticket_name_kana
+     * @param {number} std_price
+     * @param {number} add_price
+     * @param {number} dis_price
+     * @param {number} sale_price
+     * 
+     * @memberOf SeatReservationAsset
+     */
     constructor(
         readonly _id: ObjectId,
-        /** 所有権 */
         readonly ownership: Ownership,
-        /** 承認リスト */
         readonly authorizations: Array<Authorization>,
-        /** パフォーマンス */
         readonly performance: string,
-        /** スクリーンセクション */
         readonly section: string,
-        /** 座席コード */
         readonly seat_code: string,
-        /** 券種コード */
         readonly ticket_code: string,
         readonly ticket_name_ja: string,
         readonly ticket_name_en: string,

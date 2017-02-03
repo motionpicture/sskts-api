@@ -77,12 +77,6 @@ class TransactionServiceInterpreter {
             return transaction;
         });
     }
-    addAssetAuthorization(args) {
-        return (assetRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
-            console.log(args, assetRepository, transactionRepository);
-            throw new Error("not implemented.");
-        });
-    }
     addGMOAuthorization(args) {
         return (ownerRepository, transactionRepository) => __awaiter(this, void 0, void 0, function* () {
             let optionTransaction = yield transactionRepository.findById(objectId_1.default(args.transaction_id));

@@ -1,6 +1,5 @@
 import StockService from "../stock";
 import ObjectId from "../../model/objectId";
-import AssetAuthorization from "../../model/authorization/asset";
 import COASeatReservationAuthorization from "../../model/authorization/coaSeatReservation";
 import TransactionStatus from "../../model/transactionStatus";
 import AssetRepository from "../../repository/asset";
@@ -9,27 +8,19 @@ import COA = require("@motionpicture/coa-service");
 
 /**
  * 在庫サービス
+ * 
+ * @class StockServiceInterpreter
+ * @implements {StockService}
  */
 class StockServiceInterpreter implements StockService {
-    /** 資産承認解除 */
-    unauthorizeAsset(authorization: AssetAuthorization) {
-        return async (assetRepository: AssetRepository) => {
-            console.log(authorization);
-            console.log(assetRepository);
-            throw new Error("not implemented.");
-        }
-    }
-
-    /** 資産移動 */
-    transferAssset(authorization: AssetAuthorization) {
-        return async (assetRepository: AssetRepository) => {
-            console.log(authorization);
-            console.log(assetRepository);
-            throw new Error("not implemented.");
-        }
-    }
-
-    /** 資産承認解除(COA座席予約) */
+    /**
+     * 資産承認解除(COA座席予約)
+     * 
+     * @param {COASeatReservationAuthorization} authorization
+     * @returns
+     * 
+     * @memberOf StockServiceInterpreter
+     */
     unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorization) {
         return async (coaRepository: typeof COA) => {
             await coaRepository.deleteTmpReserveInterface.call({
@@ -43,7 +34,14 @@ class StockServiceInterpreter implements StockService {
         }
     }
 
-    /** 資産移動(COA座席予約) */
+    /**
+     * 資産移動(COA座席予約)
+     * 
+     * @param {COASeatReservationAuthorization} authorization
+     * @returns
+     * 
+     * @memberOf StockServiceInterpreter
+     */
     transferCOASeatReservation(authorization: COASeatReservationAuthorization) {
         return async (assetRepository: AssetRepository) => {
 
@@ -53,7 +51,7 @@ class StockServiceInterpreter implements StockService {
 
             let promises = authorization.assets.map(async (asset) => {
                 // 資産永続化
-                assetRepository.store(asset);
+                await assetRepository.store(asset);
             });
 
             await Promise.all(promises);
@@ -63,8 +61,20 @@ class StockServiceInterpreter implements StockService {
     /**
      * 取引照会を無効にする
      * COAのゴミ購入データを削除する
+     * 
+     * @param {{
+     *         transaction_id: string,
+     *     }} args
+     * @returns
+     * 
+     * @memberOf StockServiceInterpreter
      */
     disableTransactionInquiry(args: {
+        /**
+         * 
+         * 
+         * @type {string}
+         */
         transaction_id: string,
     }) {
         return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {

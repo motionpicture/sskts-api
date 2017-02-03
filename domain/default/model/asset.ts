@@ -3,17 +3,27 @@ import Authorization from "./authorization";
 import ObjectId from "./objectId";
 import Ownership from "./ownership";
 
+/**
+ * 資産
+ * 
+ * @export
+ * @class Asset
+ */
 export default class Asset {
+    /**
+     * Creates an instance of Asset.
+     * 
+     * @param {ObjectId} _id ID
+     * @param {AssetGroup} group 資産グループ
+     * @param {Ownership} ownership 所有権
+     * @param {number} price 価格
+     * @param {Array<Authorization>} authorizations 承認リスト
+     */
     constructor(
-        /** ID */
         readonly _id: ObjectId,
-        /** 資産グループ */
         readonly group: AssetGroup,
-        /** 所有権 */
         readonly ownership: Ownership,
-        /** 価格 */
         readonly price: number,
-        /** 承認リスト */
         readonly authorizations: Array<Authorization>,
     ) {
         // TODO validation

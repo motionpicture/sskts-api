@@ -20,10 +20,10 @@ class ScreenRepositoryInterpreter {
             return (screen) ? monapt.Option(screen) : monapt.None;
         });
     }
-    findByTheater(theaterCode) {
+    findByTheater(args) {
         return __awaiter(this, void 0, void 0, function* () {
             let model = this.connection.model(screen_1.default.modelName, screen_1.default.schema);
-            return yield model.find({ theater: theaterCode })
+            return yield model.find({ theater: args.theater_id })
                 .populate("theater")
                 .lean()
                 .exec();

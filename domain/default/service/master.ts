@@ -10,6 +10,9 @@ import Film from "../model/film";
 import Screen from "../model/screen";
 import Performance from "../model/performance";
 
+type TheaterOperation<T> = (repository: TheaterRepository) => Promise<T>;
+type FilmOperation<T> = (repository: FilmRepository) => Promise<T>;
+type ScreenOperation<T> = (repository: ScreenRepository) => Promise<T>;
 type PerformanceOperation<T> = (repository: PerformanceRepository) => Promise<T>;
 type TheaterAndScreenOperation<T> = (theaterRepository: TheaterRepository, screenRepository: ScreenRepository) => Promise<T>;
 type TheaterAndFilmOperation<T> = (theaterRepository: TheaterRepository, filmRepository: FilmRepository) => Promise<T>;
@@ -41,24 +44,33 @@ interface SearchPerformancesResult {
 
 /**
  * マスターサービス
+ * マスターデータ(作品、劇場、スクリーン、パフォーマンスなど)をインポートしたり、検索したりするファンクション群
+ * 
+ * @interface MasterService
  */
 interface MasterService {
     /** 劇場インポート */
     importTheater(args: {
+        /** 劇場コード */
         theater_code: string
-    }): (repository: TheaterRepository) => Promise<void>;
+    }): TheaterOperation<void>;
     /** 作品インポート */
     importFilms(args: {
+        /** 劇場コード */
         theater_code: string
     }): TheaterAndFilmOperation<void>;
     /** スクリーンインポート */
     importScreens(args: {
+        /** 劇場コード */
         theater_code: string
     }): TheaterAndScreenOperation<void>;
     /** パフォーマンスインポート */
     importPerformances(args: {
+        /** 劇場コード */
         theater_code: string,
+        /** 上映日（開始日） */
         day_start: string,
+        /** 上映日（終了日） */
         day_end: string
     }): FilmAndScreenAndPerformanceOperation<void>;
     // importSeatAvailability(theaterCode: string, dayStart: string, dayEnd: string): (repository: TheaterRepository) => Promise<void>;
@@ -67,18 +79,22 @@ interface MasterService {
     searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<Array<SearchPerformancesResult>>;
     /** 劇場詳細 */
     findTheater(args: {
+        /** 劇場コード */
         theater_id: string
-    }): (repository: TheaterRepository) => Promise<monapt.Option<Theater>>
+    }): TheaterOperation<monapt.Option<Theater>>
     /** 作品詳細 */
     findFilm(args: {
+        /** 作品ID */
         film_id: string
-    }): (repository: FilmRepository) => Promise<monapt.Option<Film>>
+    }): FilmOperation<monapt.Option<Film>>
     /** スクリーン詳細 */
     findScreen(args: {
+        /** スクリーンID */
         screen_id: string
-    }): (repository: ScreenRepository) => Promise<monapt.Option<Screen>>
+    }): ScreenOperation<monapt.Option<Screen>>
     /** パフォーマンス詳細 */
     findPerformance(args: {
+        /** パフォーマンスID */
         performance_id: string
     }): PerformanceOperation<monapt.Option<Performance>>
 }

@@ -17,9 +17,12 @@ class ScreenRepositoryInterpreter implements ScreenRepository {
         return (screen) ? monapt.Option(screen) : monapt.None;
     }
 
-    async findByTheater(theaterCode: string) {
+    async findByTheater(args: {
+        /** 劇場ID */
+        theater_id: string
+    }) {
         let model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
-        return <Array<Screen>> await model.find({theater: theaterCode})
+        return <Array<Screen>> await model.find({theater: args.theater_id})
         .populate("theater")
         .lean()
         .exec();

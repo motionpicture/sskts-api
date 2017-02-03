@@ -3,6 +3,7 @@ import QueueRepository from "../../domain/default/repository/interpreter/queue";
 import QueueStatus from "../../domain/default/model/queueStatus";
 import mongoose = require("mongoose");
 import COA = require("@motionpicture/coa-service");
+import sendgrid = require("sendgrid");
 
 import StockService from "../../domain/default/service/interpreter/stock";
 import * as NotificationFactory from "../../domain/default/factory/notification";
@@ -61,7 +62,7 @@ async function execute() {
 COA仮予約を削除しました。<br>
 queue.authorization: ${queue.authorization}
 `
-            }));
+            }))(sendgrid);
         } catch (error) {
             // 実行結果追加
             await queueRepository.findOneAndUpdate({ _id: queue._id }, {

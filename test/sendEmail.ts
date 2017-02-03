@@ -1,6 +1,7 @@
 import NotificationService from "../domain/default/service/interpreter/notification";
 import EmailNotification from "../domain/default/model/notification/email";
 import ObjectId from "../domain/default/model/objectId";
+import sendgrid = require("sendgrid");
 
 let email = new EmailNotification(
     ObjectId(),
@@ -30,7 +31,7 @@ let email = new EmailNotification(
 `
 );
 
-NotificationService.sendEmail(email).then(() => {
+NotificationService.sendEmail(email)(sendgrid).then(() => {
     console.log("sent.");
 }).catch((err) => {
     console.error(err);

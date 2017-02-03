@@ -3,7 +3,25 @@ import ObjectId from "../objectId";
 import Notification from "../notification";
 import NotificationGroup from "../notificationGroup";
 
+/**
+ * Eメール通知
+ * 
+ * @export
+ * @class EmailNotification
+ * @extends {Notification}
+ */
 export default class EmailNotification extends Notification {
+    /**
+     * Creates an instance of EmailNotification.
+     * 
+     * @param {ObjectId} _id
+     * @param {string} from
+     * @param {string} to
+     * @param {string} subject
+     * @param {string} content
+     * 
+     * @memberOf EmailNotification
+     */
     constructor(
         readonly _id: ObjectId,
         readonly from: string,

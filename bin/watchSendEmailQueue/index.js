@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const notification_1 = require("../../domain/default/service/interpreter/notification");
 const queue_1 = require("../../domain/default/repository/interpreter/queue");
 const queueStatus_1 = require("../../domain/default/model/queueStatus");
+const sendgrid = require("sendgrid");
 const mongoose = require("mongoose");
 mongoose.set('debug', true);
 mongoose.Promise = global.Promise;
@@ -42,7 +43,7 @@ function execute() {
             let queue = option.get();
             console.log("queue is", queue);
             try {
-                yield notification_1.default.sendEmail(queue.notification);
+                yield notification_1.default.sendEmail(queue.notification)(sendgrid);
                 yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
             }
             catch (error) {

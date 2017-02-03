@@ -6,8 +6,30 @@ import SeatReservationAsset from "../asset/seatReservation";
 
 /**
  * COA座席仮予約
+ * 
+ * @export
+ * @class COASeatReservationAuthorization
+ * @extends {Authorization}
  */
 export default class COASeatReservationAuthorization extends Authorization {
+    /**
+     * Creates an instance of COASeatReservationAuthorization.
+     * 
+     * @param {ObjectId} _id
+     * @param {number} coa_tmp_reserve_num
+     * @param {string} coa_theater_code
+     * @param {string} coa_date_jouei
+     * @param {string} coa_title_code
+     * @param {string} coa_title_branch_num
+     * @param {string} coa_time_begin
+     * @param {string} coa_screen_code
+     * @param {number} price
+     * @param {ObjectId} owner_from
+     * @param {ObjectId} owner_to
+     * @param {Array<SeatReservationAsset>} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
+     * 
+     * @memberOf COASeatReservationAuthorization
+     */
     constructor(
         readonly _id: ObjectId,
         readonly coa_tmp_reserve_num: number,
@@ -20,7 +42,6 @@ export default class COASeatReservationAuthorization extends Authorization {
         readonly price: number,
         readonly owner_from: ObjectId,
         readonly owner_to: ObjectId,
-        /** 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため) */
         readonly assets: Array<SeatReservationAsset>
     ) {
         super(_id, AuthorizationGroup.COA_SEAT_RESERVATION, price, owner_from, owner_to);

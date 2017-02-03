@@ -1,6 +1,7 @@
 import NotificationService from "../../domain/default/service/interpreter/notification";
 import QueueRepository from "../../domain/default/repository/interpreter/queue";
 import QueueStatus from "../../domain/default/model/queueStatus";
+import sendgrid = require("sendgrid");
 
 import mongoose = require("mongoose");
 mongoose.set('debug', true); // TODO 本番でははずす
@@ -43,7 +44,7 @@ async function execute() {
 
         try {
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            await NotificationService.sendEmail(queue.notification);
+            await NotificationService.sendEmail(queue.notification)(sendgrid);
             await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: QueueStatus.EXECUTED });
         } catch (error) {
             // 実行結果追加

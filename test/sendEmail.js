@@ -2,6 +2,7 @@
 const notification_1 = require("../domain/default/service/interpreter/notification");
 const email_1 = require("../domain/default/model/notification/email");
 const objectId_1 = require("../domain/default/model/objectId");
+const sendgrid = require("sendgrid");
 let email = new email_1.default(objectId_1.default(), "test@localhost", "ilovegadd@gmail.com", "test subject", `
 <!DOCTYPE html>
 <html lang="ja">
@@ -23,7 +24,7 @@ let email = new email_1.default(objectId_1.default(), "test@localhost", "ilovega
 </body>
 </html>
 `);
-notification_1.default.sendEmail(email).then(() => {
+notification_1.default.sendEmail(email)(sendgrid).then(() => {
     console.log("sent.");
 }).catch((err) => {
     console.error(err);

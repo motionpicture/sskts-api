@@ -52,7 +52,7 @@ class MasterServiceInterpreter {
     }
     importPerformances(args) {
         return (filmRepository, screenRepository, performanceRepository) => __awaiter(this, void 0, void 0, function* () {
-            let screens = yield screenRepository.findByTheater(args.theater_code);
+            let screens = yield screenRepository.findByTheater({ theater_id: args.theater_code });
             let performances = yield COA.findPerformancesByTheaterCodeInterface.call({
                 theater_code: args.theater_code,
                 begin: args.day_start,

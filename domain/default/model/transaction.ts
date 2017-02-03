@@ -14,7 +14,29 @@ import AuthorizationGroup from "./authorizationGroup";
 import COASeatReservationAuthorization from "./authorization/coaSeatReservation";
 import monapt = require("monapt");
 
+/**
+ * 取引
+ * 
+ * @export
+ * @class Transaction
+ */
 export default class Transaction {
+    /**
+     * Creates an instance of Transaction.
+     * 
+     * @param {ObjectId} _id
+     * @param {TransactionStatus} status
+     * @param {Array<TransactionEvent>} events
+     * @param {Array<Owner>} owners
+     * @param {Array<Queue>} queues
+     * @param {Date} expired_at
+     * @param {string} inquiry_theater
+     * @param {string} inquiry_id
+     * @param {string} inquiry_pass
+     * @param {TransactionQueuesStatus} queues_status
+     * 
+     * @memberOf Transaction
+     */
     constructor(
         readonly _id: ObjectId,
         readonly status: TransactionStatus,
@@ -32,6 +54,10 @@ export default class Transaction {
 
     /**
      * COA座席仮予約を取得する
+     * 
+     * @returns
+     * 
+     * @memberOf Transaction
      */
     getCoaSeatReservationAuthorization() {
         let authorization = this.authorizations().find((authorization) => {
@@ -43,6 +69,10 @@ export default class Transaction {
 
     /**
      * イベントから承認リストを取得する
+     * 
+     * @returns
+     * 
+     * @memberOf Transaction
      */
     authorizations() {
         // 承認イベント
@@ -66,6 +96,10 @@ export default class Transaction {
 
     /**
      * イベントから通知リストを取得する
+     * 
+     * @returns
+     * 
+     * @memberOf Transaction
      */
     notifications() {
         let notifications = this.events.filter((event) => {
@@ -88,6 +122,10 @@ export default class Transaction {
 
     /**
      * 照会可能かどうか
+     * 
+     * @returns
+     * 
+     * @memberOf Transaction
      */
     isInquiryAvailable() {
         return (this.inquiry_theater && this.inquiry_id && this.inquiry_pass);
@@ -95,6 +133,10 @@ export default class Transaction {
 
     /**
      * 成立可能かどうか
+     * 
+     * @returns
+     * 
+     * @memberOf Transaction
      */
     canBeClosed() {
         let authorizations = this.authorizations();

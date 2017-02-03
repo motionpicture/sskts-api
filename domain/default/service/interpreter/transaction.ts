@@ -8,7 +8,6 @@ import Authorization from "../../model/authorization";
 import Queue from "../../model/queue";
 import QueueStatus from "../../model/queueStatus";
 
-import AssetRepository from "../../repository/asset";
 import TransactionRepository from "../../repository/transaction";
 import OwnerRepository from "../../repository/owner";
 import QueueRepository from "../../repository/queue";
@@ -108,17 +107,6 @@ class TransactionServiceInterpreter implements TransactionService {
             await transactionRepository.store(transaction);
 
             return transaction;
-        }
-    }
-
-    /** 内部資産承認 */
-    addAssetAuthorization(args: {
-        transaction_id: string,
-        authorization_id: string,
-    }) {
-        return async (assetRepository: AssetRepository, transactionRepository: TransactionRepository) => {
-            console.log(args, assetRepository, transactionRepository);
-            throw new Error("not implemented.");
         }
     }
 

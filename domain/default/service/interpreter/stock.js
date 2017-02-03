@@ -10,20 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const objectId_1 = require("../../model/objectId");
 const transactionStatus_1 = require("../../model/transactionStatus");
 class StockServiceInterpreter {
-    unauthorizeAsset(authorization) {
-        return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
-            console.log(authorization);
-            console.log(assetRepository);
-            throw new Error("not implemented.");
-        });
-    }
-    transferAssset(authorization) {
-        return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
-            console.log(authorization);
-            console.log(assetRepository);
-            throw new Error("not implemented.");
-        });
-    }
     unauthorizeCOASeatReservation(authorization) {
         return (coaRepository) => __awaiter(this, void 0, void 0, function* () {
             yield coaRepository.deleteTmpReserveInterface.call({
@@ -39,7 +25,7 @@ class StockServiceInterpreter {
     transferCOASeatReservation(authorization) {
         return (assetRepository) => __awaiter(this, void 0, void 0, function* () {
             let promises = authorization.assets.map((asset) => __awaiter(this, void 0, void 0, function* () {
-                assetRepository.store(asset);
+                yield assetRepository.store(asset);
             }));
             yield Promise.all(promises);
         });

@@ -48,7 +48,7 @@ class MasterServiceInterpreter implements MasterService {
             });
 
             // 永続化
-            let theater =  TheaterFactory.createFromCOA(theaterFromCOA);
+            let theater = TheaterFactory.createFromCOA(theaterFromCOA);
             await repository.store(theater);
         };
     }
@@ -71,7 +71,7 @@ class MasterServiceInterpreter implements MasterService {
 
             // 永続化
             await Promise.all(films.map(async (filmFromCOA) => {
-                let film =  await FilmFactory.createFromCOA(filmFromCOA)(optionTheater.get());
+                let film = await FilmFactory.createFromCOA(filmFromCOA)(optionTheater.get());
                 await filmRepository.store(film);
             }));
         };
@@ -105,7 +105,7 @@ class MasterServiceInterpreter implements MasterService {
     }) {
         return async (filmRepository: FilmRepository, screenRepository: ScreenRepository, performanceRepository: PerformanceRepository) => {
             // スクリーン取得
-            let screens = await screenRepository.findByTheater(args.theater_code);
+            let screens = await screenRepository.findByTheater({ theater_id: args.theater_code });
 
             // COAからパフォーマンス取得
             let performances = await COA.findPerformancesByTheaterCodeInterface.call({
@@ -141,18 +141,18 @@ class MasterServiceInterpreter implements MasterService {
         return async (performanceRepository: PerformanceRepository): Promise<Array<SearchPerformancesResult>> => {
             // 検索条件を作成
             let andConditions: Array<Object> = [
-                {_id: {$ne: null}}
+                { _id: { $ne: null } }
             ];
 
             if (conditions.day) {
-                andConditions.push({day: conditions.day});
+                andConditions.push({ day: conditions.day });
             }
 
             if (conditions.theater) {
-                andConditions.push({theater: conditions.theater});
+                andConditions.push({ theater: conditions.theater });
             }
 
-            let performances = await performanceRepository.find({$and: andConditions});
+            let performances = await performanceRepository.find({ $and: andConditions });
 
             // TODO 空席状況を追加
 
