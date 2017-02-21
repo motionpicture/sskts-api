@@ -7,12 +7,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const notification_1 = require("../../domain/default/service/interpreter/notification");
-const queue_1 = require("../../domain/default/repository/interpreter/queue");
-const queueStatus_1 = require("../../domain/default/model/queueStatus");
+const SSKTS = require("@motionpicture/sskts-domain");
 const sendgrid = require("sendgrid");
 const mongoose = require("mongoose");
-mongoose.set('debug', true);
+mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
@@ -30,23 +28,26 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 }), 500);
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        let queueRepository = queue_1.default(mongoose.connection);
+        let queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+        // 未実行のメール送信キューを取得
         let option = yield queueRepository.findOneSendEmailAndUpdate({
-            status: queueStatus_1.default.UNEXECUTED,
+            status: SSKTS.QueueStatus.UNEXECUTED,
             run_at: { $lt: new Date() },
         }, {
-            status: queueStatus_1.default.RUNNING,
+            status: SSKTS.QueueStatus.RUNNING,
             last_tried_at: new Date(),
-            $inc: { count_tried: 1 }
+            $inc: { count_tried: 1 } // トライ回数増やす
         });
         if (!option.isEmpty) {
             let queue = option.get();
-            console.log("queue is", queue);
+            console.log('queue is', queue);
             try {
-                yield notification_1.default.sendEmail(queue.notification)(sendgrid);
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: queueStatus_1.default.EXECUTED });
+                // 失敗してもここでは戻さない(RUNNINGのまま待機)
+                yield SSKTS.NotificationService.sendEmail(queue.notification)(sendgrid);
+                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: SSKTS.QueueStatus.EXECUTED });
             }
             catch (error) {
+                // 実行結果追加
                 yield queueRepository.findOneAndUpdate({ _id: queue._id }, {
                     $push: {
                         results: error.stack

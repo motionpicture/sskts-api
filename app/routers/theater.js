@@ -9,22 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const express_1 = require("express");
 let router = express_1.Router();
-const theater_1 = require("../../domain/default/repository/interpreter/theater");
-const master_1 = require("../../domain/default/service/interpreter/master");
+const SSKTS = require("@motionpicture/sskts-domain");
 const mongoose = require("mongoose");
-router.get("/:code", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.get('/:code', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let option = yield master_1.default.findTheater({
-            theater_id: req.params.id
-        })(theater_1.default(mongoose.connection));
+        let option = yield SSKTS.MasterService.findTheater(req.params.id)(SSKTS.createTheaterRepository(mongoose.connection));
         option.match({
             Some: (theater) => {
                 res.json({
                     data: {
-                        type: "theaters",
+                        type: 'theaters',
                         _id: theater._id,
                         attributes: theater
                     }

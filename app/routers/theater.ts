@@ -1,22 +1,19 @@
-import {Router} from "express";
+import { Router } from 'express';
 let router = Router();
-import TheaterRepository from "../../domain/default/repository/interpreter/theater";
-import MasterService from "../../domain/default/service/interpreter/master";
-import mongoose = require("mongoose");
+import * as SSKTS from '@motionpicture/sskts-domain';
+import mongoose = require('mongoose');
 
-router.get("/:code", async (req, res, next) => {
+router.get('/:code', async (req, res, next) => {
     let validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
 
     try {
-        let option = await MasterService.findTheater({
-            theater_id: req.params.id
-        })(TheaterRepository(mongoose.connection));
+        let option = await SSKTS.MasterService.findTheater(req.params.id)(SSKTS.createTheaterRepository(mongoose.connection));
         option.match({
             Some: (theater) => {
                 res.json({
                     data: {
-                        type: "theaters",
+                        type: 'theaters',
                         _id: theater._id,
                         attributes: theater
                     }

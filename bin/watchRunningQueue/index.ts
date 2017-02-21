@@ -1,8 +1,7 @@
-import QueueRepository from "../../domain/default/repository/interpreter/queue";
-import QueueStatus from "../../domain/default/model/queueStatus";
-import moment = require("moment");
+import * as SSKTS from '@motionpicture/sskts-domain';
+import moment = require('moment');
 
-import mongoose = require("mongoose");
+import mongoose = require('mongoose');
 mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -39,16 +38,16 @@ setInterval(async () => {
  * 最終試行から10分経過したキューのリトライ
  */
 async function retry() {
-    let queueRepository = QueueRepository(mongoose.connection);
+    let queueRepository = SSKTS.createQueueRepository(mongoose.connection);
 
     await queueRepository.findOneAndUpdate(
         {
-            status: QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add("minutes", -10).toISOString() },
+            status: SSKTS.QueueStatus.RUNNING,
+            last_tried_at: { $lt: moment().add('minutes', -10).toISOString() },
             $where: function (this: any) { return (this.max_count_try > this.count_tried) }
         },
         {
-            status: QueueStatus.UNEXECUTED, // 実行中に変更
+            status: SSKTS.QueueStatus.UNEXECUTED, // 実行中に変更
         }
     );
 }
@@ -57,16 +56,16 @@ async function retry() {
  * 最大試行回数に達したキューを実行中止にする
  */
 async function abort() {
-    let queueRepository = QueueRepository(mongoose.connection);
+    let queueRepository = SSKTS.createQueueRepository(mongoose.connection);
 
     await queueRepository.findOneAndUpdate(
         {
-            status: QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add("minutes", -10).toISOString() },
+            status: SSKTS.QueueStatus.RUNNING,
+            last_tried_at: { $lt: moment().add('minutes', -10).toISOString() },
             $where: function (this: any) { return (this.max_count_try === this.count_tried) }
         },
         {
-            status: QueueStatus.ABORTED,
+            status: SSKTS.QueueStatus.ABORTED,
         }
     );
 }

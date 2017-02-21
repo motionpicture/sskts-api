@@ -9,14 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const request = require("request-promise-native");
 const GMO = require("@motionpicture/gmo-service");
-GMO.initialize({
-    endpoint: "https://pt01.mul-pay.jp",
-});
 const COA = require("@motionpicture/coa-service");
-COA.initialize({
-    endpoint: "http://coacinema.aa0.netvolante.jp",
-    refresh_token: "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ"
-});
+// COA.initialize({
+//     endpoint: 'http://coacinema.aa0.netvolante.jp',
+//     refresh_token: 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ'
+// });
 const moment = require("moment");
 let count = 0;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
@@ -34,37 +31,41 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
         let response;
-        let gmoShopId = "tshop00026096";
-        let gmoShopPass = "xbxmkaa6";
-        console.log("starting transaction...");
+        let gmoShopId = 'tshop00026096';
+        let gmoShopPass = 'xbxmkaa6';
+        // 取引開始
+        // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
+        console.log('starting transaction...');
         response = yield request.post({
-            url: "http://localhost:8080/transactions",
+            url: 'http://localhost:8080/transactions',
             body: {
-                expired_at: moment().add(1, "minutes").unix(),
+                expired_at: moment().add(1, 'minutes').unix(),
             },
             json: true,
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("/transactions/start result:", response.statusCode, response.body);
+        console.log('/transactions/start result:', response.statusCode, response.body);
         if (response.statusCode !== 201)
             throw new Error(response.body.message);
         let transactionId = response.body.data._id;
         let owners = response.body.data.attributes.owners;
         let promoterOwner = owners.find((owner) => {
-            return (owner.group === "PROMOTER");
+            return (owner.group === 'PROMOTER');
         });
         let promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
         let anonymousOwner = owners.find((owner) => {
-            return (owner.group === "ANONYMOUS");
+            return (owner.group === 'ANONYMOUS');
         });
         let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
-        let theaterCode = "001";
-        let dateJouei = "20170210";
-        let titleCode = "8513";
-        let titleBranchNum = "0";
-        let timeBegin = "1010";
-        let screenCode = "2";
+        // 空席なくなったら変更する
+        let theaterCode = '001';
+        let dateJouei = '20170210';
+        let titleCode = '8513';
+        let titleBranchNum = '0';
+        let timeBegin = '1010';
+        let screenCode = '2';
+        // 販売可能チケット検索
         let salesTicketResult = yield COA.salesTicketInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -72,6 +73,7 @@ function execute() {
             title_branch_num: titleBranchNum,
             time_begin: timeBegin,
         });
+        // COA空席確認
         let getStateReserveSeatResult = yield COA.getStateReserveSeatInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -84,9 +86,10 @@ function execute() {
         let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
             return freeSeat.seat_num;
         });
-        console.log("freeSeatCodes count", freeSeatCodes.length);
+        console.log('freeSeatCodes count', freeSeatCodes.length);
         if (getStateReserveSeatResult.cnt_reserve_free === 0)
-            throw new Error("no available seats.");
+            throw new Error('no available seats.');
+        // COA仮予約
         let reserveSeatsTemporarilyResult = yield COA.reserveSeatsTemporarilyInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -103,7 +106,8 @@ function execute() {
                 }]
         });
         console.log(reserveSeatsTemporarilyResult);
-        console.log("adding authorizations coaSeatReservation...");
+        // COAオーソリ追加
+        console.log('adding authorizations coaSeatReservation...');
         let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
@@ -119,7 +123,7 @@ function execute() {
                 coa_screen_code: screenCode,
                 seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                     return {
-                        performance: "001201701208513021010",
+                        performance: '001201701208513021010',
                         section: tmpReserve.seat_section,
                         seat_code: tmpReserve.seat_num,
                         ticket_code: salesTicketResult.list_ticket[0].ticket_code,
@@ -138,28 +142,31 @@ function execute() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
+        console.log('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
+        // let coaAuthorizationId = response.body.data._id;
+        // GMOオーソリ取得
         let orderId = Date.now().toString();
-        let entryTranResult = yield GMO.CreditService.entryTranInterface.call({
-            shop_id: gmoShopId,
-            shop_pass: gmoShopPass,
-            order_id: orderId,
-            job_cd: GMO.Util.JOB_CD_AUTH,
+        let entryTranResult = yield GMO.CreditService.entryTran({
+            shopId: gmoShopId,
+            shopPass: gmoShopPass,
+            orderId: orderId,
+            jobCd: GMO.Util.JOB_CD_AUTH,
             amount: totalPrice,
         });
-        let execTranResult = yield GMO.CreditService.execTranInterface.call({
-            access_id: entryTranResult.access_id,
-            access_pass: entryTranResult.access_pass,
-            order_id: orderId,
-            method: "1",
-            card_no: "4111111111111111",
-            expire: "2012",
-            security_code: "123",
+        let execTranResult = yield GMO.CreditService.execTran({
+            accessId: entryTranResult.accessId,
+            accessPass: entryTranResult.accessPass,
+            orderId: orderId,
+            method: '1',
+            cardNo: '4111111111111111',
+            expire: '2012',
+            securityCode: '123',
         });
         console.log(execTranResult);
-        console.log("adding authorizations gmo...");
+        // GMOオーソリ追加
+        console.log('adding authorizations gmo...');
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {
@@ -169,8 +176,8 @@ function execute() {
                 gmo_shop_pass: gmoShopPass,
                 gmo_order_id: orderId,
                 gmo_amount: totalPrice,
-                gmo_access_id: entryTranResult.access_id,
-                gmo_access_pass: entryTranResult.access_pass,
+                gmo_access_id: entryTranResult.accessId,
+                gmo_access_pass: entryTranResult.accessPass,
                 gmo_job_cd: GMO.Util.JOB_CD_AUTH,
                 gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             },
@@ -178,8 +185,9 @@ function execute() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("addGMOAuthorization result:", response.statusCode, response.body);
+        console.log('addGMOAuthorization result:', response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
+        // let gmoAuthorizationId = response.body.data._id;
     });
 }

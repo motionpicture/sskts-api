@@ -9,22 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const express_1 = require("express");
 let router = express_1.Router();
-const screen_1 = require("../../domain/default/repository/interpreter/screen");
-const master_1 = require("../../domain/default/service/interpreter/master");
+const SSKTS = require("@motionpicture/sskts-domain");
 const mongoose = require("mongoose");
-router.get("/:id", (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     let validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty())
         return next(new Error(validatorResult.array()[0].msg));
     try {
-        let option = yield master_1.default.findScreen({
-            screen_id: req.params.id
-        })(screen_1.default(mongoose.connection));
+        let option = yield SSKTS.MasterService.findScreen(req.params.id)(SSKTS.createScreenRepository(mongoose.connection));
         option.match({
             Some: (screen) => {
                 res.json({
                     data: {
-                        type: "screens",
+                        type: 'screens',
                         _id: screen._id,
                         attributes: screen
                     }

@@ -1,5 +1,4 @@
-import TransactionService from "../../domain/default/service/interpreter/transaction";
-import TransactionRepository from "../../domain/default/repository/interpreter/transaction";
+import * as SSKTS from '@motionpicture/sskts-domain';
 
 import mongoose = require("mongoose");
 mongoose.set('debug', true); // TODO 本番でははずす
@@ -21,5 +20,5 @@ setInterval(async () => {
 }, 500);
 
 async function execute() {
-    await TransactionService.expireOne()(TransactionRepository(mongoose.connection));
+    await SSKTS.TransactionService.expireOne()(SSKTS.createTransactionRepository(mongoose.connection));
 }

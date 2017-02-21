@@ -1,10 +1,9 @@
 iisnode.yml
-logs/*
-node_modules/*
-typings/*
-iisnode/*
-npm-debug.log
-.vscode/*
+node_modules/
+iisnode/
+npm-debug.log*
+.vscode/
+.env*
 
 !.gitignore
 !.gitkeep

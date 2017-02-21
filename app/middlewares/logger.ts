@@ -1,31 +1,31 @@
-import log4js = require("log4js");
-// import config = require("config");
+import log4js = require('log4js');
+// import config = require('config');
 
-let env = process.env.NODE_ENV || "dev";
+let env = process.env.NODE_ENV || 'dev';
 
 log4js.configure({
     appenders: [
         {
-            category: "access", // アクセスログ
-            type: "console"
-            // type: "log4js-node-mongodb",
-            // connectionString: config.get<string>("mongolab_uri_for_logs"),
+            category: 'access', // アクセスログ
+            type: 'console'
+            // type: 'log4js-node-mongodb',
+            // connectionString: config.get<string>('mongolab_uri_for_logs'),
         },
         {
-            category: "system", // その他のアプリログ(DEBUG、INFO、ERRORなど)
-            type: "console"
-            // type: "log4js-node-mongodb",
-            // connectionString: config.get<string>("mongolab_uri_for_logs"),
+            category: 'system', // その他のアプリログ(DEBUG、INFO、ERRORなど)
+            type: 'console'
+            // type: 'log4js-node-mongodb',
+            // connectionString: config.get<string>('mongolab_uri_for_logs'),
         },
         {
-            type: "console"
+            type: 'console'
         }
     ],
     levels: {
-        access: (env === "dev") ? log4js.levels.ALL.toString() : log4js.levels.OFF.toString(),
-        system: (env === "prod") ? log4js.levels.INFO.toString() : log4js.levels.ALL.toString()
+        access: (env === 'dev') ? log4js.levels.ALL.toString() : log4js.levels.OFF.toString(),
+        system: (env === 'prod') ? log4js.levels.INFO.toString() : log4js.levels.ALL.toString()
     },
-    replaceConsole: (env === "prod") ? false : true
+    replaceConsole: (env === 'prod') ? false : true
 });
 
-export default log4js.connectLogger(log4js.getLogger("access"), {});
+export default log4js.connectLogger(log4js.getLogger('access'), {});

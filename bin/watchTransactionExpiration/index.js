@@ -7,10 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const transaction_1 = require("../../domain/default/service/interpreter/transaction");
-const transaction_2 = require("../../domain/default/repository/interpreter/transaction");
+const SSKTS = require("@motionpicture/sskts-domain");
 const mongoose = require("mongoose");
-mongoose.set('debug', true);
+mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
@@ -28,6 +27,6 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 }), 500);
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield transaction_1.default.expireOne()(transaction_2.default(mongoose.connection));
+        yield SSKTS.TransactionService.expireOne()(SSKTS.createTransactionRepository(mongoose.connection));
     });
 }

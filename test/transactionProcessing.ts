@@ -1,16 +1,13 @@
-import request = require("request-promise-native");
-import GMO = require("@motionpicture/gmo-service");
-GMO.initialize({
-    endpoint: "https://pt01.mul-pay.jp",
-});
+import request = require('request-promise-native');
+import GMO = require('@motionpicture/gmo-service');
 
-import COA = require("@motionpicture/coa-service");
-COA.initialize({
-    endpoint: "http://coacinema.aa0.netvolante.jp",
-    refresh_token: "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ"
-});
+import COA = require('@motionpicture/coa-service');
+// COA.initialize({
+//     endpoint: 'http://coacinema.aa0.netvolante.jp',
+//     refresh_token: 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ'
+// });
 
-import moment = require("moment");
+import moment = require('moment');
 
 let count = 0;
 
@@ -30,25 +27,25 @@ setInterval(async () => {
 
 async function execute() {
     let response: any;
-    let gmoShopId = "tshop00026096";
-    let gmoShopPass = "xbxmkaa6";
+    let gmoShopId = 'tshop00026096';
+    let gmoShopPass = 'xbxmkaa6';
 
 
 
 
     // 取引開始
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
-    console.log("starting transaction...");
+    console.log('starting transaction...');
     response = await request.post({
-        url: "http://localhost:8080/transactions",
+        url: 'http://localhost:8080/transactions',
         body: {
-            expired_at: moment().add(1, "minutes").unix(),
+            expired_at: moment().add(1, 'minutes').unix(),
         },
         json: true,
         simple: false,
         resolveWithFullResponse: true,
     });
-    console.log("/transactions/start result:", response.statusCode, response.body);
+    console.log('/transactions/start result:', response.statusCode, response.body);
     if (response.statusCode !== 201) throw new Error(response.body.message);
     let transactionId = response.body.data._id;
 
@@ -57,11 +54,11 @@ async function execute() {
         group: string
     }> = response.body.data.attributes.owners;
     let promoterOwner = owners.find((owner) => {
-        return (owner.group === "PROMOTER");
+        return (owner.group === 'PROMOTER');
     });
     let promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
     let anonymousOwner = owners.find((owner) => {
-        return (owner.group === "ANONYMOUS");
+        return (owner.group === 'ANONYMOUS');
     });
     let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
 
@@ -73,12 +70,12 @@ async function execute() {
 
 
     // 空席なくなったら変更する
-    let theaterCode = "001";
-    let dateJouei = "20170210";
-    let titleCode = "8513";
-    let titleBranchNum = "0";
-    let timeBegin = "1010";
-    let screenCode = "2";
+    let theaterCode = '001';
+    let dateJouei = '20170210';
+    let titleCode = '8513';
+    let titleBranchNum = '0';
+    let timeBegin = '1010';
+    let screenCode = '2';
 
 
 
@@ -112,8 +109,8 @@ async function execute() {
     let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
         return freeSeat.seat_num;
     });
-    console.log("freeSeatCodes count", freeSeatCodes.length);
-    if (getStateReserveSeatResult.cnt_reserve_free === 0) throw new Error("no available seats.");
+    console.log('freeSeatCodes count', freeSeatCodes.length);
+    if (getStateReserveSeatResult.cnt_reserve_free === 0) throw new Error('no available seats.');
 
 
 
@@ -137,7 +134,7 @@ async function execute() {
     console.log(reserveSeatsTemporarilyResult);
 
     // COAオーソリ追加
-    console.log("adding authorizations coaSeatReservation...");
+    console.log('adding authorizations coaSeatReservation...');
     let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
@@ -153,7 +150,7 @@ async function execute() {
             coa_screen_code: screenCode,
             seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                 return {
-                    performance: "001201701208513021010",
+                    performance: '001201701208513021010',
                     section: tmpReserve.seat_section,
                     seat_code: tmpReserve.seat_num,
                     ticket_code: salesTicketResult.list_ticket[0].ticket_code,
@@ -172,7 +169,7 @@ async function execute() {
         simple: false,
         resolveWithFullResponse: true,
     });
-    console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
+    console.log('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
     if (response.statusCode !== 200) throw new Error(response.body.message);
     // let coaAuthorizationId = response.body.data._id;
 
@@ -185,27 +182,27 @@ async function execute() {
 
     // GMOオーソリ取得
     let orderId = Date.now().toString();
-    let entryTranResult = await GMO.CreditService.entryTranInterface.call({
-        shop_id: gmoShopId,
-        shop_pass: gmoShopPass,
-        order_id: orderId,
-        job_cd: GMO.Util.JOB_CD_AUTH,
+    let entryTranResult = await GMO.CreditService.entryTran({
+        shopId: gmoShopId,
+        shopPass: gmoShopPass,
+        orderId: orderId,
+        jobCd: GMO.Util.JOB_CD_AUTH,
         amount: totalPrice,
     });
 
-    let execTranResult = await GMO.CreditService.execTranInterface.call({
-        access_id: entryTranResult.access_id,
-        access_pass: entryTranResult.access_pass,
-        order_id: orderId,
-        method: "1",
-        card_no: "4111111111111111",
-        expire: "2012",
-        security_code: "123",
+    let execTranResult = await GMO.CreditService.execTran({
+        accessId: entryTranResult.accessId,
+        accessPass: entryTranResult.accessPass,
+        orderId: orderId,
+        method: '1',
+        cardNo: '4111111111111111',
+        expire: '2012',
+        securityCode: '123',
     });
     console.log(execTranResult);
 
     // GMOオーソリ追加
-    console.log("adding authorizations gmo...");
+    console.log('adding authorizations gmo...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
@@ -215,8 +212,8 @@ async function execute() {
             gmo_shop_pass: gmoShopPass,
             gmo_order_id: orderId,
             gmo_amount: totalPrice,
-            gmo_access_id: entryTranResult.access_id,
-            gmo_access_pass: entryTranResult.access_pass,
+            gmo_access_id: entryTranResult.accessId,
+            gmo_access_pass: entryTranResult.accessPass,
             gmo_job_cd: GMO.Util.JOB_CD_AUTH,
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
         },
@@ -224,7 +221,7 @@ async function execute() {
         simple: false,
         resolveWithFullResponse: true,
     });
-    console.log("addGMOAuthorization result:", response.statusCode, response.body);
+    console.log('addGMOAuthorization result:', response.statusCode, response.body);
     if (response.statusCode !== 200) throw new Error(response.body.message);
     // let gmoAuthorizationId = response.body.data._id;
 

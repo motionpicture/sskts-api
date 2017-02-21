@@ -7,11 +7,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const queue_1 = require("../../domain/default/repository/interpreter/queue");
-const queueStatus_1 = require("../../domain/default/model/queueStatus");
+const SSKTS = require("@motionpicture/sskts-domain");
 const moment = require("moment");
 const mongoose = require("mongoose");
-mongoose.set('debug', true);
+mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let countRetry = 0;
@@ -40,27 +39,33 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
     }
     countAbort--;
 }), 500);
+/**
+ * 最終試行から10分経過したキューのリトライ
+ */
 function retry() {
     return __awaiter(this, void 0, void 0, function* () {
-        let queueRepository = queue_1.default(mongoose.connection);
+        let queueRepository = SSKTS.createQueueRepository(mongoose.connection);
         yield queueRepository.findOneAndUpdate({
-            status: queueStatus_1.default.RUNNING,
-            last_tried_at: { $lt: moment().add("minutes", -10).toISOString() },
+            status: SSKTS.QueueStatus.RUNNING,
+            last_tried_at: { $lt: moment().add('minutes', -10).toISOString() },
             $where: function () { return (this.max_count_try > this.count_tried); }
         }, {
-            status: queueStatus_1.default.UNEXECUTED,
+            status: SSKTS.QueueStatus.UNEXECUTED,
         });
     });
 }
+/**
+ * 最大試行回数に達したキューを実行中止にする
+ */
 function abort() {
     return __awaiter(this, void 0, void 0, function* () {
-        let queueRepository = queue_1.default(mongoose.connection);
+        let queueRepository = SSKTS.createQueueRepository(mongoose.connection);
         yield queueRepository.findOneAndUpdate({
-            status: queueStatus_1.default.RUNNING,
-            last_tried_at: { $lt: moment().add("minutes", -10).toISOString() },
+            status: SSKTS.QueueStatus.RUNNING,
+            last_tried_at: { $lt: moment().add('minutes', -10).toISOString() },
             $where: function () { return (this.max_count_try === this.count_tried); }
         }, {
-            status: queueStatus_1.default.ABORTED,
+            status: SSKTS.QueueStatus.ABORTED,
         });
     });
 }

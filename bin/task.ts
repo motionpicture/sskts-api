@@ -1,15 +1,4 @@
 import program = require("commander");
-// import AssetService from "../domain/default/service/interpreter/asset";
-import MasterService from "../domain/default/service/interpreter/master";
-
-import FilmRepository from "../domain/default/repository/interpreter/film";
-import ScreenRepository from "../domain/default/repository/interpreter/screen";
-import TheaterRepository from "../domain/default/repository/interpreter/theater";
-import PerformanceRepository from "../domain/default/repository/interpreter/performance";
-
-// let env = process.env.NODE_ENV || "dev";
-
-// import config = require("config");
 
 import mongoose = require("mongoose");
 mongoose.set('debug', true); // TODO 本番でははずす
@@ -27,6 +16,7 @@ mongoose.set('debug', true); // TODO 本番でははずす
 //     refresh_token: config.get<string>("coa_api_refresh_token")
 // });
 
+import * as SSKTS from '@motionpicture/sskts-domain';
 
 program
     .version("0.0.1")
@@ -39,9 +29,7 @@ program
             mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI);
 
-            await MasterService.importTheater({
-                theater_code: theaterCode
-            })(TheaterRepository(mongoose.connection));
+            await SSKTS.MasterService.importTheater(theaterCode)(SSKTS.createTheaterRepository(mongoose.connection));
         } catch (error) {
             console.error(error);
         }
@@ -58,9 +46,10 @@ program
             mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI);
 
-            await MasterService.importFilms({
-                theater_code: theaterCode
-            })(TheaterRepository(mongoose.connection), FilmRepository(mongoose.connection));
+            await SSKTS.MasterService.importFilms(theaterCode)(
+                SSKTS.createTheaterRepository(mongoose.connection),
+                SSKTS.createFilmRepository(mongoose.connection),
+            )
         } catch (error) {
             console.error(error);
         }
@@ -77,9 +66,10 @@ program
             mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI);
 
-            await MasterService.importScreens({
-                theater_code: theaterCode
-            })(TheaterRepository(mongoose.connection), ScreenRepository(mongoose.connection));
+            await SSKTS.MasterService.importScreens(theaterCode)(
+                SSKTS.createTheaterRepository(mongoose.connection),
+                SSKTS.createScreenRepository(mongoose.connection)
+            )
         } catch (error) {
             console.error(error);
         }
@@ -96,13 +86,11 @@ program
             mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI);
 
-            await MasterService.importPerformances({
-                theater_code: theaterCode,
-                day_start: start,
-                day_end: end
-            })(
-                FilmRepository(mongoose.connection), ScreenRepository(mongoose.connection), PerformanceRepository(mongoose.connection)
-                );
+            await SSKTS.MasterService.importPerformances(theaterCode, start, end)(
+                SSKTS.createFilmRepository(mongoose.connection),
+                SSKTS.createScreenRepository(mongoose.connection),
+                SSKTS.createPerformanceRepository(mongoose.connection)
+            )
         } catch (error) {
             console.error(error);
         }

@@ -1,6 +1,6 @@
 import express = require('express')
 let router = express.Router();
-import mongoose = require("mongoose");
+import mongoose = require('mongoose');
 
 // middleware that is specific to this router
 // router.use((req, res, next) => {
@@ -8,19 +8,19 @@ import mongoose = require("mongoose");
 //   next()
 // })
 
-router.get("/environmentVariables", (req, res) => {
-    console.log("ip:", req.ip);
-    // this.logger.debug("process.env:", process.env);
+router.get('/environmentVariables', (req, res) => {
+    console.log('ip:', req.ip);
+    // this.logger.debug('process.env:', process.env);
     res.json({
         data: {
-            type: "envs",
+            type: 'envs',
             attributes: process.env
         }
     });
 });
 
-router.get("/mongoose/connect", (req, res, next) => {
-    console.log("ip:", req.ip);
+router.get('/mongoose/connect', (req, res, next) => {
+    console.log('ip:', req.ip);
     mongoose.connect(process.env.MONGOLAB_URI, (err: Error) => {
         if (err) return next(err);
 
@@ -28,8 +28,8 @@ router.get("/mongoose/connect", (req, res, next) => {
     });
 });
 
-router.get("/mongoose/disconnect", (req, res, next) => {
-    console.log("ip:", req.ip);
+router.get('/mongoose/disconnect', (req, res, next) => {
+    console.log('ip:', req.ip);
     mongoose.disconnect((err) => {
         if (err) return next(err);
 

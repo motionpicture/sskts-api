@@ -9,49 +9,51 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const request = require("request-promise-native");
 const GMO = require("@motionpicture/gmo-service");
-GMO.initialize({
-    endpoint: "https://pt01.mul-pay.jp",
-});
 const COA = require("@motionpicture/coa-service");
-COA.initialize({
-    endpoint: "http://coacinema.aa0.netvolante.jp",
-    refresh_token: "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ"
-});
+// COA.initialize({
+//     endpoint: 'http://coacinema.aa0.netvolante.jp',
+//     refresh_token: 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ'
+// });
 const moment = require("moment");
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         let response;
-        let gmoShopId = "tshop00026096";
-        let gmoShopPass = "xbxmkaa6";
-        console.log("starting transaction...");
+        let gmoShopId = 'tshop00026096';
+        let gmoShopPass = 'xbxmkaa6';
+        // 取引開始
+        // 30分後のunix timestampを送信する場合
+        // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
+        console.log('starting transaction...');
         response = yield request.post({
-            url: "http://localhost:8080/transactions",
+            url: 'http://localhost:8080/transactions',
             body: {
-                expired_at: moment().add(30, "minutes").unix(),
+                expired_at: moment().add(30, 'minutes').unix(),
             },
             json: true,
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("/transactions/start result:", response.statusCode, response.body);
+        console.log('/transactions/start result:', response.statusCode, response.body);
         if (response.statusCode !== 201)
             throw new Error(response.body.message);
         let transactionId = response.body.data._id;
         let owners = response.body.data.attributes.owners;
         let promoterOwner = owners.find((owner) => {
-            return (owner.group === "PROMOTER");
+            return (owner.group === 'PROMOTER');
         });
         let promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
         let anonymousOwner = owners.find((owner) => {
-            return (owner.group === "ANONYMOUS");
+            return (owner.group === 'ANONYMOUS');
         });
         let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
-        let theaterCode = "001";
-        let dateJouei = "20170210";
-        let titleCode = "8513";
-        let titleBranchNum = "0";
-        let timeBegin = "1010";
-        let screenCode = "2";
+        // 空席なくなったら変更する
+        let theaterCode = '001';
+        let dateJouei = '20170210';
+        let titleCode = '8513';
+        let titleBranchNum = '0';
+        let timeBegin = '1010';
+        let screenCode = '2';
+        // 販売可能チケット検索
         let salesTicketResult = yield COA.salesTicketInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -59,6 +61,7 @@ function main() {
             title_branch_num: titleBranchNum,
             time_begin: timeBegin,
         });
+        // COA空席確認
         let getStateReserveSeatResult = yield COA.getStateReserveSeatInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -71,9 +74,10 @@ function main() {
         let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
             return freeSeat.seat_num;
         });
-        console.log("freeSeatCodes count", freeSeatCodes.length);
+        console.log('freeSeatCodes count', freeSeatCodes.length);
         if (getStateReserveSeatResult.cnt_reserve_free === 0)
-            throw new Error("no available seats.");
+            throw new Error('no available seats.');
+        // COA仮予約
         let reserveSeatsTemporarilyResult = yield COA.reserveSeatsTemporarilyInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -90,7 +94,8 @@ function main() {
                 }]
         });
         console.log(reserveSeatsTemporarilyResult);
-        console.log("adding authorizations coaSeatReservation...");
+        // COAオーソリ追加
+        console.log('adding authorizations coaSeatReservation...');
         let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
@@ -106,7 +111,7 @@ function main() {
                 coa_screen_code: screenCode,
                 seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                     return {
-                        performance: "001201701208513021010",
+                        performance: '001201701208513021010',
                         section: tmpReserve.seat_section,
                         seat_code: tmpReserve.seat_num,
                         ticket_code: salesTicketResult.list_ticket[0].ticket_code,
@@ -125,20 +130,23 @@ function main() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
+        console.log('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
         let coaAuthorizationId = response.body.data._id;
+        // COA仮予約削除
         yield COA.deleteTmpReserveInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
             title_branch_num: titleBranchNum,
             time_begin: timeBegin,
+            // screen_code: screenCode,
             tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num
         });
-        console.log("deleteTmpReserveResult:", true);
-        console.log("removing authorizations coaSeatReservation...");
+        console.log('deleteTmpReserveResult:', true);
+        // COAオーソリ削除
+        console.log('removing authorizations coaSeatReservation...');
         response = yield request.del({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
             body: {},
@@ -146,28 +154,30 @@ function main() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("removeCOASeatReservationAuthorization result:", response.statusCode, response.body);
+        console.log('removeCOASeatReservationAuthorization result:', response.statusCode, response.body);
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
+        // GMOオーソリ取得
         let orderId = Date.now().toString();
-        let entryTranResult = yield GMO.CreditService.entryTranInterface.call({
-            shop_id: gmoShopId,
-            shop_pass: gmoShopPass,
-            order_id: orderId,
-            job_cd: GMO.Util.JOB_CD_AUTH,
+        let entryTranResult = yield GMO.CreditService.entryTran({
+            shopId: gmoShopId,
+            shopPass: gmoShopPass,
+            orderId: orderId,
+            jobCd: GMO.Util.JOB_CD_AUTH,
             amount: totalPrice,
         });
-        let execTranResult = yield GMO.CreditService.execTranInterface.call({
-            access_id: entryTranResult.access_id,
-            access_pass: entryTranResult.access_pass,
-            order_id: orderId,
-            method: "1",
-            card_no: "4111111111111111",
-            expire: "2012",
-            security_code: "123",
+        let execTranResult = yield GMO.CreditService.execTran({
+            accessId: entryTranResult.accessId,
+            accessPass: entryTranResult.accessPass,
+            orderId: orderId,
+            method: '1',
+            cardNo: '4111111111111111',
+            expire: '2012',
+            securityCode: '123',
         });
         console.log(execTranResult);
-        console.log("adding authorizations gmo...");
+        // GMOオーソリ追加
+        console.log('adding authorizations gmo...');
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {
@@ -177,8 +187,8 @@ function main() {
                 gmo_shop_pass: gmoShopPass,
                 gmo_order_id: orderId,
                 gmo_amount: totalPrice,
-                gmo_access_id: entryTranResult.access_id,
-                gmo_access_pass: entryTranResult.access_pass,
+                gmo_access_id: entryTranResult.accessId,
+                gmo_access_pass: entryTranResult.accessPass,
                 gmo_job_cd: GMO.Util.JOB_CD_AUTH,
                 gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             },
@@ -186,19 +196,21 @@ function main() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("addGMOAuthorization result:", response.statusCode, response.body);
+        console.log('addGMOAuthorization result:', response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
         let gmoAuthorizationId = response.body.data._id;
-        let alterTranResult = yield GMO.CreditService.alterTranInterface.call({
-            shop_id: gmoShopId,
-            shop_pass: gmoShopPass,
-            access_id: entryTranResult.access_id,
-            access_pass: entryTranResult.access_pass,
-            job_cd: GMO.Util.JOB_CD_VOID
+        // GMOオーソリ取消
+        let alterTranResult = yield GMO.CreditService.alterTran({
+            shopId: gmoShopId,
+            shopPass: gmoShopPass,
+            accessId: entryTranResult.accessId,
+            accessPass: entryTranResult.accessPass,
+            jobCd: GMO.Util.JOB_CD_VOID
         });
-        console.log("alterTranResult:", alterTranResult);
-        console.log("removing authorizations gmo...");
+        console.log('alterTranResult:', alterTranResult);
+        // GMOオーソリ削除
+        console.log('removing authorizations gmo...');
         response = yield request.del({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
             body: {},
@@ -206,9 +218,10 @@ function main() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("removeGMOAuthorization result:", response.statusCode, response.body);
+        console.log('removeGMOAuthorization result:', response.statusCode, response.body);
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
+        // COA仮予約2回目
         let reserveSeatsTemporarilyResult2 = yield COA.reserveSeatsTemporarilyInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -224,8 +237,9 @@ function main() {
                     seat_num: freeSeatCodes[1]
                 }]
         });
-        console.log("reserveSeatsTemporarilyResult2:", reserveSeatsTemporarilyResult2);
-        console.log("adding authorizations coaSeatReservation...");
+        console.log('reserveSeatsTemporarilyResult2:', reserveSeatsTemporarilyResult2);
+        // COAオーソリ追加
+        console.log('adding authorizations coaSeatReservation...');
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
             body: {
@@ -240,7 +254,7 @@ function main() {
                 coa_screen_code: screenCode,
                 seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
                     return {
-                        performance: "001201701208513021010",
+                        performance: '001201701208513021010',
                         section: tmpReserve.seat_section,
                         seat_code: tmpReserve.seat_num,
                         ticket_code: salesTicketResult.list_ticket[0].ticket_code,
@@ -259,28 +273,30 @@ function main() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("addCOASeatReservationAuthorization result:", response.statusCode, response.body);
+        console.log('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
+        // GMOオーソリ取得(2回目)
         orderId = Date.now().toString();
-        let entryTranResult2 = yield GMO.CreditService.entryTranInterface.call({
-            shop_id: gmoShopId,
-            shop_pass: gmoShopPass,
-            order_id: orderId,
-            job_cd: GMO.Util.JOB_CD_AUTH,
+        let entryTranResult2 = yield GMO.CreditService.entryTran({
+            shopId: gmoShopId,
+            shopPass: gmoShopPass,
+            orderId: orderId,
+            jobCd: GMO.Util.JOB_CD_AUTH,
             amount: totalPrice,
         });
-        let execTranResult2 = yield GMO.CreditService.execTranInterface.call({
-            access_id: entryTranResult2.access_id,
-            access_pass: entryTranResult2.access_pass,
-            order_id: orderId,
-            method: "1",
-            card_no: "4111111111111111",
-            expire: "2012",
-            security_code: "123",
+        let execTranResult2 = yield GMO.CreditService.execTran({
+            accessId: entryTranResult2.accessId,
+            accessPass: entryTranResult2.accessPass,
+            orderId: orderId,
+            method: '1',
+            cardNo: '4111111111111111',
+            expire: '2012',
+            securityCode: '123',
         });
-        console.log("execTranResult2:", execTranResult2);
-        console.log("adding authorizations gmo...");
+        console.log('execTranResult2:', execTranResult2);
+        // GMOオーソリ追加
+        console.log('adding authorizations gmo...');
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
             body: {
@@ -290,44 +306,47 @@ function main() {
                 gmo_shop_pass: gmoShopPass,
                 gmo_order_id: orderId,
                 gmo_amount: totalPrice,
-                gmo_access_id: entryTranResult2.access_id,
-                gmo_access_pass: entryTranResult2.access_pass,
+                gmo_access_id: entryTranResult2.accessId,
+                gmo_access_pass: entryTranResult2.accessPass,
                 gmo_job_cd: GMO.Util.JOB_CD_AUTH,
                 gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             },
             json: true,
             resolveWithFullResponse: true,
         });
-        console.log("addGMOAuthorization result:", response.statusCode, response.body);
+        console.log('addGMOAuthorization result:', response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
-        console.log("updating anonymous...");
+        // 購入者情報登録
+        console.log('updating anonymous...');
         response = yield request.patch({
             url: `http://localhost:8080/transactions/${transactionId}/anonymousOwner`,
             body: {
-                name_first: "Tetsu",
-                name_last: "Yamazaki",
-                tel: "09012345678",
-                email: "hello@motionpicture.jp",
+                name_first: 'Tetsu',
+                name_last: 'Yamazaki',
+                tel: '09012345678',
+                email: 'hello@motionpicture.jp',
             },
             json: true,
             resolveWithFullResponse: true,
         });
-        console.log("anonymousOwner updated.", response.statusCode, response.body);
+        console.log('anonymousOwner updated.', response.statusCode, response.body);
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
-        let tel = "09012345678";
+        // COA本予約
+        let tel = '09012345678';
         let updateReserveResult = yield COA.updateReserveInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
             title_branch_num: titleBranchNum,
             time_begin: timeBegin,
+            // screen_code: screenCode,
             tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
-            reserve_name: "山崎 哲",
-            reserve_name_jkana: "ヤマザキ テツ",
-            tel_num: "09012345678",
-            mail_addr: "yamazaki@motionpicture.jp",
+            reserve_name: '山崎 哲',
+            reserve_name_jkana: 'ヤマザキ テツ',
+            tel_num: '09012345678',
+            mail_addr: 'yamazaki@motionpicture.jp',
             reserve_amount: totalPrice,
             list_ticket: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
                 return {
@@ -336,13 +355,15 @@ function main() {
                     add_price: salesTicketResult.list_ticket[0].add_price,
                     dis_price: 0,
                     sale_price: salesTicketResult.list_ticket[0].sale_price,
+                    mvtk_app_price: 0,
                     ticket_count: 1,
                     seat_num: tmpReserve.seat_num
                 };
             })
         });
-        console.log("updateReserveResult:", updateReserveResult);
-        console.log("enabling inquiry...");
+        console.log('updateReserveResult:', updateReserveResult);
+        // 照会情報登録(購入番号と電話番号で照会する場合)
+        console.log('enabling inquiry...');
         response = yield request.patch({
             url: `http://localhost:8080/transactions/${transactionId}/enableInquiry`,
             body: {
@@ -354,14 +375,15 @@ function main() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("enableInquiry result:", response.statusCode, response.body);
+        console.log('enableInquiry result:', response.statusCode, response.body);
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
+        // メール追加
         let content = `
 <!DOCTYPE html>
-<html lang="ja">
+<html lang='ja'>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>
 <title>購入完了</title>
 </head>
 <body>
@@ -371,24 +393,25 @@ function main() {
 </body>
 </html>
 `;
-        console.log("adding email...");
+        console.log('adding email...');
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
             body: {
-                from: "noreply@localhost",
-                to: "hello@motionpicture.jp",
-                subject: "購入完了",
+                from: 'noreply@localhost',
+                to: 'hello@motionpicture.jp',
+                subject: '購入完了',
                 content: content,
             },
             json: true,
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("addEmail result:", response.statusCode, response.body);
+        console.log('addEmail result:', response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
         let notificationId = response.body.data._id;
-        console.log("removing email...");
+        // メール削除
+        console.log('removing email...');
         response = yield request.del({
             url: `http://localhost:8080/transactions/${transactionId}/notifications/${notificationId}`,
             body: {},
@@ -396,26 +419,28 @@ function main() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("removeEmail result:", response.statusCode, response.body);
+        console.log('removeEmail result:', response.statusCode, response.body);
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
-        console.log("adding email...");
+        // 再度メール追加
+        console.log('adding email...');
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
             body: {
-                from: "noreply@localhost",
-                to: "hello@motionpicture.jp",
-                subject: "購入完了",
+                from: 'noreply@localhost',
+                to: 'hello@motionpicture.jp',
+                subject: '購入完了',
                 content: content,
             },
             json: true,
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("addEmail result:", response.statusCode, response.body);
+        console.log('addEmail result:', response.statusCode, response.body);
         if (response.statusCode !== 200)
             throw new Error(response.body.message);
-        console.log("closing transaction...");
+        // 取引成立
+        console.log('closing transaction...');
         response = yield request.patch({
             url: `http://localhost:8080/transactions/${transactionId}/close`,
             body: {},
@@ -423,9 +448,10 @@ function main() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("close result:", response.statusCode, response.body);
+        console.log('close result:', response.statusCode, response.body);
         if (response.statusCode !== 204)
             throw new Error(response.body.message);
+        // 照会してみる
         response = yield request.post({
             url: `http://localhost:8080/transactions/makeInquiry`,
             body: {
@@ -437,11 +463,11 @@ function main() {
             simple: false,
             resolveWithFullResponse: true,
         });
-        console.log("makeInquiry result:", response.statusCode, response.body);
+        console.log('makeInquiry result:', response.statusCode, response.body);
     });
 }
 main().then(() => {
-    console.log("main processed.");
+    console.log('main processed.');
 }).catch((err) => {
     console.error(err.message);
 });

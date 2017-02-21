@@ -7,16 +7,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const SSKTS = require("@motionpicture/sskts-domain");
 const mongoose = require("mongoose");
-mongoose.set('debug', true);
+mongoose.set('debug', true); // TODO 本番でははずす
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 const moment = require("moment");
-const transaction_1 = require("../../domain/default/service/interpreter/transaction");
-const transaction_2 = require("../../domain/default/repository/interpreter/transaction");
-const queue_1 = require("../../domain/default/repository/interpreter/queue");
-const transactionStatus_1 = require("../../domain/default/model/transactionStatus");
-const transactionQueuesStatus_1 = require("../../domain/default/model/transactionQueuesStatus");
 let countExecute = 0;
 let countRetry = 0;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
@@ -43,36 +39,41 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
     }
     countRetry--;
 }), 500);
+/**
+ * キューエクスポートを実行する
+ */
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        let transactionRepository = transaction_2.default(mongoose.connection);
+        let transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
         let option = yield transactionRepository.findOneAndUpdate({
-            status: { $in: [transactionStatus_1.default.CLOSED, transactionStatus_1.default.EXPIRED] },
-            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+            status: { $in: [SSKTS.TransactionStatus.CLOSED, SSKTS.TransactionStatus.EXPIRED] },
+            queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED
         }, {
-            queues_status: transactionQueuesStatus_1.default.EXPORTING
+            queues_status: SSKTS.TransactionQueuesStatus.EXPORTING
         });
         if (!option.isEmpty) {
             let transaction = option.get();
-            yield transaction_1.default.exportQueues({
-                transaction_id: transaction._id.toString()
-            })(transactionRepository, queue_1.default(mongoose.connection));
+            // 失敗してもここでは戻さない(RUNNINGのまま待機)
+            yield SSKTS.TransactionService.exportQueues(transaction._id.toString())(transactionRepository, SSKTS.createQueueRepository(mongoose.connection));
             yield transactionRepository.findOneAndUpdate({
                 _id: transaction._id
             }, {
-                queues_status: transactionQueuesStatus_1.default.EXPORTED
+                queues_status: SSKTS.TransactionQueuesStatus.EXPORTED
             });
         }
     });
 }
+/**
+ * エクスポート中のままになっている取引についてリトライ
+ */
 function retry() {
     return __awaiter(this, void 0, void 0, function* () {
-        let transactionRepository = transaction_2.default(mongoose.connection);
+        let transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
         yield transactionRepository.findOneAndUpdate({
-            queues_status: transactionQueuesStatus_1.default.EXPORTING,
-            updated_at: { $lt: moment().add("minutes", -10).toISOString() },
+            queues_status: SSKTS.TransactionQueuesStatus.EXPORTING,
+            updated_at: { $lt: moment().add('minutes', -10).toISOString() },
         }, {
-            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+            queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED
         });
     });
 }
