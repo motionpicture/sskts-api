@@ -18,9 +18,14 @@ program
     .description('import theater from COA.')
     .action(async (theaterCode) => {
         try {
+            debug('mongoose connecting...')
             mongoose.connect(process.env.MONGOLAB_URI);
 
-            await SSKTS.MasterService.importTheater(theaterCode)(SSKTS.createTheaterRepository(mongoose.connection));
+            const theaterRepository = SSKTS.createTheaterRepository(mongoose.connection);
+            debug('repository created.');
+            debug('importing theater...');
+            await SSKTS.MasterService.importTheater(theaterCode)(theaterRepository);
+            debug('theater imported.');
         } catch (error) {
             console.error(error);
         }
