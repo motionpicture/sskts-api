@@ -15,15 +15,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const express_1 = require("express");
 const router = express_1.Router();
 const SSKTS = require("@motionpicture/sskts-domain");
+const createDebug = require("debug");
 const HTTPStatus = require("http-status");
 const mongoose = require("mongoose");
-router.get('/:code', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+const debug = createDebug('sskts-api:*');
+router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
     }
     try {
         const option = yield SSKTS.MasterService.findTheater(req.params.id)(SSKTS.createTheaterRepository(mongoose.connection));
+        debug('option is', option);
         option.match({
             Some: (theater) => {
                 res.json({
