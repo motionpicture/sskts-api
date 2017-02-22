@@ -7,26 +7,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+/**
+ * 取引期限監視
+ *
+ * @ignore
+ */
 const SSKTS = require("@motionpicture/sskts-domain");
+const createDebug = require("debug");
 const mongoose = require("mongoose");
-mongoose.set('debug', true); // TODO 本番でははずす
+const debug = createDebug('sskts-api:*');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
+const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
+const INTERVAL_MILLISECONDS = 500;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    if (count > 10)
+    if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
         return;
-    count++;
+    }
+    count += 1;
     try {
         yield execute();
     }
     catch (error) {
         console.error(error.message);
     }
-    count--;
-}), 500);
+    count -= 1;
+}), INTERVAL_MILLISECONDS);
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
+        debug('transaction expiring...');
         yield SSKTS.TransactionService.expireOne()(SSKTS.createTransactionRepository(mongoose.connection));
     });
 }

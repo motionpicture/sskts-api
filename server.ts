@@ -2,26 +2,26 @@
  * Module dependencies.
  */
 
-let startTime = process.hrtime();
+const startTime = process.hrtime();
 
-import app = require('./app/app');
-// import debugModule = require('debug');
-import http = require('http');
+import * as createDebug from 'debug';
+import * as http from 'http';
+import * as app from './app/app';
 
-// let debug = debugModule('app:server');
+const debug = createDebug('app:server');
 
 /**
  * Get port from environment and store in Express.
  */
 
-let port = normalizePort(process.env.PORT || process.env.npm_config_port);
+const port = normalizePort(process.env.PORT || process.env.npm_config_port);
 app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
-let server = http.createServer(app);
+const server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -36,16 +36,17 @@ server.on('listening', onListening);
  */
 
 function normalizePort(val: any) {
-    let port = parseInt(val, 10);
+    // tslint:disable-next-line:no-magic-numbers
+    const portNumber = parseInt(val, 10);
 
-    if (isNaN(port)) {
+    if (isNaN(portNumber)) {
         // named pipe
         return val;
     }
 
-    if (port >= 0) {
+    if (portNumber >= 0) {
         // port number
-        return port;
+        return portNumber;
     }
 
     return false;
@@ -60,7 +61,7 @@ function onError(error: any) {
         throw error;
     }
 
-    let bind = typeof port === 'string'
+    const bind = typeof port === 'string'
         ? 'Pipe ' + port
         : 'Port ' + port;
 
@@ -84,14 +85,12 @@ function onError(error: any) {
  */
 
 function onListening() {
-    let addr = server.address();
-    let bind = typeof addr === 'string'
+    const addr = server.address();
+    const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
-    // debug('Listening on ' + bind);
-    console.log('Listening on ' + bind);
+    debug('Listening on ' + bind);
 
-    let diff = process.hrtime(startTime);
-    console.log(`api server listening took ${diff[0]} seconds and ${diff[1]} nanoseconds.`);
-
+    const diff = process.hrtime(startTime);
+    debug(`api server listening took ${diff[0]} seconds and ${diff[1]} nanoseconds.`);
 }

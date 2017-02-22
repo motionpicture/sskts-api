@@ -4,6 +4,7 @@ iisnode/
 npm-debug.log*
 .vscode/
 .env*
+docs/
 
 !.gitignore
 !.gitkeep

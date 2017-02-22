@@ -7,40 +7,49 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+/**
+ * メール通知
+ *
+ * @ignore
+ */
 const SSKTS = require("@motionpicture/sskts-domain");
-const sendgrid = require("sendgrid");
+const createDebug = require("debug");
 const mongoose = require("mongoose");
-mongoose.set('debug', true); // TODO 本番でははずす
+const sendgrid = require("sendgrid");
+const debug = createDebug('sskts-api:*');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
+const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
+const INTERVAL_MILLISECONDS = 500;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    if (count > 10)
+    if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
         return;
-    count++;
+    }
+    count += 1;
     try {
         yield execute();
     }
     catch (error) {
         console.error(error.message);
     }
-    count--;
-}), 500);
+    count -= 1;
+}), INTERVAL_MILLISECONDS);
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        let queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+        const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
         // 未実行のメール送信キューを取得
-        let option = yield queueRepository.findOneSendEmailAndUpdate({
+        const option = yield queueRepository.findOneSendEmailAndUpdate({
             status: SSKTS.QueueStatus.UNEXECUTED,
-            run_at: { $lt: new Date() },
+            run_at: { $lt: new Date() }
         }, {
             status: SSKTS.QueueStatus.RUNNING,
             last_tried_at: new Date(),
             $inc: { count_tried: 1 } // トライ回数増やす
         });
         if (!option.isEmpty) {
-            let queue = option.get();
-            console.log('queue is', queue);
+            const queue = option.get();
+            debug('queue is', queue);
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
                 yield SSKTS.NotificationService.sendEmail(queue.notification)(sendgrid);

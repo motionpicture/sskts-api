@@ -7,65 +7,83 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+/**
+ * 実行中ステータスのキュー監視
+ *
+ * @ignore
+ */
 const SSKTS = require("@motionpicture/sskts-domain");
+const createDebug = require("debug");
 const moment = require("moment");
 const mongoose = require("mongoose");
-mongoose.set('debug', true); // TODO 本番でははずす
+const debug = createDebug('sskts-api:*');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let countRetry = 0;
 let countAbort = 0;
+const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
+const INTERVAL_MILLISECONDS = 500;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    if (countRetry > 10)
+    if (countRetry > MAX_NUBMER_OF_PARALLEL_TASKS) {
         return;
-    countRetry++;
+    }
+    countRetry += 1;
     try {
         yield retry();
     }
     catch (error) {
         console.error(error.message);
     }
-    countRetry--;
-}), 500);
+    countRetry -= 1;
+}), INTERVAL_MILLISECONDS);
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    if (countAbort > 10)
+    if (countAbort > MAX_NUBMER_OF_PARALLEL_TASKS) {
         return;
-    countAbort++;
+    }
+    countAbort += 1;
     try {
         yield abort();
     }
     catch (error) {
         console.error(error.message);
     }
-    countAbort--;
-}), 500);
+    countAbort -= 1;
+}), INTERVAL_MILLISECONDS);
+const RETRY_INTERVAL_MINUTES = 10;
 /**
  * 最終試行から10分経過したキューのリトライ
+ *
+ * @ignore
  */
 function retry() {
     return __awaiter(this, void 0, void 0, function* () {
-        let queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+        const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
         yield queueRepository.findOneAndUpdate({
             status: SSKTS.QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add('minutes', -10).toISOString() },
+            last_tried_at: { $lt: moment().add('minutes', -RETRY_INTERVAL_MINUTES).toISOString() },
+            // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function () { return (this.max_count_try > this.count_tried); }
         }, {
-            status: SSKTS.QueueStatus.UNEXECUTED,
+            status: SSKTS.QueueStatus.UNEXECUTED // 実行中に変更
         });
     });
 }
 /**
  * 最大試行回数に達したキューを実行中止にする
+ *
+ * @ignore
  */
 function abort() {
     return __awaiter(this, void 0, void 0, function* () {
-        let queueRepository = SSKTS.createQueueRepository(mongoose.connection);
-        yield queueRepository.findOneAndUpdate({
+        const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+        const abortedQueue = yield queueRepository.findOneAndUpdate({
             status: SSKTS.QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add('minutes', -10).toISOString() },
+            last_tried_at: { $lt: moment().add('minutes', -RETRY_INTERVAL_MINUTES).toISOString() },
+            // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function () { return (this.max_count_try === this.count_tried); }
         }, {
-            status: SSKTS.QueueStatus.ABORTED,
+            status: SSKTS.QueueStatus.ABORTED
         });
+        debug('abortedQueue:', abortedQueue);
     });
 }

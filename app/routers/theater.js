@@ -7,16 +7,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+/**
+ * theaterルーター
+ *
+ * @ignore
+ */
 const express_1 = require("express");
-let router = express_1.Router();
+const router = express_1.Router();
 const SSKTS = require("@motionpicture/sskts-domain");
+const HTTPStatus = require("http-status");
 const mongoose = require("mongoose");
 router.get('/:code', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    let validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty())
+    const validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
+    }
     try {
-        let option = yield SSKTS.MasterService.findTheater(req.params.id)(SSKTS.createTheaterRepository(mongoose.connection));
+        const option = yield SSKTS.MasterService.findTheater(req.params.id)(SSKTS.createTheaterRepository(mongoose.connection));
         option.match({
             Some: (theater) => {
                 res.json({
@@ -28,7 +35,7 @@ router.get('/:code', (req, res, next) => __awaiter(this, void 0, void 0, functio
                 });
             },
             None: () => {
-                res.status(404);
+                res.status(HTTPStatus.NOT_FOUND);
                 res.json({
                     data: null
                 });

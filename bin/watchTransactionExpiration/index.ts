@@ -1,24 +1,42 @@
+/**
+ * 取引期限監視
+ *
+ * @ignore
+ */
 import * as SSKTS from '@motionpicture/sskts-domain';
+import * as createDebug from 'debug';
+import * as mongoose from 'mongoose';
 
-import mongoose = require("mongoose");
-mongoose.set('debug', true); // TODO 本番でははずす
-mongoose.Promise = global.Promise;
+const debug = createDebug('sskts-api:*');
+
+(<any>mongoose).Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
+
 let count = 0;
 
-setInterval(async () => {
-    if (count > 10) return;
-    count++;
+const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
+const INTERVAL_MILLISECONDS = 500;
 
-    try {
-        await execute();
-    } catch (error) {
-        console.error(error.message);
-    }
+setInterval(
+    async () => {
+        if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
+            return;
+        }
 
-    count--;
-}, 500);
+        count += 1;
+
+        try {
+            await execute();
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        count -= 1;
+    },
+    INTERVAL_MILLISECONDS
+);
 
 async function execute() {
+    debug('transaction expiring...');
     await SSKTS.TransactionService.expireOne()(SSKTS.createTransactionRepository(mongoose.connection));
 }

@@ -1,7 +1,11 @@
 "use strict";
+/**
+ * ロガーミドルウェア
+ *
+ * @module
+ */
 const log4js = require("log4js");
-// import config = require('config');
-let env = process.env.NODE_ENV || 'dev';
+const env = process.env.NODE_ENV || 'development';
 log4js.configure({
     appenders: [
         {
@@ -17,8 +21,8 @@ log4js.configure({
         }
     ],
     levels: {
-        access: (env === 'dev') ? log4js.levels.ALL.toString() : log4js.levels.OFF.toString(),
-        system: (env === 'prod') ? log4js.levels.INFO.toString() : log4js.levels.ALL.toString()
+        access: (env === 'development') ? log4js.levels.ALL.toString() : log4js.levels.OFF.toString(),
+        system: (env === 'production') ? log4js.levels.INFO.toString() : log4js.levels.ALL.toString()
     },
     replaceConsole: (env === 'prod') ? false : true
 });

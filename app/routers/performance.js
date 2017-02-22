@@ -7,16 +7,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+/**
+ * performanceルーター
+ *
+ * @ignore
+ */
 const express_1 = require("express");
-let router = express_1.Router();
+const router = express_1.Router();
 const SSKTS = require("@motionpicture/sskts-domain");
+const HTTPStatus = require("http-status");
 const mongoose = require("mongoose");
 router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    let validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty())
+    const validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
+    }
     try {
-        let option = yield SSKTS.MasterService.findPerformance(req.params.id)(SSKTS.createPerformanceRepository(mongoose.connection));
+        const option = yield SSKTS.MasterService.findPerformance(req.params.id)(SSKTS.createPerformanceRepository(mongoose.connection));
         option.match({
             Some: (performance) => {
                 res.json({
@@ -28,7 +35,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
                 });
             },
             None: () => {
-                res.status(404);
+                res.status(HTTPStatus.NOT_FOUND);
                 res.json({
                     data: null
                 });
@@ -40,15 +47,16 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
     }
 }));
 router.get('', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    let validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty())
+    const validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
+    }
     try {
-        let performances = yield SSKTS.MasterService.searchPerformances({
+        const performances = yield SSKTS.MasterService.searchPerformances({
             day: req.query.day,
-            theater: req.query.theater,
+            theater: req.query.theater
         })(SSKTS.createPerformanceRepository(mongoose.connection));
-        let data = performances.map((performance) => {
+        const data = performances.map((performance) => {
             return {
                 type: 'performances',
                 _id: performance._id,
@@ -56,7 +64,7 @@ router.get('', (req, res, next) => __awaiter(this, void 0, void 0, function* () 
             };
         });
         res.json({
-            data: data,
+            data: data
         });
     }
     catch (error) {

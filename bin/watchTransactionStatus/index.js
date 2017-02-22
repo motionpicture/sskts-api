@@ -7,52 +7,65 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+/**
+ * 取引ステータス監視
+ *
+ * @ignore
+ */
 const SSKTS = require("@motionpicture/sskts-domain");
+const createDebug = require("debug");
+const moment = require("moment");
 const mongoose = require("mongoose");
-mongoose.set('debug', true); // TODO 本番でははずす
+const debug = createDebug('sskts-api:*');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
-const moment = require("moment");
 let countExecute = 0;
 let countRetry = 0;
+const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
+const INTERVAL_MILLISECONDS = 500;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    if (countExecute > 10)
+    if (countExecute > MAX_NUBMER_OF_PARALLEL_TASKS) {
         return;
-    countExecute++;
+    }
+    countExecute += 1;
     try {
         yield execute();
     }
     catch (error) {
         console.error(error.message);
     }
-    countExecute--;
-}), 500);
+    countExecute -= 1;
+}), INTERVAL_MILLISECONDS);
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    if (countRetry > 10)
+    if (countRetry > MAX_NUBMER_OF_PARALLEL_TASKS) {
         return;
-    countRetry++;
+    }
+    countRetry += 1;
     try {
         yield retry();
     }
     catch (error) {
         console.error(error.message);
     }
-    countRetry--;
-}), 500);
+    countRetry -= 1;
+}), INTERVAL_MILLISECONDS);
 /**
  * キューエクスポートを実行する
+ *
+ * @ignore
  */
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        let transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
-        let option = yield transactionRepository.findOneAndUpdate({
+        const transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
+        const option = yield transactionRepository.findOneAndUpdate({
             status: { $in: [SSKTS.TransactionStatus.CLOSED, SSKTS.TransactionStatus.EXPIRED] },
             queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED
         }, {
             queues_status: SSKTS.TransactionQueuesStatus.EXPORTING
         });
         if (!option.isEmpty) {
-            let transaction = option.get();
+            const transaction = option.get();
+            debug('transaction is', transaction);
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
             yield SSKTS.TransactionService.exportQueues(transaction._id.toString())(transactionRepository, SSKTS.createQueueRepository(mongoose.connection));
             yield transactionRepository.findOneAndUpdate({
@@ -65,13 +78,16 @@ function execute() {
 }
 /**
  * エクスポート中のままになっている取引についてリトライ
+ *
+ * @ignore
  */
 function retry() {
     return __awaiter(this, void 0, void 0, function* () {
-        let transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
+        const transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
+        const RETRY_INTERVAL_MINUTES = 10;
         yield transactionRepository.findOneAndUpdate({
             queues_status: SSKTS.TransactionQueuesStatus.EXPORTING,
-            updated_at: { $lt: moment().add('minutes', -10).toISOString() },
+            updated_at: { $lt: moment().add('minutes', -RETRY_INTERVAL_MINUTES).toISOString() }
         }, {
             queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED
         });

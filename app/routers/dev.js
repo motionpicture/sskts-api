@@ -1,14 +1,22 @@
 "use strict";
+/**
+ * devルーター
+ *
+ * @ignore
+ */
 const express = require("express");
-let router = express.Router();
+const router = express.Router();
+const createDebug = require("debug");
+const HTTPStatus = require("http-status");
 const mongoose = require("mongoose");
+const debug = createDebug('sskts-api:*');
 // middleware that is specific to this router
 // router.use((req, res, next) => {
-//   console.log('Time: ', Date.now())
+//   debug('Time: ', Date.now())
 //   next()
 // })
 router.get('/environmentVariables', (req, res) => {
-    console.log('ip:', req.ip);
+    debug('ip:', req.ip);
     // this.logger.debug('process.env:', process.env);
     res.json({
         data: {
@@ -18,19 +26,21 @@ router.get('/environmentVariables', (req, res) => {
     });
 });
 router.get('/mongoose/connect', (req, res, next) => {
-    console.log('ip:', req.ip);
+    debug('ip:', req.ip);
     mongoose.connect(process.env.MONGOLAB_URI, (err) => {
-        if (err)
+        if (err) {
             return next(err);
-        res.status(204).end();
+        }
+        res.status(HTTPStatus.NO_CONTENT).end();
     });
 });
 router.get('/mongoose/disconnect', (req, res, next) => {
-    console.log('ip:', req.ip);
+    debug('ip:', req.ip);
     mongoose.disconnect((err) => {
-        if (err)
+        if (err) {
             return next(err);
-        res.status(204).end();
+        }
+        res.status(HTTPStatus.NO_CONTENT).end();
     });
 });
 Object.defineProperty(exports, "__esModule", { value: true });

@@ -1,15 +1,25 @@
-import express = require('express')
-let router = express.Router();
-import mongoose = require('mongoose');
+/**
+ * devルーター
+ *
+ * @ignore
+ */
+import * as express from 'express';
+const router = express.Router();
+
+import * as createDebug from 'debug';
+import * as HTTPStatus from 'http-status';
+import * as mongoose from 'mongoose';
+
+const debug = createDebug('sskts-api:*');
 
 // middleware that is specific to this router
 // router.use((req, res, next) => {
-//   console.log('Time: ', Date.now())
+//   debug('Time: ', Date.now())
 //   next()
 // })
 
 router.get('/environmentVariables', (req, res) => {
-    console.log('ip:', req.ip);
+    debug('ip:', req.ip);
     // this.logger.debug('process.env:', process.env);
     res.json({
         data: {
@@ -20,20 +30,24 @@ router.get('/environmentVariables', (req, res) => {
 });
 
 router.get('/mongoose/connect', (req, res, next) => {
-    console.log('ip:', req.ip);
+    debug('ip:', req.ip);
     mongoose.connect(process.env.MONGOLAB_URI, (err: Error) => {
-        if (err) return next(err);
+        if (err) {
+            return next(err);
+        }
 
-        res.status(204).end();
+        res.status(HTTPStatus.NO_CONTENT).end();
     });
 });
 
 router.get('/mongoose/disconnect', (req, res, next) => {
-    console.log('ip:', req.ip);
+    debug('ip:', req.ip);
     mongoose.disconnect((err) => {
-        if (err) return next(err);
+        if (err) {
+            return next(err);
+        }
 
-        res.status(204).end();
+        res.status(HTTPStatus.NO_CONTENT).end();
     });
 });
 

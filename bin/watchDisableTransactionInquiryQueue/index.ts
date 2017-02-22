@@ -1,32 +1,49 @@
+/**
+ * 取引照会無効化
+ *
+ * @ignore
+ */
+import * as COA from '@motionpicture/coa-service';
 import * as SSKTS from '@motionpicture/sskts-domain';
-import mongoose = require('mongoose');
-import COA = require('@motionpicture/coa-service');
+import * as createDebug from 'debug';
+import * as mongoose from 'mongoose';
 
-mongoose.set('debug', true); // TODO 本番でははずす
-mongoose.Promise = global.Promise;
+const debug = createDebug('sskts-api:*');
+
+(<any>mongoose).Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
+
 let count = 0;
 
-setInterval(async () => {
-    if (count > 10) return;
-    count++;
+const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
+const INTERVAL_MILLISECONDS = 500;
 
-    try {
-        await execute();
-    } catch (error) {
-        console.error(error.message);
-    }
+setInterval(
+    async () => {
+        if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
+            return;
+        }
 
-    count--;
-}, 500);
+        count += 1;
+
+        try {
+            await execute();
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        count -= 1;
+    },
+    INTERVAL_MILLISECONDS
+);
 
 async function execute() {
-    let queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+    const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
 
-    let option = await queueRepository.findOneDisableTransactionInquiryAndUpdate(
+    const option = await queueRepository.findOneDisableTransactionInquiryAndUpdate(
         {
             status: SSKTS.QueueStatus.UNEXECUTED,
-            run_at: { $lt: new Date() },
+            run_at: { $lt: new Date() }
         },
         {
             status: SSKTS.QueueStatus.RUNNING, // 実行中に変更
@@ -36,8 +53,8 @@ async function execute() {
     );
 
     if (!option.isEmpty) {
-        let queue = option.get();
-        console.log('queue is', queue);
+        const queue = option.get();
+        debug('queue is', queue);
 
         try {
             // 失敗してもここでは戻さない(RUNNINGのまま待機)

@@ -1,22 +1,31 @@
-import express = require('express');
-let router = express.Router();
+/**
+ * transactionルーター
+ *
+ * @ignore
+ */
+import * as express from 'express';
+const router = express.Router();
 
 import * as SSKTS from '@motionpicture/sskts-domain';
-import mongoose = require('mongoose');
+import * as HTTPStatus from 'http-status';
+import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 
 router.post('/makeInquiry', async (req, res, next) => {
-    // TODO validation
+    // todo validation
 
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
         const key = SSKTS.TransactionInquiryKey.create({
             theater_code: req.body.inquiry_theater,
             reserve_num: req.body.inquiry_id,
-            tel: req.body.inquiry_pass,
+            tel: req.body.inquiry_pass
         });
-        let option = await SSKTS.TransactionService.makeInquiry(key)(SSKTS.createTransactionRepository(mongoose.connection));
+        const option = await SSKTS.TransactionService.makeInquiry(key)(SSKTS.createTransactionRepository(mongoose.connection));
 
         option.match({
             Some: (transaction) => {
@@ -29,7 +38,7 @@ router.post('/makeInquiry', async (req, res, next) => {
                 });
             },
             None: () => {
-                res.status(404);
+                res.status(HTTPStatus.NOT_FOUND);
                 res.json({
                     data: null
                 });
@@ -41,13 +50,15 @@ router.post('/makeInquiry', async (req, res, next) => {
 });
 
 router.get('/:id', async (req, res, next) => {
-    // TODO validation
+    // todo validation
 
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
-        let option = await SSKTS.TransactionService.findById(req.params.id)(SSKTS.createTransactionRepository(mongoose.connection));
+        const option = await SSKTS.TransactionService.findById(req.params.id)(SSKTS.createTransactionRepository(mongoose.connection));
         option.match({
             Some: (transaction) => {
                 res.json({
@@ -59,7 +70,7 @@ router.get('/:id', async (req, res, next) => {
                 });
             },
             None: () => {
-                res.status(404);
+                res.status(HTTPStatus.NOT_FOUND);
                 res.json({
                     data: null
                 });
@@ -71,20 +82,25 @@ router.get('/:id', async (req, res, next) => {
 });
 
 router.post('', async (req, res, next) => {
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
-    // TODO ownersの型チェック
-    // expired_atはsecondsのタイムスタンプで
+    // todo ownersの型チェック
+    // expired_atはsecondsのUNIXタイムスタンプで
 
     try {
-        let transaction = await SSKTS.TransactionService.start(new Date(parseInt(req.body.expired_at) * 1000))(
+        // tslint:disable-next-line:no-magic-numbers
+        const transaction = await SSKTS.TransactionService.start(moment.unix(parseInt(req.body.expired_at, 10)).toDate())(
             SSKTS.createOwnerRepository(mongoose.connection),
             SSKTS.createTransactionRepository(mongoose.connection)
         );
 
-        res.status(201);
-        res.setHeader('Location', `https://${req.headers['host']}/transactions/${transaction._id}`);
+        // tslint:disable-next-line:no-string-literal
+        const hots = req.headers['host'];
+        res.status(HTTPStatus.CREATED);
+        res.setHeader('Location', `https://${hots}/transactions/${transaction._id}`);
         res.json({
             data: {
                 type: 'transactions',
@@ -100,8 +116,10 @@ router.post('', async (req, res, next) => {
 router.patch('/:id/anonymousOwner', async (req, res, next) => {
     // req.checkBody('group', 'invalid group.').notEmpty();
 
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
         await SSKTS.TransactionService.updateAnonymousOwner({
@@ -109,19 +127,21 @@ router.patch('/:id/anonymousOwner', async (req, res, next) => {
             name_first: req.body.name_first,
             name_last: req.body.name_last,
             tel: req.body.tel,
-            email: req.body.email,
+            email: req.body.email
         })(SSKTS.createOwnerRepository(mongoose.connection), SSKTS.createTransactionRepository(mongoose.connection));
 
-        res.status(204).end();
+        res.status(HTTPStatus.NO_CONTENT).end();
     } catch (error) {
         next(error);
     }
 });
 
 router.post('/:id/authorizations/gmo', async (req, res, next) => {
-    // TODO validations
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    // todo validations
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
         const authorization = SSKTS.Authorization.createGMO({
@@ -135,13 +155,13 @@ router.post('/:id/authorizations/gmo', async (req, res, next) => {
             gmo_access_pass: req.body.gmo_access_pass,
             gmo_job_cd: req.body.gmo_job_cd,
             gmo_pay_type: req.body.gmo_pay_type,
-            price: req.body.gmo_amount,
+            price: req.body.gmo_amount
         });
         await SSKTS.TransactionService.addGMOAuthorization(req.params.id, authorization)(
             SSKTS.createTransactionRepository(mongoose.connection)
         );
 
-        res.status(200).json({
+        res.status(HTTPStatus.OK).json({
             data: {
                 type: 'authorizations',
                 _id: authorization._id
@@ -153,15 +173,18 @@ router.post('/:id/authorizations/gmo', async (req, res, next) => {
 });
 
 router.post('/:id/authorizations/coaSeatReservation', async (req, res, next) => {
-    // TODO validations
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    // todo validations
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
         const authorization = SSKTS.Authorization.createCOASeatReservation({
             owner_from: req.body.owner_id_from,
             owner_to: req.body.owner_id_to,
-            coa_tmp_reserve_num: parseInt(req.body.coa_tmp_reserve_num),
+            // tslint:disable-next-line:no-magic-numbers
+            coa_tmp_reserve_num: parseInt(req.body.coa_tmp_reserve_num, 10),
             coa_theater_code: req.body.coa_theater_code,
             coa_date_jouei: req.body.coa_date_jouei,
             coa_title_code: req.body.coa_title_code,
@@ -188,12 +211,13 @@ router.post('/:id/authorizations/coaSeatReservation', async (req, res, next) => 
                     sale_price: seat.sale_price
                 });
             }),
-            price: parseInt(req.body.price)
+            // tslint:disable-next-line:no-magic-numbers
+            price: parseInt(req.body.price, 10)
         });
         await SSKTS.TransactionService.addCOASeatReservationAuthorization(req.params.id, authorization)(
             SSKTS.createTransactionRepository(mongoose.connection));
 
-        res.status(200).json({
+        res.status(HTTPStatus.OK).json({
             data: {
                 type: 'authorizations',
                 _id: authorization._id
@@ -205,22 +229,28 @@ router.post('/:id/authorizations/coaSeatReservation', async (req, res, next) => 
 });
 
 router.delete('/:id/authorizations/:authorization_id', async (req, res, next) => {
-    // TODO validations
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    // todo validations
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
-        await SSKTS.TransactionService.removeAuthorization(req.params.id, req.params.authorization_id)(SSKTS.createTransactionRepository(mongoose.connection));
+        await SSKTS.TransactionService.removeAuthorization(req.params.id, req.params.authorization_id)(
+            SSKTS.createTransactionRepository(mongoose.connection)
+        );
 
-        res.status(204).end();
+        res.status(HTTPStatus.NO_CONTENT).end();
     } catch (error) {
         next(error);
     }
 });
 
 router.patch('/:id/enableInquiry', async (req, res, next) => {
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
         const key = SSKTS.TransactionInquiryKey.create({
@@ -230,16 +260,18 @@ router.patch('/:id/enableInquiry', async (req, res, next) => {
         });
         await SSKTS.TransactionService.enableInquiry(req.params.id, key)(SSKTS.createTransactionRepository(mongoose.connection));
 
-        res.status(204).end();
+        res.status(HTTPStatus.NO_CONTENT).end();
     } catch (error) {
         next(error);
     }
 });
 
 router.post('/:id/notifications/email', async (req, res, next) => {
-    // TODO validations
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    // todo validations
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
         const notification = SSKTS.Notification.createEmail({
@@ -250,7 +282,7 @@ router.post('/:id/notifications/email', async (req, res, next) => {
         });
         await SSKTS.TransactionService.addEmail(req.params.id, notification)(SSKTS.createTransactionRepository(mongoose.connection));
 
-        res.status(200).json({
+        res.status(HTTPStatus.OK).json({
             data: {
                 type: 'notification_id',
                 _id: notification._id
@@ -262,27 +294,33 @@ router.post('/:id/notifications/email', async (req, res, next) => {
 });
 
 router.delete('/:id/notifications/:notification_id', async (req, res, next) => {
-    // TODO validations
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    // todo validations
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
-        await SSKTS.TransactionService.removeEmail(req.params.id, req.params.notification_id)(SSKTS.createTransactionRepository(mongoose.connection));
+        await SSKTS.TransactionService.removeEmail(req.params.id, req.params.notification_id)(
+            SSKTS.createTransactionRepository(mongoose.connection)
+        );
 
-        res.status(204).end();
+        res.status(HTTPStatus.NO_CONTENT).end();
     } catch (error) {
         next(error);
     }
 });
 
 router.patch('/:id/close', async (req, res, next) => {
-    let validatorResult = await req.getValidationResult();
-    if (!validatorResult.isEmpty()) return next(new Error(validatorResult.array()[0].msg));
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
 
     try {
         await SSKTS.TransactionService.close(req.params.id)(SSKTS.createTransactionRepository(mongoose.connection));
 
-        res.status(204).end();
+        res.status(HTTPStatus.NO_CONTENT).end();
     } catch (error) {
         next(error);
     }
