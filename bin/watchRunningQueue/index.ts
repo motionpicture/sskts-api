@@ -70,7 +70,7 @@ async function retry() {
     await queueRepository.findOneAndUpdate(
         {
             status: SSKTS.QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add('minutes', -RETRY_INTERVAL_MINUTES).toISOString() },
+            last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function (this: any) { return (this.max_count_try > this.count_tried); }
         },
@@ -91,7 +91,7 @@ async function abort() {
     const abortedQueue = await queueRepository.findOneAndUpdate(
         {
             status: SSKTS.QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add('minutes', -RETRY_INTERVAL_MINUTES).toISOString() },
+            last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function (this: any) { return (this.max_count_try === this.count_tried); }
         },

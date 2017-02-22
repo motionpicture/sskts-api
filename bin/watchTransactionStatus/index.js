@@ -29,6 +29,7 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
     }
     countExecute += 1;
     try {
+        debug('executing...');
         yield execute();
     }
     catch (error) {
@@ -87,7 +88,7 @@ function retry() {
         const RETRY_INTERVAL_MINUTES = 10;
         yield transactionRepository.findOneAndUpdate({
             queues_status: SSKTS.TransactionQueuesStatus.EXPORTING,
-            updated_at: { $lt: moment().add('minutes', -RETRY_INTERVAL_MINUTES).toISOString() }
+            updated_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() }
         }, {
             queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED
         });

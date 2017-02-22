@@ -60,7 +60,7 @@ function retry() {
         const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
         yield queueRepository.findOneAndUpdate({
             status: SSKTS.QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add('minutes', -RETRY_INTERVAL_MINUTES).toISOString() },
+            last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function () { return (this.max_count_try > this.count_tried); }
         }, {
@@ -78,7 +78,7 @@ function abort() {
         const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
         const abortedQueue = yield queueRepository.findOneAndUpdate({
             status: SSKTS.QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add('minutes', -RETRY_INTERVAL_MINUTES).toISOString() },
+            last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function () { return (this.max_count_try === this.count_tried); }
         }, {

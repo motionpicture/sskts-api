@@ -28,6 +28,7 @@ setInterval(
         countExecute += 1;
 
         try {
+            debug('executing...');
             await execute();
         } catch (error) {
             console.error(error.message);
@@ -107,7 +108,7 @@ async function retry() {
     await transactionRepository.findOneAndUpdate(
         {
             queues_status: SSKTS.TransactionQueuesStatus.EXPORTING,
-            updated_at: { $lt: moment().add('minutes', -RETRY_INTERVAL_MINUTES).toISOString() }
+            updated_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() }
         },
         {
             queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED

@@ -1,107 +1,94 @@
-import request = require('request-promise-native');
-import GMO = require('@motionpicture/gmo-service');
+// tslint:disable:no-http-string no-magic-numbers
 
-import COA = require('@motionpicture/coa-service');
-// COA.initialize({
-//     endpoint: 'http://coacinema.aa0.netvolante.jp',
-//     refresh_token: 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ'
-// });
+/**
+ * 取引フローテストスクリプト
+ *
+ * @ignore
+ */
+import * as COA from '@motionpicture/coa-service';
+import * as GMO from '@motionpicture/gmo-service';
+import * as createDebug from 'debug';
+import * as moment from 'moment';
+import * as request from 'request-promise-native';
 
-import moment = require('moment');
+const debug = createDebug('*');
 
+// tslint:disable-next-line:max-func-body-length
 async function main() {
     let response: any;
-    let gmoShopId = 'tshop00026096';
-    let gmoShopPass = 'xbxmkaa6';
-
-
-
+    const gmoShopId = 'tshop00026096';
+    const gmoShopPass = 'xbxmkaa6';
 
     // 取引開始
     // 30分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
-    console.log('starting transaction...');
+    debug('starting transaction...');
     response = await request.post({
         url: 'http://localhost:8080/transactions',
         body: {
-            expired_at: moment().add(30, 'minutes').unix(),
+            expired_at: moment().add(30, 'minutes').unix()
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('/transactions/start result:', response.statusCode, response.body);
-    if (response.statusCode !== 201) throw new Error(response.body.message);
-    let transactionId = response.body.data._id;
+    debug('/transactions/start result:', response.statusCode, response.body);
+    if (response.statusCode !== 201) {
+        throw new Error(response.body.message);
+    }
+    const transactionId = response.body.data._id;
 
-    let owners: Array<{
-        _id: string,
-        group: string
-    }> = response.body.data.attributes.owners;
-    let promoterOwner = owners.find((owner) => {
+    interface IOwner {
+        _id: string;
+        group: string;
+    }
+    const owners: IOwner[] = response.body.data.attributes.owners;
+    const promoterOwner = owners.find((owner) => {
         return (owner.group === 'PROMOTER');
     });
-    let promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
-    let anonymousOwner = owners.find((owner) => {
+    const promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
+    const anonymousOwner = owners.find((owner) => {
         return (owner.group === 'ANONYMOUS');
     });
-    let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
-
-
-
-
-
-
-
-
+    const anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
 
     // 空席なくなったら変更する
-    let theaterCode = '001';
-    let dateJouei = '20170210';
-    let titleCode = '8513';
-    let titleBranchNum = '0';
-    let timeBegin = '1010';
-    let screenCode = '2';
-
-
-
+    const theaterCode = '001';
+    const dateJouei = '20170210';
+    const titleCode = '8513';
+    const titleBranchNum = '0';
+    const timeBegin = '1010';
+    const screenCode = '2';
 
     // 販売可能チケット検索
-    let salesTicketResult = await COA.salesTicketInterface.call({
+    const salesTicketResult = await COA.salesTicketInterface.call({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
         title_branch_num: titleBranchNum,
-        time_begin: timeBegin,
+        time_begin: timeBegin
     });
 
-
-
-
-
-
-
-
     // COA空席確認
-    let getStateReserveSeatResult = await COA.getStateReserveSeatInterface.call({
+    const getStateReserveSeatResult = await COA.getStateReserveSeatInterface.call({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
         title_branch_num: titleBranchNum,
         time_begin: timeBegin,
         screen_code: screenCode
-    })
-    let sectionCode = getStateReserveSeatResult.list_seat[0].seat_section;
-    let freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
+    });
+    const sectionCode = getStateReserveSeatResult.list_seat[0].seat_section;
+    const freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
         return freeSeat.seat_num;
     });
-    console.log('freeSeatCodes count', freeSeatCodes.length);
-    if (getStateReserveSeatResult.cnt_reserve_free === 0) throw new Error('no available seats.');
-
-
+    debug('freeSeatCodes count', freeSeatCodes.length);
+    if (getStateReserveSeatResult.cnt_reserve_free === 0) {
+        throw new Error('no available seats.');
+    }
 
     // COA仮予約
-    let reserveSeatsTemporarilyResult = await COA.reserveSeatsTemporarilyInterface.call({
+    const reserveSeatsTemporarilyResult = await COA.reserveSeatsTemporarilyInterface.call({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -115,12 +102,12 @@ async function main() {
             seat_section: sectionCode,
             seat_num: freeSeatCodes[1]
         }]
-    })
-    console.log(reserveSeatsTemporarilyResult);
+    });
+    debug(reserveSeatsTemporarilyResult);
 
     // COAオーソリ追加
-    console.log('adding authorizations coaSeatReservation...');
-    let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
+    debug('adding authorizations coaSeatReservation...');
+    const totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
@@ -145,26 +132,20 @@ async function main() {
                     std_price: salesTicketResult.list_ticket[0].std_price,
                     add_price: salesTicketResult.list_ticket[0].add_price,
                     dis_price: 0,
-                    sale_price: salesTicketResult.list_ticket[0].sale_price,
-                }
+                    sale_price: salesTicketResult.list_ticket[0].sale_price
+                };
             }),
             price: totalPrice
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) throw new Error(response.body.message);
-    let coaAuthorizationId = response.body.data._id;
-
-
-
-
-
-
-
-
+    debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
+    if (response.statusCode !== 200) {
+        throw new Error(response.body.message);
+    }
+    const coaAuthorizationId = response.body.data._id;
 
     // COA仮予約削除
     await COA.deleteTmpReserveInterface.call({
@@ -175,54 +156,47 @@ async function main() {
         time_begin: timeBegin,
         // screen_code: screenCode,
         tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num
-    })
-    console.log('deleteTmpReserveResult:', true);
+    });
+    debug('deconsteTmpReserveResult:', true);
 
     // COAオーソリ削除
-    console.log('removing authorizations coaSeatReservation...');
+    debug('removing authorizations coaSeatReservation...');
     response = await request.del({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
         body: {
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('removeCOASeatReservationAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
-
-
-
-
-
-
-
-
-
+    debug('removeCOASeatReservationAuthorization result:', response.statusCode, response.body);
+    if (response.statusCode !== 204) {
+        throw new Error(response.body.message);
+    }
 
     // GMOオーソリ取得
     let orderId = Date.now().toString();
-    let entryTranResult = await GMO.CreditService.entryTran({
+    const entryTranResult = await GMO.CreditService.entryTran({
         shopId: gmoShopId,
         shopPass: gmoShopPass,
         orderId: orderId,
         jobCd: GMO.Util.JOB_CD_AUTH,
-        amount: totalPrice,
+        amount: totalPrice
     });
 
-    let execTranResult = await GMO.CreditService.execTran({
+    const execTranResult = await GMO.CreditService.execTran({
         accessId: entryTranResult.accessId,
         accessPass: entryTranResult.accessPass,
         orderId: orderId,
         method: '1',
         cardNo: '4111111111111111',
         expire: '2012',
-        securityCode: '123',
+        securityCode: '123'
     });
-    console.log(execTranResult);
+    debug(execTranResult);
 
     // GMOオーソリ追加
-    console.log('adding authorizations gmo...');
+    debug('adding authorizations gmo...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
@@ -235,53 +209,45 @@ async function main() {
             gmo_access_id: entryTranResult.accessId,
             gmo_access_pass: entryTranResult.accessPass,
             gmo_job_cd: GMO.Util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
+            gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('addGMOAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) throw new Error(response.body.message);
-    let gmoAuthorizationId = response.body.data._id;
-
-
+    debug('addGMOAuthorization result:', response.statusCode, response.body);
+    if (response.statusCode !== 200) {
+        throw new Error(response.body.message);
+    }
+    const gmoAuthorizationId = response.body.data._id;
 
     // GMOオーソリ取消
-    let alterTranResult = await GMO.CreditService.alterTran({
+    const alterTranResult = await GMO.CreditService.alterTran({
         shopId: gmoShopId,
         shopPass: gmoShopPass,
         accessId: entryTranResult.accessId,
         accessPass: entryTranResult.accessPass,
         jobCd: GMO.Util.JOB_CD_VOID
     });
-    console.log('alterTranResult:', alterTranResult);
+    debug('alterTranResult:', alterTranResult);
 
     // GMOオーソリ削除
-    console.log('removing authorizations gmo...');
+    debug('removing authorizations gmo...');
     response = await request.del({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
         body: {
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('removeGMOAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
-
-
-
-
-
-
-
-
-
-
+    debug('removeGMOAuthorization result:', response.statusCode, response.body);
+    if (response.statusCode !== 204) {
+        throw new Error(response.body.message);
+    }
 
     // COA仮予約2回目
-    let reserveSeatsTemporarilyResult2 = await COA.reserveSeatsTemporarilyInterface.call({
+    const reserveSeatsTemporarilyResult2 = await COA.reserveSeatsTemporarilyInterface.call({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -295,11 +261,11 @@ async function main() {
             seat_section: sectionCode,
             seat_num: freeSeatCodes[1]
         }]
-    })
-    console.log('reserveSeatsTemporarilyResult2:', reserveSeatsTemporarilyResult2);
+    });
+    debug('reserveSeatsTemporarilyResult2:', reserveSeatsTemporarilyResult2);
 
     // COAオーソリ追加
-    console.log('adding authorizations coaSeatReservation...');
+    debug('adding authorizations coaSeatReservation...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
@@ -324,50 +290,43 @@ async function main() {
                     std_price: salesTicketResult.list_ticket[0].std_price,
                     add_price: salesTicketResult.list_ticket[0].add_price,
                     dis_price: 0,
-                    sale_price: salesTicketResult.list_ticket[0].sale_price,
-                }
+                    sale_price: salesTicketResult.list_ticket[0].sale_price
+                };
             }),
             price: totalPrice
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) throw new Error(response.body.message);
-
-
-
-
-
-
-
-
-
+    debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
+    if (response.statusCode !== 200) {
+        throw new Error(response.body.message);
+    }
 
     // GMOオーソリ取得(2回目)
     orderId = Date.now().toString();
-    let entryTranResult2 = await GMO.CreditService.entryTran({
+    const entryTranResult2 = await GMO.CreditService.entryTran({
         shopId: gmoShopId,
         shopPass: gmoShopPass,
         orderId: orderId,
         jobCd: GMO.Util.JOB_CD_AUTH,
-        amount: totalPrice,
+        amount: totalPrice
     });
 
-    let execTranResult2 = await GMO.CreditService.execTran({
+    const execTranResult2 = await GMO.CreditService.execTran({
         accessId: entryTranResult2.accessId,
         accessPass: entryTranResult2.accessPass,
         orderId: orderId,
         method: '1',
         cardNo: '4111111111111111',
         expire: '2012',
-        securityCode: '123',
+        securityCode: '123'
     });
-    console.log('execTranResult2:', execTranResult2);
+    debug('execTranResult2:', execTranResult2);
 
     // GMOオーソリ追加
-    console.log('adding authorizations gmo...');
+    debug('adding authorizations gmo...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
         body: {
@@ -380,46 +339,37 @@ async function main() {
             gmo_access_id: entryTranResult2.accessId,
             gmo_access_pass: entryTranResult2.accessPass,
             gmo_job_cd: GMO.Util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
+            gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
         },
         json: true,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('addGMOAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) throw new Error(response.body.message);
-
-
-
-
-
-
+    debug('addGMOAuthorization result:', response.statusCode, response.body);
+    if (response.statusCode !== 200) {
+        throw new Error(response.body.message);
+    }
 
     // 購入者情報登録
-    console.log('updating anonymous...');
+    debug('updating anonymous...');
     response = await request.patch({
         url: `http://localhost:8080/transactions/${transactionId}/anonymousOwner`,
         body: {
             name_first: 'Tetsu',
             name_last: 'Yamazaki',
             tel: '09012345678',
-            email: 'hello@motionpicture.jp',
+            email: 'hello@motionpicture.jp'
         },
         json: true,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('anonymousOwner updated.', response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
-
-
-
-
-
-
-
+    debug('anonymousOwner updated.', response.statusCode, response.body);
+    if (response.statusCode !== 204) {
+        throw new Error(response.body.message);
+    }
 
     // COA本予約
-    let tel = '09012345678';
-    let updateReserveResult = await COA.updateReserveInterface.call({
+    const tel = '09012345678';
+    const updateReserveResult = await COA.updateReserveInterface.call({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -442,18 +392,13 @@ async function main() {
                 mvtk_app_price: 0,
                 ticket_count: 1,
                 seat_num: tmpReserve.seat_num
-            }
+            };
         })
     });
-    console.log('updateReserveResult:', updateReserveResult);
-
-
-
-
-
+    debug('updateReserveResult:', updateReserveResult);
 
     // 照会情報登録(購入番号と電話番号で照会する場合)
-    console.log('enabling inquiry...');
+    debug('enabling inquiry...');
     response = await request.patch({
         url: `http://localhost:8080/transactions/${transactionId}/enableInquiry`,
         body: {
@@ -463,19 +408,15 @@ async function main() {
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('enableInquiry result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
-
-
-
-
-
-
+    debug('enableInquiry result:', response.statusCode, response.body);
+    if (response.statusCode !== 204) {
+        throw new Error(response.body.message);
+    }
 
     // メール追加
-    let content = `
+    const content = `
 <!DOCTYPE html>
 <html lang='ja'>
 <head>
@@ -489,81 +430,77 @@ async function main() {
 </body>
 </html>
 `;
-    console.log('adding email...');
+    debug('adding email...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
         body: {
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
             subject: '購入完了',
-            content: content,
+            content: content
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('addEmail result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) throw new Error(response.body.message);
-    let notificationId = response.body.data._id;
+    debug('addEmail result:', response.statusCode, response.body);
+    if (response.statusCode !== 200) {
+        throw new Error(response.body.message);
+    }
+    const notificationId = response.body.data._id;
 
     // メール削除
-    console.log('removing email...');
+    debug('removing email...');
     response = await request.del({
         url: `http://localhost:8080/transactions/${transactionId}/notifications/${notificationId}`,
         body: {
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('removeEmail result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
+    debug('removeEmail result:', response.statusCode, response.body);
+    if (response.statusCode !== 204) {
+        throw new Error(response.body.message);
+    }
 
     // 再度メール追加
-    console.log('adding email...');
+    debug('adding email...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
         body: {
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
             subject: '購入完了',
-            content: content,
+            content: content
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('addEmail result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) throw new Error(response.body.message);
-
-
-
-
-
+    debug('addEmail result:', response.statusCode, response.body);
+    if (response.statusCode !== 200) {
+        throw new Error(response.body.message);
+    }
 
     // 取引成立
-    console.log('closing transaction...');
+    debug('closing transaction...');
     response = await request.patch({
         url: `http://localhost:8080/transactions/${transactionId}/close`,
         body: {
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('close result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) throw new Error(response.body.message);
-
-
-
-
-
-
-
+    debug('close result:', response.statusCode, response.body);
+    if (response.statusCode !== 204) {
+        throw new Error(response.body.message);
+    }
 
     // 照会してみる
     response = await request.post({
-        url: `http://localhost:8080/transactions/makeInquiry`,
+        url: 'http://localhost:8080/transactions/makeInquiry',
         body: {
             inquiry_theater: theaterCode,
             inquiry_id: updateReserveResult.reserve_num,
@@ -571,13 +508,13 @@ async function main() {
         },
         json: true,
         simple: false,
-        resolveWithFullResponse: true,
+        resolveWithFullResponse: true
     });
-    console.log('makeInquiry result:', response.statusCode, response.body);
+    debug('makeInquiry result:', response.statusCode, response.body);
 }
 
 main().then(() => {
-    console.log('main processed.');
+    debug('main processed.');
 }).catch((err) => {
     console.error(err.message);
 });
