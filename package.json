@@ -55,6 +55,7 @@
   "repository": {},
   "scripts": {
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
+    "preinstall": "npm prune",
     "start": "node server.js",
     "test": "mocha --no-timeouts --recursive",
     "tsc": "tsc -w",
