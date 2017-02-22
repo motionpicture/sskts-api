@@ -18,7 +18,7 @@ program
     .description('import theater from COA.')
     .action(async (theaterCode) => {
         try {
-            debug('mongoose connecting...')
+            debug('mongoose connecting...');
             mongoose.connect(process.env.MONGOLAB_URI);
 
             const theaterRepository = SSKTS.createTheaterRepository(mongoose.connection);
