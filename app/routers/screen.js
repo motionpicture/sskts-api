@@ -29,7 +29,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
                 res.json({
                     data: {
                         type: 'screens',
-                        _id: screen._id,
+                        id: screen.id,
                         attributes: screen
                     }
                 });

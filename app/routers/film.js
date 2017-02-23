@@ -30,7 +30,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
                 res.json({
                     data: {
                         type: 'films',
-                        _id: film._id,
+                        id: film.id,
                         attributes: film
                     }
                 });

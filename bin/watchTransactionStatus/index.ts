@@ -81,13 +81,13 @@ async function execute() {
         debug('transaction is', transaction);
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        await SSKTS.TransactionService.exportQueues(transaction._id.toString())(
+        await SSKTS.TransactionService.exportQueues(transaction.id.toString())(
             transactionRepository,
             SSKTS.createQueueRepository(mongoose.connection)
         );
         await transactionRepository.findOneAndUpdate(
             {
-                _id: transaction._id
+                _id: transaction.id
             },
             {
                 queues_status: SSKTS.TransactionQueuesStatus.EXPORTED

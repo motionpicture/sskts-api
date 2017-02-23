@@ -1,30 +1,35 @@
-import request = require('request-promise-native');
-import GMO = require('@motionpicture/gmo-service');
-
-import COA = require('@motionpicture/coa-service');
-// COA.initialize({
-//     endpoint: 'http://coacinema.aa0.netvolante.jp',
-//     refresh_token: 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ'
-// });
-
-import moment = require('moment');
+// tslint:disable-next-line:missing-jsdoc
+import * as COA from '@motionpicture/coa-service';
+import * as GMO from '@motionpicture/gmo-service';
+// import * as createDebug from 'debug';
+import * as moment from 'moment';
+import * as request from 'request-promise-native';
 
 let count = 0;
 
-setInterval(async () => {
-    if (count > 10) return;
-    count++;
+const MAX_NUMBER_OF_PARALLEL_TASKS = 10;
+const INTERVAL_MILLISECONDS = 1000;
 
-    try {
-        await execute();
-    } catch (error) {
-        console.error(error.message);
-    }
+setInterval(
+    async () => {
+        if (count > MAX_NUMBER_OF_PARALLEL_TASKS) {
+            return;
+        }
+        count += 1;
 
-    count--;
-}, 1000);
+        try {
+            await execute();
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        count -= 1;
+    },
+    INTERVAL_MILLISECONDS
+);
 
 
+// tslint:disable-next-line:max-func-body-length
 async function execute() {
     let response: any;
     let gmoShopId = 'tshop00026096';
@@ -47,20 +52,20 @@ async function execute() {
     });
     console.log('/transactions/start result:', response.statusCode, response.body);
     if (response.statusCode !== 201) throw new Error(response.body.message);
-    let transactionId = response.body.data._id;
+    let transactionId = response.body.data.id;
 
     let owners: Array<{
-        _id: string,
+        id: string,
         group: string
     }> = response.body.data.attributes.owners;
     let promoterOwner = owners.find((owner) => {
         return (owner.group === 'PROMOTER');
     });
-    let promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
+    let promoterOwnerId = (promoterOwner) ? promoterOwner.id : null;
     let anonymousOwner = owners.find((owner) => {
         return (owner.group === 'ANONYMOUS');
     });
-    let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
+    let anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
 
 
 
@@ -81,7 +86,7 @@ async function execute() {
 
 
     // 販売可能チケット検索
-    let salesTicketResult = await COA.salesTicketInterface.call({
+    let salesTicketResult = await COA.ReserveService.salesTicket({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -97,7 +102,7 @@ async function execute() {
 
 
     // COA空席確認
-    let getStateReserveSeatResult = await COA.getStateReserveSeatInterface.call({
+    let getStateReserveSeatResult = await COA.ReserveService.getStateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -116,7 +121,7 @@ async function execute() {
 
 
     // COA仮予約
-    let reserveSeatsTemporarilyResult = await COA.reserveSeatsTemporarilyInterface.call({
+    let reserveSeatsTemporarilyResult = await COA.ReserveService.reserveSeatsTemporarily({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -135,7 +140,7 @@ async function execute() {
 
     // COAオーソリ追加
     console.log('adding authorizations coaSeatReservation...');
-    let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
+    let totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
@@ -153,14 +158,14 @@ async function execute() {
                     performance: '001201701208513021010',
                     section: tmpReserve.seat_section,
                     seat_code: tmpReserve.seat_num,
-                    ticket_code: salesTicketResult.list_ticket[0].ticket_code,
-                    ticket_name_ja: salesTicketResult.list_ticket[0].ticket_name,
-                    ticket_name_en: salesTicketResult.list_ticket[0].ticket_name_eng,
-                    ticket_name_kana: salesTicketResult.list_ticket[0].ticket_name_kana,
-                    std_price: salesTicketResult.list_ticket[0].std_price,
-                    add_price: salesTicketResult.list_ticket[0].add_price,
+                    ticket_code: salesTicketResult[0].ticket_code,
+                    ticket_name_ja: salesTicketResult[0].ticket_name,
+                    ticket_name_en: salesTicketResult[0].ticket_name_eng,
+                    ticket_name_kana: salesTicketResult[0].ticket_name_kana,
+                    std_price: salesTicketResult[0].std_price,
+                    add_price: salesTicketResult[0].add_price,
                     dis_price: 0,
-                    sale_price: salesTicketResult.list_ticket[0].sale_price,
+                    sale_price: salesTicketResult[0].sale_price,
                 }
             }),
             price: totalPrice

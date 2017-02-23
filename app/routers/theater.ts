@@ -27,7 +27,7 @@ router.get('/:id', async (req, res, next) => {
                 res.json({
                     data: {
                         type: 'theaters',
-                        _id: theater._id,
+                        id: theater.id,
                         attributes: theater
                     }
                 });

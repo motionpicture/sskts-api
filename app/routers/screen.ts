@@ -23,7 +23,7 @@ router.get('/:id', async (req, res, next) => {
                 res.json({
                     data: {
                         type: 'screens',
-                        _id: screen._id,
+                        id: screen.id,
                         attributes: screen
                     }
                 });

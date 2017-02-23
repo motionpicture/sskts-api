@@ -1,10 +1,15 @@
 "use strict";
+/**
+ * メール送信テスト
+ *
+ * @ignore
+ */
 const SSKTS = require("@motionpicture/sskts-domain");
-const sendgrid = require("sendgrid");
 const email = SSKTS.Notification.createEmail({
     from: 'test@localhost',
     to: 'ilovegadd@gmail.com',
     subject: 'test subject',
+    // tslint:disable-next-line:no-multiline-string
     content: `
 <!DOCTYPE html>
 <html lang='ja'>
@@ -27,7 +32,8 @@ const email = SSKTS.Notification.createEmail({
 </html>
 `
 });
-SSKTS.NotificationService.sendEmail(email)(sendgrid).then(() => {
+SSKTS.NotificationService.sendEmail(email)().then(() => {
+    // tslint:disable-next-line:no-console
     console.log('sent.');
 }).catch((err) => {
     console.error(err);

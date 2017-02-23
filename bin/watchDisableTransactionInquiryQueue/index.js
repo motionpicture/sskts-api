@@ -12,7 +12,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
  *
  * @ignore
  */
-const COA = require("@motionpicture/coa-service");
 const SSKTS = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
@@ -46,20 +45,19 @@ function execute() {
             last_tried_at: new Date(),
             $inc: { count_tried: 1 } // トライ回数増やす
         });
+        debug('option is', option);
         if (!option.isEmpty) {
             const queue = option.get();
             debug('queue is', queue);
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
-                yield SSKTS.StockService.disableTransactionInquiry({
-                    transaction_id: queue.transaction_id.toString()
-                })(SSKTS.createTransactionRepository(mongoose.connection), COA);
+                yield SSKTS.StockService.disableTransactionInquiry(queue.transaction)(SSKTS.createTransactionRepository(mongoose.connection));
                 // 実行済みに変更
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: SSKTS.QueueStatus.EXECUTED });
+                yield queueRepository.findOneAndUpdate({ _id: queue.id }, { status: SSKTS.QueueStatus.EXECUTED });
             }
             catch (error) {
                 // 実行結果追加
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, {
+                yield queueRepository.findOneAndUpdate({ _id: queue.id }, {
                     $push: {
                         results: error.stack
                     }

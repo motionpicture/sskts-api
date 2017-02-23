@@ -23,7 +23,7 @@ router.get('/:id', async (req, res, next) => {
                 res.json({
                     data: {
                         type: 'performances',
-                        _id: performance._id,
+                        id: performance.id,
                         attributes: performance
                     }
                 });
@@ -55,7 +55,7 @@ router.get('', async (req, res, next) => {
         const data = performances.map((performance) => {
             return {
                 type: 'performances',
-                _id: performance._id,
+                id: performance.id,
                 attributes: performance
             };
         });

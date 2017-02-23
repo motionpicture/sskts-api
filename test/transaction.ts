@@ -36,32 +36,32 @@ async function main() {
     if (response.statusCode !== 201) {
         throw new Error(response.body.message);
     }
-    const transactionId = response.body.data._id;
+    const transactionId = response.body.data.id;
 
     interface IOwner {
-        _id: string;
+        id: string;
         group: string;
     }
     const owners: IOwner[] = response.body.data.attributes.owners;
     const promoterOwner = owners.find((owner) => {
         return (owner.group === 'PROMOTER');
     });
-    const promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
+    const promoterOwnerId = (promoterOwner) ? promoterOwner.id : null;
     const anonymousOwner = owners.find((owner) => {
         return (owner.group === 'ANONYMOUS');
     });
-    const anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
+    const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
 
     // 空席なくなったら変更する
-    const theaterCode = '001';
-    const dateJouei = '20170210';
-    const titleCode = '8513';
+    const theaterCode = '118';
+    const dateJouei = '20170228';
+    const titleCode = '16404';
     const titleBranchNum = '0';
-    const timeBegin = '1010';
-    const screenCode = '2';
+    const timeBegin = '0920';
+    const screenCode = '8';
 
     // 販売可能チケット検索
-    const salesTicketResult = await COA.salesTicketInterface.call({
+    const salesTicketResult = await COA.ReserveService.salesTicket({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -70,7 +70,7 @@ async function main() {
     });
 
     // COA空席確認
-    const getStateReserveSeatResult = await COA.getStateReserveSeatInterface.call({
+    const getStateReserveSeatResult = await COA.ReserveService.getStateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -78,6 +78,7 @@ async function main() {
         time_begin: timeBegin,
         screen_code: screenCode
     });
+    debug('getStateReserveSeatResult is', getStateReserveSeatResult);
     const sectionCode = getStateReserveSeatResult.list_seat[0].seat_section;
     const freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
         return freeSeat.seat_num;
@@ -88,7 +89,7 @@ async function main() {
     }
 
     // COA仮予約
-    const reserveSeatsTemporarilyResult = await COA.reserveSeatsTemporarilyInterface.call({
+    const reserveSeatsTemporarilyResult = await COA.ReserveService.reserveSeatsTemporarily({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -107,7 +108,7 @@ async function main() {
 
     // COAオーソリ追加
     debug('adding authorizations coaSeatReservation...');
-    const totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
+    const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
         body: {
@@ -125,14 +126,14 @@ async function main() {
                     performance: '001201701208513021010',
                     section: tmpReserve.seat_section,
                     seat_code: tmpReserve.seat_num,
-                    ticket_code: salesTicketResult.list_ticket[0].ticket_code,
-                    ticket_name_ja: salesTicketResult.list_ticket[0].ticket_name,
-                    ticket_name_en: salesTicketResult.list_ticket[0].ticket_name_eng,
-                    ticket_name_kana: salesTicketResult.list_ticket[0].ticket_name_kana,
-                    std_price: salesTicketResult.list_ticket[0].std_price,
-                    add_price: salesTicketResult.list_ticket[0].add_price,
+                    ticket_code: salesTicketResult[0].ticket_code,
+                    ticket_name_ja: salesTicketResult[0].ticket_name,
+                    ticket_name_en: salesTicketResult[0].ticket_name_eng,
+                    ticket_name_kana: salesTicketResult[0].ticket_name_kana,
+                    std_price: salesTicketResult[0].std_price,
+                    add_price: salesTicketResult[0].add_price,
                     dis_price: 0,
-                    sale_price: salesTicketResult.list_ticket[0].sale_price
+                    sale_price: salesTicketResult[0].sale_price
                 };
             }),
             price: totalPrice
@@ -145,10 +146,10 @@ async function main() {
     if (response.statusCode !== 200) {
         throw new Error(response.body.message);
     }
-    const coaAuthorizationId = response.body.data._id;
+    const coaAuthorizationId = response.body.data.id;
 
     // COA仮予約削除
-    await COA.deleteTmpReserveInterface.call({
+    await COA.ReserveService.deleteTmpReserve({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -219,7 +220,7 @@ async function main() {
     if (response.statusCode !== 200) {
         throw new Error(response.body.message);
     }
-    const gmoAuthorizationId = response.body.data._id;
+    const gmoAuthorizationId = response.body.data.id;
 
     // GMOオーソリ取消
     const alterTranResult = await GMO.CreditService.alterTran({
@@ -247,7 +248,7 @@ async function main() {
     }
 
     // COA仮予約2回目
-    const reserveSeatsTemporarilyResult2 = await COA.reserveSeatsTemporarilyInterface.call({
+    const reserveSeatsTemporarilyResult2 = await COA.ReserveService.reserveSeatsTemporarily({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -283,14 +284,14 @@ async function main() {
                     performance: '001201701208513021010',
                     section: tmpReserve.seat_section,
                     seat_code: tmpReserve.seat_num,
-                    ticket_code: salesTicketResult.list_ticket[0].ticket_code,
-                    ticket_name_ja: salesTicketResult.list_ticket[0].ticket_name,
-                    ticket_name_en: salesTicketResult.list_ticket[0].ticket_name_eng,
-                    ticket_name_kana: salesTicketResult.list_ticket[0].ticket_name_kana,
-                    std_price: salesTicketResult.list_ticket[0].std_price,
-                    add_price: salesTicketResult.list_ticket[0].add_price,
+                    ticket_code: salesTicketResult[0].ticket_code,
+                    ticket_name_ja: salesTicketResult[0].ticket_name,
+                    ticket_name_en: salesTicketResult[0].ticket_name_eng,
+                    ticket_name_kana: salesTicketResult[0].ticket_name_kana,
+                    std_price: salesTicketResult[0].std_price,
+                    add_price: salesTicketResult[0].add_price,
                     dis_price: 0,
-                    sale_price: salesTicketResult.list_ticket[0].sale_price
+                    sale_price: salesTicketResult[0].sale_price
                 };
             }),
             price: totalPrice
@@ -369,7 +370,7 @@ async function main() {
 
     // COA本予約
     const tel = '09012345678';
-    const updateReserveResult = await COA.updateReserveInterface.call({
+    const updateReserveResult = await COA.ReserveService.updateReserve({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -384,11 +385,11 @@ async function main() {
         reserve_amount: totalPrice,
         list_ticket: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
             return {
-                ticket_code: salesTicketResult.list_ticket[0].ticket_code,
-                std_price: salesTicketResult.list_ticket[0].std_price,
-                add_price: salesTicketResult.list_ticket[0].add_price,
+                ticket_code: salesTicketResult[0].ticket_code,
+                std_price: salesTicketResult[0].std_price,
+                add_price: salesTicketResult[0].add_price,
                 dis_price: 0,
-                sale_price: salesTicketResult.list_ticket[0].sale_price,
+                sale_price: salesTicketResult[0].sale_price,
                 mvtk_app_price: 0,
                 ticket_count: 1,
                 seat_num: tmpReserve.seat_num
@@ -447,7 +448,7 @@ async function main() {
     if (response.statusCode !== 200) {
         throw new Error(response.body.message);
     }
-    const notificationId = response.body.data._id;
+    const notificationId = response.body.data.id;
 
     // メール削除
     debug('removing email...');

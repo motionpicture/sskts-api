@@ -15,7 +15,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const SSKTS = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
-const sendgrid = require("sendgrid");
 const debug = createDebug('sskts-api:*');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -52,12 +51,12 @@ function execute() {
             debug('queue is', queue);
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
-                yield SSKTS.NotificationService.sendEmail(queue.notification)(sendgrid);
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: SSKTS.QueueStatus.EXECUTED });
+                yield SSKTS.NotificationService.sendEmail(queue.notification)();
+                yield queueRepository.findOneAndUpdate({ _id: queue.id }, { status: SSKTS.QueueStatus.EXECUTED });
             }
             catch (error) {
                 // 実行結果追加
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, {
+                yield queueRepository.findOneAndUpdate({ _id: queue.id }, {
                     $push: {
                         results: error.stack
                     }

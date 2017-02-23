@@ -3,7 +3,6 @@
  *
  * @ignore
  */
-import * as GMO from '@motionpicture/gmo-service';
 import * as SSKTS from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
@@ -58,12 +57,12 @@ async function execute() {
 
         try {
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            await SSKTS.SalesService.cancelGMOAuth(queue.authorization)(GMO);
+            await SSKTS.SalesService.cancelGMOAuth(queue.authorization)();
             // 実行済みに変更
-            await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: SSKTS.QueueStatus.EXECUTED });
+            await queueRepository.findOneAndUpdate({ _id: queue.id }, { status: SSKTS.QueueStatus.EXECUTED });
         } catch (error) {
             // 実行結果追加
-            await queueRepository.findOneAndUpdate({ _id: queue._id }, {
+            await queueRepository.findOneAndUpdate({ _id: queue.id }, {
                 $push: {
                     results: error.stack
                 }

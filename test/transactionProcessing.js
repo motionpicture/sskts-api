@@ -7,27 +7,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const request = require("request-promise-native");
-const GMO = require("@motionpicture/gmo-service");
+// tslint:disable-next-line:missing-jsdoc
 const COA = require("@motionpicture/coa-service");
-// COA.initialize({
-//     endpoint: 'http://coacinema.aa0.netvolante.jp',
-//     refresh_token: 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ'
-// });
+const GMO = require("@motionpicture/gmo-service");
+// import * as createDebug from 'debug';
 const moment = require("moment");
+const request = require("request-promise-native");
 let count = 0;
+const MAX_NUMBER_OF_PARALLEL_TASKS = 10;
+const INTERVAL_MILLISECONDS = 1000;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    if (count > 10)
+    if (count > MAX_NUMBER_OF_PARALLEL_TASKS) {
         return;
-    count++;
+    }
+    count += 1;
     try {
         yield execute();
     }
     catch (error) {
         console.error(error.message);
     }
-    count--;
-}), 1000);
+    count -= 1;
+}), INTERVAL_MILLISECONDS);
+// tslint:disable-next-line:max-func-body-length
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
         let response;
@@ -48,16 +50,16 @@ function execute() {
         console.log('/transactions/start result:', response.statusCode, response.body);
         if (response.statusCode !== 201)
             throw new Error(response.body.message);
-        let transactionId = response.body.data._id;
+        let transactionId = response.body.data.id;
         let owners = response.body.data.attributes.owners;
         let promoterOwner = owners.find((owner) => {
             return (owner.group === 'PROMOTER');
         });
-        let promoterOwnerId = (promoterOwner) ? promoterOwner._id : null;
+        let promoterOwnerId = (promoterOwner) ? promoterOwner.id : null;
         let anonymousOwner = owners.find((owner) => {
             return (owner.group === 'ANONYMOUS');
         });
-        let anonymousOwnerId = (anonymousOwner) ? anonymousOwner._id : null;
+        let anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
         // 空席なくなったら変更する
         let theaterCode = '001';
         let dateJouei = '20170210';
@@ -66,7 +68,7 @@ function execute() {
         let timeBegin = '1010';
         let screenCode = '2';
         // 販売可能チケット検索
-        let salesTicketResult = yield COA.salesTicketInterface.call({
+        let salesTicketResult = yield COA.ReserveService.salesTicket({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -74,7 +76,7 @@ function execute() {
             time_begin: timeBegin,
         });
         // COA空席確認
-        let getStateReserveSeatResult = yield COA.getStateReserveSeatInterface.call({
+        let getStateReserveSeatResult = yield COA.ReserveService.getStateReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -90,7 +92,7 @@ function execute() {
         if (getStateReserveSeatResult.cnt_reserve_free === 0)
             throw new Error('no available seats.');
         // COA仮予約
-        let reserveSeatsTemporarilyResult = yield COA.reserveSeatsTemporarilyInterface.call({
+        let reserveSeatsTemporarilyResult = yield COA.ReserveService.reserveSeatsTemporarily({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -108,7 +110,7 @@ function execute() {
         console.log(reserveSeatsTemporarilyResult);
         // COAオーソリ追加
         console.log('adding authorizations coaSeatReservation...');
-        let totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
+        let totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
         response = yield request.post({
             url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
             body: {
@@ -126,14 +128,14 @@ function execute() {
                         performance: '001201701208513021010',
                         section: tmpReserve.seat_section,
                         seat_code: tmpReserve.seat_num,
-                        ticket_code: salesTicketResult.list_ticket[0].ticket_code,
-                        ticket_name_ja: salesTicketResult.list_ticket[0].ticket_name,
-                        ticket_name_en: salesTicketResult.list_ticket[0].ticket_name_eng,
-                        ticket_name_kana: salesTicketResult.list_ticket[0].ticket_name_kana,
-                        std_price: salesTicketResult.list_ticket[0].std_price,
-                        add_price: salesTicketResult.list_ticket[0].add_price,
+                        ticket_code: salesTicketResult[0].ticket_code,
+                        ticket_name_ja: salesTicketResult[0].ticket_name,
+                        ticket_name_en: salesTicketResult[0].ticket_name_eng,
+                        ticket_name_kana: salesTicketResult[0].ticket_name_kana,
+                        std_price: salesTicketResult[0].std_price,
+                        add_price: salesTicketResult[0].add_price,
                         dis_price: 0,
-                        sale_price: salesTicketResult.list_ticket[0].sale_price,
+                        sale_price: salesTicketResult[0].sale_price,
                     };
                 }),
                 price: totalPrice

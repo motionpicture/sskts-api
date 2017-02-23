@@ -32,7 +32,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
                 res.json({
                     data: {
                         type: 'theaters',
-                        _id: theater._id,
+                        id: theater.id,
                         attributes: theater
                     }
                 });

@@ -1,10 +1,15 @@
+/**
+ * メール送信テスト
+ *
+ * @ignore
+ */
 import * as SSKTS from '@motionpicture/sskts-domain';
-import sendgrid = require('sendgrid');
 
 const email = SSKTS.Notification.createEmail({
     from: 'test@localhost',
     to: 'ilovegadd@gmail.com',
     subject: 'test subject',
+    // tslint:disable-next-line:no-multiline-string
     content: `
 <!DOCTYPE html>
 <html lang='ja'>
@@ -26,9 +31,10 @@ const email = SSKTS.Notification.createEmail({
 </body>
 </html>
 `
-})
+});
 
-SSKTS.NotificationService.sendEmail(email)(sendgrid).then(() => {
+SSKTS.NotificationService.sendEmail(email)().then(() => {
+    // tslint:disable-next-line:no-console
     console.log('sent.');
 }).catch((err) => {
     console.error(err);

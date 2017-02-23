@@ -12,11 +12,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
  *
  * @ignore
  */
-const COA = require("@motionpicture/coa-service");
 const SSKTS = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
-const sendgrid = require("sendgrid");
 const debug = createDebug('sskts-api:*');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -53,9 +51,9 @@ function execute() {
             debug('queue is', queue);
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
-                yield SSKTS.StockService.unauthorizeCOASeatReservation(queue.authorization)(COA);
+                yield SSKTS.StockService.unauthorizeCOASeatReservation(queue.authorization)();
                 // 実行済みに変更
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, { status: SSKTS.QueueStatus.EXECUTED });
+                yield queueRepository.findOneAndUpdate({ _id: queue.id }, { status: SSKTS.QueueStatus.EXECUTED });
                 // メール通知 todo 開発中だけ？
                 yield SSKTS.NotificationService.sendEmail(SSKTS.Notification.createEmail({
                     from: 'noreply@localhost',
@@ -65,11 +63,11 @@ function execute() {
 COA仮予約を削除しました。<br>
 queue.authorization: ${queue.authorization}
 `
-                }))(sendgrid);
+                }))();
             }
             catch (error) {
                 // 実行結果追加
-                yield queueRepository.findOneAndUpdate({ _id: queue._id }, {
+                yield queueRepository.findOneAndUpdate({ _id: queue.id }, {
                     $push: {
                         results: error.stack
                     }

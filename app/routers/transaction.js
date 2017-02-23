@@ -36,7 +36,7 @@ router.post('/makeInquiry', (req, res, next) => __awaiter(this, void 0, void 0, 
                 res.json({
                     data: {
                         type: 'transactions',
-                        _id: transaction._id,
+                        id: transaction.id,
                         attributes: transaction
                     }
                 });
@@ -66,7 +66,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
                 res.json({
                     data: {
                         type: 'transactions',
-                        _id: transaction._id,
+                        id: transaction.id,
                         attributes: transaction
                     }
                 });
@@ -96,11 +96,11 @@ router.post('', (req, res, next) => __awaiter(this, void 0, void 0, function* ()
         // tslint:disable-next-line:no-string-literal
         const hots = req.headers['host'];
         res.status(HTTPStatus.CREATED);
-        res.setHeader('Location', `https://${hots}/transactions/${transaction._id}`);
+        res.setHeader('Location', `https://${hots}/transactions/${transaction.id}`);
         res.json({
             data: {
                 type: 'transactions',
-                _id: transaction._id,
+                id: transaction.id,
                 attributes: transaction
             }
         });
@@ -153,7 +153,7 @@ router.post('/:id/authorizations/gmo', (req, res, next) => __awaiter(this, void 
         res.status(HTTPStatus.OK).json({
             data: {
                 type: 'authorizations',
-                _id: authorization._id
+                id: authorization.id
             }
         });
     }
@@ -182,7 +182,7 @@ router.post('/:id/authorizations/coaSeatReservation', (req, res, next) => __awai
             assets: req.body.seats.map((seat) => {
                 return SSKTS.Asset.createSeatReservation({
                     ownership: SSKTS.Ownership.create({
-                        owner: mongoose.Types.ObjectId(req.body.owner_id_to),
+                        owner: req.body.owner_id_to,
                         authenticated: false
                     }),
                     authorizations: [],
@@ -206,7 +206,7 @@ router.post('/:id/authorizations/coaSeatReservation', (req, res, next) => __awai
         res.status(HTTPStatus.OK).json({
             data: {
                 type: 'authorizations',
-                _id: authorization._id
+                id: authorization.id
             }
         });
     }
@@ -262,8 +262,8 @@ router.post('/:id/notifications/email', (req, res, next) => __awaiter(this, void
         yield SSKTS.TransactionService.addEmail(req.params.id, notification)(SSKTS.createTransactionRepository(mongoose.connection));
         res.status(HTTPStatus.OK).json({
             data: {
-                type: 'notification_id',
-                _id: notification._id
+                type: 'notifications',
+                id: notification.id
             }
         });
     }

@@ -29,7 +29,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
                 res.json({
                     data: {
                         type: 'performances',
-                        _id: performance._id,
+                        id: performance.id,
                         attributes: performance
                     }
                 });
@@ -59,7 +59,7 @@ router.get('', (req, res, next) => __awaiter(this, void 0, void 0, function* () 
         const data = performances.map((performance) => {
             return {
                 type: 'performances',
-                _id: performance._id,
+                id: performance.id,
                 attributes: performance
             };
         });

@@ -10,7 +10,7 @@
   ],
   "config": {},
   "dependencies": {
-    "@motionpicture/sskts-domain": "^1.0.11",
+    "@motionpicture/sskts-domain": "^1.0.13",
     "body-parser": "^1.16.1",
     "commander": "^2.9.0",
     "debug": "^2.6.1",

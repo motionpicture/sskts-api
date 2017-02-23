@@ -68,9 +68,9 @@ function execute() {
             const transaction = option.get();
             debug('transaction is', transaction);
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            yield SSKTS.TransactionService.exportQueues(transaction._id.toString())(transactionRepository, SSKTS.createQueueRepository(mongoose.connection));
+            yield SSKTS.TransactionService.exportQueues(transaction.id.toString())(transactionRepository, SSKTS.createQueueRepository(mongoose.connection));
             yield transactionRepository.findOneAndUpdate({
-                _id: transaction._id
+                _id: transaction.id
             }, {
                 queues_status: SSKTS.TransactionQueuesStatus.EXPORTED
             });

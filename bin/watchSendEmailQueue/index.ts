@@ -6,7 +6,6 @@
 import * as SSKTS from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
-import * as sendgrid from 'sendgrid';
 
 const debug = createDebug('sskts-api:*');
 
@@ -59,11 +58,11 @@ async function execute() {
 
         try {
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            await SSKTS.NotificationService.sendEmail(queue.notification)(sendgrid);
-            await queueRepository.findOneAndUpdate({ _id: queue._id }, { status: SSKTS.QueueStatus.EXECUTED });
+            await SSKTS.NotificationService.sendEmail(queue.notification)();
+            await queueRepository.findOneAndUpdate({ _id: queue.id }, { status: SSKTS.QueueStatus.EXECUTED });
         } catch (error) {
             // 実行結果追加
-            await queueRepository.findOneAndUpdate({ _id: queue._id }, {
+            await queueRepository.findOneAndUpdate({ _id: queue.id }, {
                 $push: {
                     results: error.stack
                 }
