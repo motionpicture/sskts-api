@@ -5,6 +5,7 @@
  * todo scopeを扱う
  */
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
@@ -34,7 +35,6 @@ passport.use(new passportHttpBearer.Strategy(
         }
     });
 }));
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = passport.authenticate('bearer', {
     session: false
 });

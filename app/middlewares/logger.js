@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ロガーミドルウェア
  *
@@ -11,10 +12,14 @@ log4js.configure({
         {
             category: 'access',
             type: 'console'
+            // type: 'log4js-node-mongodb',
+            // connectionString: config.get<string>('mongolab_uri_for_logs'),
         },
         {
             category: 'system',
             type: 'console'
+            // type: 'log4js-node-mongodb',
+            // connectionString: config.get<string>('mongolab_uri_for_logs'),
         },
         {
             type: 'console'
@@ -26,5 +31,4 @@ log4js.configure({
     },
     replaceConsole: (env === 'prod') ? false : true
 });
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = log4js.connectLogger(log4js.getLogger('access'), {});

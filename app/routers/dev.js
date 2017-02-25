@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * devルーター
  *
@@ -40,5 +41,4 @@ router.get('/mongoose/disconnect', (req, res, next) => {
         res.status(HTTPStatus.NO_CONTENT).end();
     });
 });
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = router;
