@@ -1,0 +1,22 @@
+config:
+  target: 'http://localhost:46491'
+  phases:
+    -
+      duration: 10
+      arrivalRate: 500
+      name: "High load phase"
+
+  environments:
+    production:
+      target: ""
+    staging:
+      target: ""
+
+  variables:
+    performanceId:
+      - "1182017011816140071850"
+
+scenarios:
+  - flow:
+    - get:
+        url: "/performances/{{performanceId}}"

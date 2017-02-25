@@ -10,6 +10,10 @@ import * as SSKTS from '@motionpicture/sskts-domain';
 import * as HTTPStatus from 'http-status';
 import * as mongoose from 'mongoose';
 
+import authentication from '../middlewares/authentication';
+
+router.use(authentication);
+
 router.get('/:id', async (req, res, next) => {
     const validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) {

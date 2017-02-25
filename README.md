@@ -43,6 +43,8 @@ set SENDGRID_API_KEY=**********
 set GMO_ENDPOINT=**********
 set COA_ENDPOINT=**********
 set COA_REFRESH_TOKEN=**********
+set SSKTS_API_SECRET==**********
+set SSKTS_API_REFRESH_TOKEN==**********
 ```
 only on Aure WebApps
 ```shell

@@ -12,24 +12,8 @@ const expressValidator = require("express-validator");
 const HTTPStatus = require("http-status");
 const i18n = require("i18n");
 const mongoose = require("mongoose");
-// import passport = require('passport');
-// import passportHttpBearer = require('passport-http-bearer');
+const logger_1 = require("./middlewares/logger");
 const debug = createDebug('sskts-api:*');
-// let BearerStrategy = passportHttpBearer.Strategy;
-// passport.use(new BearerStrategy(
-//     (token, cb) => {
-//         Models.Authentication.findOne(
-//             {
-//                 token: token
-//             },
-//             (err, authentication) => {
-//                 if (err) return cb(err);
-//                 if (!authentication) return cb(null, false);
-//                 cb(null, authentication);
-//             }
-//         );
-//     }
-// ));
 const app = express();
 if (process.env.NODE_ENV !== 'prod') {
     // サーバーエラーテスト
@@ -42,7 +26,6 @@ if (process.env.NODE_ENV !== 'prod') {
         });
     });
 }
-const logger_1 = require("./middlewares/logger");
 app.use(logger_1.default);
 // import benchmarks from './middlewares/benchmarksMiddleware';
 // app.use(benchmarks); // ベンチマーク的な
@@ -99,10 +82,12 @@ mongoose.connect(process.env.MONGOLAB_URI);
 // routers
 const dev_1 = require("./routers/dev");
 const film_1 = require("./routers/film");
+const oauth_1 = require("./routers/oauth");
 const performance_1 = require("./routers/performance");
 const screen_1 = require("./routers/screen");
 const theater_1 = require("./routers/theater");
 const transaction_1 = require("./routers/transaction");
+app.use('/oauth', oauth_1.default);
 app.use('/dev', dev_1.default);
 app.use('/theaters', theater_1.default);
 app.use('/films', film_1.default);

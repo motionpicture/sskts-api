@@ -18,6 +18,8 @@ const SSKTS = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const HTTPStatus = require("http-status");
 const mongoose = require("mongoose");
+const authentication_1 = require("../middlewares/authentication");
+router.use(authentication_1.default);
 const debug = createDebug('sskts-api:*');
 router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     const validatorResult = yield req.getValidationResult();

@@ -18,6 +18,8 @@ const SSKTS = require("@motionpicture/sskts-domain");
 const HTTPStatus = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
+const authentication_1 = require("../middlewares/authentication");
+router.use(authentication_1.default);
 router.post('/makeInquiry', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     // todo validation
     const validatorResult = yield req.getValidationResult();

@@ -11,6 +11,10 @@ import * as createDebug from 'debug';
 import * as HTTPStatus from 'http-status';
 import * as mongoose from 'mongoose';
 
+import authentication from '../middlewares/authentication';
+
+router.use(authentication);
+
 const debug = createDebug('sskts-api:*');
 
 router.get('/:id', async (req, res, next) => {

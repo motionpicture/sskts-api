@@ -10,13 +10,11 @@ import * as createDebug from 'debug';
 import * as HTTPStatus from 'http-status';
 import * as mongoose from 'mongoose';
 
+import authentication from '../middlewares/authentication';
+
 const debug = createDebug('sskts-api:*');
 
-// middleware that is specific to this router
-// router.use((req, res, next) => {
-//   debug('Time: ', Date.now())
-//   next()
-// })
+router.use(authentication);
 
 router.get('/environmentVariables', (req, res) => {
     debug('ip:', req.ip);

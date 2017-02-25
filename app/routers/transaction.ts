@@ -11,6 +11,10 @@ import * as HTTPStatus from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
+import authentication from '../middlewares/authentication';
+
+router.use(authentication);
+
 router.post('/makeInquiry', async (req, res, next) => {
     // todo validation
 

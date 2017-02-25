@@ -19,12 +19,27 @@ async function main() {
     const gmoShopId = 'tshop00026096';
     const gmoShopPass = 'xbxmkaa6';
 
+    // アクセストークン取得
+    response = await request.post({
+        url: 'http://localhost:8080/oauth/token',
+        body: {
+            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+            scope: 'admin'
+        },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true
+    });
+    debug('oauth token result:', response.statusCode, response.body);
+    const accessToken = response.body.access_token;
+
     // 取引開始
     // 30分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
     debug('starting transaction...');
     response = await request.post({
         url: 'http://localhost:8080/transactions',
+        auth: { bearer: accessToken },
         body: {
             expired_at: moment().add(30, 'minutes').unix()
         },
@@ -70,7 +85,7 @@ async function main() {
     });
 
     // COA空席確認
-    const getStateReserveSeatResult = await COA.ReserveService.getStateReserveSeat({
+    const getStateReserveSeatResult = await COA.ReserveService.stateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -89,7 +104,7 @@ async function main() {
     }
 
     // COA仮予約
-    const reserveSeatsTemporarilyResult = await COA.ReserveService.reserveSeatsTemporarily({
+    const reserveSeatsTemporarilyResult = await COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -111,6 +126,7 @@ async function main() {
     const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
+        auth: { bearer: accessToken },
         body: {
             owner_id_from: promoterOwnerId,
             owner_id_to: anonymousOwnerId,
@@ -149,7 +165,7 @@ async function main() {
     const coaAuthorizationId = response.body.data.id;
 
     // COA仮予約削除
-    await COA.ReserveService.deleteTmpReserve({
+    await COA.ReserveService.delTmpReserve({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -164,6 +180,7 @@ async function main() {
     debug('removing authorizations coaSeatReservation...');
     response = await request.del({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
+        auth: { bearer: accessToken },
         body: {
         },
         json: true,
@@ -200,6 +217,7 @@ async function main() {
     debug('adding authorizations gmo...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
+        auth: { bearer: accessToken },
         body: {
             owner_id_from: anonymousOwnerId,
             owner_id_to: promoterOwnerId,
@@ -236,6 +254,7 @@ async function main() {
     debug('removing authorizations gmo...');
     response = await request.del({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
+        auth: { bearer: accessToken },
         body: {
         },
         json: true,
@@ -248,7 +267,7 @@ async function main() {
     }
 
     // COA仮予約2回目
-    const reserveSeatsTemporarilyResult2 = await COA.ReserveService.reserveSeatsTemporarily({
+    const reserveSeatsTemporarilyResult2 = await COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -269,6 +288,7 @@ async function main() {
     debug('adding authorizations coaSeatReservation...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
+        auth: { bearer: accessToken },
         body: {
             owner_id_from: promoterOwnerId,
             owner_id_to: anonymousOwnerId,
@@ -330,6 +350,7 @@ async function main() {
     debug('adding authorizations gmo...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
+        auth: { bearer: accessToken },
         body: {
             owner_id_from: anonymousOwnerId,
             owner_id_to: promoterOwnerId,
@@ -354,6 +375,7 @@ async function main() {
     debug('updating anonymous...');
     response = await request.patch({
         url: `http://localhost:8080/transactions/${transactionId}/anonymousOwner`,
+        auth: { bearer: accessToken },
         body: {
             name_first: 'Tetsu',
             name_last: 'Yamazaki',
@@ -370,7 +392,7 @@ async function main() {
 
     // COA本予約
     const tel = '09012345678';
-    const updateReserveResult = await COA.ReserveService.updateReserve({
+    const updateReserveResult = await COA.ReserveService.updReserve({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -402,6 +424,7 @@ async function main() {
     debug('enabling inquiry...');
     response = await request.patch({
         url: `http://localhost:8080/transactions/${transactionId}/enableInquiry`,
+        auth: { bearer: accessToken },
         body: {
             inquiry_theater: theaterCode,
             inquiry_id: updateReserveResult.reserve_num,
@@ -434,6 +457,7 @@ async function main() {
     debug('adding email...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
+        auth: { bearer: accessToken },
         body: {
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
@@ -454,6 +478,7 @@ async function main() {
     debug('removing email...');
     response = await request.del({
         url: `http://localhost:8080/transactions/${transactionId}/notifications/${notificationId}`,
+        auth: { bearer: accessToken },
         body: {
         },
         json: true,
@@ -469,6 +494,7 @@ async function main() {
     debug('adding email...');
     response = await request.post({
         url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
+        auth: { bearer: accessToken },
         body: {
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
@@ -488,6 +514,7 @@ async function main() {
     debug('closing transaction...');
     response = await request.patch({
         url: `http://localhost:8080/transactions/${transactionId}/close`,
+        auth: { bearer: accessToken },
         body: {
         },
         json: true,
@@ -502,6 +529,7 @@ async function main() {
     // 照会してみる
     response = await request.post({
         url: 'http://localhost:8080/transactions/makeInquiry',
+        auth: { bearer: accessToken },
         body: {
             inquiry_theater: theaterCode,
             inquiry_id: updateReserveResult.reserve_num,

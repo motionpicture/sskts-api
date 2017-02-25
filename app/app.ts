@@ -12,27 +12,10 @@ import expressValidator = require('express-validator');
 import * as HTTPStatus from 'http-status';
 import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
-// import passport = require('passport');
-// import passportHttpBearer = require('passport-http-bearer');
+
+import logger from './middlewares/logger';
 
 const debug = createDebug('sskts-api:*');
-
-// let BearerStrategy = passportHttpBearer.Strategy;
-// passport.use(new BearerStrategy(
-//     (token, cb) => {
-//         Models.Authentication.findOne(
-//             {
-//                 token: token
-//             },
-//             (err, authentication) => {
-//                 if (err) return cb(err);
-//                 if (!authentication) return cb(null, false);
-
-//                 cb(null, authentication);
-//             }
-//         );
-//     }
-// ));
 
 const app = express();
 
@@ -49,7 +32,6 @@ if (process.env.NODE_ENV !== 'prod') {
     });
 }
 
-import logger from './middlewares/logger';
 app.use(logger);
 // import benchmarks from './middlewares/benchmarksMiddleware';
 // app.use(benchmarks); // ベンチマーク的な
@@ -112,10 +94,12 @@ mongoose.connect(process.env.MONGOLAB_URI);
 // routers
 import devRouter from './routers/dev';
 import filmRouter from './routers/film';
+import oauthRouter from './routers/oauth';
 import performanceRouter from './routers/performance';
 import screenRouter from './routers/screen';
 import theaterRouter from './routers/theater';
 import transactionRouter from './routers/transaction';
+app.use('/oauth', oauthRouter);
 app.use('/dev', devRouter);
 app.use('/theaters', theaterRouter);
 app.use('/films', filmRouter);

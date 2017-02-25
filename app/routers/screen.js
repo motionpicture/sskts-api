@@ -17,6 +17,8 @@ const router = express_1.Router();
 const SSKTS = require("@motionpicture/sskts-domain");
 const HTTPStatus = require("http-status");
 const mongoose = require("mongoose");
+const authentication_1 = require("../middlewares/authentication");
+router.use(authentication_1.default);
 router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
