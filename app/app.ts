@@ -22,7 +22,8 @@ const app = express();
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
-        defaultSrc: ['\'self\'']
+        defaultSrc: ['\'self\''],
+        styleSrc: ['\'self\'']
     }
 }));
 app.use((<any>helmet).referrerPolicy({ policy: 'no-referrer' })); // 型定義が非対応のためany
