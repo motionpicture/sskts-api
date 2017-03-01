@@ -19,7 +19,7 @@ passport.use(new passportHttpBearer.Strategy(
 // },
 (token, done) => {
     debug('token is', token);
-    jwt.verify(token, process.env.SSKTS_API_SECRET, (err, decoded) => {
+    jwt.verify(token, process.env.sskts_API_SECRET, (err, decoded) => {
         if (err) {
             done(null, false, {
                 message: err.message,

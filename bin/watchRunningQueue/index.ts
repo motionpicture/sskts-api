@@ -3,7 +3,7 @@
  *
  * @ignore
  */
-import * as SSKTS from '@motionpicture/sskts-domain';
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -65,17 +65,17 @@ const RETRY_INTERVAL_MINUTES = 10;
  * @ignore
  */
 async function retry() {
-    const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+    const queueRepository = sskts.createQueueRepository(mongoose.connection);
 
     await queueRepository.findOneAndUpdate(
         {
-            status: SSKTS.QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
+            status: sskts.model.QueueStatus.RUNNING,
+            last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() }, // tslint:disable-line:no-magic-numbers
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function (this: any) { return (this.max_count_try > this.count_tried); }
         },
         {
-            status: SSKTS.QueueStatus.UNEXECUTED // 実行中に変更
+            status: sskts.model.QueueStatus.UNEXECUTED // 実行中に変更
         }
     );
 }
@@ -86,17 +86,17 @@ async function retry() {
  * @ignore
  */
 async function abort() {
-    const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+    const queueRepository = sskts.createQueueRepository(mongoose.connection);
 
     const abortedQueue = await queueRepository.findOneAndUpdate(
         {
-            status: SSKTS.QueueStatus.RUNNING,
-            last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
+            status: sskts.model.QueueStatus.RUNNING,
+            last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() }, // tslint:disable-line:no-magic-numbers
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function (this: any) { return (this.max_count_try === this.count_tried); }
         },
         {
-            status: SSKTS.QueueStatus.ABORTED
+            status: sskts.model.QueueStatus.ABORTED
         }
     );
     debug('abortedQueue:', abortedQueue);

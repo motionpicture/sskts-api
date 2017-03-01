@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
-const SSKTS = require("@motionpicture/sskts-domain");
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:*');
@@ -37,13 +37,13 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 }), INTERVAL_MILLISECONDS);
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+        const queueRepository = sskts.createQueueRepository(mongoose.connection);
         // 未実行のメール送信キューを取得
         const option = yield queueRepository.findOneSendEmailAndUpdate({
-            status: SSKTS.QueueStatus.UNEXECUTED,
+            status: sskts.model.QueueStatus.UNEXECUTED,
             run_at: { $lt: new Date() }
         }, {
-            status: SSKTS.QueueStatus.RUNNING,
+            status: sskts.model.QueueStatus.RUNNING,
             last_tried_at: new Date(),
             $inc: { count_tried: 1 } // トライ回数増やす
         });
@@ -52,8 +52,8 @@ function execute() {
             debug('queue is', queue);
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
-                yield SSKTS.NotificationService.sendEmail(queue.notification)();
-                yield queueRepository.findOneAndUpdate({ _id: queue.id }, { status: SSKTS.QueueStatus.EXECUTED });
+                yield sskts.service.notification.sendEmail(queue.notification)();
+                yield queueRepository.findOneAndUpdate({ _id: queue.id }, { status: sskts.model.QueueStatus.EXECUTED });
             }
             catch (error) {
                 // 実行結果追加

@@ -10,7 +10,7 @@
   ],
   "config": {},
   "dependencies": {
-    "@motionpicture/sskts-domain": "^1.2.1",
+    "@motionpicture/sskts-domain": "git+https://m-p.backlog.jp/git/SSKTS/src_domain.git#SSKTS-128",
     "body-parser": "^1.16.1",
     "commander": "^2.9.0",
     "debug": "^2.6.1",
@@ -46,13 +46,13 @@
     "mocha": "^3.2.0",
     "rimraf": "^2.6.1",
     "supertest": "^3.0.0",
-    "tslint": "^4.4.2",
+    "tslint": "^4.5.1",
     "tslint-microsoft-contrib": "^4.0.0",
     "typescript": "^2.2.1"
   },
   "engines": {
-    "node": ">=7.0.0",
-    "npm": ">=3.10.0"
+    "node": ">=6.9.1",
+    "npm": ">=3.10.8"
   },
   "keywords": [],
   "license": "UNLICENSED",
@@ -61,7 +61,7 @@
   "repository": {},
   "scripts": {
     "build": "tsc",
-    "clean": "rimraf app/**/*.js bin/**/*.js examples/**/*.js test/**/*.js",
+    "clean": "rimraf app/**/*.js bin/**/*.js examples/**/*.js test/**/*.js docs/**/*.*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "preinstall": "npm prune",
     "postinstall": "npm dedupe",

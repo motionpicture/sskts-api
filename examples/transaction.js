@@ -30,7 +30,7 @@ function main() {
         response = yield request.post({
             url: 'http://localhost:8080/oauth/token',
             body: {
-                assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+                assertion: process.env.sskts_API_REFRESH_TOKEN,
                 scope: 'admin'
             },
             json: true,

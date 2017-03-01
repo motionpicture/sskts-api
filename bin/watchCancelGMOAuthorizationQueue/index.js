@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
-const SSKTS = require("@motionpicture/sskts-domain");
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:*');
@@ -38,12 +38,12 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
         // 未実行のGMOオーソリ取消キューを取得
-        const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+        const queueRepository = sskts.createQueueRepository(mongoose.connection);
         const option = yield queueRepository.findOneCancelGMOAuthorizationAndUpdate({
-            status: SSKTS.QueueStatus.UNEXECUTED,
+            status: sskts.model.QueueStatus.UNEXECUTED,
             run_at: { $lt: new Date() }
         }, {
-            status: SSKTS.QueueStatus.RUNNING,
+            status: sskts.model.QueueStatus.RUNNING,
             last_tried_at: new Date(),
             $inc: { count_tried: 1 } // トライ回数増やす
         });
@@ -52,9 +52,9 @@ function execute() {
             debug('queue is', queue);
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
-                yield SSKTS.SalesService.cancelGMOAuth(queue.authorization)();
+                yield sskts.service.sales.cancelGMOAuth(queue.authorization)();
                 // 実行済みに変更
-                yield queueRepository.findOneAndUpdate({ _id: queue.id }, { status: SSKTS.QueueStatus.EXECUTED });
+                yield queueRepository.findOneAndUpdate({ _id: queue.id }, { status: sskts.model.QueueStatus.EXECUTED });
             }
             catch (error) {
                 // 実行結果追加

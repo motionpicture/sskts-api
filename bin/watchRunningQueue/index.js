@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
-const SSKTS = require("@motionpicture/sskts-domain");
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -58,14 +58,14 @@ const RETRY_INTERVAL_MINUTES = 10;
  */
 function retry() {
     return __awaiter(this, void 0, void 0, function* () {
-        const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+        const queueRepository = sskts.createQueueRepository(mongoose.connection);
         yield queueRepository.findOneAndUpdate({
-            status: SSKTS.QueueStatus.RUNNING,
+            status: sskts.model.QueueStatus.RUNNING,
             last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function () { return (this.max_count_try > this.count_tried); }
         }, {
-            status: SSKTS.QueueStatus.UNEXECUTED // 実行中に変更
+            status: sskts.model.QueueStatus.UNEXECUTED // 実行中に変更
         });
     });
 }
@@ -76,14 +76,14 @@ function retry() {
  */
 function abort() {
     return __awaiter(this, void 0, void 0, function* () {
-        const queueRepository = SSKTS.createQueueRepository(mongoose.connection);
+        const queueRepository = sskts.createQueueRepository(mongoose.connection);
         const abortedQueue = yield queueRepository.findOneAndUpdate({
-            status: SSKTS.QueueStatus.RUNNING,
+            status: sskts.model.QueueStatus.RUNNING,
             last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function () { return (this.max_count_try === this.count_tried); }
         }, {
-            status: SSKTS.QueueStatus.ABORTED
+            status: sskts.model.QueueStatus.ABORTED
         });
         debug('abortedQueue:', abortedQueue);
     });

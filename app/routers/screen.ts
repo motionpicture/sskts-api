@@ -6,7 +6,7 @@
 import { Router } from 'express';
 const router = Router();
 
-import * as SSKTS from '@motionpicture/sskts-domain';
+import * as sskts from '@motionpicture/sskts-domain';
 import * as HTTPStatus from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -21,7 +21,7 @@ router.get('/:id', async (req, res, next) => {
     }
 
     try {
-        const option = await SSKTS.MasterService.findScreen(req.params.id)(SSKTS.createScreenRepository(mongoose.connection));
+        const option = await sskts.service.master.findScreen(req.params.id)(sskts.createScreenRepository(mongoose.connection));
         option.match({
             Some: (screen) => {
                 res.json({

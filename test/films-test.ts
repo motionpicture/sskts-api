@@ -13,7 +13,7 @@ describe('GET /films/:id', () => {
     it('found', (done) => {
         supertest(app)
             .get('/films/118161400')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.sskts_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(HTTPStatus.OK)
@@ -30,7 +30,7 @@ describe('GET /films/:id', () => {
     it('not found', (done) => {
         supertest(app)
             .get('/films/0000000000')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.sskts_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(HTTPStatus.NOT_FOUND)

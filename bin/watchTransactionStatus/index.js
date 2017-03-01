@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
-const SSKTS = require("@motionpicture/sskts-domain");
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -58,22 +58,22 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
  */
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        const transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
+        const transactionRepository = sskts.createTransactionRepository(mongoose.connection);
         const option = yield transactionRepository.findOneAndUpdate({
-            status: { $in: [SSKTS.TransactionStatus.CLOSED, SSKTS.TransactionStatus.EXPIRED] },
-            queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED
+            status: { $in: [sskts.model.TransactionStatus.CLOSED, sskts.model.TransactionStatus.EXPIRED] },
+            queues_status: sskts.model.TransactionQueuesStatus.UNEXPORTED
         }, {
-            queues_status: SSKTS.TransactionQueuesStatus.EXPORTING
+            queues_status: sskts.model.TransactionQueuesStatus.EXPORTING
         });
         if (!option.isEmpty) {
             const transaction = option.get();
             debug('transaction is', transaction);
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            yield SSKTS.TransactionService.exportQueues(transaction.id.toString())(transactionRepository, SSKTS.createQueueRepository(mongoose.connection));
+            yield sskts.service.transaction.exportQueues(transaction.id.toString())(transactionRepository, sskts.createQueueRepository(mongoose.connection));
             yield transactionRepository.findOneAndUpdate({
                 _id: transaction.id
             }, {
-                queues_status: SSKTS.TransactionQueuesStatus.EXPORTED
+                queues_status: sskts.model.TransactionQueuesStatus.EXPORTED
             });
         }
     });
@@ -85,13 +85,13 @@ function execute() {
  */
 function retry() {
     return __awaiter(this, void 0, void 0, function* () {
-        const transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
+        const transactionRepository = sskts.createTransactionRepository(mongoose.connection);
         const RETRY_INTERVAL_MINUTES = 10;
         yield transactionRepository.findOneAndUpdate({
-            queues_status: SSKTS.TransactionQueuesStatus.EXPORTING,
-            updated_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() }
+            queues_status: sskts.model.TransactionQueuesStatus.EXPORTING,
+            updated_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() } // tslint:disable-line:no-magic-numbers
         }, {
-            queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED
+            queues_status: sskts.model.TransactionQueuesStatus.UNEXPORTED
         });
     });
 }

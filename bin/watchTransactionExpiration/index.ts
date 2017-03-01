@@ -3,7 +3,7 @@
  *
  * @ignore
  */
-import * as SSKTS from '@motionpicture/sskts-domain';
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
@@ -38,5 +38,5 @@ setInterval(
 
 async function execute() {
     debug('transaction expiring...');
-    await SSKTS.TransactionService.expireOne()(SSKTS.createTransactionRepository(mongoose.connection));
+    await sskts.service.transaction.expireOne()(sskts.createTransactionRepository(mongoose.connection));
 }

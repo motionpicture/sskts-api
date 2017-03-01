@@ -19,7 +19,7 @@ router.post('/token', async (req, res, next) => {
         const assertion = req.body.assertion.toString();
 
         // todo メッセージ調整
-        if (assertion !== process.env.SSKTS_API_REFRESH_TOKEN) {
+        if (assertion !== process.env.sskts_API_REFRESH_TOKEN) {
             return next(new Error('invalid assertion.'));
         }
 
@@ -27,7 +27,7 @@ router.post('/token', async (req, res, next) => {
             {
                 scope: req.body.scope.toString()
             },
-            process.env.SSKTS_API_SECRET,
+            process.env.sskts_API_SECRET,
             {
                 expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
             },

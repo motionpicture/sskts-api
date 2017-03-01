@@ -3,7 +3,7 @@
  *
  * @ignore
  */
-import * as SSKTS from '@motionpicture/sskts-domain';
+import * as sskts from '@motionpicture/sskts-domain';
 import * as program from 'commander';
 import * as createdebug from 'debug';
 import * as mongoose from 'mongoose';
@@ -21,10 +21,10 @@ program
             debug('mongoose connecting...');
             mongoose.connect(process.env.MONGOLAB_URI);
 
-            const theaterRepository = SSKTS.createTheaterRepository(mongoose.connection);
+            const theaterRepository = sskts.createTheaterRepository(mongoose.connection);
             debug('repository created.');
             debug('importing theater...');
-            await SSKTS.MasterService.importTheater(theaterCode)(theaterRepository);
+            await sskts.service.master.importTheater(theaterCode)(theaterRepository);
             debug('theater imported.');
         } catch (error) {
             console.error(error);
@@ -41,9 +41,9 @@ program
         try {
             mongoose.connect(process.env.MONGOLAB_URI);
 
-            await SSKTS.MasterService.importFilms(theaterCode)(
-                SSKTS.createTheaterRepository(mongoose.connection),
-                SSKTS.createFilmRepository(mongoose.connection)
+            await sskts.service.master.importFilms(theaterCode)(
+                sskts.createTheaterRepository(mongoose.connection),
+                sskts.createFilmRepository(mongoose.connection)
             );
         } catch (error) {
             console.error(error);
@@ -60,9 +60,9 @@ program
         try {
             mongoose.connect(process.env.MONGOLAB_URI);
 
-            await SSKTS.MasterService.importScreens(theaterCode)(
-                SSKTS.createTheaterRepository(mongoose.connection),
-                SSKTS.createScreenRepository(mongoose.connection)
+            await sskts.service.master.importScreens(theaterCode)(
+                sskts.createTheaterRepository(mongoose.connection),
+                sskts.createScreenRepository(mongoose.connection)
             );
         } catch (error) {
             console.error(error);
@@ -79,10 +79,10 @@ program
         try {
             mongoose.connect(process.env.MONGOLAB_URI);
 
-            await SSKTS.MasterService.importPerformances(theaterCode, start, end)(
-                SSKTS.createFilmRepository(mongoose.connection),
-                SSKTS.createScreenRepository(mongoose.connection),
-                SSKTS.createPerformanceRepository(mongoose.connection)
+            await sskts.service.master.importPerformances(theaterCode, start, end)(
+                sskts.createFilmRepository(mongoose.connection),
+                sskts.createScreenRepository(mongoose.connection),
+                sskts.createPerformanceRepository(mongoose.connection)
             );
         } catch (error) {
             console.error(error);

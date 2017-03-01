@@ -6,7 +6,7 @@
 import { Router } from 'express';
 const router = Router();
 
-import * as SSKTS from '@motionpicture/sskts-domain';
+import * as sskts from '@motionpicture/sskts-domain';
 import * as HTTPStatus from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -21,7 +21,7 @@ router.get('/:id', async (req, res, next) => {
     }
 
     try {
-        const option = await SSKTS.MasterService.findPerformance(req.params.id)(SSKTS.createPerformanceRepository(mongoose.connection));
+        const option = await sskts.service.master.findPerformance(req.params.id)(sskts.createPerformanceRepository(mongoose.connection));
         option.match({
             Some: (performance) => {
                 res.json({
@@ -51,10 +51,10 @@ router.get('', async (req, res, next) => {
     }
 
     try {
-        const performances = await SSKTS.MasterService.searchPerformances({
+        const performances = await sskts.service.master.searchPerformances({
             day: req.query.day,
             theater: req.query.theater
-        })(SSKTS.createPerformanceRepository(mongoose.connection));
+        })(sskts.createPerformanceRepository(mongoose.connection));
 
         const data = performances.map((performance) => {
             return {

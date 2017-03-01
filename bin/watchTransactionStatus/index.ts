@@ -3,7 +3,7 @@
  *
  * @ignore
  */
-import * as SSKTS from '@motionpicture/sskts-domain';
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -64,15 +64,15 @@ setInterval(
  * @ignore
  */
 async function execute() {
-    const transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
+    const transactionRepository = sskts.createTransactionRepository(mongoose.connection);
 
     const option = await transactionRepository.findOneAndUpdate(
         {
-            status: { $in: [SSKTS.TransactionStatus.CLOSED, SSKTS.TransactionStatus.EXPIRED] },
-            queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED
+            status: { $in: [sskts.model.TransactionStatus.CLOSED, sskts.model.TransactionStatus.EXPIRED] },
+            queues_status: sskts.model.TransactionQueuesStatus.UNEXPORTED
         },
         {
-            queues_status: SSKTS.TransactionQueuesStatus.EXPORTING
+            queues_status: sskts.model.TransactionQueuesStatus.EXPORTING
         }
     );
 
@@ -81,16 +81,16 @@ async function execute() {
         debug('transaction is', transaction);
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        await SSKTS.TransactionService.exportQueues(transaction.id.toString())(
+        await sskts.service.transaction.exportQueues(transaction.id.toString())(
             transactionRepository,
-            SSKTS.createQueueRepository(mongoose.connection)
+            sskts.createQueueRepository(mongoose.connection)
         );
         await transactionRepository.findOneAndUpdate(
             {
                 _id: transaction.id
             },
             {
-                queues_status: SSKTS.TransactionQueuesStatus.EXPORTED
+                queues_status: sskts.model.TransactionQueuesStatus.EXPORTED
             }
         );
     }
@@ -102,16 +102,16 @@ async function execute() {
  * @ignore
  */
 async function retry() {
-    const transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
+    const transactionRepository = sskts.createTransactionRepository(mongoose.connection);
     const RETRY_INTERVAL_MINUTES = 10;
 
     await transactionRepository.findOneAndUpdate(
         {
-            queues_status: SSKTS.TransactionQueuesStatus.EXPORTING,
-            updated_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() }
+            queues_status: sskts.model.TransactionQueuesStatus.EXPORTING,
+            updated_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() } // tslint:disable-line:no-magic-numbers
         },
         {
-            queues_status: SSKTS.TransactionQueuesStatus.UNEXPORTED
+            queues_status: sskts.model.TransactionQueuesStatus.UNEXPORTED
         }
     );
 }

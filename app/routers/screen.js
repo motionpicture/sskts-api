@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const express_1 = require("express");
 const router = express_1.Router();
-const SSKTS = require("@motionpicture/sskts-domain");
+const sskts = require("@motionpicture/sskts-domain");
 const HTTPStatus = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
@@ -26,7 +26,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
         return next(new Error(validatorResult.array()[0].msg));
     }
     try {
-        const option = yield SSKTS.MasterService.findScreen(req.params.id)(SSKTS.createScreenRepository(mongoose.connection));
+        const option = yield sskts.service.master.findScreen(req.params.id)(sskts.createScreenRepository(mongoose.connection));
         option.match({
             Some: (screen) => {
                 res.json({

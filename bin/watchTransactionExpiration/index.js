@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
-const SSKTS = require("@motionpicture/sskts-domain");
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:*');
@@ -38,6 +38,6 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
         debug('transaction expiring...');
-        yield SSKTS.TransactionService.expireOne()(SSKTS.createTransactionRepository(mongoose.connection));
+        yield sskts.service.transaction.expireOne()(sskts.createTransactionRepository(mongoose.connection));
     });
 }
