@@ -10,7 +10,7 @@
   ],
   "config": {},
   "dependencies": {
-    "@motionpicture/sskts-domain": "git+https://m-p.backlog.jp/git/SSKTS/src_domain.git#SSKTS-128",
+    "@motionpicture/sskts-domain": "^2.0.0",
     "body-parser": "^1.16.1",
     "commander": "^2.9.0",
     "debug": "^2.6.1",
