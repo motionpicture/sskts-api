@@ -7,8 +7,8 @@
 import * as bodyParser from 'body-parser';
 import * as createDebug from 'debug';
 import * as express from 'express';
-// tslint:disable-next-line:no-require-imports
-import expressValidator = require('express-validator');
+import expressValidator = require('express-validator'); // tslint:disable-line:no-require-imports
+import * as helmet from 'helmet';
 import * as HTTPStatus from 'http-status';
 import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
@@ -18,6 +18,8 @@ import logger from './middlewares/logger';
 const debug = createDebug('sskts-api:*');
 
 const app = express();
+
+app.use(helmet());
 
 if (process.env.NODE_ENV !== 'prod') {
     // サーバーエラーテスト

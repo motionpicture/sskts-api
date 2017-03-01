@@ -7,14 +7,15 @@
 const bodyParser = require("body-parser");
 const createDebug = require("debug");
 const express = require("express");
-// tslint:disable-next-line:no-require-imports
-const expressValidator = require("express-validator");
+const expressValidator = require("express-validator"); // tslint:disable-line:no-require-imports
+const helmet = require("helmet");
 const HTTPStatus = require("http-status");
 const i18n = require("i18n");
 const mongoose = require("mongoose");
 const logger_1 = require("./middlewares/logger");
 const debug = createDebug('sskts-api:*');
 const app = express();
+app.use(helmet());
 if (process.env.NODE_ENV !== 'prod') {
     // サーバーエラーテスト
     app.get('/dev/500', (req) => {
