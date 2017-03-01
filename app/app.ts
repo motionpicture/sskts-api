@@ -20,6 +20,17 @@ const debug = createDebug('sskts-api:*');
 const app = express();
 
 app.use(helmet());
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+        defaultSrc: ['\'self\'']
+    }
+}));
+app.use((<any>helmet).referrerPolicy({ policy: 'no-referrer' })); // 型定義が非対応のためany
+const SIXTY_DAYS_IN_SECONDS = 5184000;
+app.use(helmet.hsts({
+    maxAge: SIXTY_DAYS_IN_SECONDS,
+    includeSubdomains: true
+}));
 
 if (process.env.NODE_ENV !== 'prod') {
     // サーバーエラーテスト
