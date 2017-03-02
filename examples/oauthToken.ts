@@ -14,6 +14,7 @@ const debug = createDebug('sskts-api:*');
 async function main() {
     const response = await request.post({
         url: 'http://localhost:8080/oauth/token',
+        // url: 'https://devssktsapionlinux.azurewebsites.net/oauth/token',
         body: {
             assertion: process.env.SSKTS_API_REFRESH_TOKEN,
             scope: 'admin'
@@ -27,6 +28,7 @@ async function main() {
 
     const theaterResponse = await request.get({
         url: 'http://localhost:8080/theaters/118',
+        // url: 'https://devssktsapionlinux.azurewebsites.net/theaters/118',
         auth: { bearer: accessToken },
         json: true,
         simple: false,

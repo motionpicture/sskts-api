@@ -22,6 +22,7 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield request.post({
             url: 'http://localhost:8080/oauth/token',
+            // url: 'https://devssktsapionlinux.azurewebsites.net/oauth/token',
             body: {
                 assertion: process.env.SSKTS_API_REFRESH_TOKEN,
                 scope: 'admin'
@@ -34,6 +35,7 @@ function main() {
         const accessToken = response.body.access_token;
         const theaterResponse = yield request.get({
             url: 'http://localhost:8080/theaters/118',
+            // url: 'https://devssktsapionlinux.azurewebsites.net/theaters/118',
             auth: { bearer: accessToken },
             json: true,
             simple: false,
