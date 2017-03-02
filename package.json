@@ -72,7 +72,7 @@
     "test": "tslint -c tslint.json app/**/*.ts bin/**/*.ts server.ts && nsp check && mocha --no-timeouts --recursive",
     "preversion": "npm run clean && npm run build && npm test",
     "version": "git add -A",
-    "postversion": "git push"
+    "postversion": "git push origin"
   },
-  "version": "1.0.2"
+  "version": "1.0.3"
 }
