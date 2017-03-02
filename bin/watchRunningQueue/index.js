@@ -87,15 +87,17 @@ function abort() {
             status: sskts.model.QueueStatus.ABORTED
         });
         debug('abortedQueue:', abortedQueue);
-        // メール通知
-        yield sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
-            from: 'noreply@localhost',
-            to: 'hello@motionpicture.jp',
-            subject: `sskts-api[${process.env.NODE_ENV}] queue aborted.`,
-            content: `
+        if (abortedQueue.isDefined) {
+            // メール通知
+            yield sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
+                from: 'noreply@localhost',
+                to: 'hello@motionpicture.jp',
+                subject: `sskts-api[${process.env.NODE_ENV}] queue aborted.`,
+                content: `
 aborted queue:\n
 ${util.inspect(abortedQueue, { showHidden: true, depth: 10 })}\n
 `
-        }))();
+            }))();
+        }
     });
 }
