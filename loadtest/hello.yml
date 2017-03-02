@@ -2,8 +2,8 @@ config:
   target: 'http://localhost:46491'
   phases:
     -
-      duration: 300
-      arrivalRate: 300
+      duration: 3
+      arrivalRate: 1
       name: "High load phase"
 
   environments:
@@ -11,6 +11,8 @@ config:
       target: ""
     dev:
       target: "https://devssktsapi.azurewebsites.net"
+    dev_linux:
+      target: "https://devssktsapionlinux.azurewebsites.net"
 
   variables:
     performanceId:

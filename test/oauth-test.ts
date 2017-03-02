@@ -14,7 +14,7 @@ describe('GET /oauth/token', () => {
         supertest(app)
             .post('/oauth/token')
             .send({
-                assertion: process.env.sskts_API_REFRESH_TOKEN,
+                assertion: process.env.SSKTS_API_REFRESH_TOKEN,
                 scope: 'admin'
             })
             .set('Accept', 'application/json')

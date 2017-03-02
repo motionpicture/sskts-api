@@ -13,7 +13,7 @@ describe('GET /screens/:id', () => {
     it('found', (done) => {
         supertest(app)
             .get('/screens/1187')
-            .set('authorization', 'Bearer ' + process.env.sskts_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(HTTPStatus.OK)
@@ -29,7 +29,7 @@ describe('GET /screens/:id', () => {
     it('not found', (done) => {
         supertest(app)
             .get('/screens/0000000000')
-            .set('authorization', 'Bearer ' + process.env.sskts_API_ACCESS_TOKEN)
+            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(HTTPStatus.NOT_FOUND)
