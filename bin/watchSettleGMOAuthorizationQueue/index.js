@@ -16,6 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
+const util = require("util");
 const debug = createDebug('sskts-api:*');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -63,6 +64,18 @@ function execute() {
                         results: error.stack
                     }
                 });
+            }
+            // メール通知(開発中)
+            if (process.env.NODE_ENV !== 'production') {
+                yield sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
+                    from: 'noreply@localhost',
+                    to: 'hello@motionpicture.jp',
+                    subject: `sskts-api[${process.env.NODE_ENV}] queue executed.`,
+                    content: `
+executed queue:\n
+${util.inspect(queue, { showHidden: true, depth: 10 })}\n
+`
+                }))();
             }
         }
     });

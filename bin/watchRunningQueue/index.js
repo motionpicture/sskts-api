@@ -17,6 +17,7 @@ const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const moment = require("moment");
 const mongoose = require("mongoose");
+const util = require("util");
 const debug = createDebug('sskts-api:*');
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -86,5 +87,15 @@ function abort() {
             status: sskts.model.QueueStatus.ABORTED
         });
         debug('abortedQueue:', abortedQueue);
+        // メール通知
+        yield sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
+            from: 'noreply@localhost',
+            to: 'hello@motionpicture.jp',
+            subject: `sskts-api[${process.env.NODE_ENV}] queue aborted.`,
+            content: `
+aborted queue:\n
+${util.inspect(abortedQueue, { showHidden: true, depth: 10 })}\n
+`
+        }))();
     });
 }

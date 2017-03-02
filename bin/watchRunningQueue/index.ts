@@ -7,6 +7,7 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+import * as util from 'util';
 
 const debug = createDebug('sskts-api:*');
 
@@ -100,4 +101,15 @@ async function abort() {
         }
     );
     debug('abortedQueue:', abortedQueue);
+
+    // メール通知
+    await sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
+        from: 'noreply@localhost',
+        to: 'hello@motionpicture.jp',
+        subject: `sskts-api[${process.env.NODE_ENV}] queue aborted.`,
+        content: `
+aborted queue:\n
+${util.inspect(abortedQueue, { showHidden: true, depth: 10 })}\n
+`
+    }))();
 }

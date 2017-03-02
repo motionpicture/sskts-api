@@ -60,17 +60,6 @@ async function execute() {
             await sskts.service.stock.unauthorizeCOASeatReservation(queue.authorization)();
             // 実行済みに変更
             await queueRepository.findOneAndUpdate({ _id: queue.id }, { status: sskts.model.QueueStatus.EXECUTED });
-
-            // メール通知 todo 開発中だけ？
-            await sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
-                from: 'noreply@localhost',
-                to: 'hello@motionpicture.jp',
-                subject: 'COA仮予約削除のお知らせ',
-                content: `
-COA仮予約を削除しました。<br>
-queue.authorization: ${queue.authorization}
-`
-            }))();
         } catch (error) {
             // 実行結果追加
             await queueRepository.findOneAndUpdate({ _id: queue.id }, {

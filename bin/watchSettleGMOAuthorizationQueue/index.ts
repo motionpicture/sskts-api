@@ -6,6 +6,7 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
+import * as util from 'util';
 
 const debug = createDebug('sskts-api:*');
 
@@ -68,6 +69,19 @@ async function execute() {
                     results: error.stack
                 }
             });
+        }
+
+        // メール通知(開発中)
+        if (process.env.NODE_ENV !== 'production') {
+            await sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
+                from: 'noreply@localhost',
+                to: 'hello@motionpicture.jp',
+                subject: `sskts-api[${process.env.NODE_ENV}] queue executed.`,
+                content: `
+executed queue:\n
+${util.inspect(queue, { showHidden: true, depth: 10 })}\n
+`
+            }))();
         }
     }
 }
