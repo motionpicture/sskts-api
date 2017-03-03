@@ -66,13 +66,11 @@
     "check": "tslint -c tslint.json app/**/*.ts bin/**/*.ts server.ts && nsp check",
     "clean": "rimraf app/**/*.js bin/**/*.js examples/**/*.js test/**/*.js docs/**/*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
-    "preinstall": "npm prune",
-    "postinstall": "npm dedupe",
     "start": "node server.js",
     "test": "npm run check && mocha --no-timeouts --recursive",
     "preversion": "npm run clean && npm run build && npm test",
     "version": "git add -A",
     "postversion": "git push origin"
   },
-  "version": "1.0.9"
+  "version": "1.0.10"
 }
