@@ -12,14 +12,10 @@ log4js.configure({
         {
             category: 'access',
             type: 'console'
-            // type: 'log4js-node-mongodb',
-            // connectionString: config.get<string>('mongolab_uri_for_logs'),
         },
         {
             category: 'system',
             type: 'console'
-            // type: 'log4js-node-mongodb',
-            // connectionString: config.get<string>('mongolab_uri_for_logs'),
         },
         {
             type: 'console'
@@ -29,6 +25,6 @@ log4js.configure({
         access: (env === 'development') ? log4js.levels.ALL.toString() : log4js.levels.OFF.toString(),
         system: (env === 'production') ? log4js.levels.INFO.toString() : log4js.levels.ALL.toString()
     },
-    replaceConsole: (env === 'prod') ? false : true
+    replaceConsole: (env === 'production') ? false : true
 });
 exports.default = log4js.connectLogger(log4js.getLogger('access'), {});

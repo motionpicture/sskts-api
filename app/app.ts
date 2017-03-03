@@ -33,7 +33,7 @@ app.use(helmet.hsts({
     includeSubdomains: true
 }));
 
-if (process.env.NODE_ENV !== 'prod') {
+if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
     app.get('/dev/500', (req) => {
         req.on('data', (chunk) => {
@@ -83,7 +83,7 @@ mongoose.connect(process.env.MONGOLAB_URI);
 //         process.exit(0);
 //     });
 // });
-// if (process.env.NODE_ENV !== 'prod') {
+// if (process.env.NODE_ENV !== 'production') {
 //     let db = mongoose.connection;
 //     db.on('connecting', () => {
 //         debug('connecting');
