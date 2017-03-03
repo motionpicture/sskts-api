@@ -17,6 +17,7 @@
 
 ## 開発方法
 npmでパッケージをインストール。
+
 ```shell
 npm install
 ```
@@ -24,14 +25,17 @@ npm install
 
 
 typescriptをjavascriptにコンパイル。
+
 ```shell
-npm run tsc
+npm run build
 ```
 
 npmでローカルサーバーを起動。
+
 ```shell
 npm start
 ```
+
 (http://localhost:8080)にアクセスすると、ローカルでウェブアプリを確認できます。
 
 
@@ -46,7 +50,9 @@ set COA_REFRESH_TOKEN=**********
 set SSKTS_API_SECRET==**********
 set SSKTS_API_REFRESH_TOKEN==**********
 ```
+
 only on Aure WebApps
+
 ```shell
 set WEBSITE_NODE_DEFAULT_VERSION=**********
 set WEBSITE_TIME_ZONE=Tokyo Standard Time
@@ -58,4 +64,13 @@ set WEBSITE_TIME_ZONE=Tokyo Standard Time
 コード品質チェックをtslintで行う。
 * [tslint](https://github.com/palantir/tslint)
 * [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
-`npm run tslint`でチェック実行。改修の際には、必ずチェックすること。
+
+`npm run check`でチェック実行。改修の際には、必ずチェックすること。
+
+
+# test
+`npm test`でチェック実行。
+
+
+# versioning
+`npm version patch -f -m "enter your commit comment..."`でチェック実行。
