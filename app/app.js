@@ -12,7 +12,16 @@ const helmet = require("helmet");
 const HTTPStatus = require("http-status");
 const i18n = require("i18n");
 const mongoose = require("mongoose");
+const authentication_1 = require("./middlewares/authentication");
 const logger_1 = require("./middlewares/logger");
+const dev_1 = require("./routers/dev");
+const film_1 = require("./routers/film");
+const health_1 = require("./routers/health");
+const oauth_1 = require("./routers/oauth");
+const performance_1 = require("./routers/performance");
+const screen_1 = require("./routers/screen");
+const theater_1 = require("./routers/theater");
+const transaction_1 = require("./routers/transaction");
 const debug = createDebug('sskts-api:*');
 const app = express();
 app.use(helmet());
@@ -93,22 +102,19 @@ mongoose.connect(process.env.MONGOLAB_URI);
 //     });
 // }
 // routers
-const dev_1 = require("./routers/dev");
-const film_1 = require("./routers/film");
-const oauth_1 = require("./routers/oauth");
-const performance_1 = require("./routers/performance");
-const screen_1 = require("./routers/screen");
-const theater_1 = require("./routers/theater");
-const transaction_1 = require("./routers/transaction");
+app.use('/health', health_1.default);
 app.use('/oauth', oauth_1.default);
-app.use('/dev', dev_1.default);
 app.use('/theaters', theater_1.default);
 app.use('/films', film_1.default);
 app.use('/screens', screen_1.default);
 app.use('/performances', performance_1.default);
 app.use('/transactions', transaction_1.default);
+if (process.env.NODE_ENV !== 'production') {
+    app.use('/dev', dev_1.default);
+}
 // 404
-app.use((req, res) => {
+app.use((req, res, next) => {
+    authentication_1.default(req, res, next);
     res.status(HTTPStatus.NOT_FOUND);
     res.json({
         errors: [

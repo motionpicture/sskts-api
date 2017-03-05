@@ -13,7 +13,16 @@ import * as HTTPStatus from 'http-status';
 import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
 
+import authentication from './middlewares/authentication';
 import logger from './middlewares/logger';
+import devRouter from './routers/dev';
+import filmRouter from './routers/film';
+import healthRouter from './routers/health';
+import oauthRouter from './routers/oauth';
+import performanceRouter from './routers/performance';
+import screenRouter from './routers/screen';
+import theaterRouter from './routers/theater';
+import transactionRouter from './routers/transaction';
 
 const debug = createDebug('sskts-api:*');
 
@@ -106,23 +115,22 @@ mongoose.connect(process.env.MONGOLAB_URI);
 // }
 
 // routers
-import devRouter from './routers/dev';
-import filmRouter from './routers/film';
-import oauthRouter from './routers/oauth';
-import performanceRouter from './routers/performance';
-import screenRouter from './routers/screen';
-import theaterRouter from './routers/theater';
-import transactionRouter from './routers/transaction';
+app.use('/health', healthRouter);
 app.use('/oauth', oauthRouter);
-app.use('/dev', devRouter);
 app.use('/theaters', theaterRouter);
 app.use('/films', filmRouter);
 app.use('/screens', screenRouter);
 app.use('/performances', performanceRouter);
 app.use('/transactions', transactionRouter);
 
+if (process.env.NODE_ENV !== 'production') {
+    app.use('/dev', devRouter);
+}
+
 // 404
-app.use((req, res) => {
+app.use((req, res, next) => {
+    authentication(req, res, next);
+
     res.status(HTTPStatus.NOT_FOUND);
     res.json({
         errors: [
