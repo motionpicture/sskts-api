@@ -45,6 +45,9 @@ router.get('/:id', async (req, res, next) => {
 });
 
 router.get('', async (req, res, next) => {
+    req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
+    req.checkQuery('day', 'invalid day').notEmpty().withMessage('day is required');
+
     const validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
