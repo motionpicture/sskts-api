@@ -14,15 +14,17 @@ const debug = createDebug('sskts-api:*');
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
 
 router.post('/token', async (req, res, next) => {
-    debug(req.body);
+    req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required')
+        .equals(process.env.SSKTS_API_REFRESH_TOKEN);
+    req.checkBody('scope', 'invalid scope').notEmpty().withMessage('scope is required')
+        .equals('admin');
+
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
+
     try {
-        const assertion = req.body.assertion.toString();
-
-        // todo メッセージ調整
-        if (assertion !== process.env.SSKTS_API_REFRESH_TOKEN) {
-            return next(new Error('invalid assertion.'));
-        }
-
         jwt.sign(
             {
                 scope: req.body.scope.toString()

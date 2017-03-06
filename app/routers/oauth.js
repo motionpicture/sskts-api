@@ -21,13 +21,15 @@ const debug = createDebug('sskts-api:*');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
 router.post('/token', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    debug(req.body);
+    req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required')
+        .equals(process.env.SSKTS_API_REFRESH_TOKEN);
+    req.checkBody('scope', 'invalid scope').notEmpty().withMessage('scope is required')
+        .equals('admin');
+    const validatorResult = yield req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        return next(new Error(validatorResult.array()[0].msg));
+    }
     try {
-        const assertion = req.body.assertion.toString();
-        // todo メッセージ調整
-        if (assertion !== process.env.SSKTS_API_REFRESH_TOKEN) {
-            return next(new Error('invalid assertion.'));
-        }
         jwt.sign({
             scope: req.body.scope.toString()
         }, process.env.SSKTS_API_SECRET, {

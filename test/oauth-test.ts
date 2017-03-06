@@ -29,4 +29,40 @@ describe('GET /oauth/token', () => {
                 done(err);
             });
     });
+
+    it('invalid assertion', (done) => {
+        supertest(app)
+            .post('/oauth/token')
+            .send({
+                assertion: 'assertion',
+                scope: 'admin'
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(HTTPStatus.BAD_REQUEST)
+            .then((response) => {
+                assert.equal(response.body.errors[0].description, 'invalid assertion');
+                done();
+            }).catch((err) => {
+                done(err);
+            });
+    });
+
+    it('invalid scope', (done) => {
+        supertest(app)
+            .post('/oauth/token')
+            .send({
+                assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+                scope: '*****'
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(HTTPStatus.BAD_REQUEST)
+            .then((response) => {
+                assert.equal(response.body.errors[0].description, 'invalid scope');
+                done();
+            }).catch((err) => {
+                done(err);
+            });
+    });
 });

@@ -22,7 +22,9 @@ const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 router.use(authentication_1.default);
 router.post('/makeInquiry', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    // todo validation
+    req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
+    req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
+    req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
@@ -87,12 +89,12 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
     }
 }));
 router.post('', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    // expired_atはsecondsのUNIXタイムスタンプで
+    req.checkBody('expired_at', 'invalid expired_at').notEmpty().withMessage('expired_at is required').isInt();
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
     }
-    // todo ownersの型チェック
-    // expired_atはsecondsのUNIXタイムスタンプで
     try {
         // tslint:disable-next-line:no-magic-numbers
         const transaction = yield sskts.service.transaction.start(moment.unix(parseInt(req.body.expired_at, 10)).toDate())(sskts.createOwnerRepository(mongoose.connection), sskts.createTransactionRepository(mongoose.connection));
@@ -113,7 +115,10 @@ router.post('', (req, res, next) => __awaiter(this, void 0, void 0, function* ()
     }
 }));
 router.patch('/:id/anonymousOwner', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    // req.checkBody('group', 'invalid group.').notEmpty();
+    req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
+    req.checkBody('name_last', 'invalid name_last').optional().notEmpty().withMessage('name_last should not be empty');
+    req.checkBody('tel', 'invalid tel').optional().notEmpty().withMessage('tel should not be empty');
+    req.checkBody('email', 'invalid email').optional().notEmpty().withMessage('email should not be empty');
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
@@ -133,7 +138,16 @@ router.patch('/:id/anonymousOwner', (req, res, next) => __awaiter(this, void 0, 
     }
 }));
 router.post('/:id/authorizations/gmo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    // todo validations
+    req.checkBody('owner_id_from', 'invalid owner_id_from').notEmpty().withMessage('owner_id_from is required');
+    req.checkBody('owner_id_to', 'invalid owner_id_to').notEmpty().withMessage('owner_id_to is required');
+    req.checkBody('gmo_shop_id', 'invalid gmo_shop_id').notEmpty().withMessage('gmo_shop_id is required');
+    req.checkBody('gmo_shop_pass', 'invalid gmo_shop_pass').notEmpty().withMessage('gmo_shop_pass is required');
+    req.checkBody('gmo_order_id', 'invalid gmo_order_id').notEmpty().withMessage('gmo_order_id is required');
+    req.checkBody('gmo_amount', 'invalid gmo_amount').notEmpty().withMessage('gmo_amount is required');
+    req.checkBody('gmo_access_id', 'invalid gmo_access_id').notEmpty().withMessage('gmo_access_id is required');
+    req.checkBody('gmo_access_pass', 'invalid gmo_access_pass').notEmpty().withMessage('gmo_access_pass is required');
+    req.checkBody('gmo_job_cd', 'invalid gmo_job_cd').notEmpty().withMessage('gmo_job_cd is required');
+    req.checkBody('gmo_pay_type', 'invalid gmo_pay_type').notEmpty().withMessage('gmo_pay_type is required');
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
@@ -165,7 +179,17 @@ router.post('/:id/authorizations/gmo', (req, res, next) => __awaiter(this, void 
     }
 }));
 router.post('/:id/authorizations/coaSeatReservation', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    // todo validations
+    req.checkBody('owner_id_from', 'invalid owner_id_from').notEmpty().withMessage('owner_id_from is required');
+    req.checkBody('owner_id_to', 'invalid owner_id_to').notEmpty().withMessage('owner_id_to is required');
+    req.checkBody('coa_tmp_reserve_num', 'invalid coa_tmp_reserve_num').notEmpty().withMessage('coa_tmp_reserve_num is required');
+    req.checkBody('coa_theater_code', 'invalid coa_theater_code').notEmpty().withMessage('coa_theater_code is required');
+    req.checkBody('coa_date_jouei', 'invalid coa_date_jouei').notEmpty().withMessage('coa_date_jouei is required');
+    req.checkBody('coa_title_code', 'invalid coa_title_code').notEmpty().withMessage('coa_title_code is required');
+    req.checkBody('coa_title_branch_num', 'invalid coa_title_branch_num').notEmpty().withMessage('coa_title_branch_num is required');
+    req.checkBody('coa_time_begin', 'invalid coa_time_begin').notEmpty().withMessage('coa_time_begin is required');
+    req.checkBody('coa_screen_code', 'invalid coa_screen_code').notEmpty().withMessage('coa_screen_code is required');
+    req.checkBody('seats', 'invalid seats').notEmpty().withMessage('seats is required');
+    req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
@@ -232,6 +256,9 @@ router.delete('/:id/authorizations/:authorization_id', (req, res, next) => __awa
     }
 }));
 router.patch('/:id/enableInquiry', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
+    req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
+    req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
@@ -250,7 +277,10 @@ router.patch('/:id/enableInquiry', (req, res, next) => __awaiter(this, void 0, v
     }
 }));
 router.post('/:id/notifications/email', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    // todo validations
+    req.checkBody('from', 'invalid from').notEmpty().withMessage('from is required');
+    req.checkBody('to', 'invalid to').notEmpty().withMessage('to is required').isEmail();
+    req.checkBody('subject', 'invalid subject').notEmpty().withMessage('subject is required');
+    req.checkBody('content', 'invalid content').notEmpty().withMessage('content is required');
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         return next(new Error(validatorResult.array()[0].msg));
