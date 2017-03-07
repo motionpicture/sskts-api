@@ -13,7 +13,6 @@ import * as HTTPStatus from 'http-status';
 import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
 
-import authentication from './middlewares/authentication';
 import logger from './middlewares/logger';
 import devRouter from './routers/dev';
 import filmRouter from './routers/film';
@@ -128,9 +127,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // 404
-app.use((req, res, next) => {
-    authentication(req, res, next);
-
+app.use((req, res) => {
     res.status(HTTPStatus.NOT_FOUND);
     res.json({
         errors: [

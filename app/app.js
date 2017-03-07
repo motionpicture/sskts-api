@@ -12,7 +12,6 @@ const helmet = require("helmet");
 const HTTPStatus = require("http-status");
 const i18n = require("i18n");
 const mongoose = require("mongoose");
-const authentication_1 = require("./middlewares/authentication");
 const logger_1 = require("./middlewares/logger");
 const dev_1 = require("./routers/dev");
 const film_1 = require("./routers/film");
@@ -113,8 +112,7 @@ if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', dev_1.default);
 }
 // 404
-app.use((req, res, next) => {
-    authentication_1.default(req, res, next);
+app.use((req, res) => {
     res.status(HTTPStatus.NOT_FOUND);
     res.json({
         errors: [

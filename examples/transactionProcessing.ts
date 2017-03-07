@@ -88,11 +88,11 @@ async function execute() {
 
     // 空席なくなったら変更する
     const theaterCode = '118';
-    const dateJouei = '20170228';
-    const titleCode = '16404';
+    const dateJouei = '20170309';
+    const titleCode = '17062';
     const titleBranchNum = '0';
-    const timeBegin = '0920';
-    const screenCode = '8';
+    const timeBegin = '1450';
+    const screenCode = '2';
 
     // 販売可能チケット検索
     const salesTicketResult = await COA.ReserveService.salesTicket({
