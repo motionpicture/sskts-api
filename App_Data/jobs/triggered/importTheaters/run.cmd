@@ -1,2 +1,2 @@
-cd C:\Users\Tetsu\workspace\sskts_api
+cd %HOME%\site\wwwroot
 node bin\importTheaters\index
