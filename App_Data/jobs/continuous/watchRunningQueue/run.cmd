@@ -1,2 +1,2 @@
-cd %~dp0..\..\..\..\
+cd %HOME%\site\wwwroot
 node bin\watchRunningQueue\index
