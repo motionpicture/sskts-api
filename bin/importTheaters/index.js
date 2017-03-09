@@ -17,12 +17,10 @@ const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:*');
-mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI);
 const theaterCode = '118';
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        debug('mongoose connecting...');
+        debug('connecting mongodb...');
         mongoose.connect(process.env.MONGOLAB_URI);
         const theaterRepository = sskts.createTheaterRepository(mongoose.connection);
         debug('repository created.');
@@ -33,9 +31,8 @@ function main() {
     });
 }
 main().then(() => {
-    // process.exitCode = 0;
-    // process.exit();
+    debug('success!');
 }).catch((err) => {
     console.error(err);
-    // process.exit(0);
+    process.exit(1);
 });

@@ -37,7 +37,6 @@ program
         console.error(error);
     }
     mongoose.disconnect();
-    process.exit(0);
 }));
 program
     .command('importFilms <theaterCode>')
@@ -51,7 +50,6 @@ program
         console.error(error);
     }
     mongoose.disconnect();
-    process.exit(0);
 }));
 program
     .command('importScreens <theaterCode>')
@@ -65,7 +63,6 @@ program
         console.error(error);
     }
     mongoose.disconnect();
-    process.exit(0);
 }));
 program
     .command('importPerformances <theaterCode> <day_start> <day_end>')
@@ -78,7 +75,7 @@ program
     catch (error) {
         console.error(error);
     }
-    process.exit(0);
+    mongoose.disconnect();
 }));
 program
     .command('*')

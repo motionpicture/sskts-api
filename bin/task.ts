@@ -31,7 +31,6 @@ program
         }
 
         mongoose.disconnect();
-        process.exit(0);
     });
 
 program
@@ -50,7 +49,6 @@ program
         }
 
         mongoose.disconnect();
-        process.exit(0);
     });
 
 program
@@ -69,7 +67,6 @@ program
         }
 
         mongoose.disconnect();
-        process.exit(0);
     });
 
 program
@@ -88,7 +85,7 @@ program
             console.error(error);
         }
 
-        process.exit(0);
+        mongoose.disconnect();
     });
 
 program

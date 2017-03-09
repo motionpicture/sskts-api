@@ -9,13 +9,10 @@ import * as mongoose from 'mongoose';
 
 const debug = createDebug('sskts-api:*');
 
-(<any>mongoose).Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI);
-
 const theaterCode = '118';
 
 async function main() {
-    debug('mongoose connecting...');
+    debug('connecting mongodb...');
     mongoose.connect(process.env.MONGOLAB_URI);
 
     const theaterRepository = sskts.createTheaterRepository(mongoose.connection);
@@ -28,9 +25,8 @@ async function main() {
 }
 
 main().then(() => {
-    // process.exitCode = 0;
-    // process.exit();
+    debug('success!');
 }).catch((err) => {
     console.error(err);
-    // process.exit(0);
+    process.exit(1);
 });
