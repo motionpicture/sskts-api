@@ -20,12 +20,13 @@ async function main() {
     debug('connecting mongodb...');
     mongoose.connect(process.env.MONGOLAB_URI);
 
-    const theaterRepository = sskts.createTheaterRepository(mongoose.connection);
+    const theaterRepo = sskts.createTheaterRepository(mongoose.connection);
+    const filmRepo = sskts.createFilmRepository(mongoose.connection);
     const promises = theaterCodes.map(async (theaterCode) => {
         try {
-            debug('importing theater...');
-            await sskts.service.master.importTheater(theaterCode)(theaterRepository);
-            debug('theater imported.');
+            debug('importing films...');
+            await sskts.service.master.importFilms(theaterCode)(theaterRepo, filmRepo);
+            debug('films imported.');
         } catch (error) {
             console.error(error);
         }
