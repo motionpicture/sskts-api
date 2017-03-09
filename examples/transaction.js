@@ -419,18 +419,23 @@ function main() {
         }
         // メール追加
         const content = `
-<!DOCTYPE html>
-<html lang='ja'>
-<head>
-<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>
-<title>購入完了</title>
-</head>
-<body>
-<h1>この度はご購入いただき誠にありがとうございます。</h1>
-<h3>購入番号 (Transaction number) :</h3>
-<strong>${updateReserveResult.reserve_num}</strong>
-</body>
-</html>
+sskts-api:examples:transaction 様\n
+\n
+-------------------------------------------------------------------\n
+この度はご購入いただき誠にありがとうございます。\n
+\n
+※チケット発券時は、自動発券機に下記チケットQRコードをかざしていただくか、購入番号と電話番号を入力していただく必要があります。\n
+-------------------------------------------------------------------\n
+\n
+◆購入番号 ：${updateReserveResult.reserve_num}\n
+◆電話番号 ：09012345678\n
+◆合計金額 ：${totalPrice}円\n
+\n
+※このアドレスは送信専用です。返信はできませんのであらかじめご了承下さい。\n
+-------------------------------------------------------------------\n
+シネマサンシャイン\n
+http://www.cinemasunshine.co.jp/\n
+-------------------------------------------------------------------\n
 `;
         debug('adding email...');
         response = yield request.post({
