@@ -106,7 +106,7 @@ async function abort() {
         // メール通知
         await sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
             from: 'noreply@localhost',
-            to: 'hello@motionpicture.jp',
+            to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: `sskts-api[${process.env.NODE_ENV}] queue aborted.`,
             content: `
 aborted queue:\n

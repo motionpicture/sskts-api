@@ -380,7 +380,7 @@ async function main() {
             name_first: 'Tetsu',
             name_last: 'Yamazaki',
             tel: '09012345678',
-            email: 'hello@motionpicture.jp'
+            email: process.env.SSKTS_DEVELOPER_EMAIL
         },
         json: true,
         resolveWithFullResponse: true
@@ -465,7 +465,7 @@ http://www.cinemasunshine.co.jp/\n
         auth: { bearer: accessToken },
         body: {
             from: 'noreply@localhost',
-            to: 'hello@motionpicture.jp',
+            to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: '購入完了',
             content: content
         },
@@ -502,7 +502,7 @@ http://www.cinemasunshine.co.jp/\n
         auth: { bearer: accessToken },
         body: {
             from: 'noreply@localhost',
-            to: 'hello@motionpicture.jp',
+            to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: '購入完了',
             content: content
         },
