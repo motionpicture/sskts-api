@@ -12,6 +12,7 @@ const helmet = require("helmet");
 const HTTPStatus = require("http-status");
 const i18n = require("i18n");
 const mongoose = require("mongoose");
+const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const logger_1 = require("./middlewares/logger");
 const dev_1 = require("./routers/dev");
 const film_1 = require("./routers/film");
@@ -73,33 +74,31 @@ app.use(i18n.init);
 // mongoose.set('debug', true); // todo 本番でははずす
 // Use native promises
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI);
+mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 // process.on('SIGINT', function() {
 //     mongoose.disconnect(() => {
 //         process.exit(0);
 //     });
 // });
-// if (process.env.NODE_ENV !== 'production') {
-//     let db = mongoose.connection;
-//     db.on('connecting', () => {
-//         debug('connecting');
-//     });
-//     db.on('error', (error) => {
-//         console.error('Error in MongoDb connection: ', error);
-//     });
-//     db.on('connected', () => {
-//         debug('connected.');
-//     });
-//     db.once('open', () => {
-//         debug('connection open.');
-//     });
-//     db.on('reconnected', () => {
-//         debug('reconnected.');
-//     });
-//     db.on('disconnected', () => {
-//         debug('disconnected.');
-//     });
-// }
+// const db = mongoose.connection;
+// db.on('connecting', () => {
+//     debug('connecting');
+// });
+// db.on('error', (error) => {
+//     console.error('Error in MongoDb connection: ', error);
+// });
+// db.on('connected', () => {
+//     debug('connected.');
+// });
+// db.once('open', () => {
+//     debug('connection open.');
+// });
+// db.on('reconnected', () => {
+//     debug('reconnected.');
+// });
+// db.on('disconnected', () => {
+//     debug('disconnected.');
+// });
 // routers
 app.use('/health', health_1.default);
 app.use('/oauth', oauth_1.default);

@@ -1,4 +1,3 @@
-// tslint:disable:no-http-string no-magic-numbers
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -17,12 +16,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const request = require("request-promise-native");
 const debug = createDebug('sskts-api:*');
-// tslint:disable-next-line:max-func-body-length
+const API_ENDPOINT = 'http://localhost:8080'; // tslint:disable-line:no-http-string
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield request.post({
-            url: 'http://localhost:8080/oauth/token',
-            // url: 'https://devssktsapionlinux.azurewebsites.net/oauth/token',
+            url: `${API_ENDPOINT}/oauth/token`,
             body: {
                 assertion: process.env.SSKTS_API_REFRESH_TOKEN,
                 scope: 'admin'
@@ -34,7 +32,7 @@ function main() {
         debug('oauth token result:', response.statusCode, response.body);
         const accessToken = response.body.access_token;
         const theaterResponse = yield request.get({
-            url: 'http://localhost:8080/theaters/118',
+            url: `${API_ENDPOINT}/theaters/118`,
             // url: 'https://devssktsapionlinux.azurewebsites.net/theaters/118',
             auth: { bearer: accessToken },
             json: true,

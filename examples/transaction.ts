@@ -1,5 +1,3 @@
-// tslint:disable:no-http-string no-magic-numbers
-
 /**
  * 取引フローテストスクリプト
  *
@@ -8,20 +6,24 @@
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
+import * as httpStatus from 'http-status';
 import * as moment from 'moment';
 import * as request from 'request-promise-native';
 
 const debug = createDebug('*');
+const API_ENDPOINT = 'http://localhost:8080'; // tslint:disable-line:no-http-string
+// const API_ENDPOINT = 'https://devssktsapi-staging.azurewebsites.net'; // tslint:disable-line:no-http-string
 
 // tslint:disable-next-line:max-func-body-length
 async function main() {
     let response: any;
     const gmoShopId = 'tshop00026096';
     const gmoShopPass = 'xbxmkaa6';
+    const performanceId = '1182017030917062021450'; // パフォーマンスID 空席なくなったら変更する
 
     // アクセストークン取得
     response = await request.post({
-        url: 'http://localhost:8080/oauth/token',
+        url: `${API_ENDPOINT}/oauth/token`,
         body: {
             assertion: process.env.SSKTS_API_REFRESH_TOKEN,
             scope: 'admin'
@@ -33,22 +35,74 @@ async function main() {
     debug('oauth token result:', response.statusCode, response.body);
     const accessToken = response.body.access_token;
 
+    // パフォーマンス取得
+    debug('finding performance...');
+    response = await request.get({
+        url: `${API_ENDPOINT}/performances/` + performanceId,
+        auth: { bearer: accessToken },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true
+    });
+    debug('/performances/:id result:', response.statusCode, response.body);
+    if (response.statusCode !== httpStatus.OK) {
+        throw new Error(response.body.message);
+    }
+    const performance = response.body.data.attributes;
+
+    // 作品取得
+    debug('finding film...');
+    response = await request.get({
+        url: `${API_ENDPOINT}/films/` + performance.film.id,
+        auth: { bearer: accessToken },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true
+    });
+    debug('/films/:id result:', response.statusCode, response.body);
+    if (response.statusCode !== httpStatus.OK) {
+        throw new Error(response.body.message);
+    }
+    const film = response.body.data.attributes;
+
+    // スクリーン取得
+    debug('finding screen...');
+    response = await request.get({
+        url: `${API_ENDPOINT}/screens/` + performance.screen.id,
+        auth: { bearer: accessToken },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true
+    });
+    debug('/screens/:id result:', response.statusCode, response.body);
+    if (response.statusCode !== httpStatus.OK) {
+        throw new Error(response.body.message);
+    }
+    const screen = response.body.data.attributes;
+
+    const theaterCode = performance.theater.id;
+    const dateJouei = performance.day;
+    const titleCode = film.coa_title_code;
+    const titleBranchNum = film.coa_title_branch_num;
+    const timeBegin = performance.time_start;
+    const screenCode = screen.coa_screen_code;
+
     // 取引開始
     // 30分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
     debug('starting transaction...');
     response = await request.post({
-        url: 'http://localhost:8080/transactions',
+        url: `${API_ENDPOINT}/transactions`,
         auth: { bearer: accessToken },
         body: {
-            expired_at: moment().add(30, 'minutes').unix()
+            expired_at: moment().add(30, 'minutes').unix() // tslint:disable-line:no-magic-numbers
         },
         json: true,
         simple: false,
         resolveWithFullResponse: true
     });
     debug('/transactions/start result:', response.statusCode, response.body);
-    if (response.statusCode !== 201) {
+    if (response.statusCode !== httpStatus.CREATED) {
         throw new Error(response.body.message);
     }
     const transactionId = response.body.data.id;
@@ -66,14 +120,6 @@ async function main() {
         return (owner.group === 'ANONYMOUS');
     });
     const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
-
-    // 空席なくなったら変更する
-    const theaterCode = '118';
-    const dateJouei = '20170309';
-    const titleCode = '17062';
-    const titleBranchNum = '0';
-    const timeBegin = '1450';
-    const screenCode = '2';
 
     // 販売可能チケット検索
     const salesTicketResult = await COA.ReserveService.salesTicket({
@@ -125,7 +171,7 @@ async function main() {
     debug('adding authorizations coaSeatReservation...');
     const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
     response = await request.post({
-        url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
         auth: { bearer: accessToken },
         body: {
             owner_id_from: promoterOwnerId,
@@ -139,7 +185,7 @@ async function main() {
             coa_screen_code: screenCode,
             seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                 return {
-                    performance: '001201701208513021010',
+                    performance: performance.id,
                     section: tmpReserve.seat_section,
                     seat_code: tmpReserve.seat_num,
                     ticket_code: salesTicketResult[0].ticket_code,
@@ -159,7 +205,7 @@ async function main() {
         resolveWithFullResponse: true
     });
     debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) {
+    if (response.statusCode !== httpStatus.OK) {
         throw new Error(response.body.message);
     }
     const coaAuthorizationId = response.body.data.id;
@@ -179,7 +225,7 @@ async function main() {
     // COAオーソリ削除
     debug('removing authorizations coaSeatReservation...');
     response = await request.del({
-        url: `http://localhost:8080/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
         auth: { bearer: accessToken },
         body: {
         },
@@ -188,7 +234,7 @@ async function main() {
         resolveWithFullResponse: true
     });
     debug('removeCOASeatReservationAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) {
+    if (response.statusCode !== httpStatus.NO_CONTENT) {
         throw new Error(response.body.message);
     }
 
@@ -216,7 +262,7 @@ async function main() {
     // GMOオーソリ追加
     debug('adding authorizations gmo...');
     response = await request.post({
-        url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/gmo`,
         auth: { bearer: accessToken },
         body: {
             owner_id_from: anonymousOwnerId,
@@ -235,7 +281,7 @@ async function main() {
         resolveWithFullResponse: true
     });
     debug('addGMOAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) {
+    if (response.statusCode !== httpStatus.OK) {
         throw new Error(response.body.message);
     }
     const gmoAuthorizationId = response.body.data.id;
@@ -253,7 +299,7 @@ async function main() {
     // GMOオーソリ削除
     debug('removing authorizations gmo...');
     response = await request.del({
-        url: `http://localhost:8080/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
         auth: { bearer: accessToken },
         body: {
         },
@@ -262,7 +308,7 @@ async function main() {
         resolveWithFullResponse: true
     });
     debug('removeGMOAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) {
+    if (response.statusCode !== httpStatus.NO_CONTENT) {
         throw new Error(response.body.message);
     }
 
@@ -287,7 +333,7 @@ async function main() {
     // COAオーソリ追加
     debug('adding authorizations coaSeatReservation...');
     response = await request.post({
-        url: `http://localhost:8080/transactions/${transactionId}/authorizations/coaSeatReservation`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
         auth: { bearer: accessToken },
         body: {
             owner_id_from: promoterOwnerId,
@@ -301,7 +347,7 @@ async function main() {
             coa_screen_code: screenCode,
             seats: reserveSeatsTemporarilyResult2.list_tmp_reserve.map((tmpReserve) => {
                 return {
-                    performance: '001201701208513021010',
+                    performance: performance.id,
                     section: tmpReserve.seat_section,
                     seat_code: tmpReserve.seat_num,
                     ticket_code: salesTicketResult[0].ticket_code,
@@ -321,7 +367,7 @@ async function main() {
         resolveWithFullResponse: true
     });
     debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) {
+    if (response.statusCode !== httpStatus.OK) {
         throw new Error(response.body.message);
     }
 
@@ -349,7 +395,7 @@ async function main() {
     // GMOオーソリ追加
     debug('adding authorizations gmo...');
     response = await request.post({
-        url: `http://localhost:8080/transactions/${transactionId}/authorizations/gmo`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/gmo`,
         auth: { bearer: accessToken },
         body: {
             owner_id_from: anonymousOwnerId,
@@ -367,14 +413,14 @@ async function main() {
         resolveWithFullResponse: true
     });
     debug('addGMOAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) {
+    if (response.statusCode !== httpStatus.OK) {
         throw new Error(response.body.message);
     }
 
     // 購入者情報登録
     debug('updating anonymous...');
     response = await request.patch({
-        url: `http://localhost:8080/transactions/${transactionId}/anonymousOwner`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/anonymousOwner`,
         auth: { bearer: accessToken },
         body: {
             name_first: 'Tetsu',
@@ -386,7 +432,7 @@ async function main() {
         resolveWithFullResponse: true
     });
     debug('anonymousOwner updated.', response.statusCode, response.body);
-    if (response.statusCode !== 204) {
+    if (response.statusCode !== httpStatus.NO_CONTENT) {
         throw new Error(response.body.message);
     }
 
@@ -423,7 +469,7 @@ async function main() {
     // 照会情報登録(購入番号と電話番号で照会する場合)
     debug('enabling inquiry...');
     response = await request.patch({
-        url: `http://localhost:8080/transactions/${transactionId}/enableInquiry`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/enableInquiry`,
         auth: { bearer: accessToken },
         body: {
             inquiry_theater: theaterCode,
@@ -435,7 +481,7 @@ async function main() {
         resolveWithFullResponse: true
     });
     debug('enableInquiry result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) {
+    if (response.statusCode !== httpStatus.NO_CONTENT) {
         throw new Error(response.body.message);
     }
 
@@ -461,7 +507,7 @@ http://www.cinemasunshine.co.jp/\n
 `;
     debug('adding email...');
     response = await request.post({
-        url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/notifications/email`,
         auth: { bearer: accessToken },
         body: {
             from: 'noreply@localhost',
@@ -474,7 +520,7 @@ http://www.cinemasunshine.co.jp/\n
         resolveWithFullResponse: true
     });
     debug('addEmail result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) {
+    if (response.statusCode !== httpStatus.OK) {
         throw new Error(response.body.message);
     }
     const notificationId = response.body.data.id;
@@ -482,7 +528,7 @@ http://www.cinemasunshine.co.jp/\n
     // メール削除
     debug('removing email...');
     response = await request.del({
-        url: `http://localhost:8080/transactions/${transactionId}/notifications/${notificationId}`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/notifications/${notificationId}`,
         auth: { bearer: accessToken },
         body: {
         },
@@ -491,14 +537,14 @@ http://www.cinemasunshine.co.jp/\n
         resolveWithFullResponse: true
     });
     debug('removeEmail result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) {
+    if (response.statusCode !== httpStatus.NO_CONTENT) {
         throw new Error(response.body.message);
     }
 
     // 再度メール追加
     debug('adding email...');
     response = await request.post({
-        url: `http://localhost:8080/transactions/${transactionId}/notifications/email`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/notifications/email`,
         auth: { bearer: accessToken },
         body: {
             from: 'noreply@localhost',
@@ -511,14 +557,14 @@ http://www.cinemasunshine.co.jp/\n
         resolveWithFullResponse: true
     });
     debug('addEmail result:', response.statusCode, response.body);
-    if (response.statusCode !== 200) {
+    if (response.statusCode !== httpStatus.OK) {
         throw new Error(response.body.message);
     }
 
     // 取引成立
     debug('closing transaction...');
     response = await request.patch({
-        url: `http://localhost:8080/transactions/${transactionId}/close`,
+        url: `${API_ENDPOINT}/transactions/${transactionId}/close`,
         auth: { bearer: accessToken },
         body: {
         },
@@ -527,13 +573,13 @@ http://www.cinemasunshine.co.jp/\n
         resolveWithFullResponse: true
     });
     debug('close result:', response.statusCode, response.body);
-    if (response.statusCode !== 204) {
+    if (response.statusCode !== httpStatus.NO_CONTENT) {
         throw new Error(response.body.message);
     }
 
     // 照会してみる
     response = await request.post({
-        url: 'http://localhost:8080/transactions/makeInquiry',
+        url: `${API_ENDPOINT}/transactions/makeInquiry`,
         auth: { bearer: accessToken },
         body: {
             inquiry_theater: theaterCode,
