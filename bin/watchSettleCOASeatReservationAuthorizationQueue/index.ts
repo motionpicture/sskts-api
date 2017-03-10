@@ -38,17 +38,17 @@ setInterval(
 );
 
 async function execute() {
-    const queueRepository = sskts.createQueueRepository(mongoose.connection);
-    const assetRepository = sskts.createAssetRepository(mongoose.connection);
+    const queueAdapter = sskts.createQueueAdapter(mongoose.connection);
+    const assetAdapter = sskts.createAssetAdapter(mongoose.connection);
 
     // 未実行のCOA資産移動キューを取得
-    const option = await queueRepository.findOneSettleCOASeatReservationAuthorizationAndUpdate(
+    const option = await queueAdapter.findOneSettleCOASeatReservationAuthorizationAndUpdate(
         {
-            status: sskts.model.QueueStatus.UNEXECUTED,
+            status: sskts.factory.queueStatus.UNEXECUTED,
             run_at: { $lt: new Date() }
         },
         {
-            status: sskts.model.QueueStatus.RUNNING, // 実行中に変更
+            status: sskts.factory.queueStatus.RUNNING, // 実行中に変更
             last_tried_at: new Date(),
             $inc: { count_tried: 1 } // トライ回数増やす
         }
@@ -60,11 +60,11 @@ async function execute() {
 
         try {
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            await sskts.service.stock.transferCOASeatReservation(queue.authorization)(assetRepository);
-            await queueRepository.findOneAndUpdate({ _id: queue.id }, { status: sskts.model.QueueStatus.EXECUTED });
+            await sskts.service.stock.transferCOASeatReservation(queue.authorization)(assetAdapter);
+            await queueAdapter.findOneAndUpdate({ _id: queue.id }, { status: sskts.factory.queueStatus.EXECUTED });
         } catch (error) {
             // 実行結果追加
-            await queueRepository.findOneAndUpdate({ _id: queue.id }, {
+            await queueAdapter.findOneAndUpdate({ _id: queue.id }, {
                 $push: {
                     results: error.stack
                 }
@@ -73,7 +73,7 @@ async function execute() {
 
         // メール通知(開発中)
         if (process.env.NODE_ENV !== 'production') {
-            await sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
+            await sskts.service.notification.sendEmail(sskts.factory.notification.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: `sskts-api[${process.env.NODE_ENV}] queue executed.`,

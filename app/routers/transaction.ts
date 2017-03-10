@@ -26,12 +26,12 @@ router.post('/makeInquiry', async (req, res, next) => {
     }
 
     try {
-        const key = sskts.model.TransactionInquiryKey.create({
+        const key = sskts.factory.transactionInquiryKey.create({
             theater_code: req.body.inquiry_theater,
             reserve_num: req.body.inquiry_id,
             tel: req.body.inquiry_pass
         });
-        const option = await sskts.service.transaction.makeInquiry(key)(sskts.createTransactionRepository(mongoose.connection));
+        const option = await sskts.service.transaction.makeInquiry(key)(sskts.createTransactionAdapter(mongoose.connection));
 
         option.match({
             Some: (transaction) => {
@@ -64,7 +64,7 @@ router.get('/:id', async (req, res, next) => {
     }
 
     try {
-        const option = await sskts.service.transaction.findById(req.params.id)(sskts.createTransactionRepository(mongoose.connection));
+        const option = await sskts.service.transaction.findById(req.params.id)(sskts.createTransactionAdapter(mongoose.connection));
         option.match({
             Some: (transaction) => {
                 res.json({
@@ -99,8 +99,8 @@ router.post('', async (req, res, next) => {
     try {
         // tslint:disable-next-line:no-magic-numbers
         const transaction = await sskts.service.transaction.start(moment.unix(parseInt(req.body.expired_at, 10)).toDate())(
-            sskts.createOwnerRepository(mongoose.connection),
-            sskts.createTransactionRepository(mongoose.connection)
+            sskts.createOwnerAdapter(mongoose.connection),
+            sskts.createTransactionAdapter(mongoose.connection)
         );
 
         // tslint:disable-next-line:no-string-literal
@@ -137,7 +137,7 @@ router.patch('/:id/anonymousOwner', async (req, res, next) => {
             name_last: req.body.name_last,
             tel: req.body.tel,
             email: req.body.email
-        })(sskts.createOwnerRepository(mongoose.connection), sskts.createTransactionRepository(mongoose.connection));
+        })(sskts.createOwnerAdapter(mongoose.connection), sskts.createTransactionAdapter(mongoose.connection));
 
         res.status(HTTPStatus.NO_CONTENT).end();
     } catch (error) {
@@ -163,7 +163,7 @@ router.post('/:id/authorizations/gmo', async (req, res, next) => {
     }
 
     try {
-        const authorization = sskts.model.Authorization.createGMO({
+        const authorization = sskts.factory.authorization.createGMO({
             owner_from: req.body.owner_id_from,
             owner_to: req.body.owner_id_to,
             gmo_shop_id: req.body.gmo_shop_id,
@@ -177,7 +177,7 @@ router.post('/:id/authorizations/gmo', async (req, res, next) => {
             price: req.body.gmo_amount
         });
         await sskts.service.transaction.addGMOAuthorization(req.params.id, authorization)(
-            sskts.createTransactionRepository(mongoose.connection)
+            sskts.createTransactionAdapter(mongoose.connection)
         );
 
         res.status(HTTPStatus.OK).json({
@@ -210,7 +210,7 @@ router.post('/:id/authorizations/coaSeatReservation', async (req, res, next) => 
     }
 
     try {
-        const authorization = sskts.model.Authorization.createCOASeatReservation({
+        const authorization = sskts.factory.authorization.createCOASeatReservation({
             owner_from: req.body.owner_id_from,
             owner_to: req.body.owner_id_to,
             // tslint:disable-next-line:no-magic-numbers
@@ -222,8 +222,8 @@ router.post('/:id/authorizations/coaSeatReservation', async (req, res, next) => 
             coa_time_begin: req.body.coa_time_begin,
             coa_screen_code: req.body.coa_screen_code,
             assets: req.body.seats.map((seat: any) => {
-                return sskts.model.Asset.createSeatReservation({
-                    ownership: sskts.model.Ownership.create({
+                return sskts.factory.asset.createSeatReservation({
+                    ownership: sskts.factory.ownership.create({
                         owner: req.body.owner_id_to,
                         authenticated: false
                     }),
@@ -245,7 +245,7 @@ router.post('/:id/authorizations/coaSeatReservation', async (req, res, next) => 
             price: parseInt(req.body.price, 10)
         });
         await sskts.service.transaction.addCOASeatReservationAuthorization(req.params.id, authorization)(
-            sskts.createTransactionRepository(mongoose.connection));
+            sskts.createTransactionAdapter(mongoose.connection));
 
         res.status(HTTPStatus.OK).json({
             data: {
@@ -267,7 +267,7 @@ router.delete('/:id/authorizations/:authorization_id', async (req, res, next) =>
 
     try {
         await sskts.service.transaction.removeAuthorization(req.params.id, req.params.authorization_id)(
-            sskts.createTransactionRepository(mongoose.connection)
+            sskts.createTransactionAdapter(mongoose.connection)
         );
 
         res.status(HTTPStatus.NO_CONTENT).end();
@@ -287,12 +287,12 @@ router.patch('/:id/enableInquiry', async (req, res, next) => {
     }
 
     try {
-        const key = sskts.model.TransactionInquiryKey.create({
+        const key = sskts.factory.transactionInquiryKey.create({
             theater_code: req.body.inquiry_theater,
             reserve_num: req.body.inquiry_id,
             tel: req.body.inquiry_pass
         });
-        await sskts.service.transaction.enableInquiry(req.params.id, key)(sskts.createTransactionRepository(mongoose.connection));
+        await sskts.service.transaction.enableInquiry(req.params.id, key)(sskts.createTransactionAdapter(mongoose.connection));
 
         res.status(HTTPStatus.NO_CONTENT).end();
     } catch (error) {
@@ -312,13 +312,13 @@ router.post('/:id/notifications/email', async (req, res, next) => {
     }
 
     try {
-        const notification = sskts.model.Notification.createEmail({
+        const notification = sskts.factory.notification.createEmail({
             from: req.body.from,
             to: req.body.to,
             subject: req.body.subject,
             content: req.body.content
         });
-        await sskts.service.transaction.addEmail(req.params.id, notification)(sskts.createTransactionRepository(mongoose.connection));
+        await sskts.service.transaction.addEmail(req.params.id, notification)(sskts.createTransactionAdapter(mongoose.connection));
 
         res.status(HTTPStatus.OK).json({
             data: {
@@ -340,7 +340,7 @@ router.delete('/:id/notifications/:notification_id', async (req, res, next) => {
 
     try {
         await sskts.service.transaction.removeEmail(req.params.id, req.params.notification_id)(
-            sskts.createTransactionRepository(mongoose.connection)
+            sskts.createTransactionAdapter(mongoose.connection)
         );
 
         res.status(HTTPStatus.NO_CONTENT).end();
@@ -356,7 +356,7 @@ router.patch('/:id/close', async (req, res, next) => {
     }
 
     try {
-        await sskts.service.transaction.close(req.params.id)(sskts.createTransactionRepository(mongoose.connection));
+        await sskts.service.transaction.close(req.params.id)(sskts.createTransactionAdapter(mongoose.connection));
 
         res.status(HTTPStatus.NO_CONTENT).end();
     } catch (error) {

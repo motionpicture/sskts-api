@@ -38,5 +38,5 @@ setInterval(
 
 async function execute() {
     debug('transaction expiring...');
-    await sskts.service.transaction.expireOne()(sskts.createTransactionRepository(mongoose.connection));
+    await sskts.service.transaction.expireOne()(sskts.createTransactionAdapter(mongoose.connection));
 }

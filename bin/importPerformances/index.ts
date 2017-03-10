@@ -20,9 +20,9 @@ async function main() {
     debug('connecting mongodb...');
     mongoose.connect(process.env.MONGOLAB_URI);
 
-    const filmRepo = sskts.createFilmRepository(mongoose.connection);
-    const screenRepo = sskts.createScreenRepository(mongoose.connection);
-    const performanceRepo = sskts.createPerformanceRepository(mongoose.connection);
+    const filmRepo = sskts.createFilmAdapter(mongoose.connection);
+    const screenRepo = sskts.createScreenAdapter(mongoose.connection);
+    const performanceRepo = sskts.createPerformanceAdapter(mongoose.connection);
     const promises = theaterCodes.map(async (theaterCode) => {
         try {
             debug('importing performances...');

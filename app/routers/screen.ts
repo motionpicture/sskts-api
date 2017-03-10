@@ -21,7 +21,7 @@ router.get('/:id', async (req, res, next) => {
     }
 
     try {
-        const option = await sskts.service.master.findScreen(req.params.id)(sskts.createScreenRepository(mongoose.connection));
+        const option = await sskts.service.master.findScreen(req.params.id)(sskts.createScreenAdapter(mongoose.connection));
         option.match({
             Some: (screen) => {
                 res.json({

@@ -27,7 +27,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
         return next(new Error(validatorResult.array()[0].msg));
     }
     try {
-        const option = yield sskts.service.master.findFilm(req.params.id)(sskts.createFilmRepository(mongoose.connection));
+        const option = yield sskts.service.master.findFilm(req.params.id)(sskts.createFilmAdapter(mongoose.connection));
         option.match({
             Some: (film) => {
                 res.json({

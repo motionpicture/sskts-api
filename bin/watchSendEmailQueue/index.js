@@ -37,13 +37,13 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 }), INTERVAL_MILLISECONDS);
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        const queueRepository = sskts.createQueueRepository(mongoose.connection);
+        const queueAdapter = sskts.createQueueAdapter(mongoose.connection);
         // 未実行のメール送信キューを取得
-        const option = yield queueRepository.findOneSendEmailAndUpdate({
-            status: sskts.model.QueueStatus.UNEXECUTED,
+        const option = yield queueAdapter.findOneSendEmailAndUpdate({
+            status: sskts.factory.queueStatus.UNEXECUTED,
             run_at: { $lt: new Date() }
         }, {
-            status: sskts.model.QueueStatus.RUNNING,
+            status: sskts.factory.queueStatus.RUNNING,
             last_tried_at: new Date(),
             $inc: { count_tried: 1 } // トライ回数増やす
         });
@@ -53,11 +53,11 @@ function execute() {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
                 yield sskts.service.notification.sendEmail(queue.notification)();
-                yield queueRepository.findOneAndUpdate({ _id: queue.id }, { status: sskts.model.QueueStatus.EXECUTED });
+                yield queueAdapter.findOneAndUpdate({ _id: queue.id }, { status: sskts.factory.queueStatus.EXECUTED });
             }
             catch (error) {
                 // 実行結果追加
-                yield queueRepository.findOneAndUpdate({ _id: queue.id }, {
+                yield queueAdapter.findOneAndUpdate({ _id: queue.id }, {
                     $push: {
                         results: error.stack
                     }

@@ -59,14 +59,14 @@ const RETRY_INTERVAL_MINUTES = 10;
  */
 function retry() {
     return __awaiter(this, void 0, void 0, function* () {
-        const queueRepository = sskts.createQueueRepository(mongoose.connection);
-        yield queueRepository.findOneAndUpdate({
-            status: sskts.model.QueueStatus.RUNNING,
+        const queueAdapter = sskts.createQueueAdapter(mongoose.connection);
+        yield queueAdapter.findOneAndUpdate({
+            status: sskts.factory.queueStatus.RUNNING,
             last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function () { return (this.max_count_try > this.count_tried); }
         }, {
-            status: sskts.model.QueueStatus.UNEXECUTED // 実行中に変更
+            status: sskts.factory.queueStatus.UNEXECUTED // 実行中に変更
         });
     });
 }
@@ -77,19 +77,19 @@ function retry() {
  */
 function abort() {
     return __awaiter(this, void 0, void 0, function* () {
-        const queueRepository = sskts.createQueueRepository(mongoose.connection);
-        const abortedQueue = yield queueRepository.findOneAndUpdate({
-            status: sskts.model.QueueStatus.RUNNING,
+        const queueAdapter = sskts.createQueueAdapter(mongoose.connection);
+        const abortedQueue = yield queueAdapter.findOneAndUpdate({
+            status: sskts.factory.queueStatus.RUNNING,
             last_tried_at: { $lt: moment().add(-RETRY_INTERVAL_MINUTES, 'minutes').toISOString() },
             // tslint:disable-next-line:no-invalid-this space-before-function-paren
             $where: function () { return (this.max_count_try === this.count_tried); }
         }, {
-            status: sskts.model.QueueStatus.ABORTED
+            status: sskts.factory.queueStatus.ABORTED
         });
         debug('abortedQueue:', abortedQueue);
         if (abortedQueue.isDefined) {
             // メール通知
-            yield sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
+            yield sskts.service.notification.sendEmail(sskts.factory.notification.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: `sskts-api[${process.env.NODE_ENV}] queue aborted.`,

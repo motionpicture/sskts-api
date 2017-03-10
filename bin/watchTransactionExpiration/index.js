@@ -38,6 +38,6 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
         debug('transaction expiring...');
-        yield sskts.service.transaction.expireOne()(sskts.createTransactionRepository(mongoose.connection));
+        yield sskts.service.transaction.expireOne()(sskts.createTransactionAdapter(mongoose.connection));
     });
 }

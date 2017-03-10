@@ -24,7 +24,7 @@ router.get('/:id', async (req, res, next) => {
     }
 
     try {
-        const option = await sskts.service.master.findTheater(req.params.id)(sskts.createTheaterRepository(mongoose.connection));
+        const option = await sskts.service.master.findTheater(req.params.id)(sskts.createTheaterAdapter(mongoose.connection));
         debug('option is', option);
         option.match({
             Some: (theater) => {

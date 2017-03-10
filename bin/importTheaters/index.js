@@ -27,11 +27,11 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         debug('connecting mongodb...');
         mongoose.connect(process.env.MONGOLAB_URI);
-        const theaterRepository = sskts.createTheaterRepository(mongoose.connection);
+        const theaterAdapter = sskts.createTheaterAdapter(mongoose.connection);
         const promises = theaterCodes.map((theaterCode) => __awaiter(this, void 0, void 0, function* () {
             try {
                 debug('importing theater...');
-                yield sskts.service.master.importTheater(theaterCode)(theaterRepository);
+                yield sskts.service.master.importTheater(theaterCode)(theaterAdapter);
                 debug('theater imported.');
             }
             catch (error) {

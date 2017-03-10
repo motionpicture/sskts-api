@@ -20,8 +20,8 @@ async function main() {
     debug('connecting mongodb...');
     mongoose.connect(process.env.MONGOLAB_URI);
 
-    const theaterRepo = sskts.createTheaterRepository(mongoose.connection);
-    const screenRepo = sskts.createScreenRepository(mongoose.connection);
+    const theaterRepo = sskts.createTheaterAdapter(mongoose.connection);
+    const screenRepo = sskts.createScreenAdapter(mongoose.connection);
     const promises = theaterCodes.map(async (theaterCode) => {
         try {
             debug('importing screens...');

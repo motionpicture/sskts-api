@@ -38,14 +38,14 @@ setInterval(() => __awaiter(this, void 0, void 0, function* () {
 }), INTERVAL_MILLISECONDS);
 function execute() {
     return __awaiter(this, void 0, void 0, function* () {
-        const queueRepository = sskts.createQueueRepository(mongoose.connection);
-        const assetRepository = sskts.createAssetRepository(mongoose.connection);
+        const queueAdapter = sskts.createQueueAdapter(mongoose.connection);
+        const assetAdapter = sskts.createAssetAdapter(mongoose.connection);
         // 未実行のCOA資産移動キューを取得
-        const option = yield queueRepository.findOneSettleCOASeatReservationAuthorizationAndUpdate({
-            status: sskts.model.QueueStatus.UNEXECUTED,
+        const option = yield queueAdapter.findOneSettleCOASeatReservationAuthorizationAndUpdate({
+            status: sskts.factory.queueStatus.UNEXECUTED,
             run_at: { $lt: new Date() }
         }, {
-            status: sskts.model.QueueStatus.RUNNING,
+            status: sskts.factory.queueStatus.RUNNING,
             last_tried_at: new Date(),
             $inc: { count_tried: 1 } // トライ回数増やす
         });
@@ -54,12 +54,12 @@ function execute() {
             debug('queue is', queue);
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
-                yield sskts.service.stock.transferCOASeatReservation(queue.authorization)(assetRepository);
-                yield queueRepository.findOneAndUpdate({ _id: queue.id }, { status: sskts.model.QueueStatus.EXECUTED });
+                yield sskts.service.stock.transferCOASeatReservation(queue.authorization)(assetAdapter);
+                yield queueAdapter.findOneAndUpdate({ _id: queue.id }, { status: sskts.factory.queueStatus.EXECUTED });
             }
             catch (error) {
                 // 実行結果追加
-                yield queueRepository.findOneAndUpdate({ _id: queue.id }, {
+                yield queueAdapter.findOneAndUpdate({ _id: queue.id }, {
                     $push: {
                         results: error.stack
                     }
@@ -67,7 +67,7 @@ function execute() {
             }
             // メール通知(開発中)
             if (process.env.NODE_ENV !== 'production') {
-                yield sskts.service.notification.sendEmail(sskts.model.Notification.createEmail({
+                yield sskts.service.notification.sendEmail(sskts.factory.notification.createEmail({
                     from: 'noreply@localhost',
                     to: process.env.SSKTS_DEVELOPER_EMAIL,
                     subject: `sskts-api[${process.env.NODE_ENV}] queue executed.`,

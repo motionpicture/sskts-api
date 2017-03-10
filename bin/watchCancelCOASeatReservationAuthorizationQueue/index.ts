@@ -38,14 +38,14 @@ setInterval(
 
 async function execute() {
     // 未実行のCOA仮予約取消キューを取得
-    const queueRepository = sskts.createQueueRepository(mongoose.connection);
-    const option = await queueRepository.findOneCancelCOASeatReservationAuthorizationAndUpdate(
+    const queueAdapter = sskts.createQueueAdapter(mongoose.connection);
+    const option = await queueAdapter.findOneCancelCOASeatReservationAuthorizationAndUpdate(
         {
-            status: sskts.model.QueueStatus.UNEXECUTED,
+            status: sskts.factory.queueStatus.UNEXECUTED,
             run_at: { $lt: new Date() }
         },
         {
-            status: sskts.model.QueueStatus.RUNNING, // 実行中に変更
+            status: sskts.factory.queueStatus.RUNNING, // 実行中に変更
             last_tried_at: new Date(),
             $inc: { count_tried: 1 } // トライ回数増やす
         }
@@ -59,10 +59,10 @@ async function execute() {
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
             await sskts.service.stock.unauthorizeCOASeatReservation(queue.authorization)();
             // 実行済みに変更
-            await queueRepository.findOneAndUpdate({ _id: queue.id }, { status: sskts.model.QueueStatus.EXECUTED });
+            await queueAdapter.findOneAndUpdate({ _id: queue.id }, { status: sskts.factory.queueStatus.EXECUTED });
         } catch (error) {
             // 実行結果追加
-            await queueRepository.findOneAndUpdate({ _id: queue.id }, {
+            await queueAdapter.findOneAndUpdate({ _id: queue.id }, {
                 $push: {
                     results: error.stack
                 }

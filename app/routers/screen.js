@@ -26,7 +26,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
         return next(new Error(validatorResult.array()[0].msg));
     }
     try {
-        const option = yield sskts.service.master.findScreen(req.params.id)(sskts.createScreenRepository(mongoose.connection));
+        const option = yield sskts.service.master.findScreen(req.params.id)(sskts.createScreenAdapter(mongoose.connection));
         option.match({
             Some: (screen) => {
                 res.json({

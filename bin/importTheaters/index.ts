@@ -20,11 +20,11 @@ async function main() {
     debug('connecting mongodb...');
     mongoose.connect(process.env.MONGOLAB_URI);
 
-    const theaterRepository = sskts.createTheaterRepository(mongoose.connection);
+    const theaterAdapter = sskts.createTheaterAdapter(mongoose.connection);
     const promises = theaterCodes.map(async (theaterCode) => {
         try {
             debug('importing theater...');
-            await sskts.service.master.importTheater(theaterCode)(theaterRepository);
+            await sskts.service.master.importTheater(theaterCode)(theaterAdapter);
             debug('theater imported.');
         } catch (error) {
             console.error(error);

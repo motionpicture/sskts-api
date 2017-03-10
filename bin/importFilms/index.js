@@ -27,8 +27,8 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         debug('connecting mongodb...');
         mongoose.connect(process.env.MONGOLAB_URI);
-        const theaterRepo = sskts.createTheaterRepository(mongoose.connection);
-        const filmRepo = sskts.createFilmRepository(mongoose.connection);
+        const theaterRepo = sskts.createTheaterAdapter(mongoose.connection);
+        const filmRepo = sskts.createFilmAdapter(mongoose.connection);
         const promises = theaterCodes.map((theaterCode) => __awaiter(this, void 0, void 0, function* () {
             try {
                 debug('importing films...');

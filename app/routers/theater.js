@@ -28,7 +28,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
         return next(new Error(validatorResult.array()[0].msg));
     }
     try {
-        const option = yield sskts.service.master.findTheater(req.params.id)(sskts.createTheaterRepository(mongoose.connection));
+        const option = yield sskts.service.master.findTheater(req.params.id)(sskts.createTheaterAdapter(mongoose.connection));
         debug('option is', option);
         option.match({
             Some: (theater) => {
