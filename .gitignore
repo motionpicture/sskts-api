@@ -6,9 +6,12 @@ npm-debug.log*
 .env*
 docs/
 
+.googleappengine/*
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
 !.gitignore
-!.gitkeep
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+!.gitkeep
