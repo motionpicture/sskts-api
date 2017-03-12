@@ -4,7 +4,7 @@
  * @ignore
  */
 import * as assert from 'assert';
-import * as HTTPStatus from 'http-status';
+import * as httpStatus from 'http-status';
 import * as supertest from 'supertest';
 
 import * as app from '../app/app';
@@ -19,7 +19,7 @@ describe('GET /oauth/token', () => {
             })
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(HTTPStatus.OK)
+            .expect(httpStatus.OK)
             .then((response) => {
                 assert(typeof response.body.access_token === 'string');
                 assert(typeof response.body.token_type === 'string');
@@ -39,9 +39,9 @@ describe('GET /oauth/token', () => {
             })
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(HTTPStatus.BAD_REQUEST)
+            .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
-                assert.equal(response.body.errors[0].description, 'invalid assertion');
+                assert.equal(response.body.errors[0].detail, 'invalid assertion');
                 done();
             }).catch((err) => {
                 done(err);
@@ -57,9 +57,9 @@ describe('GET /oauth/token', () => {
             })
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(HTTPStatus.BAD_REQUEST)
+            .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
-                assert.equal(response.body.errors[0].description, 'invalid scope');
+                assert.equal(response.body.errors[0].detail, 'invalid scope');
                 done();
             }).catch((err) => {
                 done(err);

@@ -16,19 +16,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const router = express.Router();
 const sskts = require("@motionpicture/sskts-domain");
-const HTTPStatus = require("http-status");
+const httpStatus = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
+const validator_1 = require("../middlewares/validator");
 router.use(authentication_1.default);
-router.post('/makeInquiry', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post('/makeInquiry', (req, _, next) => {
     req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
     req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
     req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const key = sskts.factory.transactionInquiryKey.create({
             theater_code: req.body.inquiry_theater,
@@ -47,7 +46,7 @@ router.post('/makeInquiry', (req, res, next) => __awaiter(this, void 0, void 0, 
                 });
             },
             None: () => {
-                res.status(HTTPStatus.NOT_FOUND);
+                res.status(httpStatus.NOT_FOUND);
                 res.json({
                     data: null
                 });
@@ -58,12 +57,10 @@ router.post('/makeInquiry', (req, res, next) => __awaiter(this, void 0, void 0, 
         next(error);
     }
 }));
-router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.get('/:id', (_1, _2, next) => {
     // todo validation
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const option = yield sskts.service.transaction.findById(req.params.id)(sskts.createTransactionAdapter(mongoose.connection));
         option.match({
@@ -77,7 +74,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
                 });
             },
             None: () => {
-                res.status(HTTPStatus.NOT_FOUND);
+                res.status(httpStatus.NOT_FOUND);
                 res.json({
                     data: null
                 });
@@ -88,19 +85,17 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
         next(error);
     }
 }));
-router.post('', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post('', (req, _, next) => {
     // expired_atはsecondsのUNIXタイムスタンプで
     req.checkBody('expired_at', 'invalid expired_at').notEmpty().withMessage('expired_at is required').isInt();
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // tslint:disable-next-line:no-magic-numbers
         const transaction = yield sskts.service.transaction.start(moment.unix(parseInt(req.body.expired_at, 10)).toDate())(sskts.createOwnerAdapter(mongoose.connection), sskts.createTransactionAdapter(mongoose.connection));
         // tslint:disable-next-line:no-string-literal
         const hots = req.headers['host'];
-        res.status(HTTPStatus.CREATED);
+        res.status(httpStatus.CREATED);
         res.setHeader('Location', `https://${hots}/transactions/${transaction.id}`);
         res.json({
             data: {
@@ -114,15 +109,13 @@ router.post('', (req, res, next) => __awaiter(this, void 0, void 0, function* ()
         next(error);
     }
 }));
-router.patch('/:id/anonymousOwner', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.patch('/:id/anonymousOwner', (req, _, next) => {
     req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
     req.checkBody('name_last', 'invalid name_last').optional().notEmpty().withMessage('name_last should not be empty');
     req.checkBody('tel', 'invalid tel').optional().notEmpty().withMessage('tel should not be empty');
     req.checkBody('email', 'invalid email').optional().notEmpty().withMessage('email should not be empty');
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.updateAnonymousOwner({
             transaction_id: req.params.id,
@@ -131,13 +124,13 @@ router.patch('/:id/anonymousOwner', (req, res, next) => __awaiter(this, void 0, 
             tel: req.body.tel,
             email: req.body.email
         })(sskts.createOwnerAdapter(mongoose.connection), sskts.createTransactionAdapter(mongoose.connection));
-        res.status(HTTPStatus.NO_CONTENT).end();
+        res.status(httpStatus.NO_CONTENT).end();
     }
     catch (error) {
         next(error);
     }
 }));
-router.post('/:id/authorizations/gmo', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post('/:id/authorizations/gmo', (req, _, next) => {
     req.checkBody('owner_id_from', 'invalid owner_id_from').notEmpty().withMessage('owner_id_from is required');
     req.checkBody('owner_id_to', 'invalid owner_id_to').notEmpty().withMessage('owner_id_to is required');
     req.checkBody('gmo_shop_id', 'invalid gmo_shop_id').notEmpty().withMessage('gmo_shop_id is required');
@@ -148,10 +141,8 @@ router.post('/:id/authorizations/gmo', (req, res, next) => __awaiter(this, void 
     req.checkBody('gmo_access_pass', 'invalid gmo_access_pass').notEmpty().withMessage('gmo_access_pass is required');
     req.checkBody('gmo_job_cd', 'invalid gmo_job_cd').notEmpty().withMessage('gmo_job_cd is required');
     req.checkBody('gmo_pay_type', 'invalid gmo_pay_type').notEmpty().withMessage('gmo_pay_type is required');
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const authorization = sskts.factory.authorization.createGMO({
             owner_from: req.body.owner_id_from,
@@ -167,7 +158,7 @@ router.post('/:id/authorizations/gmo', (req, res, next) => __awaiter(this, void 
             price: req.body.gmo_amount
         });
         yield sskts.service.transaction.addGMOAuthorization(req.params.id, authorization)(sskts.createTransactionAdapter(mongoose.connection));
-        res.status(HTTPStatus.OK).json({
+        res.status(httpStatus.OK).json({
             data: {
                 type: 'authorizations',
                 id: authorization.id
@@ -178,7 +169,7 @@ router.post('/:id/authorizations/gmo', (req, res, next) => __awaiter(this, void 
         next(error);
     }
 }));
-router.post('/:id/authorizations/coaSeatReservation', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post('/:id/authorizations/coaSeatReservation', (req, _, next) => {
     req.checkBody('owner_id_from', 'invalid owner_id_from').notEmpty().withMessage('owner_id_from is required');
     req.checkBody('owner_id_to', 'invalid owner_id_to').notEmpty().withMessage('owner_id_to is required');
     req.checkBody('coa_tmp_reserve_num', 'invalid coa_tmp_reserve_num').notEmpty().withMessage('coa_tmp_reserve_num is required');
@@ -190,10 +181,8 @@ router.post('/:id/authorizations/coaSeatReservation', (req, res, next) => __awai
     req.checkBody('coa_screen_code', 'invalid coa_screen_code').notEmpty().withMessage('coa_screen_code is required');
     req.checkBody('seats', 'invalid seats').notEmpty().withMessage('seats is required');
     req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const authorization = sskts.factory.authorization.createCOASeatReservation({
             owner_from: req.body.owner_id_from,
@@ -230,7 +219,7 @@ router.post('/:id/authorizations/coaSeatReservation', (req, res, next) => __awai
             price: parseInt(req.body.price, 10)
         });
         yield sskts.service.transaction.addCOASeatReservationAuthorization(req.params.id, authorization)(sskts.createTransactionAdapter(mongoose.connection));
-        res.status(HTTPStatus.OK).json({
+        res.status(httpStatus.OK).json({
             data: {
                 type: 'authorizations',
                 id: authorization.id
@@ -241,28 +230,23 @@ router.post('/:id/authorizations/coaSeatReservation', (req, res, next) => __awai
         next(error);
     }
 }));
-router.delete('/:id/authorizations/:authorization_id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    // todo validations
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+router.delete('/:id/authorizations/:authorization_id', (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.removeAuthorization(req.params.id, req.params.authorization_id)(sskts.createTransactionAdapter(mongoose.connection));
-        res.status(HTTPStatus.NO_CONTENT).end();
+        res.status(httpStatus.NO_CONTENT).end();
     }
     catch (error) {
         next(error);
     }
 }));
-router.patch('/:id/enableInquiry', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.patch('/:id/enableInquiry', (req, _, next) => {
     req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
     req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
     req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const key = sskts.factory.transactionInquiryKey.create({
             theater_code: req.body.inquiry_theater,
@@ -270,21 +254,19 @@ router.patch('/:id/enableInquiry', (req, res, next) => __awaiter(this, void 0, v
             tel: req.body.inquiry_pass
         });
         yield sskts.service.transaction.enableInquiry(req.params.id, key)(sskts.createTransactionAdapter(mongoose.connection));
-        res.status(HTTPStatus.NO_CONTENT).end();
+        res.status(httpStatus.NO_CONTENT).end();
     }
     catch (error) {
         next(error);
     }
 }));
-router.post('/:id/notifications/email', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post('/:id/notifications/email', (req, _, next) => {
     req.checkBody('from', 'invalid from').notEmpty().withMessage('from is required');
     req.checkBody('to', 'invalid to').notEmpty().withMessage('to is required').isEmail();
     req.checkBody('subject', 'invalid subject').notEmpty().withMessage('subject is required');
     req.checkBody('content', 'invalid content').notEmpty().withMessage('content is required');
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const notification = sskts.factory.notification.createEmail({
             from: req.body.from,
@@ -293,7 +275,7 @@ router.post('/:id/notifications/email', (req, res, next) => __awaiter(this, void
             content: req.body.content
         });
         yield sskts.service.transaction.addEmail(req.params.id, notification)(sskts.createTransactionAdapter(mongoose.connection));
-        res.status(HTTPStatus.OK).json({
+        res.status(httpStatus.OK).json({
             data: {
                 type: 'notifications',
                 id: notification.id
@@ -304,28 +286,24 @@ router.post('/:id/notifications/email', (req, res, next) => __awaiter(this, void
         next(error);
     }
 }));
-router.delete('/:id/notifications/:notification_id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.delete('/:id/notifications/:notification_id', (_1, _2, next) => {
     // todo validations
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.removeEmail(req.params.id, req.params.notification_id)(sskts.createTransactionAdapter(mongoose.connection));
-        res.status(HTTPStatus.NO_CONTENT).end();
+        res.status(httpStatus.NO_CONTENT).end();
     }
     catch (error) {
         next(error);
     }
 }));
-router.patch('/:id/close', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+router.patch('/:id/close', (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.close(req.params.id)(sskts.createTransactionAdapter(mongoose.connection));
-        res.status(HTTPStatus.NO_CONTENT).end();
+        res.status(httpStatus.NO_CONTENT).end();
     }
     catch (error) {
         next(error);

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @ignore
  */
 const assert = require("assert");
-const HTTPStatus = require("http-status");
+const httpStatus = require("http-status");
 const supertest = require("supertest");
 const app = require("../app/app");
 describe('GET /performances/:id', () => {
@@ -16,7 +16,7 @@ describe('GET /performances/:id', () => {
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(HTTPStatus.OK)
+            .expect(httpStatus.OK)
             .then((response) => {
             assert.equal(response.body.data.type, 'performances');
             assert.equal(response.body.data.id, '1182017030116250031020');
@@ -32,7 +32,7 @@ describe('GET /performances/:id', () => {
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(HTTPStatus.NOT_FOUND)
+            .expect(httpStatus.NOT_FOUND)
             .then((response) => {
             assert.equal(response.body.data, null);
             done();

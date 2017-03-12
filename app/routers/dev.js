@@ -8,9 +8,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const router = express.Router();
 const createDebug = require("debug");
-const HTTPStatus = require("http-status");
+const httpStatus = require("http-status");
 const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:*');
+router.get('/500', () => {
+    throw new Error('500 manually');
+});
 router.get('/environmentVariables', (req, res) => {
     debug('ip:', req.ip);
     res.json({
@@ -26,7 +29,7 @@ router.get('/mongoose/connect', (req, res, next) => {
         if (err) {
             return next(err);
         }
-        res.status(HTTPStatus.NO_CONTENT).end();
+        res.status(httpStatus.NO_CONTENT).end();
     });
 });
 router.get('/mongoose/disconnect', (req, res, next) => {
@@ -35,7 +38,7 @@ router.get('/mongoose/disconnect', (req, res, next) => {
         if (err) {
             return next(err);
         }
-        res.status(HTTPStatus.NO_CONTENT).end();
+        res.status(httpStatus.NO_CONTENT).end();
     });
 });
 exports.default = router;

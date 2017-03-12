@@ -4,7 +4,7 @@
  * @ignore
  */
 import * as assert from 'assert';
-import * as HTTPStatus from 'http-status';
+import * as httpStatus from 'http-status';
 import * as supertest from 'supertest';
 
 import * as app from '../app/app';
@@ -16,7 +16,7 @@ describe('GET /theaters/:id', () => {
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(HTTPStatus.OK)
+            .expect(httpStatus.OK)
             .then((response) => {
                 assert.equal(response.body.data.type, 'theaters');
                 assert.equal(response.body.data.id, '118');
@@ -33,7 +33,7 @@ describe('GET /theaters/:id', () => {
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(HTTPStatus.NOT_FOUND)
+            .expect(httpStatus.NOT_FOUND)
             .then((response) => {
                 assert.equal(response.body.data, null);
                 done();

@@ -9,12 +9,13 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import expressValidator = require('express-validator'); // tslint:disable-line:no-require-imports
 import * as helmet from 'helmet';
-import * as HTTPStatus from 'http-status';
 import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
+import errorHandler from './middlewares/errorHandler';
 import logger from './middlewares/logger';
+import notFoundHandler from './middlewares/notFoundHandler';
 import devRouter from './routers/dev';
 import filmRouter from './routers/film';
 import healthRouter from './routers/health';
@@ -44,24 +45,22 @@ app.use(helmet.hsts({
 
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
-    app.get('/dev/500', (req) => {
+    app.get('/dev/uncaughtexception', (req) => {
         req.on('data', (chunk) => {
             debug(chunk);
         });
 
         req.on('end', () => {
-            throw new Error('500 manually.');
+            throw new Error('uncaughtexception manually');
         });
     });
 }
 
 app.use(logger);
-// import benchmarks from './middlewares/benchmarksMiddleware';
-// app.use(benchmarks); // ベンチマーク的な
 
 // view engine setup
-app.set('views', `${__dirname}/views`);
-app.set('view engine', 'ejs');
+// app.set('views', `${__dirname}/views`);
+// app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
 // The extended option allows to choose between parsing the URL-encoded data
@@ -70,7 +69,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // 静的ファイル
-app.use(express.static(__dirname + '/../../public'));
+// app.use(express.static(__dirname + '/../../public'));
 
 // i18n を利用する設定
 i18n.configure({
@@ -87,30 +86,6 @@ app.use(i18n.init);
 // Use native promises
 (<any>mongoose).Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions);
-// process.on('SIGINT', function() {
-//     mongoose.disconnect(() => {
-//         process.exit(0);
-//     });
-// });
-// const db = mongoose.connection;
-// db.on('connecting', () => {
-//     debug('connecting');
-// });
-// db.on('error', (error) => {
-//     console.error('Error in MongoDb connection: ', error);
-// });
-// db.on('connected', () => {
-//     debug('connected.');
-// });
-// db.once('open', () => {
-//     debug('connection open.');
-// });
-// db.on('reconnected', () => {
-//     debug('reconnected.');
-// });
-// db.on('disconnected', () => {
-//     debug('disconnected.');
-// });
 
 // routers
 app.use('/health', healthRouter);
@@ -126,34 +101,9 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // 404
-app.use((req, res) => {
-    res.status(HTTPStatus.NOT_FOUND);
-    res.json({
-        errors: [
-            {
-                code: 'NotFound',
-                description: `router for [${req.originalUrl}] not found.`
-            }
-        ]
-    });
-});
+app.use(notFoundHandler);
 
 // error handlers
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(req.originalUrl, req.query, req.params, req.body, err);
-    if (res.headersSent) {
-        return next(err);
-    }
-
-    res.status(HTTPStatus.BAD_REQUEST);
-    res.json({
-        errors: [
-            {
-                code: `${err.name}`,
-                description: `${err.message}`
-            }
-        ]
-    });
-});
+app.use(errorHandler);
 
 export = app;

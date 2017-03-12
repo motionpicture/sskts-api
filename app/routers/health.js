@@ -8,12 +8,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const router = express.Router();
 const createDebug = require("debug");
-const HTTPStatus = require("http-status");
+const httpStatus = require("http-status");
 const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
 const debug = createDebug('sskts-api:router:health');
 const MONGOOSE_CONNECTION_READY_STATE_CONNECTED = 1;
-router.get('', (_req, res, next) => {
+router.get('', (_, res, next) => {
     debug('mongoose.connection.readyState is', mongoose.connection.readyState);
     // mongodb接続状態チェック
     if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED) {
@@ -22,11 +22,11 @@ router.get('', (_req, res, next) => {
             if (err) {
                 return next(err);
             }
-            res.status(HTTPStatus.OK).send('healthy!');
+            res.status(httpStatus.OK).send('healthy!');
         });
     }
     else {
-        res.status(HTTPStatus.OK).send('healthy!');
+        res.status(httpStatus.OK).send('healthy!');
     }
 });
 exports.default = router;

@@ -16,16 +16,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const router = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
-const HTTPStatus = require("http-status");
+const httpStatus = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
+const validator_1 = require("../middlewares/validator");
 router.use(authentication_1.default);
-router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    // req.checkQuery('theater_code', 'theater_code required.').notEmpty();
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+router.get('/:id', (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const option = yield sskts.service.master.findFilm(req.params.id)(sskts.createFilmAdapter(mongoose.connection));
         option.match({
@@ -39,7 +37,7 @@ router.get('/:id', (req, res, next) => __awaiter(this, void 0, void 0, function*
                 });
             },
             None: () => {
-                res.status(HTTPStatus.NOT_FOUND);
+                res.status(httpStatus.NOT_FOUND);
                 res.json({
                     data: null
                 });

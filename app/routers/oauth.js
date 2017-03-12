@@ -17,18 +17,17 @@ const express = require("express");
 const router = express.Router();
 const createDebug = require("debug");
 const jwt = require("jsonwebtoken");
+const validator_1 = require("../middlewares/validator");
 const debug = createDebug('sskts-api:*');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
-router.post('/token', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+router.post('/token', (req, _, next) => {
     req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required')
         .equals(process.env.SSKTS_API_REFRESH_TOKEN);
     req.checkBody('scope', 'invalid scope').notEmpty().withMessage('scope is required')
         .equals('admin');
-    const validatorResult = yield req.getValidationResult();
-    if (!validatorResult.isEmpty()) {
-        return next(new Error(validatorResult.array()[0].msg));
-    }
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         jwt.sign({
             scope: req.body.scope.toString()
