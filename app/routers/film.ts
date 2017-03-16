@@ -23,7 +23,7 @@ router.get(
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.master.findFilm(req.params.id)(sskts.createFilmAdapter(mongoose.connection));
+            const option = await sskts.service.master.findFilm(req.params.id)(sskts.adapter.film(mongoose.connection));
             option.match({
                 Some: (film) => {
                     res.json({

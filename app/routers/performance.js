@@ -25,7 +25,7 @@ router.get('/:id', (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const option = yield sskts.service.master.findPerformance(req.params.id)(sskts.createPerformanceAdapter(mongoose.connection));
+        const option = yield sskts.service.master.findPerformance(req.params.id)(sskts.adapter.performance(mongoose.connection));
         option.match({
             Some: (performance) => {
                 res.json({
@@ -57,7 +57,7 @@ router.get('', (req, _, next) => {
         const performances = yield sskts.service.master.searchPerformances({
             day: req.query.day,
             theater: req.query.theater
-        })(sskts.createPerformanceAdapter(mongoose.connection));
+        })(sskts.adapter.performance(mongoose.connection));
         const data = performances.map((performance) => {
             return {
                 type: 'performances',

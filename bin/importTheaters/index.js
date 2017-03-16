@@ -19,15 +19,13 @@ const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:*');
 // 複数劇場導入に対応のつもり todo 環境設定
 const theaterCodes = [
-    '000',
-    '001',
     '118'
 ];
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         debug('connecting mongodb...');
         mongoose.connect(process.env.MONGOLAB_URI);
-        const theaterAdapter = sskts.createTheaterAdapter(mongoose.connection);
+        const theaterAdapter = sskts.adapter.theater(mongoose.connection);
         const promises = theaterCodes.map((theaterCode) => __awaiter(this, void 0, void 0, function* () {
             try {
                 debug('importing theater...');

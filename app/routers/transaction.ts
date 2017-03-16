@@ -17,6 +17,45 @@ import validator from '../middlewares/validator';
 router.use(authentication);
 
 router.post(
+    '/startIfPossible',
+    (req, _, next) => {
+        // expires_atはsecondsのUNIXタイムスタンプで
+        req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
+
+        next();
+    },
+    validator,
+    async (req, res, next) => {
+        try {
+            const transactionOption = await sskts.service.transaction.startIfPossible(
+                moment.unix(parseInt(req.body.expires_at, 10)).toDate() // tslint:disable-line:no-magic-numbers
+            )(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
+
+            transactionOption.match({
+                Some: (transaction) => {
+                    const host = req.headers['host']; // tslint:disable-line:no-string-literal
+                    res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
+                    res.json({
+                        data: {
+                            type: 'transactions',
+                            id: transaction.id,
+                            attributes: transaction
+                        }
+                    });
+                },
+                None: () => {
+                    res.status(httpStatus.NOT_FOUND);
+                    res.json({
+                        data: null
+                    });
+                }
+            });
+        } catch (error) {
+            next(error);
+        }
+    });
+
+router.post(
     '/makeInquiry',
     (req, _, next) => {
         req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
@@ -33,7 +72,7 @@ router.post(
                 reserve_num: req.body.inquiry_id,
                 tel: req.body.inquiry_pass
             });
-            const option = await sskts.service.transaction.makeInquiry(key)(sskts.createTransactionAdapter(mongoose.connection));
+            const option = await sskts.service.transaction.makeInquiry(key)(sskts.adapter.transaction(mongoose.connection));
 
             option.match({
                 Some: (transaction) => {
@@ -67,7 +106,7 @@ router.get(
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.transaction.findById(req.params.id)(sskts.createTransactionAdapter(mongoose.connection));
+            const option = await sskts.service.transaction.findById(req.params.id)(sskts.adapter.transaction(mongoose.connection));
             option.match({
                 Some: (transaction) => {
                     res.json({
@@ -93,8 +132,8 @@ router.get(
 router.post(
     '',
     (req, _, next) => {
-        // expired_atはsecondsのUNIXタイムスタンプで
-        req.checkBody('expired_at', 'invalid expired_at').notEmpty().withMessage('expired_at is required').isInt();
+        // expires_atはsecondsのUNIXタイムスタンプで
+        req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
 
         next();
     },
@@ -102,9 +141,9 @@ router.post(
     async (req, res, next) => {
         try {
             // tslint:disable-next-line:no-magic-numbers
-            const transaction = await sskts.service.transaction.start(moment.unix(parseInt(req.body.expired_at, 10)).toDate())(
-                sskts.createOwnerAdapter(mongoose.connection),
-                sskts.createTransactionAdapter(mongoose.connection)
+            const transaction = await sskts.service.transaction.startForcibly(moment.unix(parseInt(req.body.expires_at, 10)).toDate())(
+                sskts.adapter.owner(mongoose.connection),
+                sskts.adapter.transaction(mongoose.connection)
             );
 
             // tslint:disable-next-line:no-string-literal
@@ -142,7 +181,7 @@ router.patch(
                 name_last: req.body.name_last,
                 tel: req.body.tel,
                 email: req.body.email
-            })(sskts.createOwnerAdapter(mongoose.connection), sskts.createTransactionAdapter(mongoose.connection));
+            })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
 
             res.status(httpStatus.NO_CONTENT).end();
         } catch (error) {
@@ -183,7 +222,7 @@ router.post(
                 price: req.body.gmo_amount
             });
             await sskts.service.transaction.addGMOAuthorization(req.params.id, authorization)(
-                sskts.createTransactionAdapter(mongoose.connection)
+                sskts.adapter.transaction(mongoose.connection)
             );
 
             res.status(httpStatus.OK).json({
@@ -252,7 +291,7 @@ router.post(
                 price: parseInt(req.body.price, 10)
             });
             await sskts.service.transaction.addCOASeatReservationAuthorization(req.params.id, authorization)(
-                sskts.createTransactionAdapter(mongoose.connection));
+                sskts.adapter.transaction(mongoose.connection));
 
             res.status(httpStatus.OK).json({
                 data: {
@@ -274,7 +313,7 @@ router.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transaction.removeAuthorization(req.params.id, req.params.authorization_id)(
-                sskts.createTransactionAdapter(mongoose.connection)
+                sskts.adapter.transaction(mongoose.connection)
             );
 
             res.status(httpStatus.NO_CONTENT).end();
@@ -300,7 +339,7 @@ router.patch(
                 reserve_num: req.body.inquiry_id,
                 tel: req.body.inquiry_pass
             });
-            await sskts.service.transaction.enableInquiry(req.params.id, key)(sskts.createTransactionAdapter(mongoose.connection));
+            await sskts.service.transaction.enableInquiry(req.params.id, key)(sskts.adapter.transaction(mongoose.connection));
 
             res.status(httpStatus.NO_CONTENT).end();
         } catch (error) {
@@ -327,7 +366,7 @@ router.post(
                 subject: req.body.subject,
                 content: req.body.content
             });
-            await sskts.service.transaction.addEmail(req.params.id, notification)(sskts.createTransactionAdapter(mongoose.connection));
+            await sskts.service.transaction.addEmail(req.params.id, notification)(sskts.adapter.transaction(mongoose.connection));
 
             res.status(httpStatus.OK).json({
                 data: {
@@ -351,7 +390,7 @@ router.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transaction.removeEmail(req.params.id, req.params.notification_id)(
-                sskts.createTransactionAdapter(mongoose.connection)
+                sskts.adapter.transaction(mongoose.connection)
             );
 
             res.status(httpStatus.NO_CONTENT).end();
@@ -368,7 +407,7 @@ router.patch(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.close(req.params.id)(sskts.createTransactionAdapter(mongoose.connection));
+            await sskts.service.transaction.close(req.params.id)(sskts.adapter.transaction(mongoose.connection));
 
             res.status(httpStatus.NO_CONTENT).end();
         } catch (error) {

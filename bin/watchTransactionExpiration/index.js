@@ -21,23 +21,18 @@ mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
 const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-const INTERVAL_MILLISECONDS = 500;
+const INTERVAL_MILLISECONDS = 1000;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
     if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
         return;
     }
     count += 1;
     try {
-        yield execute();
+        debug('transaction expiring...');
+        yield sskts.service.transaction.makeExpired()(sskts.adapter.transaction(mongoose.connection));
     }
     catch (error) {
         console.error(error.message);
     }
     count -= 1;
 }), INTERVAL_MILLISECONDS);
-function execute() {
-    return __awaiter(this, void 0, void 0, function* () {
-        debug('transaction expiring...');
-        yield sskts.service.transaction.expireOne()(sskts.createTransactionAdapter(mongoose.connection));
-    });
-}

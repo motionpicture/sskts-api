@@ -11,8 +11,6 @@ const debug = createDebug('sskts-api:*');
 
 // 複数劇場導入に対応のつもり todo 環境設定
 const theaterCodes = [
-    '000',
-    '001',
     '118'
 ];
 
@@ -20,12 +18,13 @@ async function main() {
     debug('connecting mongodb...');
     mongoose.connect(process.env.MONGOLAB_URI);
 
-    const filmRepo = sskts.createFilmAdapter(mongoose.connection);
-    const screenRepo = sskts.createScreenAdapter(mongoose.connection);
-    const performanceRepo = sskts.createPerformanceAdapter(mongoose.connection);
+    const filmRepo = sskts.adapter.film(mongoose.connection);
+    const screenRepo = sskts.adapter.screen(mongoose.connection);
+    const performanceRepo = sskts.adapter.performance(mongoose.connection);
     const promises = theaterCodes.map(async (theaterCode) => {
         try {
             debug('importing performances...');
+            // todo 日付調整
             await sskts.service.master.importPerformances(theaterCode, '20170201', '20170401')(filmRepo, screenRepo, performanceRepo);
             debug('performances imported.');
         } catch (error) {

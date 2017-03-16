@@ -28,7 +28,7 @@ function main() {
         let response;
         const gmoShopId = 'tshop00026096';
         const gmoShopPass = 'xbxmkaa6';
-        const performanceId = '1182017030917062021450'; // パフォーマンスID 空席なくなったら変更する
+        const performanceId = '1182017030317001051540'; // パフォーマンスID 空席なくなったら変更する
         // アクセストークン取得
         response = yield request.post({
             url: `${API_ENDPOINT}/oauth/token`,
@@ -95,17 +95,20 @@ function main() {
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
         debug('starting transaction...');
         response = yield request.post({
-            url: `${API_ENDPOINT}/transactions`,
+            url: `${API_ENDPOINT}/transactions/startIfPossible`,
             auth: { bearer: accessToken },
             body: {
-                expired_at: moment().add(30, 'minutes').unix() // tslint:disable-line:no-magic-numbers
+                expires_at: moment().add(30, 'minutes').unix() // tslint:disable-line:no-magic-numbers
             },
             json: true,
             simple: false,
             resolveWithFullResponse: true
         });
-        debug('/transactions/start result:', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.CREATED) {
+        debug('transaction start result:', response.statusCode, response.body);
+        if (response.statusCode === httpStatus.NOT_FOUND) {
+            throw new Error('please try later');
+        }
+        if (response.statusCode !== httpStatus.OK) {
             throw new Error(response.body.message);
         }
         const transactionId = response.body.data.id;
@@ -438,7 +441,8 @@ function main() {
                     sale_price: salesTicketResult[0].sale_price,
                     mvtk_app_price: 0,
                     ticket_count: 1,
-                    seat_num: tmpReserve.seat_num
+                    seat_num: tmpReserve.seat_num,
+                    add_glasses: 0
                 };
             })
         });

@@ -23,7 +23,7 @@ router.get(
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.master.findPerformance(req.params.id)(sskts.createPerformanceAdapter(mongoose.connection));
+            const option = await sskts.service.master.findPerformance(req.params.id)(sskts.adapter.performance(mongoose.connection));
             option.match({
                 Some: (performance) => {
                     res.json({
@@ -60,7 +60,7 @@ router.get(
             const performances = await sskts.service.master.searchPerformances({
                 day: req.query.day,
                 theater: req.query.theater
-            })(sskts.createPerformanceAdapter(mongoose.connection));
+            })(sskts.adapter.performance(mongoose.connection));
 
             const data = performances.map((performance) => {
                 return {

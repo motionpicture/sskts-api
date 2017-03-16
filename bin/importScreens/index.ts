@@ -11,8 +11,6 @@ const debug = createDebug('sskts-api:*');
 
 // 複数劇場導入に対応のつもり todo 環境設定
 const theaterCodes = [
-    '000',
-    '001',
     '118'
 ];
 
@@ -20,8 +18,8 @@ async function main() {
     debug('connecting mongodb...');
     mongoose.connect(process.env.MONGOLAB_URI);
 
-    const theaterRepo = sskts.createTheaterAdapter(mongoose.connection);
-    const screenRepo = sskts.createScreenAdapter(mongoose.connection);
+    const theaterRepo = sskts.adapter.theater(mongoose.connection);
+    const screenRepo = sskts.adapter.screen(mongoose.connection);
     const promises = theaterCodes.map(async (theaterCode) => {
         try {
             debug('importing screens...');

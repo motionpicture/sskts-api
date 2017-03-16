@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 劇場インポート
+ * 作品インポート
  *
  * @ignore
  */
@@ -19,16 +19,14 @@ const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:*');
 // 複数劇場導入に対応のつもり todo 環境設定
 const theaterCodes = [
-    '000',
-    '001',
     '118'
 ];
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         debug('connecting mongodb...');
         mongoose.connect(process.env.MONGOLAB_URI);
-        const theaterRepo = sskts.createTheaterAdapter(mongoose.connection);
-        const filmRepo = sskts.createFilmAdapter(mongoose.connection);
+        const theaterRepo = sskts.adapter.theater(mongoose.connection);
+        const filmRepo = sskts.adapter.film(mongoose.connection);
         const promises = theaterCodes.map((theaterCode) => __awaiter(this, void 0, void 0, function* () {
             try {
                 debug('importing films...');

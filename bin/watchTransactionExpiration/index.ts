@@ -15,7 +15,7 @@ mongoose.connect(process.env.MONGOLAB_URI);
 let count = 0;
 
 const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-const INTERVAL_MILLISECONDS = 500;
+const INTERVAL_MILLISECONDS = 1000;
 
 setInterval(
     async () => {
@@ -26,7 +26,8 @@ setInterval(
         count += 1;
 
         try {
-            await execute();
+            debug('transaction expiring...');
+            await sskts.service.transaction.makeExpired()(sskts.adapter.transaction(mongoose.connection));
         } catch (error) {
             console.error(error.message);
         }
@@ -35,8 +36,3 @@ setInterval(
     },
     INTERVAL_MILLISECONDS
 );
-
-async function execute() {
-    debug('transaction expiring...');
-    await sskts.service.transaction.expireOne()(sskts.createTransactionAdapter(mongoose.connection));
-}

@@ -23,7 +23,7 @@ router.get(
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.master.findScreen(req.params.id)(sskts.createScreenAdapter(mongoose.connection));
+            const option = await sskts.service.master.findScreen(req.params.id)(sskts.adapter.screen(mongoose.connection));
             option.match({
                 Some: (screen) => {
                     res.json({
