@@ -5,7 +5,7 @@ npm-debug.log*
 .vscode/
 .env*
 docs/
-app.yml*
+app.yaml*
 
 .googleappengine/*
 
