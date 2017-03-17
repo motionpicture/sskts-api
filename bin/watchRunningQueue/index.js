@@ -15,8 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const sskts = require("@motionpicture/sskts-domain");
 const mongoose = require("mongoose");
+const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI);
+mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 let countRetry = 0;
 let countAbort = 0;
 const MAX_NUBMER_OF_PARALLEL_TASKS = 10;

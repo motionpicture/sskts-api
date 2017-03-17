@@ -10,6 +10,7 @@ const router = express.Router();
 const createDebug = require("debug");
 const httpStatus = require("http-status");
 const mongoose = require("mongoose");
+const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
 const debug = createDebug('sskts-api:*');
 router.get('/500', () => {
     throw new Error('500 manually');
@@ -25,7 +26,7 @@ router.get('/environmentVariables', (req, res) => {
 });
 router.get('/mongoose/connect', (req, res, next) => {
     debug('ip:', req.ip);
-    mongoose.connect(process.env.MONGOLAB_URI, (err) => {
+    mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default, (err) => {
         if (err) {
             return next(err);
         }

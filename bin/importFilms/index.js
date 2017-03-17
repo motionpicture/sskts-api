@@ -16,6 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
+const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
 const debug = createDebug('sskts-api:*');
 // 複数劇場導入に対応のつもり todo 環境設定
 const theaterCodes = [
@@ -24,7 +25,7 @@ const theaterCodes = [
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         debug('connecting mongodb...');
-        mongoose.connect(process.env.MONGOLAB_URI);
+        mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
         const theaterRepo = sskts.adapter.theater(mongoose.connection);
         const filmRepo = sskts.adapter.film(mongoose.connection);
         const promises = theaterCodes.map((theaterCode) => __awaiter(this, void 0, void 0, function* () {

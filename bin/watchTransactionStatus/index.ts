@@ -7,10 +7,12 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
+import mongooseConnectionOptions from '../../mongooseConnectionOptions';
+
 const debug = createDebug('sskts-api:*');
 
 (<any>mongoose).Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI);
+mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions);
 
 let countExecute = 0;
 let countRetry = 0;

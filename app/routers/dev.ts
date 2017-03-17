@@ -10,6 +10,8 @@ import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
 import * as mongoose from 'mongoose';
 
+import mongooseConnectionOptions from '../../mongooseConnectionOptions';
+
 const debug = createDebug('sskts-api:*');
 
 router.get(
@@ -34,7 +36,7 @@ router.get(
     '/mongoose/connect',
     (req, res, next) => {
         debug('ip:', req.ip);
-        mongoose.connect(process.env.MONGOLAB_URI, (err: Error) => {
+        mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions, (err: Error) => {
             if (err) {
                 return next(err);
             }
