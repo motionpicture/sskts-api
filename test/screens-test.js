@@ -13,10 +13,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
+const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
+const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
+let connection;
+const theaterId = '118';
+before(() => __awaiter(this, void 0, void 0, function* () {
+    // 全て削除してからテスト開始
+    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    const screenAdapter = sskts.adapter.screen(connection);
+    yield screenAdapter.model.remove({}).exec();
+}));
 describe('GET /screens/:id', () => {
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
@@ -30,16 +40,22 @@ describe('GET /screens/:id', () => {
         });
     }));
     it('found', () => __awaiter(this, void 0, void 0, function* () {
+        // テストデータインポート
+        const theaterAdapter = sskts.adapter.theater(connection);
+        const screenAdapter = sskts.adapter.screen(connection);
+        yield sskts.service.master.importTheater(theaterId)(theaterAdapter);
+        yield sskts.service.master.importScreens(theaterId)(theaterAdapter, screenAdapter);
+        const screenDoc = yield screenAdapter.model.findOne().exec();
         yield supertest(app)
-            .get('/screens/1187')
+            .get('/screens/' + screenDoc.get('id'))
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
             .then((response) => {
             assert.equal(response.body.data.type, 'screens');
-            assert.equal(response.body.data.id, '1187');
-            assert.equal(response.body.data.attributes.id, '1187');
+            assert.equal(response.body.data.id, screenDoc.get('id'));
+            assert.equal(response.body.data.attributes.id, screenDoc.get('id'));
         });
     }));
 });

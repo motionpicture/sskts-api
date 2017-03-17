@@ -13,10 +13,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
+const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
+const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
+let connection;
+const theaterId = '118';
+before(() => __awaiter(this, void 0, void 0, function* () {
+    // 全て削除してからテスト開始
+    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    const performanceAdapter = sskts.adapter.performance(connection);
+    yield performanceAdapter.model.remove({}).exec();
+}));
 describe('GET /performances/:id', () => {
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
@@ -30,16 +40,26 @@ describe('GET /performances/:id', () => {
         });
     }));
     it('found', () => __awaiter(this, void 0, void 0, function* () {
+        // テストデータインポート
+        const theaterAdapter = sskts.adapter.theater(connection);
+        const filmAdapter = sskts.adapter.film(connection);
+        const screenAdapter = sskts.adapter.screen(connection);
+        const performanceAdapter = sskts.adapter.performance(connection);
+        yield sskts.service.master.importTheater(theaterId)(theaterAdapter);
+        yield sskts.service.master.importScreens(theaterId)(theaterAdapter, screenAdapter);
+        yield sskts.service.master.importFilms(theaterId)(theaterAdapter, filmAdapter);
+        yield sskts.service.master.importPerformances(theaterId, '20170301', '20170303')(filmAdapter, screenAdapter, performanceAdapter);
+        const performanceDoc = yield performanceAdapter.model.findOne().exec();
         yield supertest(app)
-            .get('/performances/1182017030116250031020')
+            .get('/performances/' + performanceDoc.get('id'))
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
             .then((response) => {
             assert.equal(response.body.data.type, 'performances');
-            assert.equal(response.body.data.id, '1182017030116250031020');
-            assert.equal(response.body.data.attributes.id, '1182017030116250031020');
+            assert.equal(response.body.data.id, performanceDoc.get('id'));
+            assert.equal(response.body.data.attributes.id, performanceDoc.get('id'));
         });
     }));
 });

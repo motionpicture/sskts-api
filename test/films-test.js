@@ -13,10 +13,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
+const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
+const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
+let connection;
+const theaterId = '118';
+before(() => __awaiter(this, void 0, void 0, function* () {
+    // 全て削除してからテスト開始
+    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    const filmAdapter = sskts.adapter.film(connection);
+    yield filmAdapter.model.remove({}).exec();
+}));
 describe('GET /films/:id', () => {
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
@@ -30,16 +40,22 @@ describe('GET /films/:id', () => {
         });
     }));
     it('found', () => __awaiter(this, void 0, void 0, function* () {
+        // テストデータインポート
+        const theaterAdapter = sskts.adapter.theater(connection);
+        const filmAdapter = sskts.adapter.film(connection);
+        yield sskts.service.master.importTheater(theaterId)(theaterAdapter);
+        yield sskts.service.master.importFilms(theaterId)(theaterAdapter, filmAdapter);
+        const filmDoc = yield filmAdapter.model.findOne().exec();
         yield supertest(app)
-            .get('/films/118161400')
+            .get('/films/' + filmDoc.get('id'))
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
             .then((response) => {
             assert.equal(response.body.data.type, 'films');
-            assert.equal(response.body.data.id, '118161400');
-            assert.equal(response.body.data.attributes.id, '118161400');
+            assert.equal(response.body.data.id, filmDoc.get('id'));
+            assert.equal(response.body.data.attributes.id, filmDoc.get('id'));
         });
     }));
 });
