@@ -1,5 +1,5 @@
 /**
- * 取引ステータス監視
+ * 取引キューエクスポートが実行中のままになっている取引を監視する
  *
  * @ignore
  */
@@ -14,34 +14,12 @@ const debug = createDebug('sskts-api:*');
 (<any>mongoose).Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions);
 
-let countExecute = 0;
 let countRetry = 0;
 
 const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
 const INTERVAL_MILLISECONDS = 500;
-const queueAdapter = sskts.adapter.queue(mongoose.connection);
 const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
 const RETRY_INTERVAL_MINUTES = 10;
-
-setInterval(
-    async () => {
-        if (countExecute > MAX_NUBMER_OF_PARALLEL_TASKS) {
-            return;
-        }
-
-        countExecute += 1;
-
-        try {
-            debug('exporting queues...');
-            await sskts.service.transaction.exportQueues()(queueAdapter, transactionAdapter);
-        } catch (error) {
-            console.error(error.message);
-        }
-
-        countExecute -= 1;
-    },
-    INTERVAL_MILLISECONDS
-);
 
 setInterval(
     async () => {

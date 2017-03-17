@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "^6.1.0",
+    "@motionpicture/sskts-domain": "^7.0.0",
     "body-parser": "^1.17.1",
     "debug": "^2.6.2",
     "express": "^4.15.2",

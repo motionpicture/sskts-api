@@ -106,7 +106,7 @@ router.get(
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.transaction.findById(req.params.id)(sskts.adapter.transaction(mongoose.connection));
+            const option = await sskts.service.transactionWithId.findById(req.params.id)(sskts.adapter.transaction(mongoose.connection));
             option.match({
                 Some: (transaction) => {
                     res.json({
@@ -175,7 +175,7 @@ router.patch(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.updateAnonymousOwner({
+            await sskts.service.transactionWithId.updateAnonymousOwner({
                 transaction_id: req.params.id,
                 name_first: req.body.name_first,
                 name_last: req.body.name_last,
@@ -221,7 +221,7 @@ router.post(
                 gmo_pay_type: req.body.gmo_pay_type,
                 price: req.body.gmo_amount
             });
-            await sskts.service.transaction.addGMOAuthorization(req.params.id, authorization)(
+            await sskts.service.transactionWithId.addGMOAuthorization(req.params.id, authorization)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
@@ -290,7 +290,7 @@ router.post(
                 // tslint:disable-next-line:no-magic-numbers
                 price: parseInt(req.body.price, 10)
             });
-            await sskts.service.transaction.addCOASeatReservationAuthorization(req.params.id, authorization)(
+            await sskts.service.transactionWithId.addCOASeatReservationAuthorization(req.params.id, authorization)(
                 sskts.adapter.transaction(mongoose.connection));
 
             res.status(httpStatus.OK).json({
@@ -312,7 +312,7 @@ router.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.removeAuthorization(req.params.id, req.params.authorization_id)(
+            await sskts.service.transactionWithId.removeAuthorization(req.params.id, req.params.authorization_id)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
@@ -339,7 +339,7 @@ router.patch(
                 reserve_num: req.body.inquiry_id,
                 tel: req.body.inquiry_pass
             });
-            await sskts.service.transaction.enableInquiry(req.params.id, key)(sskts.adapter.transaction(mongoose.connection));
+            await sskts.service.transactionWithId.enableInquiry(req.params.id, key)(sskts.adapter.transaction(mongoose.connection));
 
             res.status(httpStatus.NO_CONTENT).end();
         } catch (error) {
@@ -366,7 +366,7 @@ router.post(
                 subject: req.body.subject,
                 content: req.body.content
             });
-            await sskts.service.transaction.addEmail(req.params.id, notification)(sskts.adapter.transaction(mongoose.connection));
+            await sskts.service.transactionWithId.addEmail(req.params.id, notification)(sskts.adapter.transaction(mongoose.connection));
 
             res.status(httpStatus.OK).json({
                 data: {
@@ -389,7 +389,7 @@ router.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.removeEmail(req.params.id, req.params.notification_id)(
+            await sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
@@ -407,7 +407,7 @@ router.patch(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.close(req.params.id)(sskts.adapter.transaction(mongoose.connection));
+            await sskts.service.transactionWithId.close(req.params.id)(sskts.adapter.transaction(mongoose.connection));
 
             res.status(httpStatus.NO_CONTENT).end();
         } catch (error) {
