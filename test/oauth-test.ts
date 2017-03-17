@@ -10,8 +10,8 @@ import * as supertest from 'supertest';
 import * as app from '../app/app';
 
 describe('GET /oauth/token', () => {
-    it('found', (done) => {
-        supertest(app)
+    it('found', async () => {
+        await supertest(app)
             .post('/oauth/token')
             .send({
                 assertion: process.env.SSKTS_API_REFRESH_TOKEN,
@@ -24,14 +24,11 @@ describe('GET /oauth/token', () => {
                 assert(typeof response.body.access_token === 'string');
                 assert(typeof response.body.token_type === 'string');
                 assert(Number.isInteger(response.body.expires_in));
-                done();
-            }).catch((err) => {
-                done(err);
             });
     });
 
-    it('invalid assertion', (done) => {
-        supertest(app)
+    it('invalid assertion', async () => {
+        await supertest(app)
             .post('/oauth/token')
             .send({
                 assertion: 'assertion',
@@ -42,14 +39,11 @@ describe('GET /oauth/token', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
                 assert.equal(response.body.errors[0].detail, 'invalid assertion');
-                done();
-            }).catch((err) => {
-                done(err);
             });
     });
 
-    it('invalid scope', (done) => {
-        supertest(app)
+    it('invalid scope', async () => {
+        await supertest(app)
             .post('/oauth/token')
             .send({
                 assertion: process.env.SSKTS_API_REFRESH_TOKEN,
@@ -60,9 +54,6 @@ describe('GET /oauth/token', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
                 assert.equal(response.body.errors[0].detail, 'invalid scope');
-                done();
-            }).catch((err) => {
-                done(err);
             });
     });
 });

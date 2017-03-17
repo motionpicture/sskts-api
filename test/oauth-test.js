@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * oauthルーターテスト
@@ -10,8 +18,8 @@ const httpStatus = require("http-status");
 const supertest = require("supertest");
 const app = require("../app/app");
 describe('GET /oauth/token', () => {
-    it('found', (done) => {
-        supertest(app)
+    it('found', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
             .post('/oauth/token')
             .send({
             assertion: process.env.SSKTS_API_REFRESH_TOKEN,
@@ -24,13 +32,10 @@ describe('GET /oauth/token', () => {
             assert(typeof response.body.access_token === 'string');
             assert(typeof response.body.token_type === 'string');
             assert(Number.isInteger(response.body.expires_in));
-            done();
-        }).catch((err) => {
-            done(err);
         });
-    });
-    it('invalid assertion', (done) => {
-        supertest(app)
+    }));
+    it('invalid assertion', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
             .post('/oauth/token')
             .send({
             assertion: 'assertion',
@@ -41,13 +46,10 @@ describe('GET /oauth/token', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert.equal(response.body.errors[0].detail, 'invalid assertion');
-            done();
-        }).catch((err) => {
-            done(err);
         });
-    });
-    it('invalid scope', (done) => {
-        supertest(app)
+    }));
+    it('invalid scope', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
             .post('/oauth/token')
             .send({
             assertion: process.env.SSKTS_API_REFRESH_TOKEN,
@@ -58,9 +60,6 @@ describe('GET /oauth/token', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert.equal(response.body.errors[0].detail, 'invalid scope');
-            done();
-        }).catch((err) => {
-            done(err);
         });
-    });
+    }));
 });
