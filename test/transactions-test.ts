@@ -6,6 +6,7 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
@@ -65,7 +66,7 @@ describe('POST /transactions/startIfPossible', () => {
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .send({
-                expires_at: Date.now(),
+                expires_at: Date.now()
             })
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -79,7 +80,7 @@ describe('POST /transactions/startIfPossible', () => {
         const transaction = sskts.factory.transaction.create({
             status: sskts.factory.transactionStatus.READY,
             owners: [],
-            expires_at: new Date()
+            expires_at: moment().add(10, 'seconds').toDate() // tslint:disable-line:no-magic-numbers
         });
         const transactionAdapter = sskts.adapter.transaction(connection);
         await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
@@ -89,7 +90,7 @@ describe('POST /transactions/startIfPossible', () => {
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
             .set('Accept', 'application/json')
             .send({
-                expires_at: Date.now(),
+                expires_at: Date.now()
             })
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
