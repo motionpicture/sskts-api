@@ -38,7 +38,7 @@ router.post(
                 },
                 (err, encoded) => {
                     debug(err, encoded);
-                    if (err) {
+                    if (err instanceof Error) {
                         throw err;
                     } else {
                         debug('encoded is', encoded);

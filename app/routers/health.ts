@@ -23,9 +23,10 @@ router.get(
         // mongodb接続状態チェック
         if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED) {
             debug('connecting mongodb...');
-            mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions, (err: Error) => {
-                if (err) {
-                    return next(err);
+            mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions, (err) => {
+                if (err instanceof Error) {
+                    next(err);
+                    return;
                 }
 
                 res.status(httpStatus.OK).send('healthy!');

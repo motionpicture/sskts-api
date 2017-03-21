@@ -14,7 +14,7 @@ const debug = createDebug('app:server');
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(process.env.PORT || '8080');
+const port = normalizePort((process.env.PORT === undefined) ? '8080' : process.env.PORT);
 app.set('port', port);
 
 /**
@@ -63,7 +63,7 @@ function onError(error: any) {
 
     const bind = typeof port === 'string'
         ? 'Pipe ' + port
-        : 'Port ' + port;
+        : 'Port ' + (<number>port).toString();
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
@@ -87,8 +87,8 @@ function onError(error: any) {
 function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
+        ? 'pipe ' + <string>addr
+        : 'port ' + addr.port.toString();
     debug('Listening on ' + bind);
 
     const diff = process.hrtime(startTime);

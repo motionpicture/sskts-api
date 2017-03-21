@@ -39,7 +39,7 @@ async function main() {
     mongoose.disconnect();
 }
 
-main().then(() => {
+main().then(() => { // tslint:disable-line:no-floating-promises
     debug('success!');
 }).catch((err) => {
     console.error(err);

@@ -4,7 +4,8 @@ const http_status_1 = require("http-status");
 exports.default = (err, _, res, next) => {
     console.error(err);
     if (res.headersSent) {
-        return next(err);
+        next(err);
+        return;
     }
     res.status(http_status_1.INTERNAL_SERVER_ERROR);
     res.json({

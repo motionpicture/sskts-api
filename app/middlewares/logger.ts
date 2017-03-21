@@ -5,7 +5,7 @@
  */
 import * as log4js from 'log4js';
 
-const env = process.env.NODE_ENV || 'development';
+const env = (process.env.NODE_ENV === undefined) ? 'development' : process.env.NODE_ENV;
 
 log4js.configure({
     appenders: [

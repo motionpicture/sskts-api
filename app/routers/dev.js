@@ -27,8 +27,9 @@ router.get('/environmentVariables', (req, res) => {
 router.get('/mongoose/connect', (req, res, next) => {
     debug('ip:', req.ip);
     mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default, (err) => {
-        if (err) {
-            return next(err);
+        if (err instanceof Error) {
+            next(err);
+            return;
         }
         res.status(httpStatus.NO_CONTENT).end();
     });
@@ -36,8 +37,9 @@ router.get('/mongoose/connect', (req, res, next) => {
 router.get('/mongoose/disconnect', (req, res, next) => {
     debug('ip:', req.ip);
     mongoose.disconnect((err) => {
-        if (err) {
-            return next(err);
+        if (err instanceof Error) {
+            next(err);
+            return;
         }
         res.status(httpStatus.NO_CONTENT).end();
     });

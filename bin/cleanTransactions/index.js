@@ -23,13 +23,8 @@ function main() {
         debug('connecting mongodb...');
         mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
         const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
-        try {
-            debug('preparing transactions...');
-            yield sskts.service.transaction.clean()(transactionAdapter);
-        }
-        catch (error) {
-            console.error(error);
-        }
+        debug('preparing transactions...');
+        yield sskts.service.transaction.clean()(transactionAdapter);
         mongoose.disconnect();
     });
 }

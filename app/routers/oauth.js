@@ -35,7 +35,7 @@ router.post('/token', (req, _, next) => {
             expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
         }, (err, encoded) => {
             debug(err, encoded);
-            if (err) {
+            if (err instanceof Error) {
                 throw err;
             }
             else {

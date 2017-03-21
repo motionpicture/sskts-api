@@ -8,7 +8,8 @@ export default (err: Error, _: Request, res: Response, next: NextFunction) => {
     console.error(err);
 
     if (res.headersSent) {
-        return next(err);
+        next(err);
+        return;
     }
 
     res.status(INTERNAL_SERVER_ERROR);

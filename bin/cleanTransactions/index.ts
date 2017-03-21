@@ -16,17 +16,13 @@ async function main() {
     mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions);
 
     const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
-    try {
-        debug('preparing transactions...');
-        await sskts.service.transaction.clean()(transactionAdapter);
-    } catch (error) {
-        console.error(error);
-    }
+    debug('preparing transactions...');
+    await sskts.service.transaction.clean()(transactionAdapter);
 
     mongoose.disconnect();
 }
 
-main().then(() => {
+main().then(() => { // tslint:disable-line:no-floating-promises
     debug('success!');
 }).catch((err) => {
     console.error(err);
