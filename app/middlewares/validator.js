@@ -22,6 +22,7 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
                 };
             })
         });
+        return;
     }
     next();
 });

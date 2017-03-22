@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "^7.0.4",
+    "@motionpicture/sskts-domain": "^8.0.0",
     "body-parser": "^1.17.1",
     "debug": "^2.6.3",
     "express": "^4.15.2",
@@ -69,5 +69,5 @@
     "version": "git add -A",
     "postversion": "git push origin"
   },
-  "version": "3.0.0"
+  "version": "4.0.0"
 }

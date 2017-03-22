@@ -14,12 +14,12 @@ const debug = createDebug('*');
 const API_ENDPOINT = 'http://localhost:8080'; // tslint:disable-line:no-http-string
 // const API_ENDPOINT = 'https://devssktsapi-staging.azurewebsites.net'; // tslint:disable-line:no-http-string
 
-// tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:max-func-body-length cyclomatic-complexity
 async function main() {
     let response: any;
     const gmoShopId = 'tshop00026096';
     const gmoShopPass = 'xbxmkaa6';
-    const performanceId = '1182017030317001051540'; // パフォーマンスID 空席なくなったら変更する
+    const performanceId = '11820170323162270802120'; // パフォーマンスID 空席なくなったら変更する
 
     // アクセストークン取得
     response = await request.post({
@@ -177,8 +177,8 @@ async function main() {
         url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
         auth: { bearer: accessToken },
         body: {
-            owner_id_from: promoterOwnerId,
-            owner_id_to: anonymousOwnerId,
+            owner_from: promoterOwnerId,
+            owner_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
             coa_theater_code: theaterCode,
             coa_date_jouei: dateJouei,
@@ -268,8 +268,8 @@ async function main() {
         url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/gmo`,
         auth: { bearer: accessToken },
         body: {
-            owner_id_from: anonymousOwnerId,
-            owner_id_to: promoterOwnerId,
+            owner_from: anonymousOwnerId,
+            owner_to: promoterOwnerId,
             gmo_shop_id: gmoShopId,
             gmo_shop_pass: gmoShopPass,
             gmo_order_id: orderId,
@@ -339,8 +339,8 @@ async function main() {
         url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
         auth: { bearer: accessToken },
         body: {
-            owner_id_from: promoterOwnerId,
-            owner_id_to: anonymousOwnerId,
+            owner_from: promoterOwnerId,
+            owner_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
             coa_theater_code: theaterCode,
             coa_date_jouei: dateJouei,
@@ -401,8 +401,8 @@ async function main() {
         url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/gmo`,
         auth: { bearer: accessToken },
         body: {
-            owner_id_from: anonymousOwnerId,
-            owner_id_to: promoterOwnerId,
+            owner_from: anonymousOwnerId,
+            owner_to: promoterOwnerId,
             gmo_shop_id: gmoShopId,
             gmo_shop_pass: gmoShopPass,
             gmo_order_id: orderId,

@@ -175,7 +175,7 @@ router.patch(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transactionWithId.updateAnonymousOwner({
+            const errorOption = await sskts.service.transactionWithId.updateAnonymousOwner({
                 transaction_id: req.params.id,
                 name_first: req.body.name_first,
                 name_last: req.body.name_last,
@@ -183,7 +183,21 @@ router.patch(
                 email: req.body.email
             })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
 
-            res.status(httpStatus.NO_CONTENT).end();
+            errorOption.match({
+                Some: (error) => {
+                    res.status(httpStatus.BAD_REQUEST).json({
+                        errors: [
+                            {
+                                title: 'invalid parameter',
+                                detail: error.message
+                            }
+                        ]
+                    });
+                },
+                None: () => {
+                    res.status(httpStatus.NO_CONTENT).end();
+                }
+            });
         } catch (error) {
             next(error);
         }
@@ -192,8 +206,8 @@ router.patch(
 router.post(
     '/:id/authorizations/gmo',
     (req, _, next) => {
-        req.checkBody('owner_id_from', 'invalid owner_id_from').notEmpty().withMessage('owner_id_from is required');
-        req.checkBody('owner_id_to', 'invalid owner_id_to').notEmpty().withMessage('owner_id_to is required');
+        req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
+        req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
         req.checkBody('gmo_shop_id', 'invalid gmo_shop_id').notEmpty().withMessage('gmo_shop_id is required');
         req.checkBody('gmo_shop_pass', 'invalid gmo_shop_pass').notEmpty().withMessage('gmo_shop_pass is required');
         req.checkBody('gmo_order_id', 'invalid gmo_order_id').notEmpty().withMessage('gmo_order_id is required');
@@ -208,9 +222,9 @@ router.post(
     validator,
     async (req, res, next) => {
         try {
-            const authorization = sskts.factory.authorization.createGMO({
-                owner_from: req.body.owner_id_from,
-                owner_to: req.body.owner_id_to,
+            const authorization = sskts.factory.authorization.gmo.create({
+                owner_from: req.body.owner_from,
+                owner_to: req.body.owner_to,
                 gmo_shop_id: req.body.gmo_shop_id,
                 gmo_shop_pass: req.body.gmo_shop_pass,
                 gmo_order_id: req.body.gmo_order_id,
@@ -221,14 +235,28 @@ router.post(
                 gmo_pay_type: req.body.gmo_pay_type,
                 price: req.body.gmo_amount
             });
-            await sskts.service.transactionWithId.addGMOAuthorization(req.params.id, authorization)(
+            const errorOption = await sskts.service.transactionWithId.addGMOAuthorization(req.params.id, authorization)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
-            res.status(httpStatus.OK).json({
-                data: {
-                    type: 'authorizations',
-                    id: authorization.id
+            errorOption.match({
+                Some: (error) => {
+                    res.status(httpStatus.BAD_REQUEST).json({
+                        errors: [
+                            {
+                                title: 'invalid parameter',
+                                detail: error.message
+                            }
+                        ]
+                    });
+                },
+                None: () => {
+                    res.status(httpStatus.OK).json({
+                        data: {
+                            type: 'authorizations',
+                            id: authorization.id
+                        }
+                    });
                 }
             });
         } catch (error) {
@@ -239,8 +267,8 @@ router.post(
 router.post(
     '/:id/authorizations/coaSeatReservation',
     (req, _, next) => {
-        req.checkBody('owner_id_from', 'invalid owner_id_from').notEmpty().withMessage('owner_id_from is required');
-        req.checkBody('owner_id_to', 'invalid owner_id_to').notEmpty().withMessage('owner_id_to is required');
+        req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
+        req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
         req.checkBody('coa_tmp_reserve_num', 'invalid coa_tmp_reserve_num').notEmpty().withMessage('coa_tmp_reserve_num is required');
         req.checkBody('coa_theater_code', 'invalid coa_theater_code').notEmpty().withMessage('coa_theater_code is required');
         req.checkBody('coa_date_jouei', 'invalid coa_date_jouei').notEmpty().withMessage('coa_date_jouei is required');
@@ -256,9 +284,9 @@ router.post(
     validator,
     async (req, res, next) => {
         try {
-            const authorization = sskts.factory.authorization.createCOASeatReservation({
-                owner_from: req.body.owner_id_from,
-                owner_to: req.body.owner_id_to,
+            const authorization = sskts.factory.authorization.coaSeatReservation.create({
+                owner_from: req.body.owner_from,
+                owner_to: req.body.owner_to,
                 // tslint:disable-next-line:no-magic-numbers
                 coa_tmp_reserve_num: parseInt(req.body.coa_tmp_reserve_num, 10),
                 coa_theater_code: req.body.coa_theater_code,
@@ -268,9 +296,9 @@ router.post(
                 coa_time_begin: req.body.coa_time_begin,
                 coa_screen_code: req.body.coa_screen_code,
                 assets: req.body.seats.map((seat: any) => {
-                    return sskts.factory.asset.createSeatReservation({
+                    return sskts.factory.asset.seatReservation.create({
                         ownership: sskts.factory.ownership.create({
-                            owner: req.body.owner_id_to,
+                            owner: req.body.owner_to,
                             authenticated: false
                         }),
                         authorizations: [],
@@ -290,13 +318,98 @@ router.post(
                 // tslint:disable-next-line:no-magic-numbers
                 price: parseInt(req.body.price, 10)
             });
-            await sskts.service.transactionWithId.addCOASeatReservationAuthorization(req.params.id, authorization)(
+            const errorOption = await sskts.service.transactionWithId.addCOASeatReservationAuthorization(req.params.id, authorization)(
                 sskts.adapter.transaction(mongoose.connection));
 
-            res.status(httpStatus.OK).json({
-                data: {
-                    type: 'authorizations',
-                    id: authorization.id
+            errorOption.match({
+                Some: (error) => {
+                    res.status(httpStatus.BAD_REQUEST).json({
+                        errors: [
+                            {
+                                title: 'invalid parameter',
+                                detail: error.message
+                            }
+                        ]
+                    });
+                },
+                None: () => {
+                    res.status(httpStatus.OK).json({
+                        data: {
+                            type: 'authorizations',
+                            id: authorization.id
+                        }
+                    });
+                }
+            });
+        } catch (error) {
+            next(error);
+        }
+    });
+
+router.post(
+    '/:id/authorizations/mvtk',
+    (req, _, next) => {
+        req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
+        req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
+        req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
+        req.checkBody('kgygish_cd', 'invalid kgygish_cd').notEmpty().withMessage('kgygish_cd is required');
+        req.checkBody('yyk_dvc_typ', 'invalid yyk_dvc_typ').notEmpty().withMessage('yyk_dvc_typ is required');
+        req.checkBody('trksh_flg', 'invalid trksh_flg').notEmpty().withMessage('trksh_flg is required');
+        req.checkBody('kgygish_sstm_zskyyk_no', 'invalid kgygish_sstm_zskyyk_no')
+            .notEmpty().withMessage('kgygish_sstm_zskyyk_no is required');
+        req.checkBody('kgygish_usr_zskyyk_no', 'invalid kgygish_usr_zskyyk_no').notEmpty().withMessage('kgygish_usr_zskyyk_no is required');
+        req.checkBody('jei_dt', 'invalid jei_dt').notEmpty().withMessage('jei_dt is required');
+        req.checkBody('kij_ymd', 'invalid kij_ymd').notEmpty().withMessage('kij_ymd is required');
+        req.checkBody('st_cd', 'invalid st_cd').notEmpty().withMessage('st_cd is required');
+        req.checkBody('scren_cd', 'invalid scren_cd').notEmpty().withMessage('scren_cd is required');
+        req.checkBody('knyknr_no_info', 'invalid knyknr_no_info').notEmpty().withMessage('knyknr_no_info is required');
+        req.checkBody('zsk_info', 'invalid zsk_info').notEmpty().withMessage('zsk_info is required');
+        req.checkBody('skhn_cd', 'invalid skhn_cd').notEmpty().withMessage('skhn_cd is required');
+
+        next();
+    },
+    validator,
+    async (req, res, next) => {
+        try {
+            const authorization = sskts.factory.authorization.mvtk.create({
+                owner_from: req.body.owner_from,
+                owner_to: req.body.owner_to,
+                price: parseInt(req.body.price, 10), // tslint:disable-line:no-magic-numbers
+                kgygish_cd: req.body.kgygish_cd,
+                yyk_dvc_typ: req.body.yyk_dvc_typ,
+                trksh_flg: req.body.trksh_flg,
+                kgygish_sstm_zskyyk_no: req.body.kgygish_sstm_zskyyk_no,
+                kgygish_usr_zskyyk_no: req.body.kgygish_usr_zskyyk_no,
+                jei_dt: req.body.jei_dt,
+                kij_ymd: req.body.kij_ymd,
+                st_cd: req.body.st_cd,
+                scren_cd: req.body.scren_cd,
+                knyknr_no_info: req.body.knyknr_no_info,
+                zsk_info: req.body.zsk_info,
+                skhn_cd: req.body.skhn_cd
+            });
+            const errorOption = await sskts.service.transactionWithId.addMvtkAuthorization(req.params.id, authorization)(
+                sskts.adapter.transaction(mongoose.connection)
+            );
+
+            errorOption.match({
+                Some: (error) => {
+                    res.status(httpStatus.BAD_REQUEST).json({
+                        errors: [
+                            {
+                                title: 'invalid parameter',
+                                detail: error.message
+                            }
+                        ]
+                    });
+                },
+                None: () => {
+                    res.status(httpStatus.OK).json({
+                        data: {
+                            type: 'authorizations',
+                            id: authorization.id
+                        }
+                    });
                 }
             });
         } catch (error) {
@@ -312,11 +425,25 @@ router.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transactionWithId.removeAuthorization(req.params.id, req.params.authorization_id)(
+            const errorOption = await sskts.service.transactionWithId.removeAuthorization(req.params.id, req.params.authorization_id)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
-            res.status(httpStatus.NO_CONTENT).end();
+            errorOption.match({
+                Some: (error) => {
+                    res.status(httpStatus.BAD_REQUEST).json({
+                        errors: [
+                            {
+                                title: 'invalid parameter',
+                                detail: error.message
+                            }
+                        ]
+                    });
+                },
+                None: () => {
+                    res.status(httpStatus.NO_CONTENT).end();
+                }
+            });
         } catch (error) {
             next(error);
         }
@@ -339,9 +466,25 @@ router.patch(
                 reserve_num: req.body.inquiry_id,
                 tel: req.body.inquiry_pass
             });
-            await sskts.service.transactionWithId.enableInquiry(req.params.id, key)(sskts.adapter.transaction(mongoose.connection));
+            const errorOption = await sskts.service.transactionWithId.enableInquiry(req.params.id, key)(
+                sskts.adapter.transaction(mongoose.connection)
+            );
 
-            res.status(httpStatus.NO_CONTENT).end();
+            errorOption.match({
+                Some: (error) => {
+                    res.status(httpStatus.BAD_REQUEST).json({
+                        errors: [
+                            {
+                                title: 'invalid parameter',
+                                detail: error.message
+                            }
+                        ]
+                    });
+                },
+                None: () => {
+                    res.status(httpStatus.NO_CONTENT).end();
+                }
+            });
         } catch (error) {
             next(error);
         }
@@ -360,7 +503,7 @@ router.post(
     validator,
     async (req, res, next) => {
         try {
-            const notification = sskts.factory.notification.createEmail({
+            const notification = sskts.factory.notification.email.create({
                 from: req.body.from,
                 to: req.body.to,
                 subject: req.body.subject,
@@ -389,11 +532,25 @@ router.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(
+            const errorOption = await sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
-            res.status(httpStatus.NO_CONTENT).end();
+            errorOption.match({
+                Some: (error) => {
+                    res.status(httpStatus.BAD_REQUEST).json({
+                        errors: [
+                            {
+                                title: 'invalid parameter',
+                                detail: error.message
+                            }
+                        ]
+                    });
+                },
+                None: () => {
+                    res.status(httpStatus.NO_CONTENT).end();
+                }
+            });
         } catch (error) {
             next(error);
         }
@@ -407,9 +564,23 @@ router.patch(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transactionWithId.close(req.params.id)(sskts.adapter.transaction(mongoose.connection));
+            const errorOption = await sskts.service.transactionWithId.close(req.params.id)(sskts.adapter.transaction(mongoose.connection));
 
-            res.status(httpStatus.NO_CONTENT).end();
+            errorOption.match({
+                Some: (error) => {
+                    res.status(httpStatus.BAD_REQUEST).json({
+                        errors: [
+                            {
+                                title: 'invalid parameter',
+                                detail: error.message
+                            }
+                        ]
+                    });
+                },
+                None: () => {
+                    res.status(httpStatus.NO_CONTENT).end();
+                }
+            });
         } catch (error) {
             next(error);
         }
