@@ -1,10 +1,13 @@
 /**
  * エラーハンドラーミドルウェア
+ *
+ * todo errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
+ * 現時点では、雑にコントロールしてある
  */
 import { NextFunction, Request, Response } from 'express';
-import { INTERNAL_SERVER_ERROR } from 'http-status';
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
 
-export default (err: Error, _: Request, res: Response, next: NextFunction) => {
+export default (err: any, _: Request, res: Response, next: NextFunction) => {
     console.error(err);
 
     if (res.headersSent) {
@@ -12,13 +15,24 @@ export default (err: Error, _: Request, res: Response, next: NextFunction) => {
         return;
     }
 
-    res.status(INTERNAL_SERVER_ERROR);
-    res.json({
-        errors: [
-            {
-                title: 'internal server error',
-                detail: 'an unexpected error occurred.'
-            }
-        ]
-    });
+    // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
+    if (err instanceof Error) {
+        res.status(BAD_REQUEST).json({
+            errors: [
+                {
+                    title: err.name,
+                    detail: err.message
+                }
+            ]
+        });
+    } else {
+        res.status(INTERNAL_SERVER_ERROR).json({
+            errors: [
+                {
+                    title: 'internal server error',
+                    detail: 'an unexpected error occurred.'
+                }
+            ]
+        });
+    }
 };

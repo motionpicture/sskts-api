@@ -17,7 +17,7 @@ const express_1 = require("express");
 const router = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
-const httpStatus = require("http-status");
+const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const validator_1 = require("../middlewares/validator");
@@ -40,7 +40,7 @@ router.get('/:id', (_1, _2, next) => {
                 });
             },
             None: () => {
-                res.status(httpStatus.NOT_FOUND);
+                res.status(http_status_1.NOT_FOUND);
                 res.json({
                     data: null
                 });

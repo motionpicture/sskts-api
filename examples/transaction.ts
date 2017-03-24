@@ -19,7 +19,7 @@ async function main() {
     let response: any;
     const gmoShopId = 'tshop00026096';
     const gmoShopPass = 'xbxmkaa6';
-    const performanceId = '11820170323162270802120'; // パフォーマンスID 空席なくなったら変更する
+    const performanceId = '11820170325162210101150'; // パフォーマンスID 空席なくなったら変更する
 
     // アクセストークン取得
     response = await request.post({

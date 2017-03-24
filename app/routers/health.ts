@@ -7,7 +7,7 @@ import * as express from 'express';
 const router = express.Router();
 
 import * as createDebug from 'debug';
-import * as httpStatus from 'http-status';
+import { OK } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../../mongooseConnectionOptions';
@@ -29,10 +29,10 @@ router.get(
                     return;
                 }
 
-                res.status(httpStatus.OK).send('healthy!');
+                res.status(OK).send('healthy!');
             });
         } else {
-            res.status(httpStatus.OK).send('healthy!');
+            res.status(OK).send('healthy!');
         }
     });
 

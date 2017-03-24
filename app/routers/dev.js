@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const router = express.Router();
 const createDebug = require("debug");
-const httpStatus = require("http-status");
+const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
 const debug = createDebug('sskts-api:*');
@@ -31,7 +31,7 @@ router.get('/mongoose/connect', (req, res, next) => {
             next(err);
             return;
         }
-        res.status(httpStatus.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT).end();
     });
 });
 router.get('/mongoose/disconnect', (req, res, next) => {
@@ -41,7 +41,7 @@ router.get('/mongoose/disconnect', (req, res, next) => {
             next(err);
             return;
         }
-        res.status(httpStatus.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT).end();
     });
 });
 exports.default = router;

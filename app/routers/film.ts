@@ -7,7 +7,7 @@ import { Router } from 'express';
 const router = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
-import * as httpStatus from 'http-status';
+import { NOT_FOUND } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
@@ -35,7 +35,7 @@ router.get(
                     });
                 },
                 None: () => {
-                    res.status(httpStatus.NOT_FOUND);
+                    res.status(NOT_FOUND);
                     res.json({
                         data: null
                     });

@@ -7,13 +7,25 @@ exports.default = (err, _, res, next) => {
         next(err);
         return;
     }
-    res.status(http_status_1.INTERNAL_SERVER_ERROR);
-    res.json({
-        errors: [
-            {
-                title: 'internal server error',
-                detail: 'an unexpected error occurred.'
-            }
-        ]
-    });
+    // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
+    if (err instanceof Error) {
+        res.status(http_status_1.BAD_REQUEST).json({
+            errors: [
+                {
+                    title: err.name,
+                    detail: err.message
+                }
+            ]
+        });
+    }
+    else {
+        res.status(http_status_1.INTERNAL_SERVER_ERROR).json({
+            errors: [
+                {
+                    title: 'internal server error',
+                    detail: 'an unexpected error occurred.'
+                }
+            ]
+        });
+    }
 };

@@ -7,7 +7,7 @@ import * as express from 'express';
 const router = express.Router();
 
 import * as createDebug from 'debug';
-import * as httpStatus from 'http-status';
+import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../../mongooseConnectionOptions';
@@ -42,7 +42,7 @@ router.get(
                 return;
             }
 
-            res.status(httpStatus.NO_CONTENT).end();
+            res.status(NO_CONTENT).end();
         });
     });
 
@@ -56,7 +56,7 @@ router.get(
                 return;
             }
 
-            res.status(httpStatus.NO_CONTENT).end();
+            res.status(NO_CONTENT).end();
         });
     });
 

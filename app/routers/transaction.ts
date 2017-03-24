@@ -3,11 +3,11 @@
  *
  * @ignore
  */
-import * as express from 'express';
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
-import * as httpStatus from 'http-status';
+import { CREATED, NO_CONTENT, NOT_FOUND, OK } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
@@ -44,7 +44,7 @@ router.post(
                     });
                 },
                 None: () => {
-                    res.status(httpStatus.NOT_FOUND);
+                    res.status(NOT_FOUND);
                     res.json({
                         data: null
                     });
@@ -53,7 +53,8 @@ router.post(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.post(
     '/makeInquiry',
@@ -85,7 +86,7 @@ router.post(
                     });
                 },
                 None: () => {
-                    res.status(httpStatus.NOT_FOUND);
+                    res.status(NOT_FOUND);
                     res.json({
                         data: null
                     });
@@ -94,7 +95,8 @@ router.post(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.get(
     '/:id',
@@ -118,7 +120,7 @@ router.get(
                     });
                 },
                 None: () => {
-                    res.status(httpStatus.NOT_FOUND);
+                    res.status(NOT_FOUND);
                     res.json({
                         data: null
                     });
@@ -127,7 +129,8 @@ router.get(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.post(
     '',
@@ -148,7 +151,7 @@ router.post(
 
             // tslint:disable-next-line:no-string-literal
             const hots = req.headers['host'];
-            res.status(httpStatus.CREATED);
+            res.status(CREATED);
             res.setHeader('Location', `https://${hots}/transactions/${transaction.id}`);
             res.json({
                 data: {
@@ -160,7 +163,8 @@ router.post(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.patch(
     '/:id/anonymousOwner',
@@ -175,7 +179,7 @@ router.patch(
     validator,
     async (req, res, next) => {
         try {
-            const errorOption = await sskts.service.transactionWithId.updateAnonymousOwner({
+            await sskts.service.transactionWithId.updateAnonymousOwner({
                 transaction_id: req.params.id,
                 name_first: req.body.name_first,
                 name_last: req.body.name_last,
@@ -183,25 +187,12 @@ router.patch(
                 email: req.body.email
             })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
 
-            errorOption.match({
-                Some: (error) => {
-                    res.status(httpStatus.BAD_REQUEST).json({
-                        errors: [
-                            {
-                                title: 'invalid parameter',
-                                detail: error.message
-                            }
-                        ]
-                    });
-                },
-                None: () => {
-                    res.status(httpStatus.NO_CONTENT).end();
-                }
-            });
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.post(
     '/:id/authorizations/gmo',
@@ -235,34 +226,21 @@ router.post(
                 gmo_pay_type: req.body.gmo_pay_type,
                 price: req.body.gmo_amount
             });
-            const errorOption = await sskts.service.transactionWithId.addGMOAuthorization(req.params.id, authorization)(
+            await sskts.service.transactionWithId.addGMOAuthorization(req.params.id, authorization)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
-            errorOption.match({
-                Some: (error) => {
-                    res.status(httpStatus.BAD_REQUEST).json({
-                        errors: [
-                            {
-                                title: 'invalid parameter',
-                                detail: error.message
-                            }
-                        ]
-                    });
-                },
-                None: () => {
-                    res.status(httpStatus.OK).json({
-                        data: {
-                            type: 'authorizations',
-                            id: authorization.id
-                        }
-                    });
+            res.status(OK).json({
+                data: {
+                    type: 'authorizations',
+                    id: authorization.id
                 }
             });
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.post(
     '/:id/authorizations/coaSeatReservation',
@@ -318,33 +296,20 @@ router.post(
                 // tslint:disable-next-line:no-magic-numbers
                 price: parseInt(req.body.price, 10)
             });
-            const errorOption = await sskts.service.transactionWithId.addCOASeatReservationAuthorization(req.params.id, authorization)(
+            await sskts.service.transactionWithId.addCOASeatReservationAuthorization(req.params.id, authorization)(
                 sskts.adapter.transaction(mongoose.connection));
 
-            errorOption.match({
-                Some: (error) => {
-                    res.status(httpStatus.BAD_REQUEST).json({
-                        errors: [
-                            {
-                                title: 'invalid parameter',
-                                detail: error.message
-                            }
-                        ]
-                    });
-                },
-                None: () => {
-                    res.status(httpStatus.OK).json({
-                        data: {
-                            type: 'authorizations',
-                            id: authorization.id
-                        }
-                    });
+            res.status(OK).json({
+                data: {
+                    type: 'authorizations',
+                    id: authorization.id
                 }
             });
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.post(
     '/:id/authorizations/mvtk',
@@ -388,34 +353,21 @@ router.post(
                 zsk_info: req.body.zsk_info,
                 skhn_cd: req.body.skhn_cd
             });
-            const errorOption = await sskts.service.transactionWithId.addMvtkAuthorization(req.params.id, authorization)(
+            await sskts.service.transactionWithId.addMvtkAuthorization(req.params.id, authorization)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
-            errorOption.match({
-                Some: (error) => {
-                    res.status(httpStatus.BAD_REQUEST).json({
-                        errors: [
-                            {
-                                title: 'invalid parameter',
-                                detail: error.message
-                            }
-                        ]
-                    });
-                },
-                None: () => {
-                    res.status(httpStatus.OK).json({
-                        data: {
-                            type: 'authorizations',
-                            id: authorization.id
-                        }
-                    });
+            res.status(OK).json({
+                data: {
+                    type: 'authorizations',
+                    id: authorization.id
                 }
             });
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.delete(
     '/:id/authorizations/:authorization_id',
@@ -425,29 +377,16 @@ router.delete(
     validator,
     async (req, res, next) => {
         try {
-            const errorOption = await sskts.service.transactionWithId.removeAuthorization(req.params.id, req.params.authorization_id)(
+            await sskts.service.transactionWithId.removeAuthorization(req.params.id, req.params.authorization_id)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
-            errorOption.match({
-                Some: (error) => {
-                    res.status(httpStatus.BAD_REQUEST).json({
-                        errors: [
-                            {
-                                title: 'invalid parameter',
-                                detail: error.message
-                            }
-                        ]
-                    });
-                },
-                None: () => {
-                    res.status(httpStatus.NO_CONTENT).end();
-                }
-            });
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.patch(
     '/:id/enableInquiry',
@@ -466,29 +405,16 @@ router.patch(
                 reserve_num: req.body.inquiry_id,
                 tel: req.body.inquiry_pass
             });
-            const errorOption = await sskts.service.transactionWithId.enableInquiry(req.params.id, key)(
+            await sskts.service.transactionWithId.enableInquiry(req.params.id, key)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
-            errorOption.match({
-                Some: (error) => {
-                    res.status(httpStatus.BAD_REQUEST).json({
-                        errors: [
-                            {
-                                title: 'invalid parameter',
-                                detail: error.message
-                            }
-                        ]
-                    });
-                },
-                None: () => {
-                    res.status(httpStatus.NO_CONTENT).end();
-                }
-            });
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.post(
     '/:id/notifications/email',
@@ -511,7 +437,7 @@ router.post(
             });
             await sskts.service.transactionWithId.addEmail(req.params.id, notification)(sskts.adapter.transaction(mongoose.connection));
 
-            res.status(httpStatus.OK).json({
+            res.status(OK).json({
                 data: {
                     type: 'notifications',
                     id: notification.id
@@ -520,7 +446,8 @@ router.post(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.delete(
     '/:id/notifications/:notification_id',
@@ -532,29 +459,16 @@ router.delete(
     validator,
     async (req, res, next) => {
         try {
-            const errorOption = await sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(
+            await sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(
                 sskts.adapter.transaction(mongoose.connection)
             );
 
-            errorOption.match({
-                Some: (error) => {
-                    res.status(httpStatus.BAD_REQUEST).json({
-                        errors: [
-                            {
-                                title: 'invalid parameter',
-                                detail: error.message
-                            }
-                        ]
-                    });
-                },
-                None: () => {
-                    res.status(httpStatus.NO_CONTENT).end();
-                }
-            });
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 router.patch(
     '/:id/close',
@@ -564,26 +478,13 @@ router.patch(
     validator,
     async (req, res, next) => {
         try {
-            const errorOption = await sskts.service.transactionWithId.close(req.params.id)(sskts.adapter.transaction(mongoose.connection));
+            await sskts.service.transactionWithId.close(req.params.id)(sskts.adapter.transaction(mongoose.connection));
 
-            errorOption.match({
-                Some: (error) => {
-                    res.status(httpStatus.BAD_REQUEST).json({
-                        errors: [
-                            {
-                                title: 'invalid parameter',
-                                detail: error.message
-                            }
-                        ]
-                    });
-                },
-                None: () => {
-                    res.status(httpStatus.NO_CONTENT).end();
-                }
-            });
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 export default router;

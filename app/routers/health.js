@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const router = express.Router();
 const createDebug = require("debug");
-const httpStatus = require("http-status");
+const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
 const debug = createDebug('sskts-api:router:health');
@@ -23,11 +23,11 @@ router.get('', (_, res, next) => {
                 next(err);
                 return;
             }
-            res.status(httpStatus.OK).send('healthy!');
+            res.status(http_status_1.OK).send('healthy!');
         });
     }
     else {
-        res.status(httpStatus.OK).send('healthy!');
+        res.status(http_status_1.OK).send('healthy!');
     }
 });
 exports.default = router;
