@@ -21,7 +21,7 @@ before(async () => {
 });
 
 describe('GET /transactions/:id', () => {
-    it('transaction not found', async () => {
+    it('取引存在しない', async () => {
         await supertest(app)
             .get('/transactions/58cb2e2276cee91fe4387dd1')
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
@@ -33,7 +33,7 @@ describe('GET /transactions/:id', () => {
             });
     });
 
-    it('transaction found', async () => {
+    it('取引存在する', async () => {
         // テストデータ作成
         const transaction = sskts.factory.transaction.create({
             status: sskts.factory.transactionStatus.UNDERWAY,
@@ -60,7 +60,7 @@ describe('GET /transactions/:id', () => {
 });
 
 describe('POST /transactions/startIfPossible', () => {
-    it('startIfPossible not found', async () => {
+    it('開始可能な取引存在しない', async () => {
         await supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
@@ -75,7 +75,7 @@ describe('POST /transactions/startIfPossible', () => {
             });
     });
 
-    it('startIfPossible found', async () => {
+    it('開始可能な取引存在する', async () => {
         // テストデータ作成
         const transaction = sskts.factory.transaction.create({
             status: sskts.factory.transactionStatus.READY,
@@ -105,7 +105,7 @@ describe('POST /transactions/startIfPossible', () => {
 });
 
 describe('POST /transactions/:id/authorizations/mvtk', () => {
-    it('addMvtkAuthorization ok', async () => {
+    it('ムビチケ承認追加できる', async () => {
         // テストデータ作成
         const owner1 = sskts.factory.owner.anonymous.create({});
         const owner2 = sskts.factory.owner.anonymous.create({});
@@ -176,7 +176,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
     });
 
-    it('addMvtkAuthorization BAD_REQUEST', async () => {
+    it('scren_cdパラメータ不足でムビチケ承認追加失敗', async () => {
         // テストデータ作成
         const owner1 = sskts.factory.owner.anonymous.create({});
         const owner2 = sskts.factory.owner.anonymous.create({});
@@ -210,7 +210,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
                 jei_dt: '2017/03/0210: 00: 00',
                 kij_ymd: '2017/03/02',
                 st_cd: '15',
-                scren_cd: '1',
+                // scren_cd: '1',
                 knyknr_no_info: [
                     {
                         knyknr_no: '4450899842',
@@ -229,6 +229,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
                 assert(Array.isArray(response.body.errors));
+                assert.equal(response.body.errors[0].source.parameter, 'scren_cd');
             });
 
         // テストデータ削除
