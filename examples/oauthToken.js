@@ -16,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const request = require("request-promise-native");
 const debug = createDebug('sskts-api:*');
-const API_ENDPOINT = 'http://localhost:8080'; // tslint:disable-line:no-http-string
+const API_ENDPOINT = 'http://localhost:8081'; // tslint:disable-line:no-http-string
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield request.post({

@@ -19,7 +19,7 @@ const httpStatus = require("http-status");
 const moment = require("moment");
 const request = require("request-promise-native");
 const debug = createDebug('sskts-api:examples:transactionWithMvtk');
-const API_ENDPOINT = 'http://localhost:8080'; // tslint:disable-line:no-http-string
+const API_ENDPOINT = 'http://localhost:8081'; // tslint:disable-line:no-http-string
 // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
