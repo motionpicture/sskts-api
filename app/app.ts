@@ -3,7 +3,6 @@
  *
  * @module
  */
-
 import * as bodyParser from 'body-parser';
 import * as createDebug from 'debug';
 import * as express from 'express';
@@ -14,7 +13,6 @@ import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 import errorHandler from './middlewares/errorHandler';
-import logger from './middlewares/logger';
 import notFoundHandler from './middlewares/notFoundHandler';
 import devRouter from './routers/dev';
 import filmRouter from './routers/film';
@@ -56,8 +54,6 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-app.use(logger);
-
 // view engine setup
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');
@@ -82,7 +78,6 @@ i18n.configure({
 // i18n の設定を有効化
 app.use(i18n.init);
 
-// mongoose.set('debug', true); // todo 本番でははずす
 // Use native promises
 (<any>mongoose).Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions);

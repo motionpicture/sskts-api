@@ -1,9 +1,9 @@
+"use strict";
 /**
  * Expressアプリケーション
  *
  * @module
  */
-"use strict";
 const bodyParser = require("body-parser");
 const createDebug = require("debug");
 const express = require("express");
@@ -13,7 +13,6 @@ const i18n = require("i18n");
 const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const errorHandler_1 = require("./middlewares/errorHandler");
-const logger_1 = require("./middlewares/logger");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routers/dev");
 const film_1 = require("./routers/film");
@@ -49,7 +48,6 @@ if (process.env.NODE_ENV !== 'production') {
         });
     });
 }
-app.use(logger_1.default);
 // view engine setup
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');
@@ -70,7 +68,6 @@ i18n.configure({
 });
 // i18n の設定を有効化
 app.use(i18n.init);
-// mongoose.set('debug', true); // todo 本番でははずす
 // Use native promises
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
