@@ -194,7 +194,9 @@ async function main() {
                     std_price: salesTicketResult[0].std_price,
                     add_price: salesTicketResult[0].add_price,
                     dis_price: 0,
-                    sale_price: salesTicketResult[0].sale_price
+                    sale_price: salesTicketResult[0].sale_price,
+                    mvtk_app_price: 0,
+                    add_glasses: 0
                 };
             }),
             price: totalPrice
@@ -211,13 +213,14 @@ async function main() {
 
     // 購入者情報登録
     debug('updating anonymous...');
+    const tel = '09012345678';
     response = await request.patch({
         url: `${API_ENDPOINT}/transactions/${transactionId}/anonymousOwner`,
         auth: { bearer: accessToken },
         body: {
             name_first: 'Tetsu',
             name_last: 'Yamazaki',
-            tel: '09012345678',
+            tel: tel,
             email: process.env.SSKTS_DEVELOPER_EMAIL
         },
         json: true,
@@ -229,35 +232,34 @@ async function main() {
     }
 
     // COA本予約
-    const tel = '09012345678';
-    const updateReserveResult = await COA.ReserveService.updReserve({
-        theater_code: theaterCode,
-        date_jouei: dateJouei,
-        title_code: titleCode,
-        title_branch_num: titleBranchNum,
-        time_begin: timeBegin,
-        // screen_code: screenCode,
-        tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
-        reserve_name: '山崎 哲',
-        reserve_name_jkana: 'ヤマザキ テツ',
-        tel_num: '09012345678',
-        mail_addr: 'yamazaki@motionpicture.jp',
-        reserve_amount: totalPrice,
-        list_ticket: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
-            return {
-                ticket_code: salesTicketResult[0].ticket_code,
-                std_price: salesTicketResult[0].std_price,
-                add_price: salesTicketResult[0].add_price,
-                dis_price: 0,
-                sale_price: salesTicketResult[0].sale_price,
-                mvtk_app_price: 0,
-                ticket_count: 1,
-                seat_num: tmpReserve.seat_num,
-                add_glasses: 0
-            };
-        })
-    });
-    debug('updateReserveResult:', updateReserveResult);
+    // const updateReserveResult = await COA.ReserveService.updReserve({
+    //     theater_code: theaterCode,
+    //     date_jouei: dateJouei,
+    //     title_code: titleCode,
+    //     title_branch_num: titleBranchNum,
+    //     time_begin: timeBegin,
+    //     // screen_code: screenCode,
+    //     tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
+    //     reserve_name: '山崎 哲',
+    //     reserve_name_jkana: 'ヤマザキ テツ',
+    //     tel_num: '09012345678',
+    //     mail_addr: 'yamazaki@motionpicture.jp',
+    //     reserve_amount: totalPrice,
+    //     list_ticket: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
+    //         return {
+    //             ticket_code: salesTicketResult[0].ticket_code,
+    //             std_price: salesTicketResult[0].std_price,
+    //             add_price: salesTicketResult[0].add_price,
+    //             dis_price: 0,
+    //             sale_price: salesTicketResult[0].sale_price,
+    //             mvtk_app_price: 0,
+    //             ticket_count: 1,
+    //             seat_num: tmpReserve.seat_num,
+    //             add_glasses: 0
+    //         };
+    //     })
+    // });
+    // debug('updateReserveResult:', updateReserveResult);
 
     // 本当はここでムビチケ着券処理
 
@@ -308,7 +310,7 @@ async function main() {
         auth: { bearer: accessToken },
         body: {
             inquiry_theater: theaterCode,
-            inquiry_id: updateReserveResult.reserve_num,
+            inquiry_id: reserveSeatsTemporarilyResult.tmp_reserve_num,
             inquiry_pass: tel
         },
         json: true,
@@ -330,7 +332,7 @@ sskts-api:examples:transaction 様\n
 ※チケット発券時は、自動発券機に下記チケットQRコードをかざしていただくか、購入番号と電話番号を入力していただく必要があります。\n
 -------------------------------------------------------------------\n
 \n
-◆購入番号 ：${updateReserveResult.reserve_num}\n
+◆購入番号 ：${reserveSeatsTemporarilyResult.tmp_reserve_num}\n
 ◆電話番号 ：09012345678\n
 ◆合計金額 ：${totalPrice}円\n
 \n
@@ -382,7 +384,7 @@ http://www.cinemasunshine.co.jp/\n
         auth: { bearer: accessToken },
         body: {
             inquiry_theater: theaterCode,
-            inquiry_id: updateReserveResult.reserve_num,
+            inquiry_id: reserveSeatsTemporarilyResult.tmp_reserve_num,
             inquiry_pass: tel
         },
         json: true,

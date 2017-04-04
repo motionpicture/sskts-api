@@ -244,7 +244,9 @@ router.post('/:id/authorizations/coaSeatReservation', (req, _, next) => {
                     std_price: seat.std_price,
                     add_price: seat.add_price,
                     dis_price: seat.dis_price,
-                    sale_price: seat.sale_price
+                    sale_price: seat.sale_price,
+                    mvtk_app_price: seat.mvtk_app_price,
+                    add_glasses: seat.add_glasses
                 });
             }),
             // tslint:disable-next-line:no-magic-numbers
