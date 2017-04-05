@@ -1,10 +1,10 @@
-configOverrides: 'iisnode.yml'
+configOverrides: iisnode.yml
 devErrorsEnabled: false
 enableXFF: false
 loggingEnabled: true
-logDirectory: 'iisnode'
+logDirectory: iisnode
 maxConcurrentRequestsPerProcess: 1024
 nodeProcessCountPerApplication: 0
 maxNamedPipeConnectionRetry: 200
 namedPipeConnectionRetryDelay: 250
-watchedFiles: '*.js;web.config;iisnode.yml'
+watchedFiles: *.js;web.config;iisnode.yml
