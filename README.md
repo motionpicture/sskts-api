@@ -55,7 +55,7 @@ set SSKTS_DEVELOPER_EMAIL=**********本apiで使用される開発者メール�
 only on Aure WebApps
 
 ```shell
-set WEBSITE_NODE_DEFAULT_VERSION=**********node.jsバージョン=**********
+set WEBSITE_NODE_DEFAULT_VERSION=**********node.jsバージョン**********
 set WEBSITE_TIME_ZONE=Tokyo Standard Time
 ```
 
