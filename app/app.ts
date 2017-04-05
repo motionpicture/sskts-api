@@ -4,6 +4,7 @@
  * @module
  */
 import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
 import * as createDebug from 'debug';
 import * as express from 'express';
 import expressValidator = require('express-validator'); // tslint:disable-line:no-require-imports
@@ -27,6 +28,7 @@ const debug = createDebug('sskts-api:*');
 
 const app = express();
 
+app.use(cors()); // enable All CORS Requests
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
