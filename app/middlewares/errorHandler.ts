@@ -6,9 +6,10 @@
  */
 import { NextFunction, Request, Response } from 'express';
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
+import logger from '../logger';
 
-export default (err: any, _: Request, res: Response, next: NextFunction) => {
-    console.error(err);
+export default (err: any, __: Request, res: Response, next: NextFunction) => {
+    logger.error('sskts-api:iddleware:errorHandler', err);
 
     if (res.headersSent) {
         next(err);

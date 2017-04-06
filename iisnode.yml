@@ -1,8 +1,6 @@
-configOverrides: iisnode.yml
 devErrorsEnabled: false
 enableXFF: false
 loggingEnabled: true
-logDirectory: iisnode
 maxConcurrentRequestsPerProcess: 1024
 nodeProcessCountPerApplication: 0
 maxNamedPipeConnectionRetry: 200
