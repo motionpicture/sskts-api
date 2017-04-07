@@ -39,7 +39,6 @@
         "watch": false
     },
     "exclude": [
-        "loadtest",
         "locales",
         "node_modules",
         "public"
