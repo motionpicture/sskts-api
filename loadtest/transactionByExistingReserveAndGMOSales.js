@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * すでに存在している座席予約を使った取引フローテストスクリプト
+ * すでに存在している座席予約と、GMO売上を使った取引フローテストスクリプト
  * 運用ではありえない状況
  * シナリオテストに使うためのものです
  *
@@ -21,7 +21,7 @@ const httpStatus = require("http-status");
 const moment = require("moment");
 const request = require("request-promise-native");
 const winston = require("winston");
-const debug = createDebug('sskts-api:examples:transactionByExistingReserve');
+const debug = createDebug('sskts-api:examples:transactionByExistingReserveAndGMOSales');
 const logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({
@@ -29,7 +29,7 @@ const logger = new (winston.Logger)({
             level: 'info'
         }),
         new (winston.transports.File)({
-            filename: `transactionByExistingReserve-${moment().format('YYYYMMDD')}.log`,
+            filename: `transactionByExistingReserveAndGMOSales-${moment().format('YYYYMMDD')}.log`,
             timestamp: true,
             level: 'info',
             json: false
@@ -37,49 +37,10 @@ const logger = new (winston.Logger)({
     ]
 });
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
-function tryAuthGMO(gmoShopId, gmoShopPass, amount) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let result = null;
-        while (result === null) {
-            try {
-                // GMOオーソリ取得
-                const orderId = Date.now().toString();
-                const entryTranResult = yield GMO.CreditService.entryTran({
-                    shopId: gmoShopId,
-                    shopPass: gmoShopPass,
-                    orderId: orderId,
-                    jobCd: GMO.Util.JOB_CD_AUTH,
-                    amount: amount
-                });
-                const execTranResult = yield GMO.CreditService.execTran({
-                    accessId: entryTranResult.accessId,
-                    accessPass: entryTranResult.accessPass,
-                    orderId: orderId,
-                    method: '1',
-                    cardNo: '4111111111111111',
-                    expire: '2012',
-                    securityCode: '123'
-                });
-                debug(execTranResult);
-                result = {
-                    orderId: orderId,
-                    accessId: entryTranResult.accessId,
-                    accessPass: entryTranResult.accessPass
-                };
-            }
-            catch (error) {
-                debug(error);
-            }
-        }
-        return result;
-    });
-}
 // tslint:disable-next-line:max-func-body-length
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         let response;
-        const gmoShopId = 'tshop00026096';
-        const gmoShopPass = 'xbxmkaa6';
         const theaterCode = '118';
         const reserveNum = 1280;
         const tel = '09012345678';
@@ -185,11 +146,6 @@ function main() {
         if (response.statusCode !== httpStatus.OK) {
             throw new Error(response.body.message);
         }
-        // GMOオーソリ取得(できるまで続ける)
-        const tryAuthGMOResult = yield tryAuthGMO(gmoShopId, gmoShopPass, totalPrice);
-        const orderId = tryAuthGMOResult.orderId;
-        const accessId = tryAuthGMOResult.accessId;
-        const accessPass = tryAuthGMOResult.accessPass;
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
         response = yield request.post({
@@ -198,14 +154,24 @@ function main() {
             body: {
                 owner_from: anonymousOwnerId,
                 owner_to: promoterOwnerId,
-                gmo_shop_id: gmoShopId,
-                gmo_shop_pass: gmoShopPass,
-                gmo_order_id: orderId,
+                gmo_shop_id: 'tshop00026096',
+                gmo_shop_pass: 'xbxmkaa6',
+                gmo_order_id: '1491559840813',
                 gmo_amount: totalPrice,
-                gmo_access_id: accessId,
-                gmo_access_pass: accessPass,
+                gmo_access_id: '697a4723494865af19f9152efd32b735',
+                gmo_access_pass: '897da453dcb39a5da0fb31a828d57779',
                 gmo_job_cd: GMO.Util.JOB_CD_AUTH,
                 gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
+                // owner_from: anonymousOwnerId,
+                // owner_to: promoterOwnerId,
+                // gmo_shop_id: 'tshop00026096',
+                // gmo_shop_pass: 'xbxmkaa6',
+                // gmo_order_id: '1491529622293',
+                // gmo_amount: totalPrice,
+                // gmo_access_id: '336a935948166a397415607961532502',
+                // gmo_access_pass: '89e0638546fcd09973b2cd5a270d1653',
+                // gmo_job_cd: GMO.Util.JOB_CD_AUTH,
+                // gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
             },
             json: true,
             simple: false,
@@ -306,10 +272,11 @@ http://www.cinemasunshine.co.jp/\n
     });
 }
 let count = 0;
+let numberOfClosedTransactions = 0;
 const MAX_NUBMER_OF_PARALLEL_TASKS = 1800;
 const INTERVAL_MILLISECONDS = 500;
 const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    if (count >= MAX_NUBMER_OF_PARALLEL_TASKS) {
+    if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
         clearTimeout(timer);
         return;
     }
@@ -318,6 +285,7 @@ const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
     try {
         logger.info('starting...', countNow);
         yield main();
+        numberOfClosedTransactions += 1;
         logger.info('end', countNow);
     }
     catch (error) {
@@ -325,3 +293,11 @@ const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
     }
     // count -= 1;
 }), INTERVAL_MILLISECONDS);
+process.on('exit', () => {
+    console.log('numberOfClosedTransactions:', numberOfClosedTransactions);
+});
+// main().then(() => {
+//     debug('main processed.');
+// }).catch((err) => {
+//     console.error(err.message);
+// });

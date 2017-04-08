@@ -17,7 +17,7 @@ const createDebug = require("debug");
 const httpStatus = require("http-status");
 const request = require("request-promise-native");
 const debug = createDebug('sskts-api:examples:transaction');
-const API_ENDPOINT = 'http://localhost:8081'; // tslint:disable-line:no-http-string
+const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         let response;

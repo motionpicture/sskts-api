@@ -8,7 +8,7 @@ import * as httpStatus from 'http-status';
 import * as request from 'request-promise-native';
 
 const debug = createDebug('sskts-api:examples:transaction');
-const API_ENDPOINT = 'http://localhost:8081'; // tslint:disable-line:no-http-string
+const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 
 async function main() {
     let response: any;

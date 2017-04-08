@@ -52,6 +52,12 @@ set SSKTS_API_REFRESH_TOKEN=**********本apiのリフレッシュトークン***
 set SSKTS_DEVELOPER_EMAIL=**********本apiで使用される開発者メールアドレス**********
 ```
 
+テスト実行時
+
+```shell
+set TEST_API_ENDPOINT=**********テストに使用するAPIのエンドポイント**********
+```
+
 only on Aure WebApps
 
 ```shell

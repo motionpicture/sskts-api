@@ -7,7 +7,7 @@ import * as createDebug from 'debug';
 import * as request from 'request-promise-native';
 
 const debug = createDebug('sskts-api:*');
-const API_ENDPOINT = 'http://localhost:8081'; // tslint:disable-line:no-http-string
+const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 
 async function main() {
     const response = await request.post({

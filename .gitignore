@@ -5,6 +5,7 @@ npm-debug.log*
 .env*
 docs/
 app.yaml*
+**/*.log
 
 .googleappengine/*
 
