@@ -1,10 +1,10 @@
+"use strict";
 /**
  * oauthミドルウェア
  *
  * todo 認証失敗時の親切なメッセージ
  * todo scopeを扱う
  */
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const jwt = require("jsonwebtoken");

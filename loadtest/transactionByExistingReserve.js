@@ -29,7 +29,7 @@ const logger = new (winston.Logger)({
             level: 'info'
         }),
         new (winston.transports.File)({
-            filename: `transactionByExistingReserve-${moment().format('YYYYMMDD')}.log`,
+            filename: `transactionByExistingReserve-${moment().format('YYYYMMDDHHmmss')}.log`,
             timestamp: true,
             level: 'info',
             json: false
@@ -81,9 +81,9 @@ function main() {
         const gmoShopId = 'tshop00026096';
         const gmoShopPass = 'xbxmkaa6';
         const theaterCode = '118';
-        const reserveNum = 1280;
+        const reserveNum = 1381;
         const tel = '09012345678';
-        const totalPrice = 3600;
+        const totalPrice = 2600;
         // アクセストークン取得
         response = yield request.post({
             url: `${API_ENDPOINT}/oauth/token`,
@@ -98,14 +98,12 @@ function main() {
         debug('oauth token result:', response.statusCode, response.body);
         const accessToken = response.body.access_token;
         // 取引開始
-        // 30分後のunix timestampを送信する場合
-        // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
         debug('starting transaction...');
         response = yield request.post({
             url: `${API_ENDPOINT}/transactions/startIfPossible`,
             auth: { bearer: accessToken },
             body: {
-                expires_at: moment().add(30, 'minutes').unix() // tslint:disable-line:no-magic-numbers
+                expires_at: moment().add(15, 'minutes').unix() // tslint:disable-line:no-magic-numbers
             },
             json: true,
             simple: false,
@@ -134,48 +132,48 @@ function main() {
             url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
             auth: { bearer: accessToken },
             body: {
-                owner_from: '5868e16789cc75249cdbfa4b',
-                owner_to: anonymousOwnerId,
-                coa_tmp_reserve_num: reserveNum,
-                coa_theater_code: theaterCode,
-                coa_date_jouei: '20170408',
-                coa_title_code: '16421',
-                coa_title_branch_num: '0',
-                coa_time_begin: '1010',
-                coa_screen_code: '40',
                 seats: [
                     {
                         add_glasses: 0,
                         mvtk_app_price: 0,
-                        sale_price: 1800,
+                        sale_price: 1300,
                         dis_price: 0,
                         add_price: 0,
-                        std_price: 1800,
-                        ticket_name_kana: 'トウジツイッパン',
-                        ticket_name_en: 'General Price',
-                        ticket_name_ja: '当日一般',
-                        ticket_code: '10',
-                        seat_code: 'Ｂ－１',
+                        std_price: 1300,
+                        ticket_name_kana: 'レイトショー',
+                        ticket_name_en: 'Late Show Price',
+                        ticket_name_ja: 'レイト',
+                        ticket_code: '171',
+                        seat_code: 'Ｂ－３',
                         section: '   ',
-                        performance: '11820170408164210401010'
+                        performance: '11820170410162500902130'
                     },
                     {
                         add_glasses: 0,
                         mvtk_app_price: 0,
-                        sale_price: 1800,
+                        sale_price: 1300,
                         dis_price: 0,
                         add_price: 0,
-                        std_price: 1800,
-                        ticket_name_kana: 'トウジツイッパン',
-                        ticket_name_en: 'General Price',
-                        ticket_name_ja: '当日一般',
-                        ticket_code: '10',
-                        seat_code: 'Ｂ－２',
+                        std_price: 1300,
+                        ticket_name_kana: 'レイトショー',
+                        ticket_name_en: 'Late Show Price',
+                        ticket_name_ja: 'レイト',
+                        ticket_code: '171',
+                        seat_code: 'Ｂ－４',
                         section: '   ',
-                        performance: '11820170408164210401010'
+                        performance: '11820170410162500902130'
                     }
                 ],
-                price: totalPrice
+                owner_to: anonymousOwnerId,
+                owner_from: '5868e16789cc75249cdbfa4b',
+                price: totalPrice,
+                coa_screen_code: '90',
+                coa_time_begin: '2130',
+                coa_title_branch_num: '0',
+                coa_title_code: '16250',
+                coa_date_jouei: '20170410',
+                coa_theater_code: theaterCode,
+                coa_tmp_reserve_num: reserveNum
             },
             json: true,
             simple: false,
@@ -241,7 +239,7 @@ function main() {
             body: {
                 inquiry_theater: theaterCode,
                 inquiry_id: reserveNum,
-                inquiry_pass: tel
+                inquiry_pass: '00000000000' // 購入取消されないようにあえて間違った値
             },
             json: true,
             simple: false,
@@ -306,6 +304,8 @@ http://www.cinemasunshine.co.jp/\n
     });
 }
 let count = 0;
+let numberOfClosedTransactions = 0;
+let numberOfProcessedTransactions = 0;
 const MAX_NUBMER_OF_PARALLEL_TASKS = 1800;
 const INTERVAL_MILLISECONDS = 500;
 const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
@@ -318,10 +318,16 @@ const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
     try {
         logger.info('starting...', countNow);
         yield main();
+        numberOfClosedTransactions += 1;
         logger.info('end', countNow);
     }
     catch (error) {
         logger.error(error.message, countNow);
     }
+    numberOfProcessedTransactions += 1;
+    logger.info('numberOfProcessedTransactions:', numberOfProcessedTransactions);
     // count -= 1;
 }), INTERVAL_MILLISECONDS);
+process.on('exit', () => {
+    logger.info('numberOfClosedTransactions:', numberOfClosedTransactions);
+});

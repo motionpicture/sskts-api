@@ -29,7 +29,7 @@ const logger = new (winston.Logger)({
             level: 'info'
         }),
         new (winston.transports.File)({
-            filename: `transactionByExistingReserveAndGMOSales-${moment().format('YYYYMMDD')}.log`,
+            filename: `transactionByExistingReserveAndGMOSales-${moment().format('YYYYMMDDHHmmss')}.log`,
             timestamp: true,
             level: 'info',
             json: false
@@ -294,10 +294,5 @@ const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
     // count -= 1;
 }), INTERVAL_MILLISECONDS);
 process.on('exit', () => {
-    console.log('numberOfClosedTransactions:', numberOfClosedTransactions);
+    logger.info('numberOfClosedTransactions:', numberOfClosedTransactions);
 });
-// main().then(() => {
-//     debug('main processed.');
-// }).catch((err) => {
-//     console.error(err.message);
-// });

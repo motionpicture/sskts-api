@@ -1,7 +1,7 @@
+"use strict";
 /**
  * Module dependencies.
  */
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const startTime = process.hrtime();
 const createDebug = require("debug");

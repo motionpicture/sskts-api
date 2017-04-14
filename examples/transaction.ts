@@ -18,7 +18,8 @@ async function main() {
     let response: any;
     const gmoShopId = 'tshop00026096';
     const gmoShopPass = 'xbxmkaa6';
-    const performanceId = '11820170408164210401010'; // パフォーマンスID 空席なくなったら変更する
+    // const performanceId = '11820170410162500902130'; // パフォーマンスID 空席なくなったら変更する
+    const performanceId = '11820170411162210101000'; // パフォーマンスID 空席なくなったら変更する
 
     // アクセストークン取得
     response = await request.post({
@@ -131,6 +132,7 @@ async function main() {
         title_branch_num: titleBranchNum,
         time_begin: timeBegin
     });
+    debug('salesTicketResult:', salesTicketResult);
 
     // COA空席確認
     const getStateReserveSeatResult = await COA.ReserveService.stateReserveSeat({
@@ -162,16 +164,13 @@ async function main() {
         list_seat: [{
             seat_section: sectionCode,
             seat_num: freeSeatCodes[0]
-        }, {
-            seat_section: sectionCode,
-            seat_num: freeSeatCodes[1]
         }]
     });
     debug(reserveSeatsTemporarilyResult);
 
     // COAオーソリ追加
     debug('adding authorizations coaSeatReservation...');
-    const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
+    const totalPrice = salesTicketResult[0].sale_price;
     response = await request.post({
         url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
         auth: { bearer: accessToken },
@@ -327,9 +326,6 @@ async function main() {
         list_seat: [{
             seat_section: sectionCode,
             seat_num: freeSeatCodes[0]
-        }, {
-            seat_section: sectionCode,
-            seat_num: freeSeatCodes[1]
         }]
     });
     debug('reserveSeatsTemporarilyResult2:', reserveSeatsTemporarilyResult2);
@@ -430,8 +426,8 @@ async function main() {
         url: `${API_ENDPOINT}/transactions/${transactionId}/anonymousOwner`,
         auth: { bearer: accessToken },
         body: {
-            name_first: 'Tetsu',
-            name_last: 'Yamazaki',
+            name_first: 'てつ',
+            name_last: 'やまざき',
             tel: tel,
             email: process.env.SSKTS_DEVELOPER_EMAIL
         },
@@ -443,8 +439,8 @@ async function main() {
         throw new Error(response.body.message);
     }
 
-    // // COA本予約
-    // const updateReserveResult = await COA.ReserveService.updReserve({
+    // COA本予約
+    // const updReserveArg = {
     //     theater_code: theaterCode,
     //     date_jouei: dateJouei,
     //     title_code: titleCode,
@@ -452,8 +448,8 @@ async function main() {
     //     time_begin: timeBegin,
     //     // screen_code: screenCode,
     //     tmp_reserve_num: reserveSeatsTemporarilyResult2.tmp_reserve_num,
-    //     reserve_name: '山崎 哲',
-    //     reserve_name_jkana: 'ヤマザキ テツ',
+    //     reserve_name: 'やまざき　てつ',
+    //     reserve_name_jkana: 'ヤマザキ　テツ',
     //     tel_num: '09012345678',
     //     mail_addr: 'yamazaki@motionpicture.jp',
     //     reserve_amount: totalPrice,
@@ -467,10 +463,13 @@ async function main() {
     //             mvtk_app_price: 0,
     //             ticket_count: 1,
     //             seat_num: tmpReserve.seat_num,
-    //             add_glasses: 0
+    //             add_glasses: 0,
+    //             kbn_eisyahousiki: '00'
     //         };
     //     })
-    // });
+    // };
+    // debug('updReserve processing...', updReserveArg);
+    // const updateReserveResult = await COA.ReserveService.updReserve(updReserveArg);
     // debug('updateReserveResult:', updateReserveResult);
 
     // 照会情報登録(購入番号と電話番号で照会する場合)
