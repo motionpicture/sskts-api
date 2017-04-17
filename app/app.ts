@@ -13,6 +13,8 @@ import * as i18n from 'i18n';
 import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
+
+import basicAuth from './middlewares/basicAuth';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 import devRouter from './routers/dev';
@@ -28,6 +30,7 @@ const debug = createDebug('sskts-api:*');
 
 const app = express();
 
+app.use(basicAuth); // ベーシック認証
 app.use(cors()); // enable All CORS Requests
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({

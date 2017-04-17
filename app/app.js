@@ -13,6 +13,7 @@ const helmet = require("helmet");
 const i18n = require("i18n");
 const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
+const basicAuth_1 = require("./middlewares/basicAuth");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routers/dev");
@@ -25,6 +26,7 @@ const theater_1 = require("./routers/theater");
 const transaction_1 = require("./routers/transaction");
 const debug = createDebug('sskts-api:*');
 const app = express();
+app.use(basicAuth_1.default); // ベーシック認証
 app.use(cors()); // enable All CORS Requests
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({

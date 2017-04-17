@@ -65,6 +65,13 @@ set WEBSITE_NODE_DEFAULT_VERSION=**********node.jsバージョン**********
 set WEBSITE_TIME_ZONE=Tokyo Standard Time
 ```
 
+ベーシック認証をかけたい場合
+
+```shell
+set SSKTS_API_BASIC_AUTH_NAME=**********認証ユーザー名**********
+set SSKTS_API_BASIC_AUTH_PASS=**********認証パスワード**********
+```
+
 
 # tslint
 

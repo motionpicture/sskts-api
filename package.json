@@ -10,6 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/sskts-domain": "^12.0.0",
+    "basic-auth": "^1.1.0",
     "body-parser": "^1.17.1",
     "cors": "^2.8.3",
     "debug": "^2.6.3",
@@ -27,6 +28,7 @@
   },
   "description": "This is a repogitory for sskts api.",
   "devDependencies": {
+    "@types/basic-auth": "0.0.31",
     "@types/body-parser": "0.0.34",
     "@types/cors": "^2.8.1",
     "@types/debug": "0.0.29",
@@ -74,5 +76,5 @@
     "version": "git add -A",
     "postversion": "git push origin"
   },
-  "version": "8.0.0"
+  "version": "8.0.1"
 }
