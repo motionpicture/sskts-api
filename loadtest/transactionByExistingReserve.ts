@@ -140,6 +140,7 @@ async function main() {
         body: {
             seats: [
                 {
+                    kbn_eisyahousiki: '00',
                     add_glasses: 0,
                     mvtk_app_price: 0,
                     sale_price: 1300,
@@ -155,6 +156,7 @@ async function main() {
                     performance: '11820170410162500902130'
                 },
                 {
+                    kbn_eisyahousiki: '00',
                     add_glasses: 0,
                     mvtk_app_price: 0,
                     sale_price: 1300,
