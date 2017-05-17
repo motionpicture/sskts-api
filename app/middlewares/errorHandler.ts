@@ -3,7 +3,9 @@
  *
  * todo errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
  * 現時点では、雑にコントロールしてある
+ * @module middlewares/errorHandler
  */
+
 import { NextFunction, Request, Response } from 'express';
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
 import logger from '../logger';

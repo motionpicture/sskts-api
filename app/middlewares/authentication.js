@@ -4,6 +4,7 @@
  *
  * todo 認証失敗時の親切なメッセージ
  * todo scopeを扱う
+ * @module middlewares/authentication
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");

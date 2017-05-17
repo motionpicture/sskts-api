@@ -1,6 +1,9 @@
 /**
  * 404ハンドラーミドルウェア
+ *
+ * @module middlewares/notFoundHandler
  */
+
 import { Request, Response } from 'express';
 import { NOT_FOUND } from 'http-status';
 

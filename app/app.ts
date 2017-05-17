@@ -1,8 +1,9 @@
 /**
  * Expressアプリケーション
  *
- * @module
+ * @ignore
  */
+
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as createDebug from 'debug';

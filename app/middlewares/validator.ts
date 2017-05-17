@@ -2,7 +2,9 @@
  * バリデータミドルウェア
  *
  * リクエストのパラメータ(query strings or body parameters)に対するバリデーション
+ * @module middlewares/validator
  */
+
 import { NextFunction, Request, Response } from 'express';
 import { BAD_REQUEST } from 'http-status';
 

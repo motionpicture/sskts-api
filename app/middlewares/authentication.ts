@@ -3,6 +3,7 @@
  *
  * todo 認証失敗時の親切なメッセージ
  * todo scopeを扱う
+ * @module middlewares/authentication
  */
 
 import * as createDebug from 'debug';

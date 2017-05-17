@@ -1,3 +1,9 @@
+/**
+ * ベーシック認証ミドルウェア
+ *
+ * @module middlewares/basicAuth
+ */
+
 import * as basicAuth from 'basic-auth';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
@@ -5,9 +11,6 @@ import { UNAUTHORIZED } from 'http-status';
 
 const debug = createDebug('sskts-api:middlewares:basicAuth');
 
-/**
- * ベーシック認証ミドルウェア
- */
 export default (req: Request, res: Response, next: NextFunction) => {
     // ベーシック認証のための環境変数設定なければスルー
     if (process.env.SSKTS_API_BASIC_AUTH_NAME === undefined || process.env.SSKTS_API_BASIC_AUTH_PASS === undefined) {

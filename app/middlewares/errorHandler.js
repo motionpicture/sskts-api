@@ -1,4 +1,11 @@
 "use strict";
+/**
+ * エラーハンドラーミドルウェア
+ *
+ * todo errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
+ * 現時点では、雑にコントロールしてある
+ * @module middlewares/errorHandler
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_status_1 = require("http-status");
 const logger_1 = require("../logger");

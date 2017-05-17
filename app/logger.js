@@ -1,10 +1,10 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ロガー
  *
- * @module
+ * @ignore
  */
+Object.defineProperty(exports, "__esModule", { value: true });
 const winston = require("winston");
 exports.default = new (winston.Logger)({
     transports: [

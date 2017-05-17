@@ -1,8 +1,9 @@
 /**
  * ロガー
  *
- * @module
+ * @ignore
  */
+
 import * as winston from 'winston';
 
 export default new (winston.Logger)({

@@ -1,21 +1,21 @@
 # 佐々木興行チケットシステムAPIウェブアプリケーション
 
-# Features
+## Features
 
-# Getting Started
+## Getting Started
 
-## インフラ
+### インフラ
 基本的にnode.jsのウェブアプリケーション。
 ウェブサーバーとしては、AzureのWebApps or GCPのAppEngine or AWSのelastic beanstalkを想定。
 全てで動くように開発していくことが望ましい。
 
-## 言語
+### 言語
 実態としては、linuxあるいはwindows上でのnode.js。
 プログラミング言語としては、alternative javascriptのひとつであるTypeScript。
 
 * TypeScript(https://www.typescriptlang.org/)
 
-## 開発方法
+### 開発方法
 npmでパッケージをインストール。
 
 ```shell
@@ -39,7 +39,7 @@ npm start
 (http://localhost:8080)にアクセスすると、ローカルでウェブアプリを確認できます。
 
 
-## Required environment variables
+### Required environment variables
 ```shell
 set NODE_ENV=**********環境名**********
 set MONGOLAB_URI=**********mongodb接続URI**********
@@ -73,7 +73,7 @@ set SSKTS_API_BASIC_AUTH_PASS=**********認証パスワード**********
 ```
 
 
-# tslint
+## tslint
 
 コード品質チェックをtslintで行う。
 * [tslint](https://github.com/palantir/tslint)
@@ -82,13 +82,13 @@ set SSKTS_API_BASIC_AUTH_PASS=**********認証パスワード**********
 `npm run check`でチェック実行。改修の際には、必ずチェックすること。
 
 
-# clean
+## clean
 `npm run clean`で不要なソース削除。
 
 
-# test
+## test
 `npm test`でチェック実行。
 
 
-# versioning
+## versioning
 `npm version patch -f -m "enter your commit comment..."`でチェック実行。
