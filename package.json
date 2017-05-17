@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "^12.3.0",
+    "@motionpicture/sskts-domain": "^13.0.1",
     "basic-auth": "^1.1.0",
     "body-parser": "^1.17.1",
     "cors": "^2.8.3",
@@ -74,7 +74,7 @@
     "snyk": "snyk auth && snyk test --ignore-policy",
     "start": "node server.js",
     "test": "npm run check && npm run mocha",
-    "tslint": "tslint --type-check --project tsconfig.json -c tslint.json app/**/*.ts server.ts",
+    "tslint": "tslint --type-check --project tsconfig.json -c tslint.json app/**/*.ts server.ts test/**/*.ts",
     "preversion": "npm run clean && npm run build && npm test",
     "version": "git add -A",
     "postversion": "git push origin --tags"

@@ -31,7 +31,7 @@ describe('GET /screens/:id', () => {
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/screens/0000000000')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -47,8 +47,8 @@ describe('GET /screens/:id', () => {
         yield sskts.service.master.importScreens(theaterId)(theaterAdapter, screenAdapter);
         const screenDoc = yield screenAdapter.model.findOne().exec();
         yield supertest(app)
-            .get('/screens/' + screenDoc.get('id'))
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .get(`/screens/${screenDoc.get('id')}`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

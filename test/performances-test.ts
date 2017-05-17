@@ -24,7 +24,7 @@ describe('GET /performances/:id', () => {
     it('not found', async () => {
         await supertest(app)
             .get('/performances/0000000000')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -47,8 +47,8 @@ describe('GET /performances/:id', () => {
         const performanceDoc = await performanceAdapter.model.findOne().exec();
 
         await supertest(app)
-            .get('/performances/' + performanceDoc.get('id'))
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .get(`/performances/${performanceDoc.get('id')}`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

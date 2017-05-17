@@ -24,7 +24,7 @@ describe('GET /theaters/:id', () => {
     it('not found', async () => {
         await supertest(app)
             .get('/theaters/0000000000')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -41,8 +41,8 @@ describe('GET /theaters/:id', () => {
         const theaterDoc = await theaterAdapter.model.findOne().exec();
 
         await supertest(app)
-            .get('/theaters/' + theaterDoc.get('id'))
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .get(`/theaters/${theaterDoc.get('id')}`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

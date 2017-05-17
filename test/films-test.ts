@@ -24,7 +24,7 @@ describe('GET /films/:id', () => {
     it('not found', async () => {
         await supertest(app)
             .get('/films/0000000000')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -43,8 +43,8 @@ describe('GET /films/:id', () => {
         const filmDoc = await filmAdapter.model.findOne().exec();
 
         await supertest(app)
-            .get('/films/' + filmDoc.get('id'))
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .get(`/films/${filmDoc.get('id')}`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

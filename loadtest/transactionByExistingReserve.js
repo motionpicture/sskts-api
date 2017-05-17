@@ -134,6 +134,11 @@ function main() {
             body: {
                 seats: [
                     {
+                        mvtk_num: '',
+                        mvtk_kbn_denshiken: '00',
+                        mvtk_kbn_maeuriken: '00',
+                        mvtk_kbn_kensyu: '00',
+                        mvtk_sales_price: 0,
                         kbn_eisyahousiki: '00',
                         add_glasses: 0,
                         mvtk_app_price: 0,
@@ -142,14 +147,21 @@ function main() {
                         add_price: 0,
                         std_price: 1300,
                         ticket_name_kana: 'レイトショー',
-                        ticket_name_en: 'Late Show Price',
-                        ticket_name_ja: 'レイト',
+                        ticket_name: {
+                            en: 'Late Show Price',
+                            ja: 'レイト'
+                        },
                         ticket_code: '171',
                         seat_code: 'Ｂ－３',
                         section: '   ',
                         performance: '11820170410162500902130'
                     },
                     {
+                        mvtk_num: '',
+                        mvtk_kbn_denshiken: '00',
+                        mvtk_kbn_maeuriken: '00',
+                        mvtk_kbn_kensyu: '00',
+                        mvtk_sales_price: 0,
                         kbn_eisyahousiki: '00',
                         add_glasses: 0,
                         mvtk_app_price: 0,
@@ -158,8 +170,10 @@ function main() {
                         add_price: 0,
                         std_price: 1300,
                         ticket_name_kana: 'レイトショー',
-                        ticket_name_en: 'Late Show Price',
-                        ticket_name_ja: 'レイト',
+                        ticket_name: {
+                            en: 'Late Show Price',
+                            ja: 'レイト'
+                        },
                         ticket_code: '171',
                         seat_code: 'Ｂ－４',
                         section: '   ',

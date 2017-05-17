@@ -24,7 +24,7 @@ describe('GET /transactions/:id', () => {
     it('取引存在しない', async () => {
         await supertest(app)
             .get('/transactions/58cb2e2276cee91fe4387dd1')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -44,8 +44,8 @@ describe('GET /transactions/:id', () => {
         await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
 
         await supertest(app)
-            .get('/transactions/' + transaction.id)
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .get(`/transactions/${transaction.id}`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
@@ -63,7 +63,7 @@ describe('POST /transactions/startIfPossible', () => {
     it('開始可能な取引存在しない', async () => {
         await supertest(app)
             .post('/transactions/startIfPossible')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
                 expires_at: Date.now()
@@ -87,7 +87,7 @@ describe('POST /transactions/startIfPossible', () => {
 
         await supertest(app)
             .post('/transactions/startIfPossible')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
                 expires_at: Date.now()
@@ -125,8 +125,8 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
 
         let authorizationId = '';
         await supertest(app)
-            .post('/transactions/' + transaction.id + '/authorizations/mvtk')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .post(`/transactions/${transaction.id}/authorizations/mvtk`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
                 owner_from: owner1.id,
@@ -195,8 +195,8 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
 
         await supertest(app)
-            .post('/transactions/' + transaction.id + '/authorizations/mvtk')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .post(`/transactions/${transaction.id}/authorizations/mvtk`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .send({
                 owner_from: 'xxx',
@@ -230,6 +230,162 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
             .then((response) => {
                 assert(Array.isArray(response.body.errors));
                 assert.equal(response.body.errors[0].source.parameter, 'scren_cd');
+            });
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(owner1.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
+    });
+});
+
+describe('座席予約承認追加', () => {
+    it('ok', async () => {
+        // 進行中の取引データを作成
+        const owner1 = sskts.factory.owner.anonymous.create({});
+        const owner2 = sskts.factory.owner.anonymous.create({});
+
+        const transaction = sskts.factory.transaction.create({
+            status: sskts.factory.transactionStatus.UNDERWAY,
+            owners: [owner1, owner2],
+            expires_at: new Date()
+        });
+
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
+        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+
+        let authorizationId = '';
+        await supertest(app)
+            .post(`/transactions/${transaction.id}/authorizations/coaSeatReservation`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send({
+                price: 4400,
+                owner_from: owner1.id,
+                owner_to: owner2.id,
+                coa_tmp_reserve_num: '11895',
+                coa_theater_code: '001',
+                coa_date_jouei: '20170210',
+                coa_title_code: '8513',
+                coa_title_branch_num: '0',
+                coa_time_begin: '1010',
+                coa_screen_code: '2',
+                seats: [
+                    {
+                        price: 2200,
+                        authorizations: [],
+                        performance: '001201701208513021010',
+                        section: '000',
+                        seat_code: 'Ｉ－１０',
+                        ticket_code: '14',
+                        ticket_name: {
+                            ja: '一般3D(ﾒｶﾞﾈ込)',
+                            en: ' '
+                        },
+                        ticket_name_kana: '',
+                        std_price: 2200,
+                        add_price: 0,
+                        dis_price: 0,
+                        sale_price: 2200,
+                        mvtk_app_price: 0,
+                        add_glasses: 0,
+                        kbn_eisyahousiki: '00',
+                        mvtk_num: '',
+                        mvtk_kbn_denshiken: '00',
+                        mvtk_kbn_maeuriken: '00',
+                        mvtk_kbn_kensyu: '00',
+                        mvtk_sales_price: 0
+                    }
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.OK)
+            .then((response) => {
+                assert.equal(response.body.data.type, 'authorizations');
+                authorizationId = response.body.data.id;
+            });
+
+        // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
+        const transactionEvent = await transactionAdapter.transactionEventModel.findOne({ 'authorization.id': authorizationId }).exec();
+        assert.equal(transactionEvent.get('transaction'), transaction.id);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(owner1.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
+    });
+
+    it('coa_screen_codeパラメータ不足で失敗', async () => {
+        // テストデータ作成
+        const owner1 = sskts.factory.owner.anonymous.create({});
+        const owner2 = sskts.factory.owner.anonymous.create({});
+
+        const transaction = sskts.factory.transaction.create({
+            status: sskts.factory.transactionStatus.UNDERWAY,
+            owners: [owner1, owner2],
+            expires_at: new Date()
+        });
+
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
+        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+
+        await supertest(app)
+            .post(`/transactions/${transaction.id}/authorizations/coaSeatReservation`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send({
+                price: 4400,
+                owner_from: owner1.id,
+                owner_to: owner2.id,
+                coa_tmp_reserve_num: '11895',
+                coa_theater_code: '001',
+                coa_date_jouei: '20170210',
+                coa_title_code: '8513',
+                coa_title_branch_num: '0',
+                coa_time_begin: '1010',
+                seats: [
+                    {
+                        price: 2200,
+                        authorizations: [],
+                        performance: '001201701208513021010',
+                        section: '000',
+                        seat_code: 'Ｉ－１０',
+                        ticket_code: '14',
+                        ticket_name: {
+                            ja: '一般3D(ﾒｶﾞﾈ込)',
+                            en: ' '
+                        },
+                        ticket_name_kana: '',
+                        std_price: 2200,
+                        add_price: 0,
+                        dis_price: 0,
+                        sale_price: 2200,
+                        mvtk_app_price: 0,
+                        add_glasses: 0,
+                        kbn_eisyahousiki: '00',
+                        mvtk_num: '',
+                        mvtk_kbn_denshiken: '00',
+                        mvtk_kbn_maeuriken: '00',
+                        mvtk_kbn_kensyu: '00',
+                        mvtk_sales_price: 0
+                    }
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.BAD_REQUEST)
+            .then((response) => {
+                assert(Array.isArray(response.body.errors));
+                assert.equal(response.body.errors[0].source.parameter, 'coa_screen_code');
             });
 
         // テストデータ削除

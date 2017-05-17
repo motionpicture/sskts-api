@@ -106,6 +106,11 @@ async function main() {
             coa_screen_code: '40',
             seats: [
                 {
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0,
                     add_glasses: 0,
                     mvtk_app_price: 0,
                     sale_price: 1800,
@@ -113,14 +118,21 @@ async function main() {
                     add_price: 0,
                     std_price: 1800,
                     ticket_name_kana: 'トウジツイッパン',
-                    ticket_name_en: 'General Price',
-                    ticket_name_ja: '当日一般',
+                    ticket_name: {
+                        en: 'General Price',
+                        ja: '当日一般'
+                    },
                     ticket_code: '10',
                     seat_code: 'Ｂ－１',
                     section: '   ',
                     performance: '11820170408164210401010'
                 },
                 {
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0,
                     add_glasses: 0,
                     mvtk_app_price: 0,
                     sale_price: 1800,
@@ -128,8 +140,10 @@ async function main() {
                     add_price: 0,
                     std_price: 1800,
                     ticket_name_kana: 'トウジツイッパン',
-                    ticket_name_en: 'General Price',
-                    ticket_name_ja: '当日一般',
+                    ticket_name: {
+                        en: 'General Price',
+                        ja: '当日一般'
+                    },
                     ticket_code: '10',
                     seat_code: 'Ｂ－２',
                     section: '   ',
@@ -288,6 +302,7 @@ const timer = setInterval(
     async () => {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             clearTimeout(timer);
+
             return;
         }
 

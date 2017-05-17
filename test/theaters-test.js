@@ -31,7 +31,7 @@ describe('GET /theaters/:id', () => {
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/theaters/0000000000')
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -45,8 +45,8 @@ describe('GET /theaters/:id', () => {
         yield sskts.service.master.importTheater(theaterId)(theaterAdapter);
         const theaterDoc = yield theaterAdapter.model.findOne().exec();
         yield supertest(app)
-            .get('/theaters/' + theaterDoc.get('id'))
-            .set('authorization', 'Bearer ' + process.env.SSKTS_API_ACCESS_TOKEN)
+            .get(`/theaters/${theaterDoc.get('id')}`)
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

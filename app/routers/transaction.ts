@@ -284,8 +284,7 @@ transactionRouter.post(
                         section: seat.section,
                         seat_code: seat.seat_code,
                         ticket_code: seat.ticket_code,
-                        ticket_name_ja: seat.ticket_name_ja,
-                        ticket_name_en: seat.ticket_name_en,
+                        ticket_name: seat.ticket_name,
                         ticket_name_kana: seat.ticket_name_kana,
                         std_price: seat.std_price,
                         add_price: seat.add_price,
@@ -293,7 +292,12 @@ transactionRouter.post(
                         sale_price: seat.sale_price,
                         mvtk_app_price: seat.mvtk_app_price,
                         add_glasses: seat.add_glasses,
-                        kbn_eisyahousiki: seat.kbn_eisyahousiki
+                        kbn_eisyahousiki: seat.kbn_eisyahousiki,
+                        mvtk_num: seat.mvtk_num,
+                        mvtk_kbn_denshiken: seat.mvtk_kbn_denshiken,
+                        mvtk_kbn_maeuriken: seat.mvtk_kbn_maeuriken,
+                        mvtk_kbn_kensyu: seat.mvtk_kbn_kensyu,
+                        mvtk_sales_price: seat.mvtk_sales_price
                     });
                 }),
                 // tslint:disable-next-line:no-magic-numbers
