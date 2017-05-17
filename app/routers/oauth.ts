@@ -4,7 +4,7 @@
  * @ignore
  */
 import * as express from 'express';
-const router = express.Router();
+const oauthRouter = express.Router();
 
 import * as createDebug from 'debug';
 import * as jwt from 'jsonwebtoken';
@@ -15,7 +15,7 @@ const debug = createDebug('sskts-api:*');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
 
-router.post(
+oauthRouter.post(
     '/token',
     (req, _, next) => {
         req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required')
@@ -56,4 +56,4 @@ router.post(
         }
     });
 
-export default router;
+export default oauthRouter;

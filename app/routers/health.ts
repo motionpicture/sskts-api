@@ -4,7 +4,7 @@
  * @ignore
  */
 import * as express from 'express';
-const router = express.Router();
+const healthRouter = express.Router();
 
 import * as createDebug from 'debug';
 import { OK } from 'http-status';
@@ -12,10 +12,10 @@ import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../../mongooseConnectionOptions';
 
-const debug = createDebug('sskts-api:router:health');
+const debug = createDebug('sskts-api:healthRouter:health');
 const MONGOOSE_CONNECTION_READY_STATE_CONNECTED = 1;
 
-router.get(
+healthRouter.get(
     '',
     (_, res, next) => {
         debug('mongoose.connection.readyState is', mongoose.connection.readyState);
@@ -26,6 +26,7 @@ router.get(
             mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions, (err) => {
                 if (err instanceof Error) {
                     next(err);
+
                     return;
                 }
 
@@ -36,4 +37,4 @@ router.get(
         }
     });
 
-export default router;
+export default healthRouter;

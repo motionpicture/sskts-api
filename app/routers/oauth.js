@@ -14,14 +14,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @ignore
  */
 const express = require("express");
-const router = express.Router();
+const oauthRouter = express.Router();
 const createDebug = require("debug");
 const jwt = require("jsonwebtoken");
 const validator_1 = require("../middlewares/validator");
 const debug = createDebug('sskts-api:*');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
-router.post('/token', (req, _, next) => {
+oauthRouter.post('/token', (req, _, next) => {
     req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required')
         .equals(process.env.SSKTS_API_REFRESH_TOKEN);
     req.checkBody('scope', 'invalid scope').notEmpty().withMessage('scope is required')
@@ -52,4 +52,4 @@ router.post('/token', (req, _, next) => {
         next(error);
     }
 }));
-exports.default = router;
+exports.default = oauthRouter;

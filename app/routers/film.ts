@@ -4,7 +4,7 @@
  * @ignore
  */
 import { Router } from 'express';
-const router = Router();
+const filmRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
 import { NOT_FOUND } from 'http-status';
@@ -13,9 +13,9 @@ import * as mongoose from 'mongoose';
 import authentication from '../middlewares/authentication';
 import validator from '../middlewares/validator';
 
-router.use(authentication);
+filmRouter.use(authentication);
 
-router.get(
+filmRouter.get(
     '/:id',
     (_1, _2, next) => {
         next();
@@ -46,4 +46,4 @@ router.get(
         }
     });
 
-export default router;
+export default filmRouter;

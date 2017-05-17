@@ -14,14 +14,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @ignore
  */
 const express_1 = require("express");
-const router = express_1.Router();
+const performanceRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const validator_1 = require("../middlewares/validator");
-router.use(authentication_1.default);
-router.get('/:id', (_1, _2, next) => {
+performanceRouter.use(authentication_1.default);
+performanceRouter.get('/:id', (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -48,7 +48,7 @@ router.get('/:id', (_1, _2, next) => {
         next(error);
     }
 }));
-router.get('', (req, _, next) => {
+performanceRouter.get('', (req, _, next) => {
     req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
     req.checkQuery('day', 'invalid day').notEmpty().withMessage('day is required');
     next();
@@ -73,4 +73,4 @@ router.get('', (req, _, next) => {
         next(error);
     }
 }));
-exports.default = router;
+exports.default = performanceRouter;

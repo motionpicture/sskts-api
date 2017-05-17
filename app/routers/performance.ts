@@ -4,7 +4,7 @@
  * @ignore
  */
 import { Router } from 'express';
-const router = Router();
+const performanceRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
 import { NOT_FOUND } from 'http-status';
@@ -13,9 +13,9 @@ import * as mongoose from 'mongoose';
 import authentication from '../middlewares/authentication';
 import validator from '../middlewares/validator';
 
-router.use(authentication);
+performanceRouter.use(authentication);
 
-router.get(
+performanceRouter.get(
     '/:id',
     (_1, _2, next) => {
         next();
@@ -46,7 +46,7 @@ router.get(
         }
     });
 
-router.get(
+performanceRouter.get(
     '',
     (req, _, next) => {
         req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
@@ -79,4 +79,4 @@ router.get(
     }
 );
 
-export default router;
+export default performanceRouter;

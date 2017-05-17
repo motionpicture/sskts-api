@@ -4,7 +4,7 @@
  * @ignore
  */
 import { Router } from 'express';
-const router = Router();
+const theaterRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
@@ -14,11 +14,11 @@ import * as mongoose from 'mongoose';
 import authentication from '../middlewares/authentication';
 import validator from '../middlewares/validator';
 
-router.use(authentication);
+theaterRouter.use(authentication);
 
 const debug = createDebug('sskts-api:*');
 
-router.get(
+theaterRouter.get(
     '/:id',
     (_1, _2, next) => {
         next();
@@ -50,4 +50,4 @@ router.get(
         }
     });
 
-export default router;
+export default theaterRouter;

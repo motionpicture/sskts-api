@@ -4,7 +4,7 @@
  * @ignore
  */
 import * as express from 'express';
-const router = express.Router();
+const devRouter = express.Router();
 
 import * as createDebug from 'debug';
 import { NO_CONTENT } from 'http-status';
@@ -14,13 +14,13 @@ import mongooseConnectionOptions from '../../mongooseConnectionOptions';
 
 const debug = createDebug('sskts-api:*');
 
-router.get(
+devRouter.get(
     '/500',
     () => {
         throw new Error('500 manually');
     });
 
-router.get(
+devRouter.get(
     '/environmentVariables',
     (req, res) => {
         debug('ip:', req.ip);
@@ -32,13 +32,14 @@ router.get(
         });
     });
 
-router.get(
+devRouter.get(
     '/mongoose/connect',
     (req, res, next) => {
         debug('ip:', req.ip);
         mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions, (err) => {
             if (err instanceof Error) {
                 next(err);
+
                 return;
             }
 
@@ -46,13 +47,14 @@ router.get(
         });
     });
 
-router.get(
+devRouter.get(
     '/mongoose/disconnect',
     (req, res, next) => {
         debug('ip:', req.ip);
         mongoose.disconnect((err) => {
             if (err instanceof Error) {
                 next(err);
+
                 return;
             }
 
@@ -60,4 +62,4 @@ router.get(
         });
     });
 
-export default router;
+export default devRouter;

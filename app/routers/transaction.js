@@ -14,15 +14,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @ignore
  */
 const express_1 = require("express");
-const router = express_1.Router();
+const transactionRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const validator_1 = require("../middlewares/validator");
-router.use(authentication_1.default);
-router.post('/startIfPossible', (req, _, next) => {
+transactionRouter.use(authentication_1.default);
+transactionRouter.post('/startIfPossible', (req, _, next) => {
     // expires_atはsecondsのUNIXタイムスタンプで
     req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
     next();
@@ -54,7 +54,7 @@ router.post('/startIfPossible', (req, _, next) => {
         next(error);
     }
 }));
-router.post('/makeInquiry', (req, _, next) => {
+transactionRouter.post('/makeInquiry', (req, _, next) => {
     req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
     req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
     req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
@@ -89,7 +89,7 @@ router.post('/makeInquiry', (req, _, next) => {
         next(error);
     }
 }));
-router.get('/:id', (_1, _2, next) => {
+transactionRouter.get('/:id', (_1, _2, next) => {
     // todo validation
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -117,7 +117,7 @@ router.get('/:id', (_1, _2, next) => {
         next(error);
     }
 }));
-router.post('', (req, _, next) => {
+transactionRouter.post('', (req, _, next) => {
     // expires_atはsecondsのUNIXタイムスタンプで
     req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
     next();
@@ -141,7 +141,7 @@ router.post('', (req, _, next) => {
         next(error);
     }
 }));
-router.patch('/:id/anonymousOwner', (req, _, next) => {
+transactionRouter.patch('/:id/anonymousOwner', (req, _, next) => {
     req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
     req.checkBody('name_last', 'invalid name_last').optional().notEmpty().withMessage('name_last should not be empty');
     req.checkBody('tel', 'invalid tel').optional().notEmpty().withMessage('tel should not be empty');
@@ -162,7 +162,7 @@ router.patch('/:id/anonymousOwner', (req, _, next) => {
         next(error);
     }
 }));
-router.post('/:id/authorizations/gmo', (req, _, next) => {
+transactionRouter.post('/:id/authorizations/gmo', (req, _, next) => {
     req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
     req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
     req.checkBody('gmo_shop_id', 'invalid gmo_shop_id').notEmpty().withMessage('gmo_shop_id is required');
@@ -201,7 +201,7 @@ router.post('/:id/authorizations/gmo', (req, _, next) => {
         next(error);
     }
 }));
-router.post('/:id/authorizations/coaSeatReservation', (req, _, next) => {
+transactionRouter.post('/:id/authorizations/coaSeatReservation', (req, _, next) => {
     req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
     req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
     req.checkBody('coa_tmp_reserve_num', 'invalid coa_tmp_reserve_num').notEmpty().withMessage('coa_tmp_reserve_num is required');
@@ -265,7 +265,7 @@ router.post('/:id/authorizations/coaSeatReservation', (req, _, next) => {
         next(error);
     }
 }));
-router.post('/:id/authorizations/mvtk', (req, _, next) => {
+transactionRouter.post('/:id/authorizations/mvtk', (req, _, next) => {
     req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
     req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
     req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
@@ -314,7 +314,7 @@ router.post('/:id/authorizations/mvtk', (req, _, next) => {
         next(error);
     }
 }));
-router.delete('/:id/authorizations/:authorization_id', (_1, _2, next) => {
+transactionRouter.delete('/:id/authorizations/:authorization_id', (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -325,7 +325,7 @@ router.delete('/:id/authorizations/:authorization_id', (_1, _2, next) => {
         next(error);
     }
 }));
-router.patch('/:id/enableInquiry', (req, _, next) => {
+transactionRouter.patch('/:id/enableInquiry', (req, _, next) => {
     req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
     req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
     req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
@@ -344,7 +344,7 @@ router.patch('/:id/enableInquiry', (req, _, next) => {
         next(error);
     }
 }));
-router.post('/:id/notifications/email', (req, _, next) => {
+transactionRouter.post('/:id/notifications/email', (req, _, next) => {
     req.checkBody('from', 'invalid from').notEmpty().withMessage('from is required');
     req.checkBody('to', 'invalid to').notEmpty().withMessage('to is required').isEmail();
     req.checkBody('subject', 'invalid subject').notEmpty().withMessage('subject is required');
@@ -370,7 +370,7 @@ router.post('/:id/notifications/email', (req, _, next) => {
         next(error);
     }
 }));
-router.delete('/:id/notifications/:notification_id', (_1, _2, next) => {
+transactionRouter.delete('/:id/notifications/:notification_id', (_1, _2, next) => {
     // todo validations
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -382,7 +382,7 @@ router.delete('/:id/notifications/:notification_id', (_1, _2, next) => {
         next(error);
     }
 }));
-router.patch('/:id/close', (_1, _2, next) => {
+transactionRouter.patch('/:id/close', (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -393,4 +393,4 @@ router.patch('/:id/close', (_1, _2, next) => {
         next(error);
     }
 }));
-exports.default = router;
+exports.default = transactionRouter;

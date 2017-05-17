@@ -4,7 +4,7 @@
  * @ignore
  */
 import { Router } from 'express';
-const router = Router();
+const transactionRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
 import { CREATED, NO_CONTENT, NOT_FOUND, OK } from 'http-status';
@@ -14,9 +14,9 @@ import * as mongoose from 'mongoose';
 import authentication from '../middlewares/authentication';
 import validator from '../middlewares/validator';
 
-router.use(authentication);
+transactionRouter.use(authentication);
 
-router.post(
+transactionRouter.post(
     '/startIfPossible',
     (req, _, next) => {
         // expires_atはsecondsのUNIXタイムスタンプで
@@ -56,7 +56,7 @@ router.post(
     }
 );
 
-router.post(
+transactionRouter.post(
     '/makeInquiry',
     (req, _, next) => {
         req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
@@ -98,7 +98,7 @@ router.post(
     }
 );
 
-router.get(
+transactionRouter.get(
     '/:id',
     (_1, _2, next) => {
         // todo validation
@@ -132,7 +132,7 @@ router.get(
     }
 );
 
-router.post(
+transactionRouter.post(
     '',
     (req, _, next) => {
         // expires_atはsecondsのUNIXタイムスタンプで
@@ -166,7 +166,7 @@ router.post(
     }
 );
 
-router.patch(
+transactionRouter.patch(
     '/:id/anonymousOwner',
     (req, _, next) => {
         req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
@@ -194,7 +194,7 @@ router.patch(
     }
 );
 
-router.post(
+transactionRouter.post(
     '/:id/authorizations/gmo',
     (req, _, next) => {
         req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
@@ -242,7 +242,7 @@ router.post(
     }
 );
 
-router.post(
+transactionRouter.post(
     '/:id/authorizations/coaSeatReservation',
     (req, _, next) => {
         req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
@@ -314,7 +314,7 @@ router.post(
     }
 );
 
-router.post(
+transactionRouter.post(
     '/:id/authorizations/mvtk',
     (req, _, next) => {
         req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
@@ -372,7 +372,7 @@ router.post(
     }
 );
 
-router.delete(
+transactionRouter.delete(
     '/:id/authorizations/:authorization_id',
     (_1, _2, next) => {
         next();
@@ -391,7 +391,7 @@ router.delete(
     }
 );
 
-router.patch(
+transactionRouter.patch(
     '/:id/enableInquiry',
     (req, _, next) => {
         req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
@@ -419,7 +419,7 @@ router.patch(
     }
 );
 
-router.post(
+transactionRouter.post(
     '/:id/notifications/email',
     (req, _, next) => {
         req.checkBody('from', 'invalid from').notEmpty().withMessage('from is required');
@@ -452,7 +452,7 @@ router.post(
     }
 );
 
-router.delete(
+transactionRouter.delete(
     '/:id/notifications/:notification_id',
     (_1, _2, next) => {
         // todo validations
@@ -473,7 +473,7 @@ router.delete(
     }
 );
 
-router.patch(
+transactionRouter.patch(
     '/:id/close',
     (_1, _2, next) => {
         next();
@@ -490,4 +490,4 @@ router.patch(
     }
 );
 
-export default router;
+export default transactionRouter;
