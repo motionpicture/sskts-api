@@ -265,7 +265,7 @@ describe('座席予約承認追加', () => {
                     price: 2200,
                     authorizations: [],
                     performance: '001201701208513021010',
-                    section: '000',
+                    screen_section: '000',
                     seat_code: 'Ｉ－１０',
                     ticket_code: '14',
                     ticket_name: {

@@ -274,14 +274,14 @@ transactionRouter.post(
                 coa_time_begin: req.body.coa_time_begin,
                 coa_screen_code: req.body.coa_screen_code,
                 assets: req.body.seats.map((seat: any) => {
-                    return sskts.factory.asset.seatReservation.create({
+                    return sskts.factory.asset.seatReservation.createWithoutDetails({
                         ownership: sskts.factory.ownership.create({
                             owner: req.body.owner_to,
                             authenticated: false
                         }),
                         authorizations: [],
                         performance: seat.performance,
-                        section: seat.section,
+                        screen_section: seat.screen_section,
                         seat_code: seat.seat_code,
                         ticket_code: seat.ticket_code,
                         ticket_name: seat.ticket_name,

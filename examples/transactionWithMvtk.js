@@ -179,18 +179,26 @@ function main() {
                 seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                     return {
                         performance: performance.id,
-                        section: tmpReserve.seat_section,
+                        screen_section: tmpReserve.seat_section,
                         seat_code: tmpReserve.seat_num,
                         ticket_code: salesTicketResult[0].ticket_code,
-                        ticket_name_ja: salesTicketResult[0].ticket_name,
-                        ticket_name_en: salesTicketResult[0].ticket_name_eng,
+                        ticket_name: {
+                            ja: salesTicketResult[0].ticket_name,
+                            en: salesTicketResult[0].ticket_name_eng
+                        },
                         ticket_name_kana: salesTicketResult[0].ticket_name_kana,
                         std_price: salesTicketResult[0].std_price,
                         add_price: salesTicketResult[0].add_price,
                         dis_price: 0,
                         sale_price: salesTicketResult[0].sale_price,
                         mvtk_app_price: 0,
-                        add_glasses: 0
+                        add_glasses: 0,
+                        kbn_eisyahousiki: '00',
+                        mvtk_num: '',
+                        mvtk_kbn_denshiken: '00',
+                        mvtk_kbn_maeuriken: '00',
+                        mvtk_kbn_kensyu: '00',
+                        mvtk_sales_price: 0
                     };
                 }),
                 price: totalPrice
