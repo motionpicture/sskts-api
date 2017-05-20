@@ -276,8 +276,7 @@ transactionRouter.post(
                 assets: req.body.seats.map((seat: any) => {
                     return sskts.factory.asset.seatReservation.createWithoutDetails({
                         ownership: sskts.factory.ownership.create({
-                            owner: req.body.owner_to,
-                            authenticated: false
+                            owner: req.body.owner_to
                         }),
                         authorizations: [],
                         performance: seat.performance,
