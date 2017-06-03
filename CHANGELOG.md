@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
+
+## v9.0.0 - 2017-06-03
 ### Added
 - COA本予約にムビチケ情報を連携するために、COA仮予約承認追加のパラメータを変更。
 
