@@ -117,7 +117,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         yield ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
         yield ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        const update = Object.assign({}, transaction, { owners: [owner1.id, owner2.id] });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
         let authorizationId = '';
         yield supertest(app)
@@ -181,7 +181,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         yield ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
         yield ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        const update = Object.assign({}, transaction, { owners: [owner1.id, owner2.id] });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
         yield supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/mvtk`)
@@ -242,7 +242,7 @@ describe('座席予約承認追加', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         yield ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
         yield ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        const update = Object.assign({}, transaction, { owners: [owner1.id, owner2.id] });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
         let authorizationId = '';
         yield supertest(app)
@@ -316,7 +316,7 @@ describe('座席予約承認追加', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         yield ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
         yield ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        const update = Object.assign({}, transaction, { owners: [owner1.id, owner2.id] });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
         yield supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/coaSeatReservation`)

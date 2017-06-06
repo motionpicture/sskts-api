@@ -6,6 +6,8 @@ npm-debug.log*
 docs/
 app.yaml*
 **/*.log
+coverage/
+.nyc_output/
 
 .googleappengine/*
 

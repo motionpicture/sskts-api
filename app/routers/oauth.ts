@@ -28,15 +28,17 @@ oauthRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const payload = {
+                scope: req.body.scope.toString()
+            };
+
             jwt.sign(
-                {
-                    scope: req.body.scope.toString()
-                },
+                payload,
                 process.env.SSKTS_API_SECRET,
                 {
                     expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
                 },
-                (err, encoded) => {
+                (err: Error, encoded: string) => {
                     debug(err, encoded);
                     if (err instanceof Error) {
                         throw err;

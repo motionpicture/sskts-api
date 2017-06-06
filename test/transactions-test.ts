@@ -120,7 +120,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
         await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        const update = { ...transaction, ...{ owners: [owner1.id, owner2.id] } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
 
         let authorizationId = '';
@@ -191,7 +191,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
         await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        const update = { ...transaction, ...{ owners: [owner1.id, owner2.id] } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
 
         await supertest(app)
@@ -256,7 +256,7 @@ describe('座席予約承認追加', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
         await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        const update = { ...transaction, ...{ owners: [owner1.id, owner2.id] } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
 
         let authorizationId = '';
@@ -336,7 +336,7 @@ describe('座席予約承認追加', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
         await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(transaction, { owners: [owner1.id, owner2.id] });
+        const update = { ...transaction, ...{ owners: [owner1.id, owner2.id] } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
 
         await supertest(app)

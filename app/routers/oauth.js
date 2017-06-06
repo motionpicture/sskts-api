@@ -29,9 +29,10 @@ oauthRouter.post('/token', (req, _, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        jwt.sign({
+        const payload = {
             scope: req.body.scope.toString()
-        }, process.env.SSKTS_API_SECRET, {
+        };
+        jwt.sign(payload, process.env.SSKTS_API_SECRET, {
             expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
         }, (err, encoded) => {
             debug(err, encoded);
