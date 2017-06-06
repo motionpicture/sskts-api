@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * theatersルーターテスト
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,11 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * theatersルーターテスト
- *
- * @ignore
- */
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
@@ -20,7 +20,7 @@ const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
 let connection;
-const theaterId = '118';
+const TEST_VALID_THEATER_ID = '118';
 before(() => __awaiter(this, void 0, void 0, function* () {
     // 全て削除してからテスト開始
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
@@ -42,7 +42,7 @@ describe('GET /theaters/:id', () => {
     it('found', () => __awaiter(this, void 0, void 0, function* () {
         // テストデータインポート
         const theaterAdapter = sskts.adapter.theater(connection);
-        yield sskts.service.master.importTheater(theaterId)(theaterAdapter);
+        yield sskts.service.master.importTheater(TEST_VALID_THEATER_ID)(theaterAdapter);
         const theaterDoc = yield theaterAdapter.model.findOne().exec();
         yield supertest(app)
             .get(`/theaters/${theaterDoc.get('id')}`)
@@ -54,6 +54,28 @@ describe('GET /theaters/:id', () => {
             assert.equal(response.body.data.type, 'theaters');
             assert.equal(response.body.data.id, theaterDoc.get('id'));
             assert.equal(response.body.data.attributes.id, theaterDoc.get('id'));
+        });
+    }));
+});
+describe('劇場検索', () => {
+    before(() => __awaiter(this, void 0, void 0, function* () {
+        // テストデータインポート
+        const theaterAdapter = sskts.adapter.theater(connection);
+        yield sskts.service.master.importTheater(TEST_VALID_THEATER_ID)(theaterAdapter);
+    }));
+    it('レスポンスの型が適切', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
+            .get('/theaters')
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.OK)
+            .then((response) => {
+            assert(Array.isArray(response.body.data));
+            assert(response.body.data.length > 0);
+            response.body.data.forEach((theater) => {
+                assert.equal(theater.type, 'theaters');
+            });
         });
     }));
 });

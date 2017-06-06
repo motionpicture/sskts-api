@@ -3,6 +3,7 @@
  *
  * @ignore
  */
+
 import { Router } from 'express';
 const theaterRouter = Router();
 
@@ -49,5 +50,34 @@ theaterRouter.get(
             next(error);
         }
     });
+
+theaterRouter.get(
+    '',
+    (_1, _2, next) => {
+        next();
+    },
+    validator,
+    async (__, res, next) => {
+        try {
+            const theaterAdapter = sskts.adapter.theater(mongoose.connection);
+            const theaters = await sskts.service.master.searchTheaters({
+            })(theaterAdapter);
+
+            const data = theaters.map((theater) => {
+                return {
+                    type: 'theaters',
+                    id: theater.id,
+                    attributes: theater
+                };
+            });
+
+            res.json({
+                data: data
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 export default theaterRouter;

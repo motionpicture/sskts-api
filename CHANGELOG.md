@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Redis Cache接続クライアントを追加。
 - パフォーマンス検索結果に空席状況情報を追加。
 - パフォーマンス検索結果に作品上映時間情報を追加。
+- 劇場検索ルート(GET /theaters)を追加。
 
 ### Changed
 

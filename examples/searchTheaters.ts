@@ -1,14 +1,14 @@
 /**
- * パフォーマンス検索の例
+ * 劇場検索サンプル
  *
  * @ignore
  */
+
 import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
-import * as moment from 'moment';
 import * as request from 'request-promise-native';
 
-const debug = createDebug('sskts-api:examples:searchPerformances');
+const debug = createDebug('sskts-api:examples:searchTheaters');
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 
 async function main() {
@@ -28,21 +28,24 @@ async function main() {
     debug('oauth token result:', response.statusCode, response.body);
     const accessToken = response.body.access_token;
 
-    // パフォーマンス検索
+    // 劇場検索
     response = await request.get({
-        url: `${API_ENDPOINT}/performances`,
+        url: `${API_ENDPOINT}/theaters`,
         qs: {
-            theater: '118',
-            day: moment().format('YYYYMMDD')
         },
         auth: { bearer: accessToken },
         json: true,
         simple: false,
         resolveWithFullResponse: true
     });
-    debug('performance searched', response.statusCode, response.body);
+    debug('theater searched', response.statusCode, response.body);
     if (response.statusCode !== httpStatus.OK) {
         throw new Error(response.body.message);
+    }
+
+    if ((<any[]>response.body.data).length > 0) {
+        const theater = response.body.data[0];
+        debug(theater);
     }
 }
 

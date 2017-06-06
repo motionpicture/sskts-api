@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * theaterルーター
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,11 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * theaterルーター
- *
- * @ignore
- */
 const express_1 = require("express");
 const theaterRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
@@ -45,6 +45,27 @@ theaterRouter.get('/:id', (_1, _2, next) => {
                     data: null
                 });
             }
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+theaterRouter.get('', (_1, _2, next) => {
+    next();
+}, validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const theaterAdapter = sskts.adapter.theater(mongoose.connection);
+        const theaters = yield sskts.service.master.searchTheaters({})(theaterAdapter);
+        const data = theaters.map((theater) => {
+            return {
+                type: 'theaters',
+                id: theater.id,
+                attributes: theater
+            };
+        });
+        res.json({
+            data: data
         });
     }
     catch (error) {
