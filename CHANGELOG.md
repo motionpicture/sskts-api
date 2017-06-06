@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
+### Added
+- Redis Cache接続クライアントを追加。
+- パフォーマンス検索結果に空席状況情報を追加。
+- パフォーマンス検索結果に作品上映時間情報を追加。
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+- [typescript](https://github.com/Microsoft/TypeScript)を2.3.4にアップデート。
+- [tslint](https://github.com/palantir/tslint)を5.4.2にアップデート。
+- 依存パッケージをアップデート。
 
 ## v9.0.0 - 2017-06-03
 ### Added
