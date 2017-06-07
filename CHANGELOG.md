@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - [typescript](https://github.com/Microsoft/TypeScript)を2.3.4にアップデート。
 - [tslint](https://github.com/palantir/tslint)を5.4.2にアップデート。
 - 依存パッケージをアップデート。
+- npm@^5.0.0の導入に伴い、package-lock.jsonを追加。
 
 ## v9.0.0 - 2017-06-03
 ### Added
