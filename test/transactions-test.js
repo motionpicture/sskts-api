@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * transactionルーターテスト
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,18 +13,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * transactionルーターテスト
- *
- * @ignore
- */
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
-const moment = require("moment");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
+const TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS = 60;
+const TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
     // 全て削除してからテスト開始
@@ -63,7 +64,28 @@ describe('GET /transactions/:id', () => {
     }));
 });
 describe('POST /transactions/startIfPossible', () => {
-    it('開始可能な取引存在しない', () => __awaiter(this, void 0, void 0, function* () {
+    beforeEach(() => {
+        process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS = TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
+        process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT;
+    });
+    it('環境変数不足だとエラー', () => __awaiter(this, void 0, void 0, function* () {
+        delete process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
+        delete process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT;
+        yield supertest(app)
+            .post('/transactions/startIfPossible')
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send({
+            expires_at: Date.now()
+        })
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.BAD_REQUEST)
+            .then((response) => {
+            assert(Array.isArray(response.body.errors));
+        });
+    }));
+    it('取引数制限が0なら開始できない', () => __awaiter(this, void 0, void 0, function* () {
+        process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = 0;
         yield supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
@@ -77,15 +99,9 @@ describe('POST /transactions/startIfPossible', () => {
             assert.equal(response.body.data, null);
         });
     }));
-    it('開始可能な取引存在する', () => __awaiter(this, void 0, void 0, function* () {
-        // テストデータ作成
-        const transaction = sskts.factory.transaction.create({
-            status: sskts.factory.transactionStatus.READY,
-            owners: [],
-            expires_at: moment().add(10, 'seconds').toDate() // tslint:disable-line:no-magic-numbers
-        });
+    it('開始できる', () => __awaiter(this, void 0, void 0, function* () {
+        let transactionId = '';
         const transactionAdapter = sskts.adapter.transaction(connection);
-        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
         yield supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
@@ -97,10 +113,10 @@ describe('POST /transactions/startIfPossible', () => {
             .expect(httpStatus.OK)
             .then((response) => {
             assert.equal(response.body.data.type, 'transactions');
-            assert.equal(response.body.data.id, transaction.id);
-            assert.equal(response.body.data.attributes.id, transaction.id);
+            assert.equal(typeof response.body.data.id, 'string');
+            transactionId = response.body.data.id;
         });
-        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transactionId).exec();
     }));
 });
 describe('POST /transactions/:id/authorizations/mvtk', () => {

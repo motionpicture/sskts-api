@@ -3,14 +3,17 @@
  *
  * @ignore
  */
+
 import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
-import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../app/app';
+
+const TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS = 60;
+const TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
 
 let connection: mongoose.Connection;
 before(async () => {
@@ -60,7 +63,32 @@ describe('GET /transactions/:id', () => {
 });
 
 describe('POST /transactions/startIfPossible', () => {
-    it('開始可能な取引存在しない', async () => {
+    beforeEach(() => {
+        process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS = TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
+        process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT;
+    });
+
+    it('環境変数不足だとエラー', async () => {
+        delete process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
+        delete process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT;
+
+        await supertest(app)
+            .post('/transactions/startIfPossible')
+            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send({
+                expires_at: Date.now()
+            })
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.BAD_REQUEST)
+            .then((response) => {
+                assert(Array.isArray(response.body.errors));
+            });
+    });
+
+    it('取引数制限が0なら開始できない', async () => {
+        process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = 0;
+
         await supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
@@ -75,15 +103,9 @@ describe('POST /transactions/startIfPossible', () => {
             });
     });
 
-    it('開始可能な取引存在する', async () => {
-        // テストデータ作成
-        const transaction = sskts.factory.transaction.create({
-            status: sskts.factory.transactionStatus.READY,
-            owners: [],
-            expires_at: moment().add(10, 'seconds').toDate() // tslint:disable-line:no-magic-numbers
-        });
+    it('開始できる', async () => {
+        let transactionId: string = '';
         const transactionAdapter = sskts.adapter.transaction(connection);
-        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
 
         await supertest(app)
             .post('/transactions/startIfPossible')
@@ -96,11 +118,11 @@ describe('POST /transactions/startIfPossible', () => {
             .expect(httpStatus.OK)
             .then((response) => {
                 assert.equal(response.body.data.type, 'transactions');
-                assert.equal(response.body.data.id, transaction.id);
-                assert.equal(response.body.data.attributes.id, transaction.id);
+                assert.equal(typeof response.body.data.id, 'string');
+                transactionId = response.body.data.id;
             });
 
-        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transactionId).exec();
     });
 });
 

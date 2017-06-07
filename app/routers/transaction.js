@@ -19,6 +19,7 @@ const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
+const redisClient_1 = require("../../redisClient");
 const authentication_1 = require("../middlewares/authentication");
 const validator_1 = require("../middlewares/validator");
 transactionRouter.use(authentication_1.default);
@@ -28,11 +29,21 @@ transactionRouter.post('/startIfPossible', (req, _, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionOption = yield sskts.service.transaction.startIfPossible(moment.unix(parseInt(req.body.expires_at, 10)).toDate() // tslint:disable-line:no-magic-numbers
-        )(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
+        // tslint:disable-next-line:no-magic-numbers
+        if (!Number.isInteger(parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10))) {
+            throw new Error('TRANSACTIONS_COUNT_UNIT_IN_SECONDS not specified');
+        }
+        // tslint:disable-next-line:no-magic-numbers
+        if (!Number.isInteger(parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10))) {
+            throw new Error('NUMBER_OF_TRANSACTIONS_PER_UNIT not specified');
+        }
+        const transactionOption = yield sskts.service.transaction.startIfPossible(
+        // tslint:disable-next-line:no-magic-numbers
+        moment.unix(parseInt(req.body.expires_at, 10)).toDate(), process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT)(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redisClient_1.default));
         transactionOption.match({
             Some: (transaction) => {
-                const host = req.headers['host']; // tslint:disable-line:no-string-literal
+                // tslint:disable-next-line:no-string-literal
+                const host = req.headers['host'];
                 res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
                 res.json({
                     data: {
@@ -110,30 +121,6 @@ transactionRouter.get('/:id', (_1, _2, next) => {
                 res.json({
                     data: null
                 });
-            }
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-transactionRouter.post('', (req, _, next) => {
-    // expires_atはsecondsのUNIXタイムスタンプで
-    req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        // tslint:disable-next-line:no-magic-numbers
-        const transaction = yield sskts.service.transaction.startForcibly(moment.unix(parseInt(req.body.expires_at, 10)).toDate())(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
-        // tslint:disable-next-line:no-string-literal
-        const hots = req.headers['host'];
-        res.status(http_status_1.CREATED);
-        res.setHeader('Location', `https://${hots}/transactions/${transaction.id}`);
-        res.json({
-            data: {
-                type: 'transactions',
-                id: transaction.id,
-                attributes: transaction
             }
         });
     }

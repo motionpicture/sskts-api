@@ -7,9 +7,11 @@ import { Router } from 'express';
 const transactionRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
-import { CREATED, NO_CONTENT, NOT_FOUND, OK } from 'http-status';
+import { NO_CONTENT, NOT_FOUND, OK } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+
+import redisClient from '../../redisClient';
 
 import authentication from '../middlewares/authentication';
 import validator from '../middlewares/validator';
@@ -27,13 +29,30 @@ transactionRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            // tslint:disable-next-line:no-magic-numbers
+            if (!Number.isInteger(parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10))) {
+                throw new Error('TRANSACTIONS_COUNT_UNIT_IN_SECONDS not specified');
+            }
+            // tslint:disable-next-line:no-magic-numbers
+            if (!Number.isInteger(parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10))) {
+                throw new Error('NUMBER_OF_TRANSACTIONS_PER_UNIT not specified');
+            }
+
             const transactionOption = await sskts.service.transaction.startIfPossible(
-                moment.unix(parseInt(req.body.expires_at, 10)).toDate() // tslint:disable-line:no-magic-numbers
-            )(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
+                // tslint:disable-next-line:no-magic-numbers
+                moment.unix(parseInt(req.body.expires_at, 10)).toDate(),
+                process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS,
+                process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT
+            )(
+                sskts.adapter.owner(mongoose.connection),
+                sskts.adapter.transaction(mongoose.connection),
+                sskts.adapter.transactionCount(redisClient)
+                );
 
             transactionOption.match({
                 Some: (transaction) => {
-                    const host = req.headers['host']; // tslint:disable-line:no-string-literal
+                    // tslint:disable-next-line:no-string-literal
+                    const host = req.headers['host'];
                     res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
                     res.json({
                         data: {
@@ -124,40 +143,6 @@ transactionRouter.get(
                     res.json({
                         data: null
                     });
-                }
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-transactionRouter.post(
-    '',
-    (req, _, next) => {
-        // expires_atはsecondsのUNIXタイムスタンプで
-        req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
-
-        next();
-    },
-    validator,
-    async (req, res, next) => {
-        try {
-            // tslint:disable-next-line:no-magic-numbers
-            const transaction = await sskts.service.transaction.startForcibly(moment.unix(parseInt(req.body.expires_at, 10)).toDate())(
-                sskts.adapter.owner(mongoose.connection),
-                sskts.adapter.transaction(mongoose.connection)
-            );
-
-            // tslint:disable-next-line:no-string-literal
-            const hots = req.headers['host'];
-            res.status(CREATED);
-            res.setHeader('Location', `https://${hots}/transactions/${transaction.id}`);
-            res.json({
-                data: {
-                    type: 'transactions',
-                    id: transaction.id,
-                    attributes: transaction
                 }
             });
         } catch (error) {

@@ -9,12 +9,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - パフォーマンス検索結果に空席状況情報を追加。
 - パフォーマンス検索結果に作品上映時間情報を追加。
 - 劇場検索ルート(GET /theaters)を追加。
+- 一般購入シナリオテストを追加。
 
 ### Changed
+- 取引開始サービスを、取引数制限をRedis Cacheでチェックする仕様に変更(api使用側から見た互換性は維持)。
 
 ### Deprecated
 
 ### Removed
+- 使用していないので、強制的に取引を開始するサービスを削除。
 
 ### Fixed
 
