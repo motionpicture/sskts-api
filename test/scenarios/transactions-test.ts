@@ -62,6 +62,7 @@ describe('一般購入シナリオ', () => {
         assert.equal(typeof makeInquiryResult.id, 'string');
         assert.equal(makeInquiryResult.id, makeInquiryResult.attributes.id);
         assert.equal(makeInquiryResult.attributes.status, sskts.factory.transactionStatus.CLOSED);
+        assert.equal(makeInquiryResult.attributes.queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
     });
 });
 
