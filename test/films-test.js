@@ -19,19 +19,37 @@ const httpStatus = require("http-status");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
-let connection;
 const theaterId = '118';
+let connection;
+let accessToken;
 before(() => __awaiter(this, void 0, void 0, function* () {
-    // 全て削除してからテスト開始
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    accessToken = yield supertest(app)
+        .post('/oauth/token')
+        .send({
+        assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+        scope: 'admin'
+    })
+        .then((response) => {
+        return response.body.access_token;
+    });
+    // 全て削除してからテスト開始
     const filmAdapter = sskts.adapter.film(connection);
     yield filmAdapter.model.remove({}).exec();
 }));
 describe('GET /films/:id', () => {
+    it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
+            .get('/films/0000000000')
+            .expect(httpStatus.UNAUTHORIZED)
+            .then((response) => {
+            assert.equal(response.text, 'Unauthorized');
+        });
+    }));
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/films/0000000000')
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -48,7 +66,7 @@ describe('GET /films/:id', () => {
         const filmDoc = yield filmAdapter.model.findOne().exec();
         yield supertest(app)
             .get(`/films/${filmDoc.get('id')}`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

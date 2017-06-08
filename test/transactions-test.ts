@@ -14,11 +14,21 @@ import * as app from '../app/app';
 
 const TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS = 60;
 const TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
-
 let connection: mongoose.Connection;
+let accessToken: string;
 before(async () => {
-    // 全て削除してからテスト開始
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    accessToken = await supertest(app)
+        .post('/oauth/token')
+        .send({
+            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+            scope: 'admin'
+        })
+        .then((response) => {
+            return <string>response.body.access_token;
+        });
+
+    // 全て削除してからテスト開始
     const transactionAdapter = sskts.adapter.transaction(connection);
     await transactionAdapter.transactionModel.remove({}).exec();
 });
@@ -27,7 +37,7 @@ describe('GET /transactions/:id', () => {
     it('取引存在しない', async () => {
         await supertest(app)
             .get('/transactions/58cb2e2276cee91fe4387dd1')
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -48,7 +58,7 @@ describe('GET /transactions/:id', () => {
 
         await supertest(app)
             .get(`/transactions/${transaction.id}`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
@@ -74,7 +84,7 @@ describe('POST /transactions/startIfPossible', () => {
 
         await supertest(app)
             .post('/transactions/startIfPossible')
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .send({
                 expires_at: Date.now()
@@ -91,7 +101,7 @@ describe('POST /transactions/startIfPossible', () => {
 
         await supertest(app)
             .post('/transactions/startIfPossible')
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .send({
                 expires_at: Date.now()
@@ -109,7 +119,7 @@ describe('POST /transactions/startIfPossible', () => {
 
         await supertest(app)
             .post('/transactions/startIfPossible')
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .send({
                 expires_at: Date.now()
@@ -148,7 +158,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         let authorizationId = '';
         await supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/mvtk`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .send({
                 owner_from: owner1.id,
@@ -218,7 +228,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
 
         await supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/mvtk`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .send({
                 owner_from: 'xxx',
@@ -284,7 +294,7 @@ describe('座席予約承認追加', () => {
         let authorizationId = '';
         await supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/coaSeatReservation`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .send({
                 price: 4400,
@@ -363,7 +373,7 @@ describe('座席予約承認追加', () => {
 
         await supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/coaSeatReservation`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .send({
                 price: 4400,
