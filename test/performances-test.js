@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * performancesルーターテスト
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,11 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * performancesルーターテスト
- *
- * @ignore
- */
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
@@ -20,12 +20,30 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
-let connection;
 const TEST_THEATER_ID = '118';
+let connection;
+let accessToken;
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    accessToken = yield supertest(app)
+        .post('/oauth/token')
+        .send({
+        assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+        scope: 'admin'
+    })
+        .then((response) => {
+        return response.body.access_token;
+    });
 }));
 describe('パフォーマンス検索', () => {
+    it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
+            .get('/performances')
+            .expect(httpStatus.UNAUTHORIZED)
+            .then((response) => {
+            assert.equal(response.text, 'Unauthorized');
+        });
+    }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/performances')
@@ -33,7 +51,7 @@ describe('パフォーマンス検索', () => {
             theater: TEST_THEATER_ID,
             day: moment().format('YYYYMMDD')
         })
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
@@ -47,7 +65,7 @@ describe('パフォーマンス検索', () => {
             .query({
             day: moment().format('YYYYMMDD')
         })
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.BAD_REQUEST)
@@ -63,10 +81,18 @@ describe('GET /performances/:id', () => {
         const performanceAdapter = sskts.adapter.performance(connection);
         yield performanceAdapter.model.remove({}).exec();
     }));
+    it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
+            .get('/performances/0000000000')
+            .expect(httpStatus.UNAUTHORIZED)
+            .then((response) => {
+            assert.equal(response.text, 'Unauthorized');
+        });
+    }));
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/performances/0000000000')
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -87,7 +113,7 @@ describe('GET /performances/:id', () => {
         const performanceDoc = yield performanceAdapter.model.findOne().exec();
         yield supertest(app)
             .get(`/performances/${performanceDoc.get('id')}`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

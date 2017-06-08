@@ -12,12 +12,14 @@ import * as mongoose from 'mongoose';
 
 import redisClient from '../../redisClient';
 import authentication from '../middlewares/authentication';
+import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
 performanceRouter.use(authentication);
 
 performanceRouter.get(
     '/:id',
+    permitScopes(['admin']),
     (_1, _2, next) => {
         next();
     },
@@ -49,6 +51,7 @@ performanceRouter.get(
 
 performanceRouter.get(
     '',
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
         req.checkQuery('day', 'invalid day').notEmpty().withMessage('day is required');

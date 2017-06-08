@@ -11,20 +11,40 @@ import * as supertest from 'supertest';
 
 import * as app from '../app/app';
 
-let connection: mongoose.Connection;
 const theaterId = '118';
+let connection: mongoose.Connection;
+let accessToken: string;
 before(async () => {
-    // 全て削除してからテスト開始
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    accessToken = await supertest(app)
+        .post('/oauth/token')
+        .send({
+            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+            scope: 'admin'
+        })
+        .then((response) => {
+            return <string>response.body.access_token;
+        });
+
+    // 全て削除してからテスト開始
     const filmAdapter = sskts.adapter.film(connection);
     await filmAdapter.model.remove({}).exec();
 });
 
 describe('GET /films/:id', () => {
+    it('アクセストークン必須', async () => {
+        await supertest(app)
+            .get('/films/0000000000')
+            .expect(httpStatus.UNAUTHORIZED)
+            .then((response) => {
+                assert.equal(response.text, 'Unauthorized');
+            });
+    });
+
     it('not found', async () => {
         await supertest(app)
             .get('/films/0000000000')
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -44,7 +64,7 @@ describe('GET /films/:id', () => {
 
         await supertest(app)
             .get(`/films/${filmDoc.get('id')}`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

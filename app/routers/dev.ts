@@ -12,6 +12,11 @@ import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../../mongooseConnectionOptions';
 
+import authentication from '../middlewares/authentication';
+import permitScopes from '../middlewares/permitScopes';
+
+devRouter.use(authentication);
+
 devRouter.get(
     '/500',
     () => {
@@ -20,6 +25,7 @@ devRouter.get(
 
 devRouter.get(
     '/environmentVariables',
+    permitScopes(['admin']),
     (__, res) => {
         res.json({
             data: {

@@ -3,6 +3,7 @@
  *
  * @ignore
  */
+
 import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
@@ -12,13 +13,33 @@ import * as supertest from 'supertest';
 
 import * as app from '../app/app';
 
-let connection: mongoose.Connection;
 const TEST_THEATER_ID = '118';
+
+let connection: mongoose.Connection;
+let accessToken: string;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    accessToken = await supertest(app)
+        .post('/oauth/token')
+        .send({
+            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+            scope: 'admin'
+        })
+        .then((response) => {
+            return <string>response.body.access_token;
+        });
 });
 
 describe('パフォーマンス検索', () => {
+    it('アクセストークン必須', async () => {
+        await supertest(app)
+            .get('/performances')
+            .expect(httpStatus.UNAUTHORIZED)
+            .then((response) => {
+                assert.equal(response.text, 'Unauthorized');
+            });
+    });
+
     it('ok', async () => {
         await supertest(app)
             .get('/performances')
@@ -26,7 +47,7 @@ describe('パフォーマンス検索', () => {
                 theater: TEST_THEATER_ID,
                 day: moment().format('YYYYMMDD')
             })
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
@@ -41,7 +62,7 @@ describe('パフォーマンス検索', () => {
             .query({
                 day: moment().format('YYYYMMDD')
             })
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.BAD_REQUEST)
@@ -59,10 +80,19 @@ describe('GET /performances/:id', () => {
         await performanceAdapter.model.remove({}).exec();
     });
 
+    it('アクセストークン必須', async () => {
+        await supertest(app)
+            .get('/performances/0000000000')
+            .expect(httpStatus.UNAUTHORIZED)
+            .then((response) => {
+                assert.equal(response.text, 'Unauthorized');
+            });
+    });
+
     it('not found', async () => {
         await supertest(app)
             .get('/performances/0000000000')
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -90,7 +120,7 @@ describe('GET /performances/:id', () => {
 
         await supertest(app)
             .get(`/performances/${performanceDoc.get('id')}`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

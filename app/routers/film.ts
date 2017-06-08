@@ -11,12 +11,14 @@ import { NOT_FOUND } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
+import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
 filmRouter.use(authentication);
 
 filmRouter.get(
     '/:id',
+    permitScopes(['admin']),
     (_1, _2, next) => {
         next();
     },
