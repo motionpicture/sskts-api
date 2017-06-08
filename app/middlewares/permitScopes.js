@@ -36,7 +36,7 @@ exports.default = (permittedScopes) => {
 function isScopesPermitted(ownedScopes, permittedScopes) {
     debug('checking scope requirements...', permittedScopes);
     if (!Array.isArray(ownedScopes)) {
-        throw new Error('invalid scope');
+        throw new Error('ownedScopes should be array of string');
     }
     const permittedOwnedScope = permittedScopes.find((permittedScope) => ownedScopes.indexOf(permittedScope) >= 0);
     return (permittedOwnedScope !== undefined);
