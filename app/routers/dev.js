@@ -10,10 +10,13 @@ const devRouter = express.Router();
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
+const authentication_1 = require("../middlewares/authentication");
+const permitScopes_1 = require("../middlewares/permitScopes");
+devRouter.use(authentication_1.default);
 devRouter.get('/500', () => {
     throw new Error('500 manually');
 });
-devRouter.get('/environmentVariables', (__, res) => {
+devRouter.get('/environmentVariables', permitScopes_1.default(['admin']), (__, res) => {
     res.json({
         data: {
             type: 'envs',

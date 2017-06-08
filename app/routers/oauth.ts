@@ -27,8 +27,16 @@ oauthRouter.post(
         //     .equals('admin');
         req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required')
             .equals(process.env.SSKTS_API_REFRESH_TOKEN);
-        req.checkBody('scope', 'invalid scope').notEmpty().withMessage('scope is required')
+        req.checkBody('scope', 'invalid scope').optional().notEmpty().withMessage('scope is required')
             .equals('admin');
+
+        // スコープ指定があれば配列に変換
+        // スコープ指定は当初「admin」のみ受け付けていたので、これで互換性が保たれる
+        if (req.body.scope === 'admin') {
+            req.body.scopes = ['admin'];
+        }
+
+        req.checkBody('scopes', 'invalid scopes').notEmpty().withMessage('scopes is required');
 
         next();
     },
@@ -52,7 +60,7 @@ oauthRouter.post(
             // }
 
             const payload = {
-                scope: req.body.scope.toString()
+                scopes: req.body.scopes
             };
 
             jwt.sign(

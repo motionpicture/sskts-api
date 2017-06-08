@@ -20,10 +20,11 @@ const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
+const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 theaterRouter.use(authentication_1.default);
 const debug = createDebug('sskts-api:*');
-theaterRouter.get('/:id', (_1, _2, next) => {
+theaterRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -51,7 +52,7 @@ theaterRouter.get('/:id', (_1, _2, next) => {
         next(error);
     }
 }));
-theaterRouter.get('', (_1, _2, next) => {
+theaterRouter.get('', permitScopes_1.default(['admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

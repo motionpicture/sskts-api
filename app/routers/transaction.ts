@@ -14,12 +14,14 @@ import * as mongoose from 'mongoose';
 import redisClient from '../../redisClient';
 
 import authentication from '../middlewares/authentication';
+import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
 transactionRouter.use(authentication);
 
 transactionRouter.post(
     '/startIfPossible',
+    permitScopes(['admin']),
     (req, _, next) => {
         // expires_atはsecondsのUNIXタイムスタンプで
         req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
@@ -77,6 +79,7 @@ transactionRouter.post(
 
 transactionRouter.post(
     '/makeInquiry',
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
         req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
@@ -119,6 +122,7 @@ transactionRouter.post(
 
 transactionRouter.get(
     '/:id',
+    permitScopes(['admin']),
     (_1, _2, next) => {
         // todo validation
 
@@ -153,6 +157,7 @@ transactionRouter.get(
 
 transactionRouter.patch(
     '/:id/anonymousOwner',
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
         req.checkBody('name_last', 'invalid name_last').optional().notEmpty().withMessage('name_last should not be empty');
@@ -181,6 +186,7 @@ transactionRouter.patch(
 
 transactionRouter.post(
     '/:id/authorizations/gmo',
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
         req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
@@ -229,6 +235,7 @@ transactionRouter.post(
 
 transactionRouter.post(
     '/:id/authorizations/coaSeatReservation',
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
         req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
@@ -304,6 +311,7 @@ transactionRouter.post(
 
 transactionRouter.post(
     '/:id/authorizations/mvtk',
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
         req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
@@ -362,6 +370,7 @@ transactionRouter.post(
 
 transactionRouter.delete(
     '/:id/authorizations/:authorization_id',
+    permitScopes(['admin']),
     (_1, _2, next) => {
         next();
     },
@@ -381,6 +390,7 @@ transactionRouter.delete(
 
 transactionRouter.patch(
     '/:id/enableInquiry',
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
         req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
@@ -409,6 +419,7 @@ transactionRouter.patch(
 
 transactionRouter.post(
     '/:id/notifications/email',
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkBody('from', 'invalid from').notEmpty().withMessage('from is required');
         req.checkBody('to', 'invalid to').notEmpty().withMessage('to is required').isEmail();
@@ -442,6 +453,7 @@ transactionRouter.post(
 
 transactionRouter.delete(
     '/:id/notifications/:notification_id',
+    permitScopes(['admin']),
     (_1, _2, next) => {
         // todo validations
 
@@ -463,6 +475,7 @@ transactionRouter.delete(
 
 transactionRouter.patch(
     '/:id/close',
+    permitScopes(['admin']),
     (_1, _2, next) => {
         next();
     },

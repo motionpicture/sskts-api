@@ -19,9 +19,10 @@ const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
+const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 screenRouter.use(authentication_1.default);
-screenRouter.get('/:id', (_1, _2, next) => {
+screenRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
