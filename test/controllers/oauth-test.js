@@ -41,7 +41,7 @@ describe('oauthコントローラー クライアントIDから資格情報を�
     it('クライアントが存在しないので発行できない', () => __awaiter(this, void 0, void 0, function* () {
         let issueError;
         try {
-            yield oauthController.issueCredentialsByClient('invalidclient', ['admin']);
+            yield oauthController.issueCredentialsByClient('invalidclient', 'test', ['admin']);
         }
         catch (error) {
             issueError = error;
@@ -60,7 +60,7 @@ describe('oauthコントローラー クライアントIDから資格情報を�
         });
         const clientAdapter = sskts.adapter.client(mongoose.connection);
         yield clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { new: true, upsert: true }).exec();
-        const credentials = yield oauthController.issueCredentialsByClient(client.id, ['admin']);
+        const credentials = yield oauthController.issueCredentialsByClient(client.id, 'test', ['admin']);
         assert.equal(typeof credentials.access_token, 'string');
         assert.equal(typeof credentials.expires_in, 'number');
         // テストクライアント削除

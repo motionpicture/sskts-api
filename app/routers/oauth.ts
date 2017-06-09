@@ -18,12 +18,6 @@ oauthRouter.post(
             req.body.grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
         }
 
-        req.checkBody('grant_type', 'invalid grant_type').notEmpty().withMessage('grant_type is required');
-        // req.checkBody('username', 'invalid username').notEmpty().withMessage('username is required');
-        // req.checkBody('password', 'invalid password').notEmpty().withMessage('password is required');
-        // req.checkBody('client_id', 'invalid client_id').notEmpty().withMessage('client_id is required');
-        // req.checkBody('scope', 'invalid scope').notEmpty().withMessage('scope is required')
-        // //     .equals('admin');
         req.checkBody('scope', 'invalid scope').optional().notEmpty().withMessage('scope is required')
             .equals('admin');
 
@@ -34,6 +28,25 @@ oauthRouter.post(
         }
 
         req.checkBody('scopes', 'invalid scopes').notEmpty().withMessage('scopes is required');
+
+        // 認可タイプによってチェック項目が異なる
+        switch (req.body.grant_type) {
+            case 'urn:ietf:params:oauth:grant-type:jwt-bearer':
+                req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required');
+                break;
+
+            case 'client_credentials':
+                req.checkBody('client_id', 'invalid client_id').notEmpty().withMessage('client_id is required');
+                req.checkBody('state', 'invalid state').notEmpty().withMessage('state is required');
+                break;
+
+            case 'password':
+                req.checkBody('username', 'invalid username').notEmpty().withMessage('username is required');
+                req.checkBody('password', 'invalid password').notEmpty().withMessage('password is required');
+                break;
+
+            default:
+        }
 
         next();
     },

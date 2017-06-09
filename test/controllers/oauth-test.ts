@@ -38,7 +38,7 @@ describe('oauthコントローラー クライアントIDから資格情報を�
     it('クライアントが存在しないので発行できない', async () => {
         let issueError: any;
         try {
-            await oauthController.issueCredentialsByClient('invalidclient', ['admin']);
+            await oauthController.issueCredentialsByClient('invalidclient', 'test', ['admin']);
         } catch (error) {
             issueError = error;
         }
@@ -59,7 +59,7 @@ describe('oauthコントローラー クライアントIDから資格情報を�
         const clientAdapter = sskts.adapter.client(mongoose.connection);
         await clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { new: true, upsert: true }).exec();
 
-        const credentials = await oauthController.issueCredentialsByClient(client.id, ['admin']);
+        const credentials = await oauthController.issueCredentialsByClient(client.id, 'test', ['admin']);
 
         assert.equal(typeof credentials.access_token, 'string');
         assert.equal(typeof credentials.expires_in, 'number');

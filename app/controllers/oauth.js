@@ -32,7 +32,7 @@ function issueCredentials(req) {
             case 'urn:ietf:params:oauth:grant-type:jwt-bearer':
                 return yield issueCredentialsByAssertion(req.body.assertion, req.body.scopes);
             case 'client_credentials':
-                return yield issueCredentialsByClient(req.body.client_id, req.body.scopes);
+                return yield issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
             default:
                 // 非対応認可タイプ
                 throw new Error('grant_type not implemented');
@@ -74,7 +74,7 @@ exports.issueCredentialsByAssertion = issueCredentialsByAssertion;
  * @param {string[]} scopes スコープリスト
  * @returns {Promise<ICredentials>} 資格情報
  */
-function issueCredentialsByClient(clientId, scopes) {
+function issueCredentialsByClient(clientId, state, scopes) {
     return __awaiter(this, void 0, void 0, function* () {
         // クライアントの存在確認
         const clientAdapter = sskts.adapter.client(mongoose.connection);
@@ -84,6 +84,7 @@ function issueCredentialsByClient(clientId, scopes) {
         }
         const payload = {
             client: clientDoc.toObject(),
+            state: state,
             scopes: scopes
         };
         return yield payload2credentials(payload);

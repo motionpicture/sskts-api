@@ -37,7 +37,7 @@ export async function issueCredentials(req: Request): Promise<ICredentials> {
             return await issueCredentialsByAssertion(req.body.assertion, req.body.scopes);
 
         case 'client_credentials':
-            return await issueCredentialsByClient(req.body.client_id, req.body.scopes);
+            return await issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
 
         default:
             // 非対応認可タイプ
@@ -81,7 +81,7 @@ export async function issueCredentialsByAssertion(assertion: string, scopes: str
  * @param {string[]} scopes スコープリスト
  * @returns {Promise<ICredentials>} 資格情報
  */
-export async function issueCredentialsByClient(clientId: string, scopes: string[]): Promise<ICredentials> {
+export async function issueCredentialsByClient(clientId: string, state: string, scopes: string[]): Promise<ICredentials> {
     // クライアントの存在確認
     const clientAdapter = sskts.adapter.client(mongoose.connection);
     const clientDoc = await clientAdapter.clientModel.findById(clientId, 'name').exec();
@@ -91,6 +91,7 @@ export async function issueCredentialsByClient(clientId: string, scopes: string[
 
     const payload = {
         client: clientDoc.toObject(),
+        state: state,
         scopes: scopes
     };
 
