@@ -38,9 +38,16 @@ transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin']), (r
         if (!Number.isInteger(parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10))) {
             throw new Error('NUMBER_OF_TRANSACTIONS_PER_UNIT not specified');
         }
-        const transactionOption = yield sskts.service.transaction.startIfPossible(
-        // tslint:disable-next-line:no-magic-numbers
-        moment.unix(parseInt(req.body.expires_at, 10)).toDate(), process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT)(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redisClient_1.default));
+        const transactionOption = yield sskts.service.transaction.startAsAnonymous({
+            // tslint:disable-next-line:no-magic-numbers
+            expiresAt: moment.unix(parseInt(req.body.expires_at, 10)).toDate(),
+            // tslint:disable-next-line:no-magic-numbers
+            unitOfCountInSeconds: parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10),
+            // tslint:disable-next-line:no-magic-numbers
+            maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
+            state: '',
+            scope: {} // todo 取引スコープを分ける仕様に従って変更する
+        })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redisClient_1.default));
         transactionOption.match({
             Some: (transaction) => {
                 // tslint:disable-next-line:no-string-literal
