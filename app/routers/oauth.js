@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * oauthルーター
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,29 +13,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * oauthルーター
- *
- * @ignore
- */
 const express = require("express");
 const oauthRouter = express.Router();
-const createDebug = require("debug");
-const jwt = require("jsonwebtoken");
+const oauthController = require("../controllers/oauth");
 const validator_1 = require("../middlewares/validator");
-const debug = createDebug('sskts-api:routes:oauth');
-// todo どこで定義するか
-const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
 oauthRouter.post('/token', (req, _, next) => {
-    // req.checkBody('grant_type', 'invalid grant_type').notEmpty().withMessage('assertion is required')
-    //     .equals('password');
-    // req.checkBody('username', 'invalid username').notEmpty().withMessage('username is required');
-    // req.checkBody('password', 'invalid password').notEmpty().withMessage('password is required');
-    // req.checkBody('client_id', 'invalid client_id').notEmpty().withMessage('client_id is required');
-    // req.checkBody('scope', 'invalid scope').notEmpty().withMessage('scope is required')
-    //     .equals('admin');
-    req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required')
-        .equals(process.env.SSKTS_API_REFRESH_TOKEN);
+    // 認可タイプ未指定であれば強制的にJWT Bearer Tokenタイプに
+    if (typeof req.body.grant_type !== 'string') {
+        req.body.grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
+    }
     req.checkBody('scope', 'invalid scope').optional().notEmpty().withMessage('scope is required')
         .equals('admin');
     // スコープ指定があれば配列に変換
@@ -39,42 +30,27 @@ oauthRouter.post('/token', (req, _, next) => {
         req.body.scopes = ['admin'];
     }
     req.checkBody('scopes', 'invalid scopes').notEmpty().withMessage('scopes is required');
+    // 認可タイプによってチェック項目が異なる
+    switch (req.body.grant_type) {
+        case 'urn:ietf:params:oauth:grant-type:jwt-bearer':
+            req.checkBody('assertion', 'invalid assertion').notEmpty().withMessage('assertion is required');
+            break;
+        case 'client_credentials':
+            req.checkBody('client_id', 'invalid client_id').notEmpty().withMessage('client_id is required');
+            req.checkBody('state', 'invalid state').notEmpty().withMessage('state is required');
+            break;
+        case 'password':
+            req.checkBody('username', 'invalid username').notEmpty().withMessage('username is required');
+            req.checkBody('password', 'invalid password').notEmpty().withMessage('password is required');
+            break;
+        default:
+    }
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // client_idの存在確認
-        // const numberOfClient = await chevre.Models.Client.count({ _id: req.body.client_id }).exec();
-        // debug('numberOfClient:', numberOfClient);
-        // if (numberOfClient === 0) {
-        //     throw new Error('client not found');
-        // }
-        // usernameとpassword照合
-        // const owner = await chevre.Models.Owner.findOne({ username: req.body.username }).exec();
-        // if (owner === null) {
-        //     throw new Error('owner not found');
-        // }
-        // if (owner.get('password_hash') !== chevre.CommonUtil.createHash(req.body.password, owner.get('password_salt'))) {
-        //     throw new Error('invalid username or password');
-        // }
-        const payload = {
-            scopes: req.body.scopes
-        };
-        jwt.sign(payload, process.env.SSKTS_API_SECRET, {
-            expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
-        }, (err, encoded) => {
-            debug(err, encoded);
-            if (err instanceof Error) {
-                throw err;
-            }
-            else {
-                debug('encoded is', encoded);
-                res.json({
-                    access_token: encoded,
-                    token_type: 'Bearer',
-                    expires_in: ACCESS_TOKEN_EXPIRES_IN_SECONDS
-                });
-            }
-        });
+        // 資格情報を発行する
+        const credentials = yield oauthController.issueCredentials(req);
+        res.json(credentials);
     }
     catch (error) {
         next(error);

@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 package-lock=false
 ```
 - スコープ許可ミドルウェアを追加。
+- クライアント情報認可タイプを追加。
 
 ### Changed
 - 取引開始サービスを、取引数制限をRedis Cacheでチェックする仕様に変更(api使用側から見た互換性は維持)。
