@@ -4,9 +4,11 @@
  * @namespace controllers/oauth
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
+import * as mongoose from 'mongoose';
 
 const debug = createDebug('sskts-api:controllers:oauth');
 // todo どこで定義するか
@@ -34,17 +36,13 @@ export async function issueCredentials(req: Request): Promise<ICredentials> {
         case 'urn:ietf:params:oauth:grant-type:jwt-bearer':
             return await issueCredentialsByAssertion(req.body.assertion, req.body.scopes);
 
+        case 'client_credentials':
+            return await issueCredentialsByClient(req.body.client_id, req.body.scopes);
+
         default:
             // 非対応認可タイプ
             throw new Error('grant_type not implemented');
     }
-
-    // client_idの存在確認
-    // const numberOfClient = await chevre.Models.Client.count({ _id: req.body.client_id }).exec();
-    // debug('numberOfClient:', numberOfClient);
-    // if (numberOfClient === 0) {
-    //     throw new Error('client not found');
-    // }
 
     // usernameとpassword照合
     // const owner = await chevre.Models.Owner.findOne({ username: req.body.username }).exec();
@@ -77,6 +75,29 @@ export async function issueCredentialsByAssertion(assertion: string, scopes: str
 }
 
 /**
+ * クライアントIDから資格情報を発行する
+ *
+ * @param {string} clientId クライアントID
+ * @param {string[]} scopes スコープリスト
+ * @returns {Promise<ICredentials>} 資格情報
+ */
+export async function issueCredentialsByClient(clientId: string, scopes: string[]): Promise<ICredentials> {
+    // クライアントの存在確認
+    const clientAdapter = sskts.adapter.client(mongoose.connection);
+    const clientDoc = await clientAdapter.clientModel.findById(clientId, 'name').exec();
+    if (clientDoc === null) {
+        throw new Error('client not found');
+    }
+
+    const payload = {
+        client: clientDoc.toObject(),
+        scopes: scopes
+    };
+
+    return await payload2credentials(payload);
+}
+
+/**
  * 任意のデータをJWTを使用して資格情報へ変換する
  *
  * @param {object} payload 変換したいデータ
@@ -84,6 +105,7 @@ export async function issueCredentialsByAssertion(assertion: string, scopes: str
  */
 export async function payload2credentials(payload: object): Promise<ICredentials> {
     return new Promise<ICredentials>((resolve, reject) => {
+        debug('signing...', payload);
         jwt.sign(
             payload,
             process.env.SSKTS_API_SECRET,

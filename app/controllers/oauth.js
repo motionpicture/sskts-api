@@ -13,8 +13,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:controllers:oauth');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
@@ -29,16 +31,12 @@ function issueCredentials(req) {
         switch (req.body.grant_type) {
             case 'urn:ietf:params:oauth:grant-type:jwt-bearer':
                 return yield issueCredentialsByAssertion(req.body.assertion, req.body.scopes);
+            case 'client_credentials':
+                return yield issueCredentialsByClient(req.body.client_id, req.body.scopes);
             default:
                 // 非対応認可タイプ
                 throw new Error('grant_type not implemented');
         }
-        // client_idの存在確認
-        // const numberOfClient = await chevre.Models.Client.count({ _id: req.body.client_id }).exec();
-        // debug('numberOfClient:', numberOfClient);
-        // if (numberOfClient === 0) {
-        //     throw new Error('client not found');
-        // }
         // usernameとpassword照合
         // const owner = await chevre.Models.Owner.findOne({ username: req.body.username }).exec();
         // if (owner === null) {
@@ -70,6 +68,29 @@ function issueCredentialsByAssertion(assertion, scopes) {
 }
 exports.issueCredentialsByAssertion = issueCredentialsByAssertion;
 /**
+ * クライアントIDから資格情報を発行する
+ *
+ * @param {string} clientId クライアントID
+ * @param {string[]} scopes スコープリスト
+ * @returns {Promise<ICredentials>} 資格情報
+ */
+function issueCredentialsByClient(clientId, scopes) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // クライアントの存在確認
+        const clientAdapter = sskts.adapter.client(mongoose.connection);
+        const clientDoc = yield clientAdapter.clientModel.findById(clientId, 'name').exec();
+        if (clientDoc === null) {
+            throw new Error('client not found');
+        }
+        const payload = {
+            client: clientDoc.toObject(),
+            scopes: scopes
+        };
+        return yield payload2credentials(payload);
+    });
+}
+exports.issueCredentialsByClient = issueCredentialsByClient;
+/**
  * 任意のデータをJWTを使用して資格情報へ変換する
  *
  * @param {object} payload 変換したいデータ
@@ -78,6 +99,7 @@ exports.issueCredentialsByAssertion = issueCredentialsByAssertion;
 function payload2credentials(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
+            debug('signing...', payload);
             jwt.sign(payload, process.env.SSKTS_API_SECRET, {
                 expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
             }, (err, encoded) => {
