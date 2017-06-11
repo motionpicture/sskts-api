@@ -15,6 +15,7 @@ const TEST_CARD_NO = '4111111111111111';
 const TEST_EXPIRE = '2012';
 const TEST_SECURITY_CODE = '123';
 const RETRY_INTERVAL_IN_MILLISECONDS = 2000;
+// const MAX_NUMBER_OF_RETRY = 10;
 
 export interface IConfig {
     gmoShopId: string;
@@ -38,9 +39,16 @@ export default async (config: IConfig): Promise<IGMOAuthResult> => {
         try {
             countTry += 1;
 
-            // {RETRY_INTERVAL_IN_MILLISECONDS}後にリトライ
-            await wait(RETRY_INTERVAL_IN_MILLISECONDS);
+            // if (countTry > MAX_NUMBER_OF_RETRY) {
+            //     throw new Error('GMO auth try limit exceeded');
+            // }
 
+            if (countTry > 1) {
+                // {RETRY_INTERVAL_IN_MILLISECONDS}後にリトライ
+                await wait(RETRY_INTERVAL_IN_MILLISECONDS);
+            }
+
+            debug('trying gmo auth...', countTry);
             // GMOオーソリ取得
             // tslint:disable-next-line:no-magic-numbers
             const orderId = `${config.orderIdPrefix}${`00${countTry}`.slice(-2)}`;

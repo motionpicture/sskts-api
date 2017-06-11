@@ -53,7 +53,7 @@ export default async (config: IConfig) => {
     }).then((response) => {
         debug('performances searched', response.body);
         if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
+            throw new Error(`${response.body.errors[0].title} ${response.body.errors[0].detail}`);
         }
 
         return response.body.data;
@@ -70,7 +70,7 @@ export default async (config: IConfig) => {
     }).then((response) => {
         debug('/performances/:id result:', response.statusCode, response.body);
         if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
+            throw new Error(`${response.body.errors[0].title} ${response.body.errors[0].detail}`);
         }
 
         return response.body.data.attributes;
@@ -87,7 +87,7 @@ export default async (config: IConfig) => {
     }).then((response) => {
         debug('/films/:id result:', response.statusCode, response.body);
         if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
+            throw new Error(`${response.body.errors[0].title} ${response.body.errors[0].detail}`);
         }
 
         return response.body.data.attributes;
@@ -104,7 +104,7 @@ export default async (config: IConfig) => {
     }).then((response) => {
         debug('/screens/:id result:', response.statusCode, response.body);
         if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
+            throw new Error(`${response.body.errors[0].title} ${response.body.errors[0].detail}`);
         }
 
         return response.body.data.attributes;
@@ -135,7 +135,7 @@ export default async (config: IConfig) => {
             throw new Error('please try later');
         }
         if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
+            throw new Error(`${response.body.errors[0].title} ${response.body.errors[0].detail}`);
         }
 
         return response.body.data;

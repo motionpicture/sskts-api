@@ -7,7 +7,6 @@
  */
 
 import * as GMO from '@motionpicture/gmo-service';
-import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
 import * as moment from 'moment';
 import * as request from 'request-promise-native';
@@ -17,33 +16,35 @@ import processOneTransaction from './scenarios/processOneTransaction';
 import repeatGMOAuthUntilSuccess from './scenarios/repeatGMOAuthUntilSuccess';
 import wait from './scenarios/wait';
 
-const debug = createDebug('sskts-api:loadtest:transactionByExistingReserve');
 const logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({
-            timestamp: true,
-            level: 'info'
+            timestamp: false,
+            level: 'debug',
+            json: false,
+            showLevel: false
         }),
         new (winston.transports.File)({
             filename: `logs/transactionByExistingReserve-${moment().format('YYYYMMDDHHmmss')}.log`,
-            timestamp: true,
+            timestamp: false,
             level: 'info',
-            json: false
+            json: false,
+            showLevel: false
         })
     ]
 });
 
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 const TEST_THEATER_ID = '118';
-const TEST_GMO_SHOP_ID = 'tshop00026096';
-const TEST_GMO_SHOP_PASS = 'xbxmkaa6';
+// const TEST_GMO_SHOP_ID = 'tshop00026096';
+// const TEST_GMO_SHOP_PASS = 'xbxmkaa6';
+const TEST_GMO_SHOP_ID = 'tshop00026715';
+const TEST_GMO_SHOP_PASS = 'ybmbptww';
 
 // tslint:disable-next-line:max-func-body-length
 async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
-    let response: any;
-
     // アクセストークン取得
-    response = await request.post({
+    const accessToken = await request.post({
         url: `${API_ENDPOINT}/oauth/token`,
         body: {
             assertion: process.env.SSKTS_API_REFRESH_TOKEN,
@@ -52,17 +53,19 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
         json: true,
         simple: false,
         resolveWithFullResponse: true
+    }).then((response) => {
+        logger.debug('oauth token result:', response.statusCode, response.body);
+
+        return response.body.access_token;
     });
-    debug('oauth token result:', response.statusCode, response.body);
-    const accessToken = response.body.access_token;
 
     const reserveNum = makeInrquiryResult.attributes.inquiry_key.reserve_num;
     const tel = '09012345678';
     const totalPrice = coaSeatAuthorization.price;
 
     // 取引開始
-    debug('starting transaction...');
-    response = await request.post({
+    logger.debug('starting transaction...');
+    const startTransactionResult = await request.post({
         url: `${API_ENDPOINT}/transactions/startIfPossible`,
         auth: { bearer: accessToken },
         body: {
@@ -71,21 +74,25 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
         json: true,
         simple: false,
         resolveWithFullResponse: true
+    }).then((response) => {
+        logger.debug('transaction start result:', response.statusCode, response.body);
+        if (response.statusCode === httpStatus.NOT_FOUND) {
+            throw new Error('please try later');
+        }
+        if (response.statusCode !== httpStatus.OK) {
+            handleError(response.body);
+        }
+
+        return response.body.data;
     });
-    debug('transaction start result:', response.statusCode, response.body);
-    if (response.statusCode === httpStatus.NOT_FOUND) {
-        throw new Error('please try later');
-    }
-    if (response.statusCode !== httpStatus.OK) {
-        throw new Error(response.body.message);
-    }
-    const transactionId = response.body.data.id;
+
+    const transactionId = startTransactionResult.id;
 
     interface IOwner {
         id: string;
         group: string;
     }
-    const owners: IOwner[] = response.body.data.attributes.owners;
+    const owners: IOwner[] = startTransactionResult.attributes.owners;
     const promoterOwner = owners.find((owner) => {
         return (owner.group === 'PROMOTER');
     });
@@ -99,20 +106,21 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
     await wait(2000);
 
     // COAオーソリ追加
-    debug('adding authorizations coaSeatReservation...');
+    logger.debug('adding authorizations coaSeatReservation...');
     const coaSeatAuthorizationNow = { ...coaSeatAuthorization, ...{ owner_to: anonymousOwnerId } };
-    response = await request.post({
+    await request.post({
         url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
         auth: { bearer: accessToken },
         body: coaSeatAuthorizationNow,
         json: true,
         simple: false,
         resolveWithFullResponse: true
+    }).then((response) => {
+        logger.debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
+        if (response.statusCode !== httpStatus.OK) {
+            handleError(response.body);
+        }
     });
-    debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== httpStatus.OK) {
-        throw new Error(response.body.message);
-    }
 
     // tslint:disable-next-line:no-magic-numbers
     await wait(2000);
@@ -124,11 +132,11 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
         amount: totalPrice,
         orderIdPrefix: `${moment().format('YYYYMMDD')}${TEST_THEATER_ID}${moment().format('HHmmssSS')}`
     });
-    logger.info('gmo auth countTry:', gmoAuthResult.countTry);
+    logger.debug('gmo auth countTry:', gmoAuthResult.countTry);
 
     // GMOオーソリ追加
-    debug('adding authorizations gmo...');
-    response = await request.post({
+    logger.debug('adding authorizations gmo...');
+    await request.post({
         url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/gmo`,
         auth: { bearer: accessToken },
         body: {
@@ -146,15 +154,16 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
         json: true,
         simple: false,
         resolveWithFullResponse: true
+    }).then((response) => {
+        logger.debug('addGMOAuthorization result:', response.statusCode, response.body);
+        if (response.statusCode !== httpStatus.OK) {
+            handleError(response.body);
+        }
     });
-    debug('addGMOAuthorization result:', response.statusCode, response.body);
-    if (response.statusCode !== httpStatus.OK) {
-        throw new Error(response.body.message);
-    }
 
     // 購入者情報登録
-    debug('updating anonymous...');
-    response = await request.patch({
+    logger.debug('updating anonymous...');
+    await request.patch({
         url: `${API_ENDPOINT}/transactions/${transactionId}/anonymousOwner`,
         auth: { bearer: accessToken },
         body: {
@@ -165,15 +174,16 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
         },
         json: true,
         resolveWithFullResponse: true
+    }).then((response) => {
+        logger.debug('anonymousOwner updated.', response.statusCode, response.body);
+        if (response.statusCode !== httpStatus.NO_CONTENT) {
+            handleError(response.body);
+        }
     });
-    debug('anonymousOwner updated.', response.statusCode, response.body);
-    if (response.statusCode !== httpStatus.NO_CONTENT) {
-        throw new Error(response.body.message);
-    }
 
     // 照会情報登録(購入番号と電話番号で照会する場合)
-    debug('enabling inquiry...');
-    response = await request.patch({
+    logger.debug('enabling inquiry...');
+    await request.patch({
         url: `${API_ENDPOINT}/transactions/${transactionId}/enableInquiry`,
         auth: { bearer: accessToken },
         body: {
@@ -184,11 +194,12 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
         json: true,
         simple: false,
         resolveWithFullResponse: true
+    }).then((response) => {
+        logger.debug('enableInquiry result:', response.statusCode, response.body);
+        if (response.statusCode !== httpStatus.NO_CONTENT) {
+            handleError(response.body);
+        }
     });
-    debug('enableInquiry result:', response.statusCode, response.body);
-    if (response.statusCode !== httpStatus.NO_CONTENT) {
-        throw new Error(response.body.message);
-    }
 
     // メール追加
     const content = `
@@ -210,8 +221,8 @@ sskts-api:examples:transactionByExistingReserve 様\n
 http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
 `;
-    debug('adding email...');
-    response = await request.post({
+    logger.debug('adding email...');
+    await request.post({
         url: `${API_ENDPOINT}/transactions/${transactionId}/notifications/email`,
         auth: { bearer: accessToken },
         body: {
@@ -223,18 +234,19 @@ http://www.cinemasunshine.co.jp/\n
         json: true,
         simple: false,
         resolveWithFullResponse: true
+    }).then((response) => {
+        logger.debug('addEmail result:', response.statusCode, response.body);
+        if (response.statusCode !== httpStatus.OK) {
+            handleError(response.body);
+        }
     });
-    debug('addEmail result:', response.statusCode, response.body);
-    if (response.statusCode !== httpStatus.OK) {
-        throw new Error(response.body.message);
-    }
 
     // tslint:disable-next-line:no-magic-numbers
     await wait(2000);
 
     // 取引成立
-    debug('closing transaction...');
-    response = await request.patch({
+    logger.debug('closing transaction...');
+    await request.patch({
         url: `${API_ENDPOINT}/transactions/${transactionId}/close`,
         auth: { bearer: accessToken },
         body: {
@@ -242,10 +254,28 @@ http://www.cinemasunshine.co.jp/\n
         json: true,
         simple: false,
         resolveWithFullResponse: true
+    }).then((response) => {
+        logger.debug('close result:', response.statusCode, response.body);
+        if (response.statusCode !== httpStatus.NO_CONTENT) {
+            handleError(response.body);
+        }
     });
-    debug('close result:', response.statusCode, response.body);
-    if (response.statusCode !== httpStatus.NO_CONTENT) {
-        throw new Error(response.body.message);
+
+    return {
+        gmoAuthResult
+    };
+}
+
+/**
+ * エラーレスポンスハンドリング
+ *
+ * @param {any} body レスポンスボディ
+ */
+function handleError(body: any) {
+    if (body.errors !== undefined) {
+        throw new Error(`${body.errors[0].title} ${body.errors[0].detail}`);
+    } else {
+        throw new Error(body.text);
     }
 }
 
@@ -256,6 +286,17 @@ let numberOfProcessedTransactions = 0;
 const MAX_NUBMER_OF_PARALLEL_TASKS = 1800;
 const INTERVAL_MILLISECONDS = 500;
 
+export interface IResultTransaction {
+    no: number;
+    startedAt: Date;
+    processedAt: Date | null;
+    error: string;
+    gmoOrderId: string;
+    countTryGMOAuth: number;
+}
+
+const results: IResultTransaction[] = [];
+
 // まず普通にひとつの取引プロセス
 processOneTransaction({
     apiEndpoint: API_ENDPOINT,
@@ -264,6 +305,9 @@ processOneTransaction({
     gmoShopPass: TEST_GMO_SHOP_PASS
 }).then((processTransactionResult) => {
     logger.info('processTransaction success!', processTransactionResult);
+
+    const fields = ['no', 'started', 'processed', 'gmoOrderId', 'countTryGMOAuth', 'error'];
+    logger.info(`|${fields.join('|')}|\n|${Array.from(Array(fields.length)).map(() => ' :--- ').join('|')}|`);
 
     const timer = setInterval(
         async () => {
@@ -275,18 +319,34 @@ processOneTransaction({
 
             count += 1;
             const countNow = count;
+            const resultTransaction: IResultTransaction = {
+                no: countNow,
+                startedAt: new Date(),
+                processedAt: null,
+                error: '',
+                gmoOrderId: '',
+                countTryGMOAuth: 0
+            };
 
             try {
-                logger.info('starting...', countNow);
-                await main(processTransactionResult.coaSeatAuthorization, processTransactionResult.makeInrquiryResult);
+                logger.debug('starting...', countNow);
+                const mainResult = await main(processTransactionResult.coaSeatAuthorization, processTransactionResult.makeInrquiryResult);
                 numberOfClosedTransactions += 1;
-                logger.info('end', countNow);
+
+                resultTransaction.countTryGMOAuth = mainResult.gmoAuthResult.countTry;
+                resultTransaction.gmoOrderId = mainResult.gmoAuthResult.orderId;
             } catch (error) {
-                logger.error('main failed', error, countNow);
+                resultTransaction.error = error.message;
             }
 
             numberOfProcessedTransactions += 1;
-            logger.info('numberOfProcessedTransactions:', numberOfProcessedTransactions);
+
+            // 結果リストに追加
+            resultTransaction.processedAt = new Date();
+            results.push(resultTransaction);
+
+            // 結果リストをログ
+            logger.info(result2markdown(resultTransaction));
         },
         INTERVAL_MILLISECONDS
     );
@@ -297,4 +357,20 @@ processOneTransaction({
 
 process.on('exit', () => {
     logger.info('numberOfClosedTransactions:', numberOfClosedTransactions);
+    logger.info('results', [results]);
 });
+
+function result2markdown(resultTransaction: IResultTransaction) {
+    let markdown = '';
+    const resultStr = [
+        resultTransaction.no.toString(),
+        moment(resultTransaction.startedAt).format('YYYY-MM-DDTHH:mm:ss'),
+        (resultTransaction.processedAt instanceof Date) ? moment(resultTransaction.processedAt).format('YYYY-MM-DDTHH:mm:ss') : '',
+        resultTransaction.gmoOrderId,
+        resultTransaction.countTryGMOAuth,
+        resultTransaction.error
+    ].join('|');
+    markdown += `|${resultStr}|`;
+
+    return markdown;
+}

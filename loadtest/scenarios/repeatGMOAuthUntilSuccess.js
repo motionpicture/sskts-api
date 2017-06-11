@@ -27,8 +27,14 @@ exports.default = (config) => __awaiter(this, void 0, void 0, function* () {
     while (result === null) {
         try {
             countTry += 1;
-            // {RETRY_INTERVAL_IN_MILLISECONDS}後にリトライ
-            yield wait_1.default(RETRY_INTERVAL_IN_MILLISECONDS);
+            // if (countTry > MAX_NUMBER_OF_RETRY) {
+            //     throw new Error('GMO auth try limit exceeded');
+            // }
+            if (countTry > 1) {
+                // {RETRY_INTERVAL_IN_MILLISECONDS}後にリトライ
+                yield wait_1.default(RETRY_INTERVAL_IN_MILLISECONDS);
+            }
+            debug('trying gmo auth...', countTry);
             // GMOオーソリ取得
             // tslint:disable-next-line:no-magic-numbers
             const orderId = `${config.orderIdPrefix}${`00${countTry}`.slice(-2)}`;

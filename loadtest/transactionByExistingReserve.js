@@ -16,7 +16,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const GMO = require("@motionpicture/gmo-service");
-const createDebug = require("debug");
 const httpStatus = require("http-status");
 const moment = require("moment");
 const request = require("request-promise-native");
@@ -24,31 +23,34 @@ const winston = require("winston");
 const processOneTransaction_1 = require("./scenarios/processOneTransaction");
 const repeatGMOAuthUntilSuccess_1 = require("./scenarios/repeatGMOAuthUntilSuccess");
 const wait_1 = require("./scenarios/wait");
-const debug = createDebug('sskts-api:loadtest:transactionByExistingReserve');
 const logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({
-            timestamp: true,
-            level: 'info'
+            timestamp: false,
+            level: 'debug',
+            json: false,
+            showLevel: false
         }),
         new (winston.transports.File)({
             filename: `logs/transactionByExistingReserve-${moment().format('YYYYMMDDHHmmss')}.log`,
-            timestamp: true,
+            timestamp: false,
             level: 'info',
-            json: false
+            json: false,
+            showLevel: false
         })
     ]
 });
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 const TEST_THEATER_ID = '118';
-const TEST_GMO_SHOP_ID = 'tshop00026096';
-const TEST_GMO_SHOP_PASS = 'xbxmkaa6';
+// const TEST_GMO_SHOP_ID = 'tshop00026096';
+// const TEST_GMO_SHOP_PASS = 'xbxmkaa6';
+const TEST_GMO_SHOP_ID = 'tshop00026715';
+const TEST_GMO_SHOP_PASS = 'ybmbptww';
 // tslint:disable-next-line:max-func-body-length
 function main(coaSeatAuthorization, makeInrquiryResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        let response;
         // アクセストークン取得
-        response = yield request.post({
+        const accessToken = yield request.post({
             url: `${API_ENDPOINT}/oauth/token`,
             body: {
                 assertion: process.env.SSKTS_API_REFRESH_TOKEN,
@@ -57,15 +59,16 @@ function main(coaSeatAuthorization, makeInrquiryResult) {
             json: true,
             simple: false,
             resolveWithFullResponse: true
+        }).then((response) => {
+            logger.debug('oauth token result:', response.statusCode, response.body);
+            return response.body.access_token;
         });
-        debug('oauth token result:', response.statusCode, response.body);
-        const accessToken = response.body.access_token;
         const reserveNum = makeInrquiryResult.attributes.inquiry_key.reserve_num;
         const tel = '09012345678';
         const totalPrice = coaSeatAuthorization.price;
         // 取引開始
-        debug('starting transaction...');
-        response = yield request.post({
+        logger.debug('starting transaction...');
+        const startTransactionResult = yield request.post({
             url: `${API_ENDPOINT}/transactions/startIfPossible`,
             auth: { bearer: accessToken },
             body: {
@@ -74,16 +77,18 @@ function main(coaSeatAuthorization, makeInrquiryResult) {
             json: true,
             simple: false,
             resolveWithFullResponse: true
+        }).then((response) => {
+            logger.debug('transaction start result:', response.statusCode, response.body);
+            if (response.statusCode === httpStatus.NOT_FOUND) {
+                throw new Error('please try later');
+            }
+            if (response.statusCode !== httpStatus.OK) {
+                handleError(response.body);
+            }
+            return response.body.data;
         });
-        debug('transaction start result:', response.statusCode, response.body);
-        if (response.statusCode === httpStatus.NOT_FOUND) {
-            throw new Error('please try later');
-        }
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
-        }
-        const transactionId = response.body.data.id;
-        const owners = response.body.data.attributes.owners;
+        const transactionId = startTransactionResult.id;
+        const owners = startTransactionResult.attributes.owners;
         const promoterOwner = owners.find((owner) => {
             return (owner.group === 'PROMOTER');
         });
@@ -95,20 +100,21 @@ function main(coaSeatAuthorization, makeInrquiryResult) {
         // tslint:disable-next-line:no-magic-numbers
         yield wait_1.default(2000);
         // COAオーソリ追加
-        debug('adding authorizations coaSeatReservation...');
+        logger.debug('adding authorizations coaSeatReservation...');
         const coaSeatAuthorizationNow = Object.assign({}, coaSeatAuthorization, { owner_to: anonymousOwnerId });
-        response = yield request.post({
+        yield request.post({
             url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
             auth: { bearer: accessToken },
             body: coaSeatAuthorizationNow,
             json: true,
             simple: false,
             resolveWithFullResponse: true
+        }).then((response) => {
+            logger.debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
+            if (response.statusCode !== httpStatus.OK) {
+                handleError(response.body);
+            }
         });
-        debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
-        }
         // tslint:disable-next-line:no-magic-numbers
         yield wait_1.default(2000);
         // GMOオーソリ取得(できるまで続ける)
@@ -118,10 +124,10 @@ function main(coaSeatAuthorization, makeInrquiryResult) {
             amount: totalPrice,
             orderIdPrefix: `${moment().format('YYYYMMDD')}${TEST_THEATER_ID}${moment().format('HHmmssSS')}`
         });
-        logger.info('gmo auth countTry:', gmoAuthResult.countTry);
+        logger.debug('gmo auth countTry:', gmoAuthResult.countTry);
         // GMOオーソリ追加
-        debug('adding authorizations gmo...');
-        response = yield request.post({
+        logger.debug('adding authorizations gmo...');
+        yield request.post({
             url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/gmo`,
             auth: { bearer: accessToken },
             body: {
@@ -139,14 +145,15 @@ function main(coaSeatAuthorization, makeInrquiryResult) {
             json: true,
             simple: false,
             resolveWithFullResponse: true
+        }).then((response) => {
+            logger.debug('addGMOAuthorization result:', response.statusCode, response.body);
+            if (response.statusCode !== httpStatus.OK) {
+                handleError(response.body);
+            }
         });
-        debug('addGMOAuthorization result:', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
-        }
         // 購入者情報登録
-        debug('updating anonymous...');
-        response = yield request.patch({
+        logger.debug('updating anonymous...');
+        yield request.patch({
             url: `${API_ENDPOINT}/transactions/${transactionId}/anonymousOwner`,
             auth: { bearer: accessToken },
             body: {
@@ -157,14 +164,15 @@ function main(coaSeatAuthorization, makeInrquiryResult) {
             },
             json: true,
             resolveWithFullResponse: true
+        }).then((response) => {
+            logger.debug('anonymousOwner updated.', response.statusCode, response.body);
+            if (response.statusCode !== httpStatus.NO_CONTENT) {
+                handleError(response.body);
+            }
         });
-        debug('anonymousOwner updated.', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.NO_CONTENT) {
-            throw new Error(response.body.message);
-        }
         // 照会情報登録(購入番号と電話番号で照会する場合)
-        debug('enabling inquiry...');
-        response = yield request.patch({
+        logger.debug('enabling inquiry...');
+        yield request.patch({
             url: `${API_ENDPOINT}/transactions/${transactionId}/enableInquiry`,
             auth: { bearer: accessToken },
             body: {
@@ -175,11 +183,12 @@ function main(coaSeatAuthorization, makeInrquiryResult) {
             json: true,
             simple: false,
             resolveWithFullResponse: true
+        }).then((response) => {
+            logger.debug('enableInquiry result:', response.statusCode, response.body);
+            if (response.statusCode !== httpStatus.NO_CONTENT) {
+                handleError(response.body);
+            }
         });
-        debug('enableInquiry result:', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.NO_CONTENT) {
-            throw new Error(response.body.message);
-        }
         // メール追加
         const content = `
 sskts-api:examples:transactionByExistingReserve 様\n
@@ -200,8 +209,8 @@ sskts-api:examples:transactionByExistingReserve 様\n
 http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
 `;
-        debug('adding email...');
-        response = yield request.post({
+        logger.debug('adding email...');
+        yield request.post({
             url: `${API_ENDPOINT}/transactions/${transactionId}/notifications/email`,
             auth: { bearer: accessToken },
             body: {
@@ -213,34 +222,53 @@ http://www.cinemasunshine.co.jp/\n
             json: true,
             simple: false,
             resolveWithFullResponse: true
+        }).then((response) => {
+            logger.debug('addEmail result:', response.statusCode, response.body);
+            if (response.statusCode !== httpStatus.OK) {
+                handleError(response.body);
+            }
         });
-        debug('addEmail result:', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
-        }
         // tslint:disable-next-line:no-magic-numbers
         yield wait_1.default(2000);
         // 取引成立
-        debug('closing transaction...');
-        response = yield request.patch({
+        logger.debug('closing transaction...');
+        yield request.patch({
             url: `${API_ENDPOINT}/transactions/${transactionId}/close`,
             auth: { bearer: accessToken },
             body: {},
             json: true,
             simple: false,
             resolveWithFullResponse: true
+        }).then((response) => {
+            logger.debug('close result:', response.statusCode, response.body);
+            if (response.statusCode !== httpStatus.NO_CONTENT) {
+                handleError(response.body);
+            }
         });
-        debug('close result:', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.NO_CONTENT) {
-            throw new Error(response.body.message);
-        }
+        return {
+            gmoAuthResult
+        };
     });
+}
+/**
+ * エラーレスポンスハンドリング
+ *
+ * @param {any} body レスポンスボディ
+ */
+function handleError(body) {
+    if (body.errors !== undefined) {
+        throw new Error(`${body.errors[0].title} ${body.errors[0].detail}`);
+    }
+    else {
+        throw new Error(body.text);
+    }
 }
 let count = 0;
 let numberOfClosedTransactions = 0;
 let numberOfProcessedTransactions = 0;
 const MAX_NUBMER_OF_PARALLEL_TASKS = 1800;
 const INTERVAL_MILLISECONDS = 500;
+const results = [];
 // まず普通にひとつの取引プロセス
 processOneTransaction_1.default({
     apiEndpoint: API_ENDPOINT,
@@ -249,6 +277,8 @@ processOneTransaction_1.default({
     gmoShopPass: TEST_GMO_SHOP_PASS
 }).then((processTransactionResult) => {
     logger.info('processTransaction success!', processTransactionResult);
+    const fields = ['no', 'started', 'processed', 'gmoOrderId', 'countTryGMOAuth', 'error'];
+    logger.info(`|${fields.join('|')}|\n|${Array.from(Array(fields.length)).map(() => ' :--- ').join('|')}|`);
     const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count >= MAX_NUBMER_OF_PARALLEL_TASKS) {
             clearTimeout(timer);
@@ -256,17 +286,30 @@ processOneTransaction_1.default({
         }
         count += 1;
         const countNow = count;
+        const resultTransaction = {
+            no: countNow,
+            startedAt: new Date(),
+            processedAt: null,
+            error: '',
+            gmoOrderId: '',
+            countTryGMOAuth: 0
+        };
         try {
-            logger.info('starting...', countNow);
-            yield main(processTransactionResult.coaSeatAuthorization, processTransactionResult.makeInrquiryResult);
+            logger.debug('starting...', countNow);
+            const mainResult = yield main(processTransactionResult.coaSeatAuthorization, processTransactionResult.makeInrquiryResult);
             numberOfClosedTransactions += 1;
-            logger.info('end', countNow);
+            resultTransaction.countTryGMOAuth = mainResult.gmoAuthResult.countTry;
+            resultTransaction.gmoOrderId = mainResult.gmoAuthResult.orderId;
         }
         catch (error) {
-            logger.error('main failed', error, countNow);
+            resultTransaction.error = error.message;
         }
         numberOfProcessedTransactions += 1;
-        logger.info('numberOfProcessedTransactions:', numberOfProcessedTransactions);
+        // 結果リストに追加
+        resultTransaction.processedAt = new Date();
+        results.push(resultTransaction);
+        // 結果リストをログ
+        logger.info(result2markdown(resultTransaction));
     }), INTERVAL_MILLISECONDS);
 }).catch((err) => {
     console.error(err);
@@ -274,4 +317,18 @@ processOneTransaction_1.default({
 });
 process.on('exit', () => {
     logger.info('numberOfClosedTransactions:', numberOfClosedTransactions);
+    logger.info('results', [results]);
 });
+function result2markdown(resultTransaction) {
+    let markdown = '';
+    const resultStr = [
+        resultTransaction.no.toString(),
+        moment(resultTransaction.startedAt).format('YYYY-MM-DDTHH:mm:ss'),
+        (resultTransaction.processedAt instanceof Date) ? moment(resultTransaction.processedAt).format('YYYY-MM-DDTHH:mm:ss') : '',
+        resultTransaction.gmoOrderId,
+        resultTransaction.countTryGMOAuth,
+        resultTransaction.error
+    ].join('|');
+    markdown += `|${resultStr}|`;
+    return markdown;
+}
