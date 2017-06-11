@@ -5,6 +5,7 @@
  *
  * @ignore
  */
+
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
@@ -12,7 +13,11 @@ import * as moment from 'moment';
 import * as request from 'request-promise-native';
 import * as winston from 'winston';
 
-const debug = createDebug('sskts-api:examples:transactionByExistingReserve');
+import processOneTransaction from './scenarios/processOneTransaction';
+import repeatGMOAuthUntilSuccess from './scenarios/repeatGMOAuthUntilSuccess';
+import wait from './scenarios/wait';
+
+const debug = createDebug('sskts-api:loadtest:transactionByExistingReserve');
 const logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({
@@ -20,7 +25,7 @@ const logger = new (winston.Logger)({
             level: 'info'
         }),
         new (winston.transports.File)({
-            filename: `transactionByExistingReserve-${moment().format('YYYYMMDDHHmmss')}.log`,
+            filename: `logs/transactionByExistingReserve-${moment().format('YYYYMMDDHHmmss')}.log`,
             timestamp: true,
             level: 'info',
             json: false
@@ -29,59 +34,13 @@ const logger = new (winston.Logger)({
 });
 
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
-
-async function tryAuthGMO(gmoShopId: string, gmoShopPass: string, amount: number) {
-    let result: {
-        orderId: string;
-        accessId: string;
-        accessPass: string;
-    } | null = null;
-
-    while (result === null) {
-        try {
-            // GMOオーソリ取得
-            const orderId = Date.now().toString();
-            const entryTranResult = await GMO.CreditService.entryTran({
-                shopId: gmoShopId,
-                shopPass: gmoShopPass,
-                orderId: orderId,
-                jobCd: GMO.Util.JOB_CD_AUTH,
-                amount: amount
-            });
-
-            const execTranResult = await GMO.CreditService.execTran({
-                accessId: entryTranResult.accessId,
-                accessPass: entryTranResult.accessPass,
-                orderId: orderId,
-                method: '1',
-                cardNo: '4111111111111111',
-                expire: '2012',
-                securityCode: '123'
-            });
-            debug(execTranResult);
-
-            result = {
-                orderId: orderId,
-                accessId: entryTranResult.accessId,
-                accessPass: entryTranResult.accessPass
-            };
-        } catch (error) {
-            debug(error);
-        }
-    }
-
-    return result;
-}
+const TEST_THEATER_ID = '118';
+const TEST_GMO_SHOP_ID = 'tshop00026096';
+const TEST_GMO_SHOP_PASS = 'xbxmkaa6';
 
 // tslint:disable-next-line:max-func-body-length
-async function main() {
+async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
     let response: any;
-    const gmoShopId = 'tshop00026096';
-    const gmoShopPass = 'xbxmkaa6';
-    const theaterCode = '118';
-    const reserveNum = 1381;
-    const tel = '09012345678';
-    const totalPrice = 2600;
 
     // アクセストークン取得
     response = await request.post({
@@ -96,6 +55,10 @@ async function main() {
     });
     debug('oauth token result:', response.statusCode, response.body);
     const accessToken = response.body.access_token;
+
+    const reserveNum = makeInrquiryResult.attributes.inquiry_key.reserve_num;
+    const tel = '09012345678';
+    const totalPrice = coaSeatAuthorization.price;
 
     // 取引開始
     debug('starting transaction...');
@@ -132,71 +95,16 @@ async function main() {
     });
     const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
 
+    // tslint:disable-next-line:no-magic-numbers
+    await wait(2000);
+
     // COAオーソリ追加
     debug('adding authorizations coaSeatReservation...');
+    const coaSeatAuthorizationNow = { ...coaSeatAuthorization, ...{ owner_to: anonymousOwnerId } };
     response = await request.post({
         url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
         auth: { bearer: accessToken },
-        body: {
-            seats: [
-                {
-                    mvtk_num: '',
-                    mvtk_kbn_denshiken: '00',
-                    mvtk_kbn_maeuriken: '00',
-                    mvtk_kbn_kensyu: '00',
-                    mvtk_sales_price: 0,
-                    kbn_eisyahousiki: '00',
-                    add_glasses: 0,
-                    mvtk_app_price: 0,
-                    sale_price: 1300,
-                    dis_price: 0,
-                    add_price: 0,
-                    std_price: 1300,
-                    ticket_name_kana: 'レイトショー',
-                    ticket_name: {
-                        en: 'Late Show Price',
-                        ja: 'レイト'
-                    },
-                    ticket_code: '171',
-                    seat_code: 'Ｂ－３',
-                    section: '   ',
-                    performance: '11820170410162500902130'
-                },
-                {
-                    mvtk_num: '',
-                    mvtk_kbn_denshiken: '00',
-                    mvtk_kbn_maeuriken: '00',
-                    mvtk_kbn_kensyu: '00',
-                    mvtk_sales_price: 0,
-                    kbn_eisyahousiki: '00',
-                    add_glasses: 0,
-                    mvtk_app_price: 0,
-                    sale_price: 1300,
-                    dis_price: 0,
-                    add_price: 0,
-                    std_price: 1300,
-                    ticket_name_kana: 'レイトショー',
-                    ticket_name: {
-                        en: 'Late Show Price',
-                        ja: 'レイト'
-                    },
-                    ticket_code: '171',
-                    seat_code: 'Ｂ－４',
-                    section: '   ',
-                    performance: '11820170410162500902130'
-                }
-            ],
-            owner_to: anonymousOwnerId,
-            owner_from: '5868e16789cc75249cdbfa4b',
-            price: totalPrice,
-            coa_screen_code: '90',
-            coa_time_begin: '2130',
-            coa_title_branch_num: '0',
-            coa_title_code: '16250',
-            coa_date_jouei: '20170410',
-            coa_theater_code: theaterCode,
-            coa_tmp_reserve_num: reserveNum
-        },
+        body: coaSeatAuthorizationNow,
         json: true,
         simple: false,
         resolveWithFullResponse: true
@@ -206,11 +114,17 @@ async function main() {
         throw new Error(response.body.message);
     }
 
+    // tslint:disable-next-line:no-magic-numbers
+    await wait(2000);
+
     // GMOオーソリ取得(できるまで続ける)
-    const tryAuthGMOResult = await tryAuthGMO(gmoShopId, gmoShopPass, totalPrice);
-    const orderId = tryAuthGMOResult.orderId;
-    const accessId = tryAuthGMOResult.accessId;
-    const accessPass = tryAuthGMOResult.accessPass;
+    const gmoAuthResult = await repeatGMOAuthUntilSuccess({
+        gmoShopId: TEST_GMO_SHOP_ID,
+        gmoShopPass: TEST_GMO_SHOP_PASS,
+        amount: totalPrice,
+        orderIdPrefix: `${moment().format('YYYYMMDD')}${TEST_THEATER_ID}${moment().format('HHmmssSS')}`
+    });
+    logger.info('gmo auth countTry:', gmoAuthResult.countTry);
 
     // GMOオーソリ追加
     debug('adding authorizations gmo...');
@@ -220,12 +134,12 @@ async function main() {
         body: {
             owner_from: anonymousOwnerId,
             owner_to: promoterOwnerId,
-            gmo_shop_id: gmoShopId,
-            gmo_shop_pass: gmoShopPass,
-            gmo_order_id: orderId,
+            gmo_shop_id: TEST_GMO_SHOP_ID,
+            gmo_shop_pass: TEST_GMO_SHOP_PASS,
+            gmo_order_id: gmoAuthResult.orderId,
             gmo_amount: totalPrice,
-            gmo_access_id: accessId,
-            gmo_access_pass: accessPass,
+            gmo_access_id: gmoAuthResult.accessId,
+            gmo_access_pass: gmoAuthResult.accessPass,
             gmo_job_cd: GMO.Util.JOB_CD_AUTH,
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
         },
@@ -263,7 +177,7 @@ async function main() {
         url: `${API_ENDPOINT}/transactions/${transactionId}/enableInquiry`,
         auth: { bearer: accessToken },
         body: {
-            inquiry_theater: theaterCode,
+            inquiry_theater: TEST_THEATER_ID,
             inquiry_id: reserveNum,
             inquiry_pass: '00000000000' // 購入取消されないようにあえて間違った値
         },
@@ -315,6 +229,9 @@ http://www.cinemasunshine.co.jp/\n
         throw new Error(response.body.message);
     }
 
+    // tslint:disable-next-line:no-magic-numbers
+    await wait(2000);
+
     // 取引成立
     debug('closing transaction...');
     response = await request.patch({
@@ -339,33 +256,44 @@ let numberOfProcessedTransactions = 0;
 const MAX_NUBMER_OF_PARALLEL_TASKS = 1800;
 const INTERVAL_MILLISECONDS = 500;
 
-const timer = setInterval(
-    async () => {
-        if (count >= MAX_NUBMER_OF_PARALLEL_TASKS) {
-            clearTimeout(timer);
+// まず普通にひとつの取引プロセス
+processOneTransaction({
+    apiEndpoint: API_ENDPOINT,
+    theaterId: TEST_THEATER_ID,
+    gmoShopId: TEST_GMO_SHOP_ID,
+    gmoShopPass: TEST_GMO_SHOP_PASS
+}).then((processTransactionResult) => {
+    logger.info('processTransaction success!', processTransactionResult);
 
-            return;
-        }
+    const timer = setInterval(
+        async () => {
+            if (count >= MAX_NUBMER_OF_PARALLEL_TASKS) {
+                clearTimeout(timer);
 
-        count += 1;
-        const countNow = count;
+                return;
+            }
 
-        try {
-            logger.info('starting...', countNow);
-            await main();
-            numberOfClosedTransactions += 1;
-            logger.info('end', countNow);
-        } catch (error) {
-            logger.error(error.message, countNow);
-        }
+            count += 1;
+            const countNow = count;
 
-        numberOfProcessedTransactions += 1;
-        logger.info('numberOfProcessedTransactions:', numberOfProcessedTransactions);
+            try {
+                logger.info('starting...', countNow);
+                await main(processTransactionResult.coaSeatAuthorization, processTransactionResult.makeInrquiryResult);
+                numberOfClosedTransactions += 1;
+                logger.info('end', countNow);
+            } catch (error) {
+                logger.error('main failed', error, countNow);
+            }
 
-        // count -= 1;
-    },
-    INTERVAL_MILLISECONDS
-);
+            numberOfProcessedTransactions += 1;
+            logger.info('numberOfProcessedTransactions:', numberOfProcessedTransactions);
+        },
+        INTERVAL_MILLISECONDS
+    );
+}).catch((err) => {
+    console.error(err);
+    process.exit(1);
+});
 
 process.on('exit', () => {
     logger.info('numberOfClosedTransactions:', numberOfClosedTransactions);
