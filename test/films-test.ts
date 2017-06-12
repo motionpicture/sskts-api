@@ -61,6 +61,9 @@ describe('GET /films/:id', () => {
         await sskts.service.master.importFilms(theaterId)(theaterAdapter, filmAdapter);
 
         const filmDoc = await filmAdapter.model.findOne().exec();
+        if (filmDoc === null) {
+            throw new Error('test data not imported');
+        }
 
         await supertest(app)
             .get(`/films/${filmDoc.get('id')}`)

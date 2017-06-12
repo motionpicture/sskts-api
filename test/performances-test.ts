@@ -117,6 +117,9 @@ describe('GET /performances/:id', () => {
         )(filmAdapter, screenAdapter, performanceAdapter);
 
         const performanceDoc = await performanceAdapter.model.findOne().exec();
+        if (performanceDoc === null) {
+            throw new Error('test data not imported');
+        }
 
         await supertest(app)
             .get(`/performances/${performanceDoc.get('id')}`)

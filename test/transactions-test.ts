@@ -200,6 +200,10 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
                 'authorization.id': authorizationId
             }
         ).exec();
+        if (transactionEvent === null) {
+            throw new Error('transactionEvent should exist');
+        }
+
         assert.equal(transactionEvent.get('transaction'), transaction.id);
 
         await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
@@ -344,6 +348,9 @@ describe('座席予約承認追加', () => {
 
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
         const transactionEvent = await transactionAdapter.transactionEventModel.findOne({ 'authorization.id': authorizationId }).exec();
+        if (transactionEvent === null) {
+            throw new Error('transactionEvent should exist');
+        }
         assert.equal(transactionEvent.get('transaction'), transaction.id);
 
         // テストデータ削除

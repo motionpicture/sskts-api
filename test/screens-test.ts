@@ -61,6 +61,9 @@ describe('GET /screens/:id', () => {
         await sskts.service.master.importScreens(theaterId)(theaterAdapter, screenAdapter);
 
         const screenDoc = await screenAdapter.model.findOne().exec();
+        if (screenDoc === null) {
+            throw new Error('test data not imported');
+        }
 
         await supertest(app)
             .get(`/screens/${screenDoc.get('id')}`)
