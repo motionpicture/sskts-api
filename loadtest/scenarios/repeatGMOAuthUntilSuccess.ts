@@ -14,7 +14,7 @@ const debug = createDebug('sskts-api:loadtest:scenarios:repeatGMOAuthUntilSucces
 const TEST_CARD_NO = '4111111111111111';
 const TEST_EXPIRE = '2012';
 const TEST_SECURITY_CODE = '123';
-const RETRY_INTERVAL_IN_MILLISECONDS = 2000;
+const RETRY_INTERVAL_IN_MILLISECONDS = 5000;
 // const MAX_NUMBER_OF_RETRY = 10;
 
 export interface IConfig {

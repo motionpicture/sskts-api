@@ -103,7 +103,7 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
     const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
 
     // tslint:disable-next-line:no-magic-numbers
-    await wait(2000);
+    await wait(5000);
 
     // COAオーソリ追加
     logger.debug('adding authorizations coaSeatReservation...');
@@ -123,7 +123,7 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
     });
 
     // tslint:disable-next-line:no-magic-numbers
-    await wait(2000);
+    await wait(5000);
 
     // GMOオーソリ取得(できるまで続ける)
     const gmoAuthResult = await repeatGMOAuthUntilSuccess({
@@ -203,7 +203,7 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
 
     // メール追加
     const content = `
-sskts-api:examples:transactionByExistingReserve 様\n
+sskts-api:loadtest:transactionByExistingReserve 様\n
 \n
 -------------------------------------------------------------------\n
 この度はご購入いただき誠にありがとうございます。\n
@@ -242,7 +242,7 @@ http://www.cinemasunshine.co.jp/\n
     });
 
     // tslint:disable-next-line:no-magic-numbers
-    await wait(2000);
+    await wait(5000);
 
     // 取引成立
     logger.debug('closing transaction...');
