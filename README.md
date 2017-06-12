@@ -50,6 +50,11 @@ set COA_REFRESH_TOKEN=**********coa apiのリフレッシュトークン********
 set SSKTS_API_SECRET=**********本apiでjsonwebtoken署名に使用するシークレット文字列**********
 set SSKTS_API_REFRESH_TOKEN=**********本apiのリフレッシュトークン**********
 set SSKTS_DEVELOPER_EMAIL=**********本apiで使用される開発者メールアドレス**********
+set REDIS_HOST=**********在庫状況保管用Redis Cacheホスト名**********
+set REDIS_PORT=**********在庫状況保管用Redis Cacheポート番号**********
+set REDIS_KEY=**********在庫状況保管用Redis Cache接続キー**********
+set TRANSACTIONS_COUNT_UNIT_IN_SECONDS=**********取引数制限ユニット(秒)**********
+set NUMBER_OF_TRANSACTIONS_PER_UNIT=**********ユニットあたりの最大取引数**********
 ```
 
 テスト実行時
