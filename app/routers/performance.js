@@ -18,10 +18,12 @@ const performanceRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
+const redisClient_1 = require("../../redisClient");
 const authentication_1 = require("../middlewares/authentication");
+const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 performanceRouter.use(authentication_1.default);
-performanceRouter.get('/:id', (_1, _2, next) => {
+performanceRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -48,16 +50,18 @@ performanceRouter.get('/:id', (_1, _2, next) => {
         next(error);
     }
 }));
-performanceRouter.get('', (req, _, next) => {
+performanceRouter.get('', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
     req.checkQuery('day', 'invalid day').notEmpty().withMessage('day is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const performanceAdapter = sskts.adapter.performance(mongoose.connection);
+        const performanceStockStatusAdapter = sskts.adapter.stockStatus.performance(redisClient_1.default);
         const performances = yield sskts.service.master.searchPerformances({
             day: req.query.day,
             theater: req.query.theater
-        })(sskts.adapter.performance(mongoose.connection));
+        })(performanceAdapter, performanceStockStatusAdapter);
         const data = performances.map((performance) => {
             return {
                 type: 'performances',

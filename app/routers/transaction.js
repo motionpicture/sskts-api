@@ -19,20 +19,39 @@ const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
+const redisClient_1 = require("../../redisClient");
 const authentication_1 = require("../middlewares/authentication");
+const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 transactionRouter.use(authentication_1.default);
-transactionRouter.post('/startIfPossible', (req, _, next) => {
+transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin']), (req, _, next) => {
     // expires_atはsecondsのUNIXタイムスタンプで
     req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionOption = yield sskts.service.transaction.startIfPossible(moment.unix(parseInt(req.body.expires_at, 10)).toDate() // tslint:disable-line:no-magic-numbers
-        )(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
+        // tslint:disable-next-line:no-magic-numbers
+        if (!Number.isInteger(parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10))) {
+            throw new Error('TRANSACTIONS_COUNT_UNIT_IN_SECONDS not specified');
+        }
+        // tslint:disable-next-line:no-magic-numbers
+        if (!Number.isInteger(parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10))) {
+            throw new Error('NUMBER_OF_TRANSACTIONS_PER_UNIT not specified');
+        }
+        const transactionOption = yield sskts.service.transaction.startAsAnonymous({
+            // tslint:disable-next-line:no-magic-numbers
+            expiresAt: moment.unix(parseInt(req.body.expires_at, 10)).toDate(),
+            // tslint:disable-next-line:no-magic-numbers
+            unitOfCountInSeconds: parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10),
+            // tslint:disable-next-line:no-magic-numbers
+            maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
+            state: '',
+            scope: {} // todo 取引スコープを分ける仕様に従って変更する
+        })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redisClient_1.default));
         transactionOption.match({
             Some: (transaction) => {
-                const host = req.headers['host']; // tslint:disable-line:no-string-literal
+                // tslint:disable-next-line:no-string-literal
+                const host = req.headers['host'];
                 res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
                 res.json({
                     data: {
@@ -54,7 +73,7 @@ transactionRouter.post('/startIfPossible', (req, _, next) => {
         next(error);
     }
 }));
-transactionRouter.post('/makeInquiry', (req, _, next) => {
+transactionRouter.post('/makeInquiry', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
     req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
     req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
@@ -89,7 +108,7 @@ transactionRouter.post('/makeInquiry', (req, _, next) => {
         next(error);
     }
 }));
-transactionRouter.get('/:id', (_1, _2, next) => {
+transactionRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) => {
     // todo validation
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -117,31 +136,7 @@ transactionRouter.get('/:id', (_1, _2, next) => {
         next(error);
     }
 }));
-transactionRouter.post('', (req, _, next) => {
-    // expires_atはsecondsのUNIXタイムスタンプで
-    req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        // tslint:disable-next-line:no-magic-numbers
-        const transaction = yield sskts.service.transaction.startForcibly(moment.unix(parseInt(req.body.expires_at, 10)).toDate())(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
-        // tslint:disable-next-line:no-string-literal
-        const hots = req.headers['host'];
-        res.status(http_status_1.CREATED);
-        res.setHeader('Location', `https://${hots}/transactions/${transaction.id}`);
-        res.json({
-            data: {
-                type: 'transactions',
-                id: transaction.id,
-                attributes: transaction
-            }
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-transactionRouter.patch('/:id/anonymousOwner', (req, _, next) => {
+transactionRouter.patch('/:id/anonymousOwner', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
     req.checkBody('name_last', 'invalid name_last').optional().notEmpty().withMessage('name_last should not be empty');
     req.checkBody('tel', 'invalid tel').optional().notEmpty().withMessage('tel should not be empty');
@@ -162,7 +157,7 @@ transactionRouter.patch('/:id/anonymousOwner', (req, _, next) => {
         next(error);
     }
 }));
-transactionRouter.post('/:id/authorizations/gmo', (req, _, next) => {
+transactionRouter.post('/:id/authorizations/gmo', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
     req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
     req.checkBody('gmo_shop_id', 'invalid gmo_shop_id').notEmpty().withMessage('gmo_shop_id is required');
@@ -201,7 +196,7 @@ transactionRouter.post('/:id/authorizations/gmo', (req, _, next) => {
         next(error);
     }
 }));
-transactionRouter.post('/:id/authorizations/coaSeatReservation', (req, _, next) => {
+transactionRouter.post('/:id/authorizations/coaSeatReservation', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
     req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
     req.checkBody('coa_tmp_reserve_num', 'invalid coa_tmp_reserve_num').notEmpty().withMessage('coa_tmp_reserve_num is required');
@@ -268,7 +263,7 @@ transactionRouter.post('/:id/authorizations/coaSeatReservation', (req, _, next) 
         next(error);
     }
 }));
-transactionRouter.post('/:id/authorizations/mvtk', (req, _, next) => {
+transactionRouter.post('/:id/authorizations/mvtk', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
     req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
     req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
@@ -317,7 +312,7 @@ transactionRouter.post('/:id/authorizations/mvtk', (req, _, next) => {
         next(error);
     }
 }));
-transactionRouter.delete('/:id/authorizations/:authorization_id', (_1, _2, next) => {
+transactionRouter.delete('/:id/authorizations/:authorization_id', permitScopes_1.default(['admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -328,7 +323,7 @@ transactionRouter.delete('/:id/authorizations/:authorization_id', (_1, _2, next)
         next(error);
     }
 }));
-transactionRouter.patch('/:id/enableInquiry', (req, _, next) => {
+transactionRouter.patch('/:id/enableInquiry', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
     req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
     req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
@@ -347,7 +342,7 @@ transactionRouter.patch('/:id/enableInquiry', (req, _, next) => {
         next(error);
     }
 }));
-transactionRouter.post('/:id/notifications/email', (req, _, next) => {
+transactionRouter.post('/:id/notifications/email', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('from', 'invalid from').notEmpty().withMessage('from is required');
     req.checkBody('to', 'invalid to').notEmpty().withMessage('to is required').isEmail();
     req.checkBody('subject', 'invalid subject').notEmpty().withMessage('subject is required');
@@ -373,7 +368,7 @@ transactionRouter.post('/:id/notifications/email', (req, _, next) => {
         next(error);
     }
 }));
-transactionRouter.delete('/:id/notifications/:notification_id', (_1, _2, next) => {
+transactionRouter.delete('/:id/notifications/:notification_id', permitScopes_1.default(['admin']), (_1, _2, next) => {
     // todo validations
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -385,7 +380,7 @@ transactionRouter.delete('/:id/notifications/:notification_id', (_1, _2, next) =
         next(error);
     }
 }));
-transactionRouter.patch('/:id/close', (_1, _2, next) => {
+transactionRouter.patch('/:id/close', permitScopes_1.default(['admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

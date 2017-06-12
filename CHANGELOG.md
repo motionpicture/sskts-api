@@ -4,6 +4,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v9.1.0 - 2017-06-12
+### Added
+- Redis Cache接続クライアントを追加。
+- パフォーマンス検索結果に空席状況情報を追加。
+- パフォーマンス検索結果に作品上映時間情報を追加。
+- 劇場検索ルート(GET /theaters)を追加。
+- 一般購入シナリオテストを追加。
+- パッケージロックを一時的に無効化(.npmrcに設定を追加)。
+```shell
+package-lock=false
+```
+- スコープ許可ミドルウェアを追加。
+- クライアント情報認可タイプを追加。
+
+### Changed
+- 取引開始サービスを、取引数制限をRedis Cacheでチェックする仕様に変更(api使用側から見た互換性は維持)。
+
+### Removed
+- 使用していないので、強制的に取引を開始するサービスを削除。
+
+### Security
+- [typescript](https://github.com/Microsoft/TypeScript)を2.3.4にアップデート。
+- [tslint](https://github.com/palantir/tslint)を5.4.2にアップデート。
+- 依存パッケージをアップデート。
+- npm@^5.0.0の導入。
 
 ## v9.0.0 - 2017-06-03
 ### Added

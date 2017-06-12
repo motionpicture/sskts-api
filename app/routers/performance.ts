@@ -10,13 +10,16 @@ import * as sskts from '@motionpicture/sskts-domain';
 import { NOT_FOUND } from 'http-status';
 import * as mongoose from 'mongoose';
 
+import redisClient from '../../redisClient';
 import authentication from '../middlewares/authentication';
+import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
 performanceRouter.use(authentication);
 
 performanceRouter.get(
     '/:id',
+    permitScopes(['admin']),
     (_1, _2, next) => {
         next();
     },
@@ -48,6 +51,7 @@ performanceRouter.get(
 
 performanceRouter.get(
     '',
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
         req.checkQuery('day', 'invalid day').notEmpty().withMessage('day is required');
@@ -57,10 +61,12 @@ performanceRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const performanceAdapter = sskts.adapter.performance(mongoose.connection);
+            const performanceStockStatusAdapter = sskts.adapter.stockStatus.performance(redisClient);
             const performances = await sskts.service.master.searchPerformances({
                 day: req.query.day,
                 theater: req.query.theater
-            })(sskts.adapter.performance(mongoose.connection));
+            })(performanceAdapter, performanceStockStatusAdapter);
 
             const data = performances.map((performance) => {
                 return {

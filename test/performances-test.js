@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * performancesルーターテスト
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,30 +13,86 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * performancesルーターテスト
- *
- * @ignore
- */
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
+const TEST_THEATER_ID = '118';
 let connection;
-const theaterId = '118';
+let accessToken;
 before(() => __awaiter(this, void 0, void 0, function* () {
-    // 全て削除してからテスト開始
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    const performanceAdapter = sskts.adapter.performance(connection);
-    yield performanceAdapter.model.remove({}).exec();
+    accessToken = yield supertest(app)
+        .post('/oauth/token')
+        .send({
+        assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+        scope: 'admin'
+    })
+        .then((response) => {
+        return response.body.access_token;
+    });
 }));
+describe('パフォーマンス検索', () => {
+    it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
+            .get('/performances')
+            .expect(httpStatus.UNAUTHORIZED)
+            .then((response) => {
+            assert.equal(response.text, 'Unauthorized');
+        });
+    }));
+    it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
+            .get('/performances')
+            .query({
+            theater: TEST_THEATER_ID,
+            day: moment().format('YYYYMMDD')
+        })
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.OK)
+            .then((response) => {
+            assert(Array.isArray(response.body.data));
+        });
+    }));
+    it('検索条件に劇場が足りない', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
+            .get('/performances')
+            .query({
+            day: moment().format('YYYYMMDD')
+        })
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.BAD_REQUEST)
+            .then((response) => {
+            assert(Array.isArray(response.body.errors));
+            assert.equal(response.body.errors[0].source.parameter, 'theater');
+        });
+    }));
+});
 describe('GET /performances/:id', () => {
+    before(() => __awaiter(this, void 0, void 0, function* () {
+        // 全て削除してからテスト開始
+        const performanceAdapter = sskts.adapter.performance(connection);
+        yield performanceAdapter.model.remove({}).exec();
+    }));
+    it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
+        yield supertest(app)
+            .get('/performances/0000000000')
+            .expect(httpStatus.UNAUTHORIZED)
+            .then((response) => {
+            assert.equal(response.text, 'Unauthorized');
+        });
+    }));
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/performances/0000000000')
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.NOT_FOUND)
@@ -45,14 +106,14 @@ describe('GET /performances/:id', () => {
         const filmAdapter = sskts.adapter.film(connection);
         const screenAdapter = sskts.adapter.screen(connection);
         const performanceAdapter = sskts.adapter.performance(connection);
-        yield sskts.service.master.importTheater(theaterId)(theaterAdapter);
-        yield sskts.service.master.importScreens(theaterId)(theaterAdapter, screenAdapter);
-        yield sskts.service.master.importFilms(theaterId)(theaterAdapter, filmAdapter);
-        yield sskts.service.master.importPerformances(theaterId, '20170301', '20170303')(filmAdapter, screenAdapter, performanceAdapter);
+        yield sskts.service.master.importTheater(TEST_THEATER_ID)(theaterAdapter);
+        yield sskts.service.master.importScreens(TEST_THEATER_ID)(theaterAdapter, screenAdapter);
+        yield sskts.service.master.importFilms(TEST_THEATER_ID)(theaterAdapter, filmAdapter);
+        yield sskts.service.master.importPerformances(TEST_THEATER_ID, '20170301', '20170303')(filmAdapter, screenAdapter, performanceAdapter);
         const performanceDoc = yield performanceAdapter.model.findOne().exec();
         yield supertest(app)
             .get(`/performances/${performanceDoc.get('id')}`)
-            .set('authorization', `Bearer ${process.env.SSKTS_API_ACCESS_TOKEN}`)
+            .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)

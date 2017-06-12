@@ -3,16 +3,19 @@
  *
  * @ignore
  */
+
 import * as express from 'express';
 const devRouter = express.Router();
 
-import * as createDebug from 'debug';
 import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../../mongooseConnectionOptions';
 
-const debug = createDebug('sskts-api:*');
+import authentication from '../middlewares/authentication';
+import permitScopes from '../middlewares/permitScopes';
+
+devRouter.use(authentication);
 
 devRouter.get(
     '/500',
@@ -22,8 +25,8 @@ devRouter.get(
 
 devRouter.get(
     '/environmentVariables',
-    (req, res) => {
-        debug('ip:', req.ip);
+    permitScopes(['admin']),
+    (__, res) => {
         res.json({
             data: {
                 type: 'envs',
@@ -34,30 +37,8 @@ devRouter.get(
 
 devRouter.get(
     '/mongoose/connect',
-    (req, res, next) => {
-        debug('ip:', req.ip);
-        mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions, (err) => {
-            if (err instanceof Error) {
-                next(err);
-
-                return;
-            }
-
-            res.status(NO_CONTENT).end();
-        });
-    });
-
-devRouter.get(
-    '/mongoose/disconnect',
-    (req, res, next) => {
-        debug('ip:', req.ip);
-        mongoose.disconnect((err) => {
-            if (err instanceof Error) {
-                next(err);
-
-                return;
-            }
-
+    (__, res) => {
+        mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions, () => {
             res.status(NO_CONTENT).end();
         });
     });
