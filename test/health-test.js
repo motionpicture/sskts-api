@@ -51,33 +51,33 @@ describe('ヘルスチェック', () => {
     }));
     it('mongodb接続切断後アクセスすればBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
         yield new Promise((resolve, reject) => {
-            const timer = setInterval(() => {
+            const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
                 if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redis.getClient().connected) {
                     return;
                 }
                 clearInterval(timer);
                 try {
-                    mongoose.connection.close(() => __awaiter(this, void 0, void 0, function* () {
-                        yield supertest(app)
-                            .get('/health')
-                            .set('Accept', 'application/json')
-                            .expect(httpStatus.BAD_REQUEST)
-                            .then();
-                        // mongodb接続しなおす
-                        mongoose.connect(process.env.MONGOLAB_URI, (err) => {
-                            if (err instanceof Error) {
-                                reject(err);
-                            }
-                            else {
-                                resolve();
-                            }
-                        });
-                    }));
+                    // mongooseデフォルトコネクションを切断
+                    yield mongoose.connection.close();
+                    yield supertest(app)
+                        .get('/health')
+                        .set('Accept', 'application/json')
+                        .expect(httpStatus.BAD_REQUEST)
+                        .then();
+                    // mongodb接続しなおす
+                    mongoose.connect(process.env.MONGOLAB_URI, (err) => {
+                        if (err instanceof Error) {
+                            reject(err);
+                        }
+                        else {
+                            resolve();
+                        }
+                    });
                 }
                 catch (error) {
                     reject(error);
                 }
-            }, INTERVALS_CHECK_CONNECTION);
+            }), INTERVALS_CHECK_CONNECTION);
         });
     }));
 });

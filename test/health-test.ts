@@ -53,7 +53,7 @@ describe('ヘルスチェック', () => {
     it('mongodb接続切断後アクセスすればBAD_REQUEST', async () => {
         await new Promise((resolve, reject) => {
             const timer = setInterval(
-                () => {
+                async () => {
                     if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redis.getClient().connected) {
                         return;
                     }
@@ -61,21 +61,22 @@ describe('ヘルスチェック', () => {
                     clearInterval(timer);
 
                     try {
-                        mongoose.connection.close(async () => {
-                            await supertest(app)
-                                .get('/health')
-                                .set('Accept', 'application/json')
-                                .expect(httpStatus.BAD_REQUEST)
-                                .then();
+                        // mongooseデフォルトコネクションを切断
+                        await mongoose.connection.close();
 
-                            // mongodb接続しなおす
-                            mongoose.connect(process.env.MONGOLAB_URI, (err: any) => {
-                                if (err instanceof Error) {
-                                    reject(err);
-                                } else {
-                                    resolve();
-                                }
-                            });
+                        await supertest(app)
+                            .get('/health')
+                            .set('Accept', 'application/json')
+                            .expect(httpStatus.BAD_REQUEST)
+                            .then();
+
+                        // mongodb接続しなおす
+                        mongoose.connect(process.env.MONGOLAB_URI, (err: any) => {
+                            if (err instanceof Error) {
+                                reject(err);
+                            } else {
+                                resolve();
+                            }
                         });
                     } catch (error) {
                         reject(error);
