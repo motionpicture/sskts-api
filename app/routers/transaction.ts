@@ -11,7 +11,7 @@ import { NO_CONTENT, NOT_FOUND, OK } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import redisClient from '../../redisClient';
+import * as redis from '../../redis';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -52,7 +52,7 @@ transactionRouter.post(
             })(
                 sskts.adapter.owner(mongoose.connection),
                 sskts.adapter.transaction(mongoose.connection),
-                sskts.adapter.transactionCount(redisClient)
+                sskts.adapter.transactionCount(redis.getClient())
                 );
 
             transactionOption.match({

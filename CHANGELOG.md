@@ -7,12 +7,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- ヘルスチェックにredis接続確認を追加。
+- ヘルスチェックにおけるmongodbとredisの接続確認をpingコマンドで行うように変更。
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- redisクライアント取得モジュールにおいて、再生成時にクライアントを使えなくなるバグを修正。
 
 ### Security
 - [tslint](https://github.com/palantir/tslint)を5.4.3にアップデート。
