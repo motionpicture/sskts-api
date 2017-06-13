@@ -18,7 +18,7 @@ const httpStatus = require("http-status");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
-const redisClient_1 = require("../redisClient");
+const redis = require("../redis");
 const MONGOOSE_CONNECTION_READY_STATE_CONNECTED = 1;
 const INTERVALS_CHECK_CONNECTION = 2000;
 let connection;
@@ -29,7 +29,7 @@ describe('ヘルスチェック', () => {
     it('mongodbとredisに接続済みであれば健康', () => __awaiter(this, void 0, void 0, function* () {
         yield new Promise((resolve, reject) => {
             const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
-                if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redisClient_1.default.connected) {
+                if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redis.getClient().connected) {
                     return;
                 }
                 clearInterval(timer);
@@ -49,27 +49,29 @@ describe('ヘルスチェック', () => {
             }), INTERVALS_CHECK_CONNECTION);
         });
     }));
-    it('mongodb接続切断後、アクセスすれば健康になる', () => __awaiter(this, void 0, void 0, function* () {
+    it('mongodb接続切断後アクセスすればBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
         yield new Promise((resolve, reject) => {
             const timer = setInterval(() => {
-                if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redisClient_1.default.connected) {
+                if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redis.getClient().connected) {
                     return;
                 }
                 clearInterval(timer);
                 try {
-                    mongoose.disconnect(() => __awaiter(this, void 0, void 0, function* () {
-                        // mongodb切断確認
-                        assert.notEqual(mongoose.connection.readyState, MONGOOSE_CONNECTION_READY_STATE_CONNECTED);
+                    mongoose.connection.close(() => __awaiter(this, void 0, void 0, function* () {
                         yield supertest(app)
                             .get('/health')
                             .set('Accept', 'application/json')
-                            .expect(httpStatus.OK)
-                            .then((response) => {
-                            assert.equal(response.text, 'healthy!');
-                            // mongodb接続確認
-                            assert.equal(mongoose.connection.readyState, MONGOOSE_CONNECTION_READY_STATE_CONNECTED);
+                            .expect(httpStatus.BAD_REQUEST)
+                            .then();
+                        // mongodb接続しなおす
+                        mongoose.connect(process.env.MONGOLAB_URI, (err) => {
+                            if (err instanceof Error) {
+                                reject(err);
+                            }
+                            else {
+                                resolve();
+                            }
                         });
-                        resolve();
                     }));
                 }
                 catch (error) {

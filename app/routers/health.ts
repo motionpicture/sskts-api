@@ -11,45 +11,68 @@ import * as createDebug from 'debug';
 import { OK } from 'http-status';
 import * as mongoose from 'mongoose';
 
-import mongooseConnectionOptions from '../../mongooseConnectionOptions';
-import * as redisClient from '../../redisClient';
+import * as redis from '../../redis';
 
 const debug = createDebug('sskts-api:healthRouter');
-const MONGOOSE_CONNECTION_READY_STATE_CONNECTED = 1;
+// 接続確認をあきらめる時間(ミリ秒)
+const TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS = 3000;
 
 healthRouter.get(
     '',
     async (_, res, next) => {
-        debug('mongoose.connection.readyState:', mongoose.connection.readyState);
-        debug('redisClient.connected:', redisClient.default.connected);
-
         try {
             await Promise.all([
                 new Promise((resolve, reject) => {
+                    let givenUpChecking = false;
+
                     // mongodb接続状態チェック
-                    if (mongoose.connection.readyState === MONGOOSE_CONNECTION_READY_STATE_CONNECTED) {
-                        resolve();
-
-                        return;
-                    }
-
-                    debug('connecting mongodb...');
-                    mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions, (err) => {
-                        if (err instanceof Error) {
-                            reject(err);
-
+                    mongoose.connection.db.admin().ping((err, result) => {
+                        debug('mongodb ping:', err, result);
+                        // すでにあきらめていたら何もしない
+                        if (givenUpChecking) {
                             return;
                         }
 
-                        res.status(OK).send('healthy!');
+                        if (err instanceof Error) {
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
                     });
+
+                    setTimeout(
+                        () => {
+                            givenUpChecking = true;
+                            reject(new Error('unable to check db connection'));
+                        },
+                        TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS
+                    );
                 }),
                 new Promise(async (resolve, reject) => {
-                    if (redisClient.default.connected) {
-                        resolve();
-                    } else {
-                        reject(new Error('redis unconnected'));
-                    }
+                    let givenUpChecking = false;
+
+                    // redisサーバー接続が生きているかどうか確認
+                    redis.getClient().ping([], (err, reply) => {
+                        debug('redis ping:', err, reply);
+                        // すでにあきらめていたら何もしない
+                        if (givenUpChecking) {
+                            return;
+                        }
+
+                        if (err instanceof Error) {
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+
+                    setTimeout(
+                        () => {
+                            givenUpChecking = true;
+                            reject(new Error('unable to check db connection'));
+                        },
+                        TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS
+                    );
                 })
             ]);
 

@@ -18,7 +18,7 @@ const performanceRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
-const redisClient_1 = require("../../redisClient");
+const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -57,7 +57,7 @@ performanceRouter.get('', permitScopes_1.default(['admin']), (req, _, next) => {
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const performanceAdapter = sskts.adapter.performance(mongoose.connection);
-        const performanceStockStatusAdapter = sskts.adapter.stockStatus.performance(redisClient_1.default);
+        const performanceStockStatusAdapter = sskts.adapter.stockStatus.performance(redis.getClient());
         const performances = yield sskts.service.master.searchPerformances({
             day: req.query.day,
             theater: req.query.theater

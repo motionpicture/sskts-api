@@ -19,7 +19,7 @@ const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const redisClient_1 = require("../../redisClient");
+const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -47,7 +47,7 @@ transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin']), (r
             maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
             state: '',
             scope: {} // todo 取引スコープを分ける仕様に従って変更する
-        })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redisClient_1.default));
+        })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
         transactionOption.match({
             Some: (transaction) => {
                 // tslint:disable-next-line:no-string-literal
