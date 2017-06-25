@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ヘルスチェックにおけるmongodbとredisの接続確認をpingコマンドで行うように変更。
 - [@motionpicture/sskts-domain@19.3.0]へアップデート。
 - 取引スコープをルーターロジック内で作成するように変更。
+- package-lock=true
 
 ### Fixed
 - redisクライアント取得モジュールにおいて、再生成時にクライアントを使えなくなるバグを修正。
