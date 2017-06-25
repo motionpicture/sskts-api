@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 - [tslint](https://github.com/palantir/tslint)を5.4.3にアップデート。
+- [typescript@2.4.0](https://github.com/Microsoft/TypeScript)にアップデート。
+- 依存パッケージをアップデート。
 
 ## v9.1.0 - 2017-06-12
 ### Added
