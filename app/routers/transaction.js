@@ -16,6 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const transactionRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
+const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -23,6 +24,7 @@ const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const debug = createDebug('sskts-api:transactionRouter');
 transactionRouter.use(authentication_1.default);
 transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin']), (req, _, next) => {
     // expires_atはsecondsのUNIXタイムスタンプで
@@ -38,15 +40,25 @@ transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin']), (r
         if (!Number.isInteger(parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10))) {
             throw new Error('NUMBER_OF_TRANSACTIONS_PER_UNIT not specified');
         }
+        // 取引カウント単位{transactionsCountUnitInSeconds}秒から、スコープの開始終了日時を求める
+        // tslint:disable-next-line:no-magic-numbers
+        const transactionsCountUnitInSeconds = parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10);
+        const dateNow = moment();
+        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % transactionsCountUnitInSeconds);
+        const readyUntil = moment(readyFrom).add(transactionsCountUnitInSeconds, 'seconds');
+        // todo 取引スコープを分ける仕様に従って変更する
+        const scope = sskts.factory.transactionScope.create({
+            ready_from: readyFrom.toDate(),
+            ready_until: readyUntil.toDate()
+        });
+        debug('starting a transaction...scope:', scope);
         const transactionOption = yield sskts.service.transaction.startAsAnonymous({
             // tslint:disable-next-line:no-magic-numbers
             expiresAt: moment.unix(parseInt(req.body.expires_at, 10)).toDate(),
             // tslint:disable-next-line:no-magic-numbers
-            unitOfCountInSeconds: parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10),
-            // tslint:disable-next-line:no-magic-numbers
             maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
             state: '',
-            scope: {} // todo 取引スコープを分ける仕様に従って変更する
+            scope: scope
         })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
         transactionOption.match({
             Some: (transaction) => {

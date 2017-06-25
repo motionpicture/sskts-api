@@ -7,6 +7,7 @@ import { Router } from 'express';
 const transactionRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
+import * as createDebug from 'debug';
 import { NO_CONTENT, NOT_FOUND, OK } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -16,6 +17,8 @@ import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
+
+const debug = createDebug('sskts-api:transactionRouter');
 
 transactionRouter.use(authentication);
 
@@ -40,15 +43,27 @@ transactionRouter.post(
                 throw new Error('NUMBER_OF_TRANSACTIONS_PER_UNIT not specified');
             }
 
+            // 取引カウント単位{transactionsCountUnitInSeconds}秒から、スコープの開始終了日時を求める
+            // tslint:disable-next-line:no-magic-numbers
+            const transactionsCountUnitInSeconds = parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10);
+            const dateNow = moment();
+            const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % transactionsCountUnitInSeconds);
+            const readyUntil = moment(readyFrom).add(transactionsCountUnitInSeconds, 'seconds');
+
+            // todo 取引スコープを分ける仕様に従って変更する
+            const scope = sskts.factory.transactionScope.create({
+                ready_from: readyFrom.toDate(),
+                ready_until: readyUntil.toDate()
+            });
+            debug('starting a transaction...scope:', scope);
+
             const transactionOption = await sskts.service.transaction.startAsAnonymous({
                 // tslint:disable-next-line:no-magic-numbers
                 expiresAt: moment.unix(parseInt(req.body.expires_at, 10)).toDate(),
                 // tslint:disable-next-line:no-magic-numbers
-                unitOfCountInSeconds: parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10),
-                // tslint:disable-next-line:no-magic-numbers
                 maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
                 state: '', // todo user.stateを取り込む
-                scope: {} // todo 取引スコープを分ける仕様に従って変更する
+                scope: scope
             })(
                 sskts.adapter.owner(mongoose.connection),
                 sskts.adapter.transaction(mongoose.connection),

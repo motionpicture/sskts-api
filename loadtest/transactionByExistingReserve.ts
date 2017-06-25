@@ -285,6 +285,10 @@ let numberOfProcessedTransactions = 0;
 
 const MAX_NUBMER_OF_PARALLEL_TASKS = 1800;
 const INTERVAL_MILLISECONDS = 500;
+// const MAX_INTERVAL_MILLISECONDS = 10000;
+// const MIN_INTERVAL_MILLISECONDS = 500;
+// // tslint:disable-next-line:insecure-random
+// const INTERVAL_MILLISECONDS = Math.random() * (MAX_INTERVAL_MILLISECONDS - MIN_INTERVAL_MILLISECONDS) + MIN_INTERVAL_MILLISECONDS;
 
 export interface IResultTransaction {
     no: number;

@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - ヘルスチェックにredis接続確認を追加。
 - ヘルスチェックにおけるmongodbとredisの接続確認をpingコマンドで行うように変更。
+- [@motionpicture/sskts-domain@19.3.0]へアップデート。
+- 取引スコープをルーターロジック内で作成するように変更。
 
 ### Deprecated
 
