@@ -7,14 +7,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
-- ヘルスチェックにredis接続確認を追加。
-- ヘルスチェックにおけるmongodbとredisの接続確認をpingコマンドで行うように変更。
-- [@motionpicture/sskts-domain@19.3.0]へアップデート。
-- 取引スコープをルーターロジック内で作成するように変更。
 
 ### Deprecated
 
 ### Removed
+
+### Fixed
+
+### Security
+
+## v9.2.0 - 2017-06-25
+### Changed
+- ヘルスチェックにredis接続確認を追加。
+- ヘルスチェックにおけるmongodbとredisの接続確認をpingコマンドで行うように変更。
+- [@motionpicture/sskts-domain@19.3.0]へアップデート。
+- 取引スコープをルーターロジック内で作成するように変更。
 
 ### Fixed
 - redisクライアント取得モジュールにおいて、再生成時にクライアントを使えなくなるバグを修正。
