@@ -111,6 +111,9 @@ describe('GET /performances/:id', () => {
         yield sskts.service.master.importFilms(TEST_THEATER_ID)(theaterAdapter, filmAdapter);
         yield sskts.service.master.importPerformances(TEST_THEATER_ID, '20170301', '20170303')(filmAdapter, screenAdapter, performanceAdapter);
         const performanceDoc = yield performanceAdapter.model.findOne().exec();
+        if (performanceDoc === null) {
+            throw new Error('test data not imported');
+        }
         yield supertest(app)
             .get(`/performances/${performanceDoc.get('id')}`)
             .set('authorization', `Bearer ${accessToken}`)

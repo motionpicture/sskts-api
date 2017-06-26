@@ -60,6 +60,9 @@ describe('GET /theaters/:id', () => {
         await sskts.service.master.importTheater(TEST_VALID_THEATER_ID)(theaterAdapter);
 
         const theaterDoc = await theaterAdapter.model.findOne().exec();
+        if (theaterDoc === null) {
+            throw new Error('test data not imported');
+        }
 
         await supertest(app)
             .get(`/theaters/${theaterDoc.get('id')}`)

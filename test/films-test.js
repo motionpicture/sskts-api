@@ -64,6 +64,9 @@ describe('GET /films/:id', () => {
         yield sskts.service.master.importTheater(theaterId)(theaterAdapter);
         yield sskts.service.master.importFilms(theaterId)(theaterAdapter, filmAdapter);
         const filmDoc = yield filmAdapter.model.findOne().exec();
+        if (filmDoc === null) {
+            throw new Error('test data not imported');
+        }
         yield supertest(app)
             .get(`/films/${filmDoc.get('id')}`)
             .set('authorization', `Bearer ${accessToken}`)

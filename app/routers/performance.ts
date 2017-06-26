@@ -10,7 +10,7 @@ import * as sskts from '@motionpicture/sskts-domain';
 import { NOT_FOUND } from 'http-status';
 import * as mongoose from 'mongoose';
 
-import redisClient from '../../redisClient';
+import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
@@ -62,7 +62,7 @@ performanceRouter.get(
     async (req, res, next) => {
         try {
             const performanceAdapter = sskts.adapter.performance(mongoose.connection);
-            const performanceStockStatusAdapter = sskts.adapter.stockStatus.performance(redisClient);
+            const performanceStockStatusAdapter = sskts.adapter.stockStatus.performance(redis.getClient());
             const performances = await sskts.service.master.searchPerformances({
                 day: req.query.day,
                 theater: req.query.theater

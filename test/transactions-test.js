@@ -188,6 +188,9 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         const transactionEvent = yield transactionAdapter.transactionEventModel.findOne({
             'authorization.id': authorizationId
         }).exec();
+        if (transactionEvent === null) {
+            throw new Error('transactionEvent should exist');
+        }
         assert.equal(transactionEvent.get('transaction'), transaction.id);
         yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
@@ -322,6 +325,9 @@ describe('座席予約承認追加', () => {
         });
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
         const transactionEvent = yield transactionAdapter.transactionEventModel.findOne({ 'authorization.id': authorizationId }).exec();
+        if (transactionEvent === null) {
+            throw new Error('transactionEvent should exist');
+        }
         assert.equal(transactionEvent.get('transaction'), transaction.id);
         // テストデータ削除
         yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();

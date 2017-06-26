@@ -16,6 +16,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v9.2.0 - 2017-06-25
+### Changed
+- ヘルスチェックにredis接続確認を追加。
+- ヘルスチェックにおけるmongodbとredisの接続確認をpingコマンドで行うように変更。
+- [@motionpicture/sskts-domain@19.3.0]へアップデート。
+- 取引スコープをルーターロジック内で作成するように変更。
+- package-lock=true
+
+### Fixed
+- redisクライアント取得モジュールにおいて、再生成時にクライアントを使えなくなるバグを修正。
+
+### Security
+- [tslint](https://github.com/palantir/tslint)を5.4.3にアップデート。
+- [typescript@2.4.0](https://github.com/Microsoft/TypeScript)にアップデート。
+- 依存パッケージをアップデート。
+
 ## v9.1.0 - 2017-06-12
 ### Added
 - Redis Cache接続クライアントを追加。

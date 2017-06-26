@@ -64,6 +64,9 @@ describe('GET /screens/:id', () => {
         yield sskts.service.master.importTheater(theaterId)(theaterAdapter);
         yield sskts.service.master.importScreens(theaterId)(theaterAdapter, screenAdapter);
         const screenDoc = yield screenAdapter.model.findOne().exec();
+        if (screenDoc === null) {
+            throw new Error('test data not imported');
+        }
         yield supertest(app)
             .get(`/screens/${screenDoc.get('id')}`)
             .set('authorization', `Bearer ${accessToken}`)
