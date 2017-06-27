@@ -14,6 +14,11 @@ const debug = createDebug('sskts-api:controllers:oauth');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
 
+export const MESSAGE_UNIMPLEMENTED_GRANT_TYPE = 'grant_type not implemented';
+export const MESSAGE_CLIENT_NOT_FOUND = 'client not found';
+export const MESSAGE_INVALID_USERNAME_OR_PASSWORD = 'invalid username or password';
+export const MESSAGE_INVALID_ASSERTION = 'client not foundinvalid assertion';
+
 /**
  * 資格情報インターフェース
  *
@@ -39,9 +44,12 @@ export async function issueCredentials(req: Request): Promise<ICredentials> {
         case 'client_credentials':
             return await issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
 
+        case 'password':
+            return await issueCredentialsByPassword(req.body.username, req.body.password, req.body.scopes);
+
         default:
             // 非対応認可タイプ
-            throw new Error('grant_type not implemented');
+            throw new Error(MESSAGE_UNIMPLEMENTED_GRANT_TYPE);
     }
 
     // usernameとpassword照合
@@ -64,7 +72,7 @@ export async function issueCredentials(req: Request): Promise<ICredentials> {
  */
 export async function issueCredentialsByAssertion(assertion: string, scopes: string[]): Promise<ICredentials> {
     if (assertion !== process.env.SSKTS_API_REFRESH_TOKEN) {
-        throw new Error('invalid assertion');
+        throw new Error(MESSAGE_INVALID_ASSERTION);
     }
 
     const payload = {
@@ -86,12 +94,32 @@ export async function issueCredentialsByClient(clientId: string, state: string, 
     const clientAdapter = sskts.adapter.client(mongoose.connection);
     const clientDoc = await clientAdapter.clientModel.findById(clientId, 'name').exec();
     if (clientDoc === null) {
-        throw new Error('client not found');
+        throw new Error(MESSAGE_CLIENT_NOT_FOUND);
     }
 
     const payload = {
         client: clientDoc.toObject(),
         state: state,
+        scopes: scopes
+    };
+
+    return await payload2credentials(payload);
+}
+
+export async function issueCredentialsByPassword(username: string, password: string, scopes: string[]): Promise<ICredentials> {
+    // ログイン確認
+    const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+    const memberOption = await sskts.service.member.login(username, password)(ownerAdapter);
+    if (memberOption.isEmpty) {
+        throw new Error(MESSAGE_INVALID_USERNAME_OR_PASSWORD);
+    }
+
+    const owner = memberOption.get();
+    const payload = {
+        owner: {
+            id: owner.id,
+            username: owner.username
+        },
         scopes: scopes
     };
 

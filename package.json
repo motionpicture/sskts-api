@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "^19.4.0",
+    "@motionpicture/sskts-domain": "^19.5.0",
     "basic-auth": "^1.1.0",
     "body-parser": "^1.17.2",
     "cors": "^2.8.3",

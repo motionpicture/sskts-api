@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- パスワード認可タイプを追加。ユーザーネームとパスワードでアクセストークンを取得可能なように対応。
 
 ### Changed
 - パフォーマンス在庫状況表現を空席率(%)に変更。

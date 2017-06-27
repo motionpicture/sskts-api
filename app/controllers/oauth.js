@@ -20,6 +20,10 @@ const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:controllers:oauth');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
+exports.MESSAGE_UNIMPLEMENTED_GRANT_TYPE = 'grant_type not implemented';
+exports.MESSAGE_CLIENT_NOT_FOUND = 'client not found';
+exports.MESSAGE_INVALID_USERNAME_OR_PASSWORD = 'invalid username or password';
+exports.MESSAGE_INVALID_ASSERTION = 'client not foundinvalid assertion';
 /**
  * 資格情報を発行する
  *
@@ -33,9 +37,11 @@ function issueCredentials(req) {
                 return yield issueCredentialsByAssertion(req.body.assertion, req.body.scopes);
             case 'client_credentials':
                 return yield issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
+            case 'password':
+                return yield issueCredentialsByPassword(req.body.username, req.body.password, req.body.scopes);
             default:
                 // 非対応認可タイプ
-                throw new Error('grant_type not implemented');
+                throw new Error(exports.MESSAGE_UNIMPLEMENTED_GRANT_TYPE);
         }
         // usernameとpassword照合
         // const owner = await chevre.Models.Owner.findOne({ username: req.body.username }).exec();
@@ -58,7 +64,7 @@ exports.issueCredentials = issueCredentials;
 function issueCredentialsByAssertion(assertion, scopes) {
     return __awaiter(this, void 0, void 0, function* () {
         if (assertion !== process.env.SSKTS_API_REFRESH_TOKEN) {
-            throw new Error('invalid assertion');
+            throw new Error(exports.MESSAGE_INVALID_ASSERTION);
         }
         const payload = {
             scopes: scopes
@@ -80,7 +86,7 @@ function issueCredentialsByClient(clientId, state, scopes) {
         const clientAdapter = sskts.adapter.client(mongoose.connection);
         const clientDoc = yield clientAdapter.clientModel.findById(clientId, 'name').exec();
         if (clientDoc === null) {
-            throw new Error('client not found');
+            throw new Error(exports.MESSAGE_CLIENT_NOT_FOUND);
         }
         const payload = {
             client: clientDoc.toObject(),
@@ -91,6 +97,26 @@ function issueCredentialsByClient(clientId, state, scopes) {
     });
 }
 exports.issueCredentialsByClient = issueCredentialsByClient;
+function issueCredentialsByPassword(username, password, scopes) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // ログイン確認
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const memberOption = yield sskts.service.member.login(username, password)(ownerAdapter);
+        if (memberOption.isEmpty) {
+            throw new Error(exports.MESSAGE_INVALID_USERNAME_OR_PASSWORD);
+        }
+        const owner = memberOption.get();
+        const payload = {
+            owner: {
+                id: owner.id,
+                username: owner.username
+            },
+            scopes: scopes
+        };
+        return yield payload2credentials(payload);
+    });
+}
+exports.issueCredentialsByPassword = issueCredentialsByPassword;
 /**
  * 任意のデータをJWTを使用して資格情報へ変換する
  *

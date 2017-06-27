@@ -12,6 +12,7 @@ import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../app/app';
+import * as OAuthController from '../app/controllers/oauth';
 
 const TEST_VALID_CLIENT_ID = 'testclientid';
 const TEST_VALID_BODY_CLIENT_CREDENTIALS = {
@@ -20,14 +21,29 @@ const TEST_VALID_BODY_CLIENT_CREDENTIALS = {
     client_id: TEST_VALID_CLIENT_ID,
     state: 'test'
 };
+let TEST_USERNAME: string;
+const TEST_PASSWORD = 'password';
+let TEST_BODY_PASSWORD: any;
 
 let connection: mongoose.Connection;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
-    // 全て削除してからテスト開始
+    // 全クライアント削除
     const clientAdapter = sskts.adapter.client(connection);
     await clientAdapter.clientModel.remove({}).exec();
+
+    // 全会員削除
+    const ownerAdapter = sskts.adapter.owner(connection);
+    await ownerAdapter.model.remove({ group: sskts.factory.ownerGroup.MEMBER }).exec();
+
+    TEST_USERNAME = `sskts-api:test:oauth${Date.now().toString()}`;
+    TEST_BODY_PASSWORD = {
+        grant_type: 'password',
+        scopes: ['test'],
+        username: TEST_USERNAME,
+        password: TEST_PASSWORD
+    };
 });
 
 describe('認可タイプに共通の仕様', () => {
@@ -44,7 +60,7 @@ describe('認可タイプに共通の仕様', () => {
             .then((response) => {
                 assert(Array.isArray(response.body.errors));
                 assert.equal(response.body.errors[0].title, 'Error');
-                assert.equal(response.body.errors[0].detail, 'grant_type not implemented');
+                assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_UNIMPLEMENTED_GRANT_TYPE);
             });
     });
 });
@@ -78,11 +94,11 @@ describe('POST /oauth/token', () => {
             .expect('Content-Type', /json/)
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
-                assert.equal(response.body.errors[0].detail, 'invalid assertion');
+                assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_INVALID_ASSERTION);
             });
     });
 
-    it('invalid scope', async () => {
+    it('スコープがadminでなければBAD_REQUEST', async () => {
         await supertest(app)
             .post('/oauth/token')
             .send({
@@ -93,7 +109,7 @@ describe('POST /oauth/token', () => {
             .expect('Content-Type', /json/)
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
-                assert.equal(response.body.errors[0].detail, 'invalid scope');
+                assert.equal(response.body.errors[0].source.parameter, 'scope');
             });
     });
 });
@@ -150,7 +166,7 @@ describe('クライアント情報認可', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
                 assert(Array.isArray(response.body.errors));
-                assert.equal(response.body.errors[0].detail, 'client not found');
+                assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_CLIENT_NOT_FOUND);
             });
     });
 
@@ -197,5 +213,134 @@ describe('クライアント情報認可', () => {
 
         // テストクライアント削除
         await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+    });
+});
+
+describe('パスワード認可', () => {
+    it('スコープ不足ならBAD_REQUEST', async () => {
+        const data = { ...TEST_BODY_PASSWORD, ...{ scopes: undefined } };
+        await supertest(app)
+            .post('/oauth/token')
+            .send(data)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.BAD_REQUEST)
+            .then((response) => {
+                assert(Array.isArray(response.body.errors));
+                assert.equal(response.body.errors[0].source.parameter, 'scopes');
+            });
+    });
+
+    it('ユーザーネーム不足ならBAD_REQUEST', async () => {
+        const data = { ...TEST_BODY_PASSWORD, ...{ username: undefined } };
+        await supertest(app)
+            .post('/oauth/token')
+            .send(data)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.BAD_REQUEST)
+            .then((response) => {
+                assert(Array.isArray(response.body.errors));
+                assert.equal(response.body.errors[0].source.parameter, 'username');
+            });
+    });
+
+    it('パスワード不足ならBAD_REQUEST', async () => {
+        const data = { ...TEST_BODY_PASSWORD, ...{ password: undefined } };
+        await supertest(app)
+            .post('/oauth/token')
+            .send(data)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.BAD_REQUEST)
+            .then((response) => {
+                assert(Array.isArray(response.body.errors));
+                assert.equal(response.body.errors[0].source.parameter, 'password');
+            });
+    });
+
+    it('会員存在しなければBAD_REQUEST', async () => {
+        await supertest(app)
+            .post('/oauth/token')
+            .send(TEST_BODY_PASSWORD)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.BAD_REQUEST)
+            .then((response) => {
+                assert(Array.isArray(response.body.errors));
+                assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_INVALID_USERNAME_OR_PASSWORD);
+            });
+    });
+
+    it('パスワードが間違っていればBAD_REQUEST', async () => {
+        // テスト会員作成
+        const memberOwner = await sskts.factory.owner.member.create({
+            username: TEST_USERNAME,
+            password: TEST_PASSWORD,
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'test@example.com'
+        });
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findByIdAndUpdate(memberOwner.id, memberOwner, { upsert: true }).exec();
+
+        const data = { ...TEST_BODY_PASSWORD, ...{ password: `${TEST_BODY_PASSWORD.password}x` } };
+        await supertest(app)
+            .post('/oauth/token')
+            .send(data)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.BAD_REQUEST)
+            .then((response) => {
+                assert(Array.isArray(response.body.errors));
+                assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_INVALID_USERNAME_OR_PASSWORD);
+            });
+
+        // テストクライアント削除
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    });
+
+    it('資格情報取得成功', async () => {
+        // テスト会員作成
+        const memberOwner = await sskts.factory.owner.member.create({
+            username: TEST_USERNAME,
+            password: TEST_PASSWORD,
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'test@example.com'
+        });
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findByIdAndUpdate(memberOwner.id, memberOwner, { upsert: true }).exec();
+
+        const credentials = await supertest(app)
+            .post('/oauth/token')
+            .send(TEST_BODY_PASSWORD)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.OK)
+            .then((response) => {
+                return response.body;
+            });
+
+        assert(typeof credentials.access_token, 'string');
+        assert(typeof credentials.token_type, 'string');
+        assert(typeof credentials.expires_in, 'number');
+
+        // アクセストークンに適切にデータが含まれているはず
+        const payload = await new Promise<any>((resolve, reject) => {
+            jwt.verify(credentials.access_token, <string>process.env.SSKTS_API_SECRET, {}, (err, decoded) => {
+                if (err instanceof Error) {
+                    reject(err);
+                } else {
+                    resolve(<any>decoded);
+                }
+            });
+        });
+        assert.equal(payload.owner.id, memberOwner.id);
+        assert.equal(payload.owner.username, TEST_BODY_PASSWORD.username);
+        assert.deepEqual(payload.scopes, TEST_VALID_BODY_CLIENT_CREDENTIALS.scopes);
+
+        // テストクライアント削除
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     });
 });
