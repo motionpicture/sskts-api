@@ -22,6 +22,7 @@ import devRouter from './routers/dev';
 import filmRouter from './routers/film';
 import healthRouter from './routers/health';
 import oauthRouter from './routers/oauth';
+import ownerRouter from './routers/owner';
 import performanceRouter from './routers/performance';
 import screenRouter from './routers/screen';
 import theaterRouter from './routers/theater';
@@ -91,6 +92,7 @@ mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions);
 // routers
 app.use('/health', healthRouter);
 app.use('/oauth', oauthRouter);
+app.use('/owners', ownerRouter);
 app.use('/theaters', theaterRouter);
 app.use('/films', filmRouter);
 app.use('/screens', screenRouter);
