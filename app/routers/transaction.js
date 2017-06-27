@@ -26,7 +26,7 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const debug = createDebug('sskts-api:transactionRouter');
 transactionRouter.use(authentication_1.default);
-transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin']), (req, _, next) => {
+transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin', 'transactions']), (req, _, next) => {
     // expires_atはsecondsのUNIXタイムスタンプで
     req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
     next();
@@ -52,13 +52,17 @@ transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin']), (r
             ready_until: readyUntil.toDate()
         });
         debug('starting a transaction...scope:', scope);
-        const transactionOption = yield sskts.service.transaction.startAsAnonymous({
+        // 会員としてログインしている場合は所有者IDを指定して開始する
+        const ownerId = (req.getUser().owner !== undefined) ? req.getUser().owner.id : undefined;
+        const state = (req.getUser().state !== undefined) ? req.getUser().state : '';
+        const transactionOption = yield sskts.service.transaction.start({
             // tslint:disable-next-line:no-magic-numbers
             expiresAt: moment.unix(parseInt(req.body.expires_at, 10)).toDate(),
             // tslint:disable-next-line:no-magic-numbers
             maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
-            state: '',
-            scope: scope
+            state: state,
+            scope: scope,
+            ownerId: ownerId
         })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
         transactionOption.match({
             Some: (transaction) => {

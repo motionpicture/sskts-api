@@ -24,7 +24,7 @@ transactionRouter.use(authentication);
 
 transactionRouter.post(
     '/startIfPossible',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'transactions']),
     (req, _, next) => {
         // expires_atはsecondsのUNIXタイムスタンプで
         req.checkBody('expires_at', 'invalid expires_at').notEmpty().withMessage('expires_at is required').isInt();
@@ -57,13 +57,17 @@ transactionRouter.post(
             });
             debug('starting a transaction...scope:', scope);
 
-            const transactionOption = await sskts.service.transaction.startAsAnonymous({
+            // 会員としてログインしている場合は所有者IDを指定して開始する
+            const ownerId = (req.getUser().owner !== undefined) ? (<Express.IOwner>req.getUser().owner).id : undefined;
+            const state = (req.getUser().state !== undefined) ? <string>req.getUser().state : '';
+            const transactionOption = await sskts.service.transaction.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expiresAt: moment.unix(parseInt(req.body.expires_at, 10)).toDate(),
                 // tslint:disable-next-line:no-magic-numbers
                 maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
-                state: '', // todo user.stateを取り込む
-                scope: scope
+                state: state, // todo user.stateを取り込む
+                scope: scope,
+                ownerId: ownerId
             })(
                 sskts.adapter.owner(mongoose.connection),
                 sskts.adapter.transaction(mongoose.connection),

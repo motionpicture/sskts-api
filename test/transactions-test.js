@@ -19,27 +19,19 @@ const httpStatus = require("http-status");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app/app");
+const OAuthScenario = require("./scenarios/oauth");
 const TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS = 60;
 const TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
 let connection;
-let accessToken;
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    accessToken = yield supertest(app)
-        .post('/oauth/token')
-        .send({
-        assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-        scope: 'admin'
-    })
-        .then((response) => {
-        return response.body.access_token;
-    });
     // 全て削除してからテスト開始
     const transactionAdapter = sskts.adapter.transaction(connection);
     yield transactionAdapter.transactionModel.remove({}).exec();
 }));
 describe('GET /transactions/:id', () => {
     it('取引存在しない', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get('/transactions/58cb2e2276cee91fe4387dd1')
             .set('authorization', `Bearer ${accessToken}`)
@@ -59,6 +51,7 @@ describe('GET /transactions/:id', () => {
         });
         const transactionAdapter = sskts.adapter.transaction(connection);
         yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get(`/transactions/${transaction.id}`)
             .set('authorization', `Bearer ${accessToken}`)
@@ -73,7 +66,7 @@ describe('GET /transactions/:id', () => {
         yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     }));
 });
-describe('POST /transactions/startIfPossible', () => {
+describe('取引開始', () => {
     beforeEach(() => {
         process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS = TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
         process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT;
@@ -81,6 +74,7 @@ describe('POST /transactions/startIfPossible', () => {
     it('環境変数不足だとエラー', () => __awaiter(this, void 0, void 0, function* () {
         delete process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
         delete process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT;
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${accessToken}`)
@@ -96,6 +90,7 @@ describe('POST /transactions/startIfPossible', () => {
     }));
     it('取引数制限が0なら開始できない', () => __awaiter(this, void 0, void 0, function* () {
         process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = 0;
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${accessToken}`)
@@ -109,10 +104,10 @@ describe('POST /transactions/startIfPossible', () => {
             assert.equal(response.body.data, null);
         });
     }));
-    it('開始できる', () => __awaiter(this, void 0, void 0, function* () {
-        let transactionId = '';
+    it('匿名所有者として開始できる', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = sskts.adapter.transaction(connection);
-        yield supertest(app)
+        const accessToken = yield OAuthScenario.loginAsAdmin();
+        const transactionId = yield supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
@@ -124,7 +119,26 @@ describe('POST /transactions/startIfPossible', () => {
             .then((response) => {
             assert.equal(response.body.data.type, 'transactions');
             assert.equal(typeof response.body.data.id, 'string');
-            transactionId = response.body.data.id;
+            return response.body.data.id;
+        });
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transactionId).exec();
+    }));
+    it('会員所有者として開始できる', () => __awaiter(this, void 0, void 0, function* () {
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const accessToken = yield OAuthScenario.loginAsMember(['transactions']);
+        const transactionId = yield supertest(app)
+            .post('/transactions/startIfPossible')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .send({
+            expires_at: Date.now()
+        })
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.OK)
+            .then((response) => {
+            assert.equal(response.body.data.type, 'transactions');
+            assert.equal(typeof response.body.data.id, 'string');
+            return response.body.data.id;
         });
         yield transactionAdapter.transactionModel.findByIdAndRemove(transactionId).exec();
     }));
@@ -145,8 +159,8 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         yield ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
         const update = Object.assign({}, transaction, { owners: [owner1.id, owner2.id] });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
-        let authorizationId = '';
-        yield supertest(app)
+        const accessToken = yield OAuthScenario.loginAsAdmin();
+        const authorizationId = yield supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/mvtk`)
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
@@ -182,12 +196,10 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
             .expect(httpStatus.OK)
             .then((response) => {
             assert.equal(response.body.data.type, 'authorizations');
-            authorizationId = response.body.data.id;
+            return response.body.data.id;
         });
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
-        const transactionEvent = yield transactionAdapter.transactionEventModel.findOne({
-            'authorization.id': authorizationId
-        }).exec();
+        const transactionEvent = yield transactionAdapter.transactionEventModel.findOne({ 'authorization.id': authorizationId }).exec();
         if (transactionEvent === null) {
             throw new Error('transactionEvent should exist');
         }
@@ -212,6 +224,7 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         yield ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
         const update = Object.assign({}, transaction, { owners: [owner1.id, owner2.id] });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/mvtk`)
             .set('authorization', `Bearer ${accessToken}`)
@@ -273,8 +286,8 @@ describe('座席予約承認追加', () => {
         yield ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
         const update = Object.assign({}, transaction, { owners: [owner1.id, owner2.id] });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
-        let authorizationId = '';
-        yield supertest(app)
+        const accessToken = yield OAuthScenario.loginAsAdmin();
+        const authorizationId = yield supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/coaSeatReservation`)
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
@@ -321,7 +334,7 @@ describe('座席予約承認追加', () => {
             .expect(httpStatus.OK)
             .then((response) => {
             assert.equal(response.body.data.type, 'authorizations');
-            authorizationId = response.body.data.id;
+            return response.body.data.id;
         });
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
         const transactionEvent = yield transactionAdapter.transactionEventModel.findOne({ 'authorization.id': authorizationId }).exec();
@@ -350,6 +363,7 @@ describe('座席予約承認追加', () => {
         yield ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
         const update = Object.assign({}, transaction, { owners: [owner1.id, owner2.id] });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/coaSeatReservation`)
             .set('authorization', `Bearer ${accessToken}`)

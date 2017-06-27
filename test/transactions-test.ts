@@ -11,22 +11,13 @@ import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../app/app';
+import * as OAuthScenario from './scenarios/oauth';
 
 const TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS = 60;
 const TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
 let connection: mongoose.Connection;
-let accessToken: string;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    accessToken = await supertest(app)
-        .post('/oauth/token')
-        .send({
-            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-            scope: 'admin'
-        })
-        .then((response) => {
-            return <string>response.body.access_token;
-        });
 
     // 全て削除してからテスト開始
     const transactionAdapter = sskts.adapter.transaction(connection);
@@ -35,6 +26,7 @@ before(async () => {
 
 describe('GET /transactions/:id', () => {
     it('取引存在しない', async () => {
+        const accessToken = await OAuthScenario.loginAsAdmin();
         await supertest(app)
             .get('/transactions/58cb2e2276cee91fe4387dd1')
             .set('authorization', `Bearer ${accessToken}`)
@@ -56,6 +48,8 @@ describe('GET /transactions/:id', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
 
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
         await supertest(app)
             .get(`/transactions/${transaction.id}`)
             .set('authorization', `Bearer ${accessToken}`)
@@ -72,7 +66,7 @@ describe('GET /transactions/:id', () => {
     });
 });
 
-describe('POST /transactions/startIfPossible', () => {
+describe('取引開始', () => {
     beforeEach(() => {
         process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS = TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
         process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT;
@@ -81,6 +75,8 @@ describe('POST /transactions/startIfPossible', () => {
     it('環境変数不足だとエラー', async () => {
         delete process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
         delete process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT;
+
+        const accessToken = await OAuthScenario.loginAsAdmin();
 
         await supertest(app)
             .post('/transactions/startIfPossible')
@@ -99,6 +95,8 @@ describe('POST /transactions/startIfPossible', () => {
     it('取引数制限が0なら開始できない', async () => {
         process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = 0;
 
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
         await supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${accessToken}`)
@@ -113,11 +111,12 @@ describe('POST /transactions/startIfPossible', () => {
             });
     });
 
-    it('開始できる', async () => {
-        let transactionId: string = '';
+    it('匿名所有者として開始できる', async () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
 
-        await supertest(app)
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
+        const transactionId = await supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
@@ -129,7 +128,32 @@ describe('POST /transactions/startIfPossible', () => {
             .then((response) => {
                 assert.equal(response.body.data.type, 'transactions');
                 assert.equal(typeof response.body.data.id, 'string');
-                transactionId = response.body.data.id;
+
+                return response.body.data.id;
+            });
+
+        await transactionAdapter.transactionModel.findByIdAndRemove(transactionId).exec();
+    });
+
+    it('会員所有者として開始できる', async () => {
+        const transactionAdapter = sskts.adapter.transaction(connection);
+
+        const accessToken = await OAuthScenario.loginAsMember(['transactions']);
+
+        const transactionId = await supertest(app)
+            .post('/transactions/startIfPossible')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .send({
+                expires_at: Date.now()
+            })
+            .expect('Content-Type', /json/)
+            .expect(httpStatus.OK)
+            .then((response) => {
+                assert.equal(response.body.data.type, 'transactions');
+                assert.equal(typeof response.body.data.id, 'string');
+
+                return response.body.data.id;
             });
 
         await transactionAdapter.transactionModel.findByIdAndRemove(transactionId).exec();
@@ -155,8 +179,9 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         const update = { ...transaction, ...{ owners: [owner1.id, owner2.id] } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
 
-        let authorizationId = '';
-        await supertest(app)
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
+        const authorizationId = await supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/mvtk`)
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
@@ -191,14 +216,13 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
             .expect(httpStatus.OK)
             .then((response) => {
                 assert.equal(response.body.data.type, 'authorizations');
-                authorizationId = response.body.data.id;
+
+                return <string>response.body.data.id;
             });
 
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
         const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
-            {
-                'authorization.id': authorizationId
-            }
+            { 'authorization.id': authorizationId }
         ).exec();
         if (transactionEvent === null) {
             throw new Error('transactionEvent should exist');
@@ -229,6 +253,8 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
         await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
         const update = { ...transaction, ...{ owners: [owner1.id, owner2.id] } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+
+        const accessToken = await OAuthScenario.loginAsAdmin();
 
         await supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/mvtk`)
@@ -295,8 +321,9 @@ describe('座席予約承認追加', () => {
         const update = { ...transaction, ...{ owners: [owner1.id, owner2.id] } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
 
-        let authorizationId = '';
-        await supertest(app)
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
+        const authorizationId = await supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/coaSeatReservation`)
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
@@ -343,7 +370,8 @@ describe('座席予約承認追加', () => {
             .expect(httpStatus.OK)
             .then((response) => {
                 assert.equal(response.body.data.type, 'authorizations');
-                authorizationId = response.body.data.id;
+
+                return <string>response.body.data.id;
             });
 
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
@@ -377,6 +405,8 @@ describe('座席予約承認追加', () => {
         await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
         const update = { ...transaction, ...{ owners: [owner1.id, owner2.id] } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+
+        const accessToken = await OAuthScenario.loginAsAdmin();
 
         await supertest(app)
             .post(`/transactions/${transaction.id}/authorizations/coaSeatReservation`)
