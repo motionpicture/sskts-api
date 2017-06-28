@@ -17,11 +17,41 @@ const httpStatus = require("http-status");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../../app/app");
-const TEST_PASSWORD = 'password';
+exports.TEST_PASSWORD = 'password';
+exports.TEST_CLIENT_ID = 'sskts-api:test:scenarios:oauth:';
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    // テストクライアント作成
+    const client = sskts.factory.client.create({
+        id: exports.TEST_CLIENT_ID,
+        secret_hash: 'test',
+        name: { en: '', ja: '' },
+        description: { en: '', ja: '' },
+        notes: { en: '', ja: '' },
+        email: 'test@example.com'
+    });
+    const clientAdapter = sskts.adapter.client(connection);
+    yield clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { upsert: true }).exec();
+    // テスト会員作成
+    exports.TEST_USERNAME = `sskts-api:test:scenarios:oauth:${Date.now().toString()}`;
+    const memberOwner = yield sskts.factory.owner.member.create({
+        username: exports.TEST_USERNAME,
+        password: exports.TEST_PASSWORD,
+        name_first: 'xxx',
+        name_last: 'xxx',
+        email: 'test@example.com'
+    });
+    const ownerAdapter = sskts.adapter.owner(connection);
+    yield ownerAdapter.model.findByIdAndUpdate(memberOwner.id, memberOwner, { upsert: true }).exec();
+    exports.TEST_OWNER_ID = memberOwner.id;
 }));
+/**
+ * 管理者としてログインする
+ *
+ * @export
+ * @returns {Promise<string>} アクセストークン
+ */
 function loginAsAdmin() {
     return __awaiter(this, void 0, void 0, function* () {
         return yield supertest(app)
@@ -37,27 +67,23 @@ function loginAsAdmin() {
     });
 }
 exports.loginAsAdmin = loginAsAdmin;
-function loginAsClient() {
+/**
+ * クライアントとしてログインする
+ *
+ * @export
+ * @param {string[]} scopes スコープリスト
+ * @param {string} state 状態
+ * @returns {Promise<string>} アクセストークン
+ */
+function loginAsClient(scopes, state) {
     return __awaiter(this, void 0, void 0, function* () {
-        const TEST_CLIENT_ID = 'sskts-api:test:scenarios:oauth:';
-        // テストクライアント作成
-        const client = sskts.factory.client.create({
-            id: TEST_CLIENT_ID,
-            secret_hash: 'test',
-            name: { en: '', ja: '' },
-            description: { en: '', ja: '' },
-            notes: { en: '', ja: '' },
-            email: 'test@example.com'
-        });
-        const clientAdapter = sskts.adapter.client(connection);
-        yield clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { upsert: true }).exec();
         return yield supertest(app)
             .post('/oauth/token')
             .send({
             grant_type: 'client_credentials',
-            scopes: ['test'],
-            client_id: TEST_CLIENT_ID,
-            state: 'test'
+            scopes: scopes,
+            client_id: exports.TEST_CLIENT_ID,
+            state: state
         })
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -66,26 +92,22 @@ function loginAsClient() {
     });
 }
 exports.loginAsClient = loginAsClient;
+/**
+ * 会員としてログインする
+ *
+ * @export
+ * @param {string[]} scopes スコープリスト
+ * @returns {Promise<string>} アクセストークン
+ */
 function loginAsMember(scopes) {
     return __awaiter(this, void 0, void 0, function* () {
-        const TEST_USERNAME = `sskts-api:test:scenarios:oauth:${Date.now().toString()}`;
-        // テスト会員作成
-        const memberOwner = yield sskts.factory.owner.member.create({
-            username: TEST_USERNAME,
-            password: TEST_PASSWORD,
-            name_first: 'xxx',
-            name_last: 'xxx',
-            email: 'test@example.com'
-        });
-        const ownerAdapter = sskts.adapter.owner(connection);
-        yield ownerAdapter.model.findByIdAndUpdate(memberOwner.id, memberOwner, { upsert: true }).exec();
         return yield supertest(app)
             .post('/oauth/token')
             .send({
             grant_type: 'password',
             scopes: scopes,
-            username: TEST_USERNAME,
-            password: TEST_PASSWORD
+            username: exports.TEST_USERNAME,
+            password: exports.TEST_PASSWORD
         })
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)

@@ -10,28 +10,14 @@ import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
 
-const TEST_PASSWORD = 'password';
+export let TEST_OWNER_ID: string;
+export let TEST_USERNAME: string;
+export const TEST_PASSWORD = 'password';
+export const TEST_CLIENT_ID = 'sskts-api:test:scenarios:oauth:';
 
 let connection: mongoose.Connection;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-});
-
-export async function loginAsAdmin() {
-    return await supertest(app)
-        .post('/oauth/token')
-        .send({
-            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-            scope: 'admin'
-        })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(httpStatus.OK)
-        .then((response) => <string>response.body.access_token);
-}
-
-export async function loginAsClient() {
-    const TEST_CLIENT_ID = 'sskts-api:test:scenarios:oauth:';
 
     // テストクライアント作成
     const client = sskts.factory.client.create({
@@ -45,24 +31,8 @@ export async function loginAsClient() {
     const clientAdapter = sskts.adapter.client(connection);
     await clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { upsert: true }).exec();
 
-    return await supertest(app)
-        .post('/oauth/token')
-        .send({
-            grant_type: 'client_credentials',
-            scopes: ['test'],
-            client_id: TEST_CLIENT_ID,
-            state: 'test'
-        })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(httpStatus.OK)
-        .then((response) => <string>response.body.access_token);
-}
-
-export async function loginAsMember(scopes: string[]) {
-    const TEST_USERNAME = `sskts-api:test:scenarios:oauth:${Date.now().toString()}`;
-
     // テスト会員作成
+    TEST_USERNAME = `sskts-api:test:scenarios:oauth:${Date.now().toString()}`;
     const memberOwner = await sskts.factory.owner.member.create({
         username: TEST_USERNAME,
         password: TEST_PASSWORD,
@@ -72,7 +42,59 @@ export async function loginAsMember(scopes: string[]) {
     });
     const ownerAdapter = sskts.adapter.owner(connection);
     await ownerAdapter.model.findByIdAndUpdate(memberOwner.id, memberOwner, { upsert: true }).exec();
+    TEST_OWNER_ID = memberOwner.id;
+});
 
+/**
+ * 管理者としてログインする
+ *
+ * @export
+ * @returns {Promise<string>} アクセストークン
+ */
+export async function loginAsAdmin(): Promise<string> {
+    return await supertest(app)
+        .post('/oauth/token')
+        .send({
+            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+            scope: 'admin'
+        })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(httpStatus.OK)
+        .then((response) => <string>response.body.access_token);
+}
+
+/**
+ * クライアントとしてログインする
+ *
+ * @export
+ * @param {string[]} scopes スコープリスト
+ * @param {string} state 状態
+ * @returns {Promise<string>} アクセストークン
+ */
+export async function loginAsClient(scopes: string[], state: string): Promise<string> {
+    return await supertest(app)
+        .post('/oauth/token')
+        .send({
+            grant_type: 'client_credentials',
+            scopes: scopes,
+            client_id: TEST_CLIENT_ID,
+            state: state
+        })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(httpStatus.OK)
+        .then((response) => <string>response.body.access_token);
+}
+
+/**
+ * 会員としてログインする
+ *
+ * @export
+ * @param {string[]} scopes スコープリスト
+ * @returns {Promise<string>} アクセストークン
+ */
+export async function loginAsMember(scopes: string[]): Promise<string> {
     return await supertest(app)
         .post('/oauth/token')
         .send({

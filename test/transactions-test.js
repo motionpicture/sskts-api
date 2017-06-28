@@ -104,6 +104,20 @@ describe('取引開始', () => {
             assert.equal(response.body.data, null);
         });
     }));
+    it('スコープ不足で開始できない', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsMember(['xxx']);
+        yield supertest(app)
+            .post('/transactions/startIfPossible')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .send({
+            expires_at: Date.now()
+        })
+            .expect(httpStatus.FORBIDDEN)
+            .then((response) => {
+            assert.equal(response.text, 'Forbidden');
+        });
+    }));
     it('匿名所有者として開始できる', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = sskts.adapter.transaction(connection);
         const accessToken = yield OAuthScenario.loginAsAdmin();
@@ -140,6 +154,13 @@ describe('取引開始', () => {
             assert.equal(typeof response.body.data.id, 'string');
             return response.body.data.id;
         });
+        // 取引中の所有者が会員であることを確認
+        const transactionOption = yield sskts.service.transactionWithId.findById(transactionId)(transactionAdapter);
+        assert(transactionOption.isDefined);
+        assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
+        const memberOwner = transactionOption.get().owners.find((owner) => owner.id === OAuthScenario.TEST_OWNER_ID);
+        assert(memberOwner !== undefined);
+        // テスト取引削除
         yield transactionAdapter.transactionModel.findByIdAndRemove(transactionId).exec();
     }));
 });
