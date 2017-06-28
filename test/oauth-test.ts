@@ -29,14 +29,6 @@ let connection: mongoose.Connection;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
-    // 全クライアント削除
-    const clientAdapter = sskts.adapter.client(connection);
-    await clientAdapter.clientModel.remove({}).exec();
-
-    // 全会員削除
-    const ownerAdapter = sskts.adapter.owner(connection);
-    await ownerAdapter.model.remove({ group: sskts.factory.ownerGroup.MEMBER }).exec();
-
     TEST_USERNAME = `sskts-api:test:oauth${Date.now().toString()}`;
     TEST_BODY_PASSWORD = {
         grant_type: 'password',
@@ -178,7 +170,7 @@ describe('クライアント情報認可', () => {
             name: { en: '', ja: '' },
             description: { en: '', ja: '' },
             notes: { en: '', ja: '' },
-            email: 'test@example.com'
+            email: process.env.SSKTS_DEVELOPER_EMAIL
         });
         const clientAdapter = sskts.adapter.client(connection);
         await clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { new: true, upsert: true }).exec();
@@ -279,10 +271,10 @@ describe('パスワード認可', () => {
             password: TEST_PASSWORD,
             name_first: 'xxx',
             name_last: 'xxx',
-            email: 'test@example.com'
+            email: process.env.SSKTS_DEVELOPER_EMAIL
         });
         const ownerAdapter = sskts.adapter.owner(connection);
-        await ownerAdapter.model.findByIdAndUpdate(memberOwner.id, memberOwner, { upsert: true }).exec();
+        await sskts.service.member.signUp(memberOwner)(ownerAdapter);
 
         const data = { ...TEST_BODY_PASSWORD, ...{ password: `${TEST_BODY_PASSWORD.password}x` } };
         await supertest(app)
@@ -307,10 +299,10 @@ describe('パスワード認可', () => {
             password: TEST_PASSWORD,
             name_first: 'xxx',
             name_last: 'xxx',
-            email: 'test@example.com'
+            email: process.env.SSKTS_DEVELOPER_EMAIL
         });
         const ownerAdapter = sskts.adapter.owner(connection);
-        await ownerAdapter.model.findByIdAndUpdate(memberOwner.id, memberOwner, { upsert: true }).exec();
+        await sskts.service.member.signUp(memberOwner)(ownerAdapter);
 
         const credentials = await supertest(app)
             .post('/oauth/token')

@@ -9,7 +9,7 @@ const ownerRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
-import { NOT_FOUND } from 'http-status';
+import { NO_CONTENT, NOT_FOUND } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
@@ -51,6 +51,31 @@ ownerRouter.get(
                     });
                 }
             });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+ownerRouter.put(
+    '/me',
+    permitScopes(['owners']),
+    (_1, _2, next) => {
+        next();
+    },
+    validator,
+    async (req, res, next) => {
+        try {
+            const ownerId = (<Express.IOwner>req.getUser().owner).id;
+            const update = sskts.factory.owner.member.createVariableFields({
+                name_first: req.body.name_first,
+                name_last: req.body.name_last,
+                email: req.body.email,
+                tel: req.body.tel
+            });
+            await sskts.service.member.updateProfile(ownerId, update)(sskts.adapter.owner(mongoose.connection));
+
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }

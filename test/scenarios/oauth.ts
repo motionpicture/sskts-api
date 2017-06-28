@@ -26,22 +26,22 @@ before(async () => {
         name: { en: '', ja: '' },
         description: { en: '', ja: '' },
         notes: { en: '', ja: '' },
-        email: 'test@example.com'
+        email: process.env.SSKTS_DEVELOPER_EMAIL
     });
     const clientAdapter = sskts.adapter.client(connection);
     await clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { upsert: true }).exec();
 
-    // テスト会員作成
+    // テスト会員新規登録
     TEST_USERNAME = `sskts-api:test:scenarios:oauth:${Date.now().toString()}`;
     const memberOwner = await sskts.factory.owner.member.create({
         username: TEST_USERNAME,
         password: TEST_PASSWORD,
         name_first: 'xxx',
         name_last: 'xxx',
-        email: 'test@example.com'
+        email: process.env.SSKTS_DEVELOPER_EMAIL
     });
     const ownerAdapter = sskts.adapter.owner(connection);
-    await ownerAdapter.model.findByIdAndUpdate(memberOwner.id, memberOwner, { upsert: true }).exec();
+    await sskts.service.member.signUp(memberOwner)(ownerAdapter);
     TEST_OWNER_ID = memberOwner.id;
 });
 

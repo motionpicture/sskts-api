@@ -54,7 +54,7 @@ describe('oauthコントローラー クライアントIDから資格情報を�
             name: { en: '', ja: '' },
             description: { en: '', ja: '' },
             notes: { en: '', ja: '' },
-            email: 'test@example.com'
+            email: process.env.SSKTS_DEVELOPER_EMAIL
         });
         const clientAdapter = sskts.adapter.client(mongoose.connection);
         await clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { new: true, upsert: true }).exec();

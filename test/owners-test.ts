@@ -9,16 +9,14 @@ import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
+import * as util from 'util';
 
 import * as app from '../app/app';
+import * as OAuthScenario from './scenarios/oauth';
 
 let connection: mongoose.Connection;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-
-    // 会員全て削除
-    const ownerAdapter = sskts.adapter.owner(connection);
-    await ownerAdapter.model.remove({ group: sskts.factory.ownerGroup.MEMBER }).exec();
 });
 
 describe('会員プロフィール取得', () => {
@@ -35,14 +33,14 @@ describe('会員プロフィール取得', () => {
             password: TEST_PASSWORD,
             name_first: 'xxx',
             name_last: 'xxx',
-            email: 'noreply@example.com'
+            email: process.env.SSKTS_DEVELOPER_EMAIL
         });
-        await ownerAdapter.model.findByIdAndUpdate(memberOwner.id, memberOwner, { upsert: true }).exec();
+        await sskts.service.member.signUp(memberOwner)(ownerAdapter);
         TEST_OWNER_ID = memberOwner.id;
     });
 
     afterEach(async () => {
-        // テスト会員作成
+        // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         await ownerAdapter.model.findByIdAndRemove(TEST_OWNER_ID).exec();
     });
@@ -124,5 +122,43 @@ describe('会員プロフィール取得', () => {
             .then((response) => {
                 assert.equal(response.body.data, null);
             });
+    });
+});
+
+describe('プロフィール更新', () => {
+    it('更新できる', async () => {
+        const accessToken = await OAuthScenario.loginAsMember(['owners']);
+
+        const now = Date.now().toString();
+        const email = util.format(
+            '%s+%s@%s',
+            (<string>process.env.SSKTS_DEVELOPER_EMAIL).split('@')[0],
+            now,
+            (<string>process.env.SSKTS_DEVELOPER_EMAIL).split('@')[1]
+        );
+        const update = {
+            name_first: `first name${now}`,
+            name_last: `last name${now}`,
+            email: email,
+            tel: `090${now}`
+        };
+        await supertest(app)
+            .put('/owners/me')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .send(update)
+            .expect(httpStatus.NO_CONTENT)
+            .then((response) => {
+                assert.equal(response.text, '');
+            });
+
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const profileOption = await sskts.service.member.getProfile(OAuthScenario.TEST_OWNER_ID)(ownerAdapter);
+        assert(profileOption.isDefined);
+        const profile = profileOption.get();
+        assert.equal(profile.name_first, update.name_first);
+        assert.equal(profile.name_last, update.name_last);
+        assert.equal(profile.email, update.email);
+        assert.equal(profile.tel, update.tel);
     });
 });
