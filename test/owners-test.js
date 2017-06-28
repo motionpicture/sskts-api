@@ -50,7 +50,7 @@ describe('会員プロフィール取得', () => {
     }));
     it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .get('/owners/me')
+            .get('/owners/me/profile')
             .set('Accept', 'application/json')
             .expect(httpStatus.UNAUTHORIZED)
             .then((response) => {
@@ -66,7 +66,7 @@ describe('会員プロフィール取得', () => {
         })
             .then((response) => response.body.access_token);
         yield supertest(app)
-            .get('/owners/me')
+            .get('/owners/me/profile')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect(httpStatus.FORBIDDEN)
@@ -81,11 +81,11 @@ describe('会員プロフィール取得', () => {
             grant_type: 'password',
             username: TEST_USERNAME,
             password: TEST_PASSWORD,
-            scopes: ['owners']
+            scopes: ['owners.profile']
         })
             .then((response) => response.body.access_token);
         yield supertest(app)
-            .get('/owners/me')
+            .get('/owners/me/profile')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -103,14 +103,14 @@ describe('会員プロフィール取得', () => {
             grant_type: 'password',
             username: TEST_USERNAME,
             password: TEST_PASSWORD,
-            scopes: ['owners']
+            scopes: ['owners.profile']
         })
             .then((response) => response.body.access_token);
         // テスト会員を強制的に削除
         const ownerAdapter = sskts.adapter.owner(connection);
         yield ownerAdapter.model.findByIdAndRemove(TEST_OWNER_ID).exec();
         yield supertest(app)
-            .get('/owners/me')
+            .get('/owners/me/profile')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -122,7 +122,7 @@ describe('会員プロフィール取得', () => {
 });
 describe('プロフィール更新', () => {
     it('更新できる', () => __awaiter(this, void 0, void 0, function* () {
-        const accessToken = yield OAuthScenario.loginAsMember(['owners']);
+        const accessToken = yield OAuthScenario.loginAsMember(['owners.profile']);
         const now = Date.now().toString();
         const email = util.format('%s+%s@%s', process.env.SSKTS_DEVELOPER_EMAIL.split('@')[0], now, process.env.SSKTS_DEVELOPER_EMAIL.split('@')[1]);
         const update = {
@@ -132,7 +132,7 @@ describe('プロフィール更新', () => {
             tel: `090${now}`
         };
         yield supertest(app)
-            .put('/owners/me')
+            .put('/owners/me/profile')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .send(update)
@@ -148,5 +148,89 @@ describe('プロフィール更新', () => {
         assert.equal(profile.name_last, update.name_last);
         assert.equal(profile.email, update.email);
         assert.equal(profile.tel, update.tel);
+    }));
+});
+describe('カード取得', () => {
+    it('取得できる', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsMember(['owners.cards']);
+        yield supertest(app)
+            .get('/owners/me/cards')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .expect(httpStatus.OK)
+            .then((response) => {
+            assert(Array.isArray(response.body.data));
+        });
+    }));
+});
+describe('カード追加', () => {
+    it('生のカード情報で追加できる', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsMember(['owners.cards']);
+        yield supertest(app)
+            .post('/owners/me/cards')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .send({
+            card_no: '4111111111111111',
+            card_pass: '111',
+            expire: '2212',
+            holder_name: 'AA BB'
+        })
+            .expect(httpStatus.CREATED)
+            .then((response) => {
+            assert.equal(response.body.data.type, 'cards');
+        });
+    }));
+});
+describe('カード削除', () => {
+    it('追加後、削除できる', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsMember(['owners.cards']);
+        // まず追加
+        yield supertest(app)
+            .post('/owners/me/cards')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .send({
+            card_no: '4111111111111111',
+            card_pass: '111',
+            expire: '2212',
+            holder_name: 'AA BB'
+        })
+            .expect(httpStatus.CREATED)
+            .then((response) => {
+            assert.equal(response.body.data.type, 'cards');
+        });
+        // 検索
+        const cards = yield supertest(app)
+            .get('/owners/me/cards')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .expect(httpStatus.OK)
+            .then((response) => {
+            return response.body.data;
+        });
+        // 削除
+        const cardSeq = cards[0].attributes.card_seq;
+        yield supertest(app)
+            .delete('/owners/me/cards')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .send({
+            card_seq: cardSeq
+        })
+            .expect(httpStatus.NO_CONTENT);
+    }));
+});
+describe('座席予約資産検索', () => {
+    it('検索できる', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsMember(['owners.assets']);
+        yield supertest(app)
+            .get('/owners/me/assets/seatReservation')
+            .set('authorization', `Bearer ${accessToken}`)
+            .set('Accept', 'application/json')
+            .expect(httpStatus.OK)
+            .then((response) => {
+            assert(Array.isArray(response.body.data));
+        });
     }));
 });

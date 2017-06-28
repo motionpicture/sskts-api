@@ -26,7 +26,10 @@ const validator_1 = require("../middlewares/validator");
 const debug = createDebug('sskts-api:ownerRouter');
 ownerRouter.use(authentication_1.default);
 ownerRouter.use(requireMember_1.default);
-ownerRouter.get('/me', permitScopes_1.default(['owners', 'owners:read-only']), (_1, _2, next) => {
+/**
+ * 会員プロフィール取得
+ */
+ownerRouter.get('/me/profile', permitScopes_1.default(['owners.profile', 'owners.profile.read-only']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -55,7 +58,10 @@ ownerRouter.get('/me', permitScopes_1.default(['owners', 'owners:read-only']), (
         next(error);
     }
 }));
-ownerRouter.put('/me', permitScopes_1.default(['owners']), (_1, _2, next) => {
+/**
+ * 会員プロフィール更新
+ */
+ownerRouter.put('/me/profile', permitScopes_1.default(['owners.profile']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -68,6 +74,98 @@ ownerRouter.put('/me', permitScopes_1.default(['owners']), (_1, _2, next) => {
         });
         yield sskts.service.member.updateProfile(ownerId, update)(sskts.adapter.owner(mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 会員カード取得
+ */
+ownerRouter.get('/me/cards', permitScopes_1.default(['owners.cards', 'owners.cards.read-only']), (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const ownerId = req.getUser().owner.id;
+        const data = yield sskts.service.member.findCards(ownerId)()
+            .then((cards) => {
+            return cards.map((card) => {
+                return {
+                    type: 'cards',
+                    attributes: card
+                };
+            });
+        });
+        res.json({
+            data: data
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 会員カード追加
+ */
+ownerRouter.post('/me/cards', permitScopes_1.default(['owners.cards']), (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const ownerId = req.getUser().owner.id;
+        yield sskts.service.member.addCard(ownerId, {
+            card_no: req.body.card_no,
+            card_pass: req.body.card_pass,
+            expire: req.body.expire,
+            holder_name: req.body.holder_name,
+            group: sskts.factory.cardGroup.GMO
+        })();
+        res.status(http_status_1.CREATED).json({
+            data: {
+                type: 'cards',
+                attributes: {}
+            }
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 会員カード削除
+ */
+ownerRouter.delete('/me/cards', permitScopes_1.default(['owners.cards']), (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const ownerId = req.getUser().owner.id;
+        yield sskts.service.member.removeCard(ownerId, req.body.card_seq)();
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 会員座席予約資産取得
+ */
+ownerRouter.get('/me/assets/seatReservation', permitScopes_1.default(['owners.assets', 'owners.assets.read-only']), (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const ownerId = req.getUser().owner.id;
+        const data = yield sskts.service.member.findSeatReservationAssets(ownerId)(sskts.adapter.asset(mongoose.connection))
+            .then((assets) => {
+            return assets.map((asset) => {
+                return {
+                    type: 'assets',
+                    id: asset.id,
+                    attributes: asset
+                };
+            });
+        });
+        res.json({
+            data: data
+        });
     }
     catch (error) {
         next(error);
