@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v9.3.0 - 2017-06-28
+### Changed
+- パフォーマンス在庫状況表現を空席率(%)に変更。
+
 ## v9.2.0 - 2017-06-25
 ### Changed
 - ヘルスチェックにredis接続確認を追加。
