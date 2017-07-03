@@ -11,40 +11,29 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
-import * as app from '../app/app';
-
-const TEST_THEATER_ID = '118';
+import * as app from '../../app/app';
+import * as Resources from '../resources';
+import * as OAuthScenario from '../scenarios/oauth';
 
 let connection: mongoose.Connection;
-let accessToken: string;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    accessToken = await supertest(app)
-        .post('/oauth/token')
-        .send({
-            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-            scope: 'admin'
-        })
-        .then((response) => {
-            return <string>response.body.access_token;
-        });
 });
 
 describe('パフォーマンス検索', () => {
     it('アクセストークン必須', async () => {
         await supertest(app)
             .get('/performances')
-            .expect(httpStatus.UNAUTHORIZED)
-            .then((response) => {
-                assert.equal(response.text, 'Unauthorized');
-            });
+            .expect(httpStatus.UNAUTHORIZED);
     });
 
     it('ok', async () => {
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
         await supertest(app)
             .get('/performances')
             .query({
-                theater: TEST_THEATER_ID,
+                theater: Resources.THEATER_ID,
                 day: moment().format('YYYYMMDD')
             })
             .set('authorization', `Bearer ${accessToken}`)
@@ -57,6 +46,8 @@ describe('パフォーマンス検索', () => {
     });
 
     it('検索条件に劇場が足りない', async () => {
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
         await supertest(app)
             .get('/performances')
             .query({
@@ -68,7 +59,6 @@ describe('パフォーマンス検索', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
                 assert(Array.isArray(response.body.errors));
-                assert.equal(response.body.errors[0].source.parameter, 'theater');
             });
     });
 });
@@ -83,13 +73,12 @@ describe('GET /performances/:id', () => {
     it('アクセストークン必須', async () => {
         await supertest(app)
             .get('/performances/0000000000')
-            .expect(httpStatus.UNAUTHORIZED)
-            .then((response) => {
-                assert.equal(response.text, 'Unauthorized');
-            });
+            .expect(httpStatus.UNAUTHORIZED);
     });
 
     it('not found', async () => {
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
         await supertest(app)
             .get('/performances/0000000000')
             .set('authorization', `Bearer ${accessToken}`)
@@ -103,23 +92,15 @@ describe('GET /performances/:id', () => {
 
     it('found', async () => {
         // テストデータインポート
-        const theaterAdapter = sskts.adapter.theater(connection);
-        const filmAdapter = sskts.adapter.film(connection);
-        const screenAdapter = sskts.adapter.screen(connection);
-        const performanceAdapter = sskts.adapter.performance(connection);
-        await sskts.service.master.importTheater(TEST_THEATER_ID)(theaterAdapter);
-        await sskts.service.master.importScreens(TEST_THEATER_ID)(theaterAdapter, screenAdapter);
-        await sskts.service.master.importFilms(TEST_THEATER_ID)(theaterAdapter, filmAdapter);
-        await sskts.service.master.importPerformances(
-            TEST_THEATER_ID,
-            '20170301',
-            '20170303'
-        )(filmAdapter, screenAdapter, performanceAdapter);
+        await Resources.importMasters(moment().add(1, 'days').toDate());
 
+        const performanceAdapter = sskts.adapter.performance(connection);
         const performanceDoc = await performanceAdapter.model.findOne().exec();
         if (performanceDoc === null) {
             throw new Error('test data not imported');
         }
+
+        const accessToken = await OAuthScenario.loginAsAdmin();
 
         await supertest(app)
             .get(`/performances/${performanceDoc.get('id')}`)
@@ -130,7 +111,6 @@ describe('GET /performances/:id', () => {
             .then((response) => {
                 assert.equal(response.body.data.type, 'performances');
                 assert.equal(response.body.data.id, performanceDoc.get('id'));
-                assert.equal(response.body.data.attributes.id, performanceDoc.get('id'));
             });
     });
 });

@@ -43,14 +43,6 @@ function issueCredentials(req) {
                 // 非対応認可タイプ
                 throw new Error(exports.MESSAGE_UNIMPLEMENTED_GRANT_TYPE);
         }
-        // usernameとpassword照合
-        // const owner = await chevre.Models.Owner.findOne({ username: req.body.username }).exec();
-        // if (owner === null) {
-        //     throw new Error('owner not found');
-        // }
-        // if (owner.get('password_hash') !== chevre.CommonUtil.createHash(req.body.password, owner.get('password_salt'))) {
-        //     throw new Error('invalid username or password');
-        // }
     });
 }
 exports.issueCredentials = issueCredentials;
@@ -66,9 +58,12 @@ function issueCredentialsByAssertion(assertion, scopes) {
         if (assertion !== process.env.SSKTS_API_REFRESH_TOKEN) {
             throw new Error(exports.MESSAGE_INVALID_ASSERTION);
         }
-        const payload = {
+        // todo clientとstateどうするか
+        const payload = sskts.factory.clientUser.create({
+            client: '',
+            state: '',
             scopes: scopes
-        };
+        });
         return yield payload2credentials(payload);
     });
 }
@@ -84,15 +79,15 @@ function issueCredentialsByClient(clientId, state, scopes) {
     return __awaiter(this, void 0, void 0, function* () {
         // クライアントの存在確認
         const clientAdapter = sskts.adapter.client(mongoose.connection);
-        const clientDoc = yield clientAdapter.clientModel.findById(clientId, 'name').exec();
+        const clientDoc = yield clientAdapter.clientModel.findById(clientId, '_id').exec();
         if (clientDoc === null) {
             throw new Error(exports.MESSAGE_CLIENT_NOT_FOUND);
         }
-        const payload = {
-            client: clientDoc.toObject(),
+        const payload = sskts.factory.clientUser.create({
+            client: clientId,
             state: state,
             scopes: scopes
-        };
+        });
         return yield payload2credentials(payload);
     });
 }
@@ -105,14 +100,14 @@ function issueCredentialsByPassword(username, password, scopes) {
         if (memberOption.isEmpty) {
             throw new Error(exports.MESSAGE_INVALID_USERNAME_OR_PASSWORD);
         }
+        // todo clientとstateも追加
         const owner = memberOption.get();
-        const payload = {
-            owner: {
-                id: owner.id,
-                username: owner.username
-            },
+        const payload = sskts.factory.clientUser.create({
+            client: '',
+            state: '',
+            owner: owner.id,
             scopes: scopes
-        };
+        });
         return yield payload2credentials(payload);
     });
 }

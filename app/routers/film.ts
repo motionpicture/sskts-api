@@ -3,6 +3,7 @@
  *
  * @ignore
  */
+
 import { Router } from 'express';
 const filmRouter = Router();
 
@@ -18,7 +19,7 @@ filmRouter.use(authentication);
 
 filmRouter.get(
     '/:id',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'films', 'films.read-only']),
     (_1, _2, next) => {
         next();
     },

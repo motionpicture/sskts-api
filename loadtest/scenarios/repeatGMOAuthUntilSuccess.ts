@@ -52,15 +52,15 @@ export default async (config: IConfig): Promise<IGMOAuthResult> => {
             // GMOオーソリ取得
             // tslint:disable-next-line:no-magic-numbers
             const orderId = `${config.orderIdPrefix}${`00${countTry}`.slice(-2)}`;
-            const entryTranResult = await GMO.CreditService.entryTran({
+            const entryTranResult = await GMO.services.credit.entryTran({
                 shopId: config.gmoShopId,
                 shopPass: config.gmoShopPass,
                 orderId: orderId,
-                jobCd: GMO.Util.JOB_CD_AUTH,
+                jobCd: GMO.utils.util.JOB_CD_AUTH,
                 amount: config.amount
             });
 
-            const execTranResult = await GMO.CreditService.execTran({
+            const execTranResult = await GMO.services.credit.execTran({
                 accessId: entryTranResult.accessId,
                 accessPass: entryTranResult.accessPass,
                 orderId: orderId,

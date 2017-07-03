@@ -33,16 +33,16 @@ ownerRouter.get('/me/profile', permitScopes_1.default(['owners.profile', 'owners
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownerId = req.getUser().owner.id;
-        const memberOwnerOption = yield sskts.service.member.getProfile(ownerId)(sskts.adapter.owner(mongoose.connection));
-        debug('memberOwnerOption is', memberOwnerOption);
-        memberOwnerOption.match({
-            Some: (memberOwner) => {
+        const ownerId = req.getUser().owner;
+        const profileOption = yield sskts.service.member.getProfile(ownerId)(sskts.adapter.owner(mongoose.connection));
+        debug('profileOption is', profileOption);
+        profileOption.match({
+            Some: (profile) => {
                 res.json({
                     data: {
                         type: 'owners',
                         id: ownerId,
-                        attributes: memberOwner
+                        attributes: profile
                     }
                 });
             },
@@ -61,18 +61,36 @@ ownerRouter.get('/me/profile', permitScopes_1.default(['owners.profile', 'owners
 /**
  * 会員プロフィール更新
  */
-ownerRouter.put('/me/profile', permitScopes_1.default(['owners.profile']), (_1, _2, next) => {
+ownerRouter.put('/me/profile', permitScopes_1.default(['owners.profile']), (req, __, next) => {
+    /*
+    req.body = {
+        data: {
+            type: 'owners',
+            id: '1',
+            attributes: {
+                name_first: 'xxx',
+                name_last: 'xxx',
+                email: 'xxx',
+                tel: 'xxx'
+            }
+        }
+    }
+    */
+    const ownerId = req.getUser().owner;
+    req.checkBody('data').notEmpty().withMessage('required');
+    req.checkBody('data.type').equals('owners').withMessage('must be \'owners\'');
+    req.checkBody('data.id').equals(ownerId).withMessage('must be yourself');
+    req.checkBody('data.attributes').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.name_first').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.name_last').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.email').notEmpty().withMessage('required').isEmail().withMessage('should be an email');
+    req.checkBody('data.attributes.tel').notEmpty().withMessage('required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownerId = req.getUser().owner.id;
-        const update = sskts.factory.owner.member.createVariableFields({
-            name_first: req.body.name_first,
-            name_last: req.body.name_last,
-            email: req.body.email,
-            tel: req.body.tel
-        });
-        yield sskts.service.member.updateProfile(ownerId, update)(sskts.adapter.owner(mongoose.connection));
+        const ownerId = req.getUser().owner;
+        const profile = sskts.factory.owner.member.createVariableFields(req.body.data.attributes);
+        yield sskts.service.member.updateProfile(ownerId, profile)(sskts.adapter.owner(mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -86,13 +104,14 @@ ownerRouter.get('/me/cards', permitScopes_1.default(['owners.cards', 'owners.car
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownerId = req.getUser().owner.id;
+        const ownerId = req.getUser().owner;
         const data = yield sskts.service.member.findCards(ownerId)()
             .then((cards) => {
             return cards.map((card) => {
                 return {
                     type: 'cards',
-                    attributes: card
+                    id: card.id.toString(),
+                    attributes: Object.assign({}, card, { id: undefined })
                 };
             });
         });
@@ -107,22 +126,40 @@ ownerRouter.get('/me/cards', permitScopes_1.default(['owners.cards', 'owners.car
 /**
  * 会員カード追加
  */
-ownerRouter.post('/me/cards', permitScopes_1.default(['owners.cards']), (_1, _2, next) => {
+ownerRouter.post('/me/cards', permitScopes_1.default(['owners.cards']), (req, _2, next) => {
+    /*
+    req.body = {
+        data: {
+            type: 'cards',
+            attributes: {
+                card_no: 'xxx',
+                card_pass: 'xxx',
+                expire: 'xxx',
+                holder_name: 'xxx'
+            }
+        }
+    }
+    */
+    req.checkBody('data').notEmpty().withMessage('required');
+    req.checkBody('data.type').equals('cards').withMessage('must be \'cards\'');
+    req.checkBody('data.attributes').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.card_no').optional().notEmpty().withMessage('required');
+    // req.checkBody('data.attributes.card_pass').optional().notEmpty().withMessage('required');
+    req.checkBody('data.attributes.expire').optional().notEmpty().withMessage('required');
+    req.checkBody('data.attributes.holder_name').optional().notEmpty().withMessage('required');
+    req.checkBody('data.attributes.token').optional().notEmpty().withMessage('required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownerId = req.getUser().owner.id;
-        yield sskts.service.member.addCard(ownerId, {
-            card_no: req.body.card_no,
-            card_pass: req.body.card_pass,
-            expire: req.body.expire,
-            holder_name: req.body.holder_name,
-            group: sskts.factory.cardGroup.GMO
-        })();
+        const ownerId = req.getUser().owner;
+        // 生のカード情報の場合
+        const card = sskts.factory.card.gmo.createUncheckedCardRaw(req.body.data.attributes);
+        const addedCard = yield sskts.service.member.addCard(ownerId, card)();
         res.status(http_status_1.CREATED).json({
             data: {
                 type: 'cards',
-                attributes: {}
+                id: addedCard.id.toString(),
+                attributes: Object.assign({}, addedCard, { id: undefined })
             }
         });
     }
@@ -133,12 +170,12 @@ ownerRouter.post('/me/cards', permitScopes_1.default(['owners.cards']), (_1, _2,
 /**
  * 会員カード削除
  */
-ownerRouter.delete('/me/cards', permitScopes_1.default(['owners.cards']), (_1, _2, next) => {
+ownerRouter.delete('/me/cards/:id', permitScopes_1.default(['owners.cards']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownerId = req.getUser().owner.id;
-        yield sskts.service.member.removeCard(ownerId, req.body.card_seq)();
+        const ownerId = req.getUser().owner;
+        yield sskts.service.member.removeCard(ownerId, req.params.id)();
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -152,7 +189,7 @@ ownerRouter.get('/me/assets/seatReservation', permitScopes_1.default(['owners.as
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownerId = req.getUser().owner.id;
+        const ownerId = req.getUser().owner;
         const data = yield sskts.service.member.findSeatReservationAssets(ownerId)(sskts.adapter.asset(mongoose.connection))
             .then((assets) => {
             return assets.map((asset) => {

@@ -3,6 +3,7 @@
  *
  * @ignore
  */
+
 import { Router } from 'express';
 const screenRouter = Router();
 
@@ -18,7 +19,7 @@ screenRouter.use(authentication);
 
 screenRouter.get(
     '/:id',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'screens', 'screens.read-only']),
     (_1, _2, next) => {
         next();
     },

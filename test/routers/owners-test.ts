@@ -11,67 +11,53 @@ import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 import * as util from 'util';
 
-import * as app from '../app/app';
-import * as OAuthScenario from './scenarios/oauth';
+import * as app from '../../app/app';
+import * as Resources from '../resources';
+import * as OAuthScenario from './../scenarios/oauth';
 
+const TEST_BODY_ADD_CARD = {
+    data: {
+        type: 'cards',
+        attributes: {
+            card_no: '4111111111111111',
+            card_pass: '',
+            expire: '2812',
+            holder_name: 'AA BB'
+        }
+    }
+};
 let connection: mongoose.Connection;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 
 describe('会員プロフィール取得', () => {
-    let TEST_OWNER_ID: string;
-    let TEST_USERNAME: string;
-    const TEST_PASSWORD: string = 'password';
-
+    let memberOwner: Resources.IMemberOwner;
     beforeEach(async () => {
         // テスト会員作成
-        const ownerAdapter = sskts.adapter.owner(connection);
-        TEST_USERNAME = `sskts-api:test:owner-test:${Date.now().toString()}`;
-        const memberOwner = await sskts.factory.owner.member.create({
-            username: TEST_USERNAME,
-            password: TEST_PASSWORD,
-            name_first: 'xxx',
-            name_last: 'xxx',
-            email: process.env.SSKTS_DEVELOPER_EMAIL
-        });
-        await sskts.service.member.signUp(memberOwner)(ownerAdapter);
-        TEST_OWNER_ID = memberOwner.id;
+        memberOwner = await Resources.createMemberOwner();
     });
-
     afterEach(async () => {
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
-        await ownerAdapter.model.findByIdAndRemove(TEST_OWNER_ID).exec();
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     });
 
     it('アクセストークン必須', async () => {
         await supertest(app)
             .get('/owners/me/profile')
             .set('Accept', 'application/json')
-            .expect(httpStatus.UNAUTHORIZED)
-            .then((response) => {
-                assert.equal(response.text, 'Unauthorized');
-            });
+            .expect(httpStatus.UNAUTHORIZED);
     });
 
     it('会員ログイン必須', async () => {
-        const accessToken = await supertest(app)
-            .post('/oauth/token')
-            .send({
-                assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-                scope: 'admin'
-            })
-            .then((response) => <string>response.body.access_token);
+        const accessToken = await OAuthScenario.loginAsAdmin();
 
         await supertest(app)
             .get('/owners/me/profile')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
-            .expect(httpStatus.FORBIDDEN)
-            .then((response) => {
-                assert.equal(response.text, 'Forbidden');
-            });
+            .expect(httpStatus.FORBIDDEN);
     });
 
     it('会員としてログインすれば取得できる', async () => {
@@ -79,8 +65,8 @@ describe('会員プロフィール取得', () => {
             .post('/oauth/token')
             .send({
                 grant_type: 'password',
-                username: TEST_USERNAME,
-                password: TEST_PASSWORD,
+                username: memberOwner.username,
+                password: memberOwner.password,
                 scopes: ['owners.profile']
             })
             .then((response) => <string>response.body.access_token);
@@ -93,8 +79,7 @@ describe('会員プロフィール取得', () => {
             .expect(httpStatus.OK)
             .then((response) => {
                 assert.equal(response.body.data.type, 'owners');
-                assert.equal(response.body.data.id, TEST_OWNER_ID);
-                assert.equal(response.body.data.attributes.username, TEST_USERNAME);
+                assert.equal(response.body.data.id, memberOwner.id);
             });
     });
 
@@ -103,15 +88,15 @@ describe('会員プロフィール取得', () => {
             .post('/oauth/token')
             .send({
                 grant_type: 'password',
-                username: TEST_USERNAME,
-                password: TEST_PASSWORD,
+                username: memberOwner.username,
+                password: memberOwner.password,
                 scopes: ['owners.profile']
             })
             .then((response) => <string>response.body.access_token);
 
         // テスト会員を強制的に削除
         const ownerAdapter = sskts.adapter.owner(connection);
-        await ownerAdapter.model.findByIdAndRemove(TEST_OWNER_ID).exec();
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
 
         await supertest(app)
             .get('/owners/me/profile')
@@ -126,8 +111,19 @@ describe('会員プロフィール取得', () => {
 });
 
 describe('プロフィール更新', () => {
+    let memberOwner: Resources.IMemberOwner;
+    beforeEach(async () => {
+        // テスト会員作成
+        memberOwner = await Resources.createMemberOwner();
+    });
+    afterEach(async () => {
+        // テスト会員削除
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    });
+
     it('更新できる', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(['owners.profile']);
+        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['owners.profile']);
 
         const now = Date.now().toString();
         const email = util.format(
@@ -136,36 +132,51 @@ describe('プロフィール更新', () => {
             now,
             (<string>process.env.SSKTS_DEVELOPER_EMAIL).split('@')[1]
         );
-        const update = {
-            name_first: `first name${now}`,
-            name_last: `last name${now}`,
-            email: email,
-            tel: `090${now}`
+        const body = {
+            data: {
+                type: 'owners',
+                id: memberOwner.id,
+                attributes: {
+                    name_first: `first name${now}`,
+                    name_last: `last name${now}`,
+                    email: email,
+                    tel: `090${now}`
+                }
+            }
         };
+
         await supertest(app)
             .put('/owners/me/profile')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
-            .send(update)
-            .expect(httpStatus.NO_CONTENT)
-            .then((response) => {
-                assert.equal(response.text, '');
-            });
+            .send(body)
+            .expect(httpStatus.NO_CONTENT);
 
         const ownerAdapter = sskts.adapter.owner(connection);
-        const profileOption = await sskts.service.member.getProfile(OAuthScenario.TEST_OWNER_ID)(ownerAdapter);
+        const profileOption = await sskts.service.member.getProfile(memberOwner.id)(ownerAdapter);
         assert(profileOption.isDefined);
         const profile = profileOption.get();
-        assert.equal(profile.name_first, update.name_first);
-        assert.equal(profile.name_last, update.name_last);
-        assert.equal(profile.email, update.email);
-        assert.equal(profile.tel, update.tel);
+        assert.equal(profile.name_first, body.data.attributes.name_first);
+        assert.equal(profile.name_last, body.data.attributes.name_last);
+        assert.equal(profile.email, body.data.attributes.email);
+        assert.equal(profile.tel, body.data.attributes.tel);
     });
 });
 
 describe('カード取得', () => {
+    let memberOwner: Resources.IMemberOwner;
+    beforeEach(async () => {
+        // テスト会員作成
+        memberOwner = await Resources.createMemberOwner();
+    });
+    afterEach(async () => {
+        // テスト会員削除
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    });
+
     it('取得できる', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(['owners.cards']);
+        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['owners.cards']);
 
         await supertest(app)
             .get('/owners/me/cards')
@@ -179,19 +190,33 @@ describe('カード取得', () => {
 });
 
 describe('カード追加', () => {
+    let memberOwner: Resources.IMemberOwner;
+    beforeEach(async () => {
+        // テスト会員作成
+        memberOwner = await Resources.createMemberOwner();
+    });
+    afterEach(async () => {
+        // テスト会員削除
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    });
+
     it('生のカード情報で追加できる', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(['owners.cards']);
+        const accessToken = await supertest(app)
+            .post('/oauth/token')
+            .send({
+                grant_type: 'password',
+                username: memberOwner.username,
+                password: memberOwner.password,
+                scopes: ['owners.cards']
+            })
+            .then((response) => <string>response.body.access_token);
 
         await supertest(app)
             .post('/owners/me/cards')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
-            .send({
-                card_no: '4111111111111111',
-                card_pass: '111',
-                expire: '2212',
-                holder_name: 'AA BB'
-            })
+            .send(TEST_BODY_ADD_CARD)
             .expect(httpStatus.CREATED)
             .then((response) => {
                 assert.equal(response.body.data.type, 'cards');
@@ -200,52 +225,60 @@ describe('カード追加', () => {
 });
 
 describe('カード削除', () => {
+    let memberOwner: Resources.IMemberOwner;
+    beforeEach(async () => {
+        // テスト会員作成
+        memberOwner = await Resources.createMemberOwner();
+    });
+    afterEach(async () => {
+        // テスト会員削除
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    });
+
     it('追加後、削除できる', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(['owners.cards']);
+        const accessToken = await supertest(app)
+            .post('/oauth/token')
+            .send({
+                grant_type: 'password',
+                username: memberOwner.username,
+                password: memberOwner.password,
+                scopes: ['owners.cards']
+            })
+            .then((response) => <string>response.body.access_token);
 
         // まず追加
-        await supertest(app)
+        const addedCardId = await supertest(app)
             .post('/owners/me/cards')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
-            .send({
-                card_no: '4111111111111111',
-                card_pass: '111',
-                expire: '2212',
-                holder_name: 'AA BB'
-            })
+            .send(TEST_BODY_ADD_CARD)
             .expect(httpStatus.CREATED)
-            .then((response) => {
-                assert.equal(response.body.data.type, 'cards');
-            });
-
-        // 検索
-        const cards = await supertest(app)
-            .get('/owners/me/cards')
-            .set('authorization', `Bearer ${accessToken}`)
-            .set('Accept', 'application/json')
-            .expect(httpStatus.OK)
-            .then((response) => {
-                return response.body.data;
-            });
+            .then((response) => response.body.data.id);
 
         // 削除
-        const cardSeq = cards[0].attributes.card_seq;
         await supertest(app)
-            .delete('/owners/me/cards')
+            .delete(`/owners/me/cards/${addedCardId}`)
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
-            .send({
-                card_seq: cardSeq
-            })
             .expect(httpStatus.NO_CONTENT);
-
     });
 });
 
 describe('座席予約資産検索', () => {
+    let memberOwner: Resources.IMemberOwner;
+    beforeEach(async () => {
+        // テスト会員作成
+        memberOwner = await Resources.createMemberOwner();
+    });
+    afterEach(async () => {
+        // テスト会員削除
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    });
+
     it('検索できる', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(['owners.assets']);
+        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['owners.assets']);
 
         await supertest(app)
             .get('/owners/me/assets/seatReservation')

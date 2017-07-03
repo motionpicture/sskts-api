@@ -19,21 +19,22 @@ const httpStatus = require("http-status");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
-const app = require("../app/app");
-const OAuthController = require("../app/controllers/oauth");
-const TEST_VALID_CLIENT_ID = 'testclientid';
-const TEST_VALID_BODY_CLIENT_CREDENTIALS = {
-    grant_type: 'client_credentials',
-    scopes: ['test'],
-    client_id: TEST_VALID_CLIENT_ID,
-    state: 'test'
-};
+const app = require("../../app/app");
+let TEST_CLIENT_ID;
 let TEST_USERNAME;
 const TEST_PASSWORD = 'password';
+let TEST_BODY_CLIENT_CREDENTIALS;
 let TEST_BODY_PASSWORD;
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    TEST_CLIENT_ID = `sskts-api:test:oauth${Date.now().toString()}`;
+    TEST_BODY_CLIENT_CREDENTIALS = {
+        grant_type: 'client_credentials',
+        scopes: ['test'],
+        client_id: TEST_CLIENT_ID,
+        state: 'test'
+    };
     TEST_USERNAME = `sskts-api:test:oauth${Date.now().toString()}`;
     TEST_BODY_PASSWORD = {
         grant_type: 'password',
@@ -55,8 +56,6 @@ describe('認可タイプに共通の仕様', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].title, 'Error');
-            assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_UNIMPLEMENTED_GRANT_TYPE);
         });
     }));
 });
@@ -88,7 +87,7 @@ describe('POST /oauth/token', () => {
             .expect('Content-Type', /json/)
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
-            assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_INVALID_ASSERTION);
+            assert(Array.isArray(response.body.errors));
         });
     }));
     it('スコープがadminでなければBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
@@ -102,13 +101,13 @@ describe('POST /oauth/token', () => {
             .expect('Content-Type', /json/)
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
-            assert.equal(response.body.errors[0].source.parameter, 'scope');
+            assert(Array.isArray(response.body.errors));
         });
     }));
 });
 describe('クライアント情報認可', () => {
     it('スコープ不足ならBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
-        const data = Object.assign({}, TEST_VALID_BODY_CLIENT_CREDENTIALS, { scopes: undefined });
+        const data = Object.assign({}, TEST_BODY_CLIENT_CREDENTIALS, { scopes: undefined });
         yield supertest(app)
             .post('/oauth/token')
             .send(data)
@@ -117,11 +116,10 @@ describe('クライアント情報認可', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].source.parameter, 'scopes');
         });
     }));
     it('クライアントID不足ならBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
-        const data = Object.assign({}, TEST_VALID_BODY_CLIENT_CREDENTIALS, { client_id: undefined });
+        const data = Object.assign({}, TEST_BODY_CLIENT_CREDENTIALS, { client_id: undefined });
         yield supertest(app)
             .post('/oauth/token')
             .send(data)
@@ -130,11 +128,10 @@ describe('クライアント情報認可', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].source.parameter, 'client_id');
         });
     }));
     it('ステート不足ならBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
-        const data = Object.assign({}, TEST_VALID_BODY_CLIENT_CREDENTIALS, { state: undefined });
+        const data = Object.assign({}, TEST_BODY_CLIENT_CREDENTIALS, { state: undefined });
         yield supertest(app)
             .post('/oauth/token')
             .send(data)
@@ -143,25 +140,23 @@ describe('クライアント情報認可', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].source.parameter, 'state');
         });
     }));
     it('クライアント存在しなければBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .post('/oauth/token')
-            .send(TEST_VALID_BODY_CLIENT_CREDENTIALS)
+            .send(TEST_BODY_CLIENT_CREDENTIALS)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_CLIENT_NOT_FOUND);
         });
     }));
     it('資格情報取得成功', () => __awaiter(this, void 0, void 0, function* () {
         // テストクライアント作成
         const client = sskts.factory.client.create({
-            id: TEST_VALID_CLIENT_ID,
+            id: TEST_CLIENT_ID,
             secret_hash: 'test',
             name: { en: '', ja: '' },
             description: { en: '', ja: '' },
@@ -172,13 +167,11 @@ describe('クライアント情報認可', () => {
         yield clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { new: true, upsert: true }).exec();
         const credentials = yield supertest(app)
             .post('/oauth/token')
-            .send(TEST_VALID_BODY_CLIENT_CREDENTIALS)
+            .send(TEST_BODY_CLIENT_CREDENTIALS)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
-            .then((response) => {
-            return response.body;
-        });
+            .then((response) => response.body);
         assert(typeof credentials.access_token, 'string');
         assert(typeof credentials.token_type, 'string');
         assert(typeof credentials.expires_in, 'number');
@@ -193,9 +186,9 @@ describe('クライアント情報認可', () => {
                 }
             });
         });
-        assert.equal(payload.client.id, TEST_VALID_BODY_CLIENT_CREDENTIALS.client_id);
-        assert.equal(payload.state, TEST_VALID_BODY_CLIENT_CREDENTIALS.state);
-        assert.deepEqual(payload.scopes, TEST_VALID_BODY_CLIENT_CREDENTIALS.scopes);
+        assert.equal(payload.client, TEST_BODY_CLIENT_CREDENTIALS.client_id);
+        assert.equal(payload.state, TEST_BODY_CLIENT_CREDENTIALS.state);
+        assert.deepEqual(payload.scopes, TEST_BODY_CLIENT_CREDENTIALS.scopes);
         // テストクライアント削除
         yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
     }));
@@ -211,7 +204,6 @@ describe('パスワード認可', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].source.parameter, 'scopes');
         });
     }));
     it('ユーザーネーム不足ならBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
@@ -224,7 +216,6 @@ describe('パスワード認可', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].source.parameter, 'username');
         });
     }));
     it('パスワード不足ならBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
@@ -237,7 +228,6 @@ describe('パスワード認可', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].source.parameter, 'password');
         });
     }));
     it('会員存在しなければBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
@@ -249,7 +239,6 @@ describe('パスワード認可', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_INVALID_USERNAME_OR_PASSWORD);
         });
     }));
     it('パスワードが間違っていればBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
@@ -272,7 +261,6 @@ describe('パスワード認可', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].detail, OAuthController.MESSAGE_INVALID_USERNAME_OR_PASSWORD);
         });
         // テストクライアント削除
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
@@ -294,9 +282,7 @@ describe('パスワード認可', () => {
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
-            .then((response) => {
-            return response.body;
-        });
+            .then((response) => response.body);
         assert(typeof credentials.access_token, 'string');
         assert(typeof credentials.token_type, 'string');
         assert(typeof credentials.expires_in, 'number');
@@ -311,9 +297,8 @@ describe('パスワード認可', () => {
                 }
             });
         });
-        assert.equal(payload.owner.id, memberOwner.id);
-        assert.equal(payload.owner.username, TEST_BODY_PASSWORD.username);
-        assert.deepEqual(payload.scopes, TEST_VALID_BODY_CLIENT_CREDENTIALS.scopes);
+        assert.equal(payload.owner, memberOwner.id);
+        assert.deepEqual(payload.scopes, TEST_BODY_CLIENT_CREDENTIALS.scopes);
         // テストクライアント削除
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     }));

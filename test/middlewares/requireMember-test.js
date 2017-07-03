@@ -13,15 +13,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const requireMember = require("../../app/middlewares/requireMember");
-const TEST_USER = {
-    owner: {
-        id: 'xxx',
-        username: 'username'
-    },
-    scopes: ['test']
-};
+let TEST_USER;
+before(() => {
+    TEST_USER = sskts.factory.clientUser.create({
+        client: 'xxx',
+        state: 'xxx',
+        owner: 'xxx',
+        scopes: ['test']
+    });
+});
 describe('会員必須ミドルウェア 会員かどうか', () => {
     it('所有者が定義されているので会員', () => __awaiter(this, void 0, void 0, function* () {
         assert(requireMember.isMember(TEST_USER));

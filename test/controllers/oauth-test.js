@@ -69,7 +69,12 @@ describe('oauthコントローラー クライアントIDから資格情報を�
 });
 describe('oauthコントローラー 任意のデータをJWTを使用して資格情報へ変換する', () => {
     it('変換できる', () => __awaiter(this, void 0, void 0, function* () {
-        const credentials = yield oauthController.payload2credentials({});
+        const payload = sskts.factory.clientUser.create({
+            client: 'xxx',
+            state: 'xxx',
+            scopes: ['xxx']
+        });
+        const credentials = yield oauthController.payload2credentials(payload);
         assert.equal(typeof credentials.access_token, 'string');
         assert.equal(typeof credentials.expires_in, 'number');
     }));

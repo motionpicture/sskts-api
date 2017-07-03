@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - パフォーマンス在庫状況表現を空席率(%)に変更。
 - 会員としても取引を開始できるように、取引開始サービスを拡張。
+- クライアントユーザー情報を取引に保管するように変更。
+- 各エンドポイントのスコープを具体的に調整。
 
 ### Deprecated
 

@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * screenルーター
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,11 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * screenルーター
- *
- * @ignore
- */
 const express_1 = require("express");
 const screenRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
@@ -22,7 +22,7 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 screenRouter.use(authentication_1.default);
-screenRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) => {
+screenRouter.get('/:id', permitScopes_1.default(['admin', 'screens', 'screens.read-only']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

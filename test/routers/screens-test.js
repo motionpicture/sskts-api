@@ -9,46 +9,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * filmsルーターテスト
+ * screensルーターテスト
  *
  * @ignore
  */
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
-const app = require("../app/app");
-const theaterId = '118';
+const app = require("../../app/app");
+const Resources = require("../resources");
+const OAuthScenario = require("../scenarios/oauth");
 let connection;
-let accessToken;
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    accessToken = yield supertest(app)
-        .post('/oauth/token')
-        .send({
-        assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-        scope: 'admin'
-    })
-        .then((response) => {
-        return response.body.access_token;
-    });
     // 全て削除してからテスト開始
-    const filmAdapter = sskts.adapter.film(connection);
-    yield filmAdapter.model.remove({}).exec();
+    const screenAdapter = sskts.adapter.screen(connection);
+    yield screenAdapter.model.remove({}).exec();
 }));
-describe('GET /films/:id', () => {
+describe('GET /screens/:id', () => {
     it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
-            .get('/films/0000000000')
-            .expect(httpStatus.UNAUTHORIZED)
-            .then((response) => {
-            assert.equal(response.text, 'Unauthorized');
-        });
+            .get('/screens/0000000000')
+            .expect(httpStatus.UNAUTHORIZED);
     }));
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
-            .get('/films/0000000000')
+            .get('/screens/0000000000')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -59,24 +49,22 @@ describe('GET /films/:id', () => {
     }));
     it('found', () => __awaiter(this, void 0, void 0, function* () {
         // テストデータインポート
-        const theaterAdapter = sskts.adapter.theater(connection);
-        const filmAdapter = sskts.adapter.film(connection);
-        yield sskts.service.master.importTheater(theaterId)(theaterAdapter);
-        yield sskts.service.master.importFilms(theaterId)(theaterAdapter, filmAdapter);
-        const filmDoc = yield filmAdapter.model.findOne().exec();
-        if (filmDoc === null) {
+        yield Resources.importMasters(moment().add(1, 'days').toDate());
+        const screenAdapter = sskts.adapter.screen(connection);
+        const screenDoc = yield screenAdapter.model.findOne().exec();
+        if (screenDoc === null) {
             throw new Error('test data not imported');
         }
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
-            .get(`/films/${filmDoc.get('id')}`)
+            .get(`/screens/${screenDoc.get('id')}`)
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(httpStatus.OK)
             .then((response) => {
-            assert.equal(response.body.data.type, 'films');
-            assert.equal(response.body.data.id, filmDoc.get('id'));
-            assert.equal(response.body.data.attributes.id, filmDoc.get('id'));
+            assert.equal(response.body.data.type, 'screens');
+            assert.equal(response.body.data.id, screenDoc.get('id'));
         });
     }));
 });

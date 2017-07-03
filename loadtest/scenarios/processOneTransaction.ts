@@ -260,15 +260,15 @@ export default async (config: IConfig) => {
     // tslint:disable-next-line:no-magic-numbers
     const orderId = `${moment().format('YYYYMMDD')}${config.theaterId}${`00000000${coaSeatAuthorization.coa_tmp_reserve_num}`.slice(-8)}00`;
     // GMOオーソリ取得
-    const entryTranResult2 = await GMO.CreditService.entryTran({
+    const entryTranResult2 = await GMO.services.credit.entryTran({
         shopId: config.gmoShopId,
         shopPass: config.gmoShopPass,
         orderId: orderId,
-        jobCd: GMO.Util.JOB_CD_AUTH,
+        jobCd: GMO.utils.util.JOB_CD_AUTH,
         amount: totalPrice
     });
 
-    const execTranResult2 = await GMO.CreditService.execTran({
+    const execTranResult2 = await GMO.services.credit.execTran({
         accessId: entryTranResult2.accessId,
         accessPass: entryTranResult2.accessPass,
         orderId: orderId,
@@ -293,8 +293,8 @@ export default async (config: IConfig) => {
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult2.accessId,
             gmo_access_pass: entryTranResult2.accessPass,
-            gmo_job_cd: GMO.Util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
+            gmo_job_cd: GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: GMO.utils.util.PAY_TYPE_CREDIT
         },
         json: true,
         resolveWithFullResponse: true

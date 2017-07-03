@@ -4,17 +4,20 @@
  * @ignore
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 
 import * as requireMember from '../../app/middlewares/requireMember';
 
-const TEST_USER: Express.IUser = {
-    owner: {
-        id: 'xxx',
-        username: 'username'
-    },
-    scopes: ['test']
-};
+let TEST_USER: Express.IUser;
+before(() => {
+    TEST_USER = sskts.factory.clientUser.create({
+        client: 'xxx',
+        state: 'xxx',
+        owner: 'xxx',
+        scopes: ['test']
+    });
+});
 
 describe('会員必須ミドルウェア 会員かどうか', () => {
     it('所有者が定義されているので会員', async () => {

@@ -1,6 +1,5 @@
 /**
  * transactionルーターテスト
- *
  * @ignore
  */
 
@@ -10,8 +9,10 @@ import * as httpStatus from 'http-status';
 import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
-import * as app from '../app/app';
-import * as OAuthScenario from './scenarios/oauth';
+import * as app from '../../app/app';
+import * as Resources from '../resources';
+import * as OAuthScenario from '../scenarios/oauth';
+import * as TransactionScenario from '../scenarios/transaction';
 
 const TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS = 60;
 const TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
@@ -59,7 +60,6 @@ describe('GET /transactions/:id', () => {
             .then((response) => {
                 assert.equal(response.body.data.type, 'transactions');
                 assert.equal(response.body.data.id, transaction.id);
-                assert.equal(response.body.data.attributes.id, transaction.id);
             });
 
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
@@ -67,9 +67,18 @@ describe('GET /transactions/:id', () => {
 });
 
 describe('取引開始', () => {
-    beforeEach(() => {
+    let memberOwner: Resources.IMemberOwner;
+    beforeEach(async () => {
         process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS = TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
         process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT;
+
+        // テスト会員作成
+        memberOwner = await Resources.createMemberOwner();
+    });
+    afterEach(async () => {
+        // テスト会員削除
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     });
 
     it('環境変数不足だとエラー', async () => {
@@ -112,7 +121,7 @@ describe('取引開始', () => {
     });
 
     it('スコープ不足で開始できない', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(['xxx']);
+        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['xxx']);
 
         await supertest(app)
             .post('/transactions/startIfPossible')
@@ -123,7 +132,7 @@ describe('取引開始', () => {
             })
             .expect(httpStatus.FORBIDDEN)
             .then((response) => {
-                assert.equal(response.text, 'Forbidden');
+                assert.equal(typeof response.text, 'string');
             });
     });
 
@@ -154,7 +163,7 @@ describe('取引開始', () => {
     it('会員所有者として開始できる', async () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
 
-        const accessToken = await OAuthScenario.loginAsMember(['transactions']);
+        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['transactions']);
 
         const transactionId = await supertest(app)
             .post('/transactions/startIfPossible')
@@ -176,8 +185,8 @@ describe('取引開始', () => {
         const transactionOption = await sskts.service.transactionWithId.findById(transactionId)(transactionAdapter);
         assert(transactionOption.isDefined);
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
-        const memberOwner = transactionOption.get().owners.find((owner) => owner.id === OAuthScenario.TEST_OWNER_ID);
-        assert(memberOwner !== undefined);
+        const memberOwnerInTransaction = transactionOption.get().owners.find((owner) => owner.id === memberOwner.id);
+        assert(memberOwnerInTransaction !== undefined);
 
         // テスト取引削除
         await transactionAdapter.transactionModel.findByIdAndRemove(transactionId).exec();
@@ -315,7 +324,6 @@ describe('POST /transactions/:id/authorizations/mvtk', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
                 assert(Array.isArray(response.body.errors));
-                assert.equal(response.body.errors[0].source.parameter, 'scren_cd');
             });
 
         // テストデータ削除
@@ -478,7 +486,6 @@ describe('座席予約承認追加', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
                 assert(Array.isArray(response.body.errors));
-                assert.equal(response.body.errors[0].source.parameter, 'coa_screen_code');
             });
 
         // テストデータ削除
@@ -486,5 +493,229 @@ describe('座席予約承認追加', () => {
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
         await ownerAdapter.model.findByIdAndRemove(owner1.id).exec();
         await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
+    });
+});
+
+describe('取引中に匿名所有者更新', () => {
+    let TEST_ACCESS_TOKEN: string;
+    let TEST_TRANSACTION_ID: string;
+    let TEST_OWNER_ID: string;
+
+    beforeEach(async () => {
+        // 匿名で取引開始
+        TEST_ACCESS_TOKEN = await OAuthScenario.loginAsAdmin();
+        const startTransactionResult = await TransactionScenario.start(TEST_ACCESS_TOKEN);
+        TEST_TRANSACTION_ID = startTransactionResult.transactionId;
+        TEST_OWNER_ID = startTransactionResult.ownerId;
+    });
+
+    afterEach(async () => {
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: TEST_TRANSACTION_ID }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(TEST_TRANSACTION_ID).exec();
+        await ownerAdapter.model.findByIdAndRemove(TEST_OWNER_ID).exec();
+    });
+
+    it('更新できる', async () => {
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+
+        const now = Date.now().toString();
+        const profile = {
+            name_first: `first name${now}`,
+            name_last: `last name${now}`,
+            tel: `090${now}`,
+            email: `${now}${process.env.SSKTS_DEVELOPER_EMAIL}`
+        };
+        await supertest(app)
+            .patch(`/transactions/${TEST_TRANSACTION_ID}/anonymousOwner`)
+            .set('authorization', `Bearer ${TEST_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send(profile)
+            .expect(httpStatus.NO_CONTENT);
+
+        // プロフィール更新されているかどうか確認
+        const ownerDoc = <mongoose.Document>await ownerAdapter.model.findById(TEST_OWNER_ID).exec();
+        assert.equal(ownerDoc.get('name_first'), profile.name_first);
+        assert.equal(ownerDoc.get('name_last'), profile.name_last);
+        assert.equal(ownerDoc.get('tel'), profile.tel);
+        assert.equal(ownerDoc.get('email'), profile.email);
+    });
+});
+
+describe('取引中に所有者置換', () => {
+    let TEST_ACCESS_TOKEN: string;
+    let TEST_TRANSACTION_ID: string;
+    let TEST_OWNER_ID: string;
+
+    beforeEach(async () => {
+        // 匿名で取引開始
+        TEST_ACCESS_TOKEN = await OAuthScenario.loginAsAdmin();
+        const startTransactionResult = await TransactionScenario.start(TEST_ACCESS_TOKEN);
+        TEST_TRANSACTION_ID = startTransactionResult.transactionId;
+        TEST_OWNER_ID = startTransactionResult.ownerId;
+    });
+
+    afterEach(async () => {
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: TEST_TRANSACTION_ID }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(TEST_TRANSACTION_ID).exec();
+        await ownerAdapter.model.findByIdAndRemove(TEST_OWNER_ID).exec();
+    });
+
+    it('匿名所有者から匿名所有者にできる', async () => {
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+
+        const now = Date.now().toString();
+        const body = {
+            data: {
+                type: 'owners',
+                id: TEST_OWNER_ID,
+                attributes: {
+                    name_first: `first name${now}`,
+                    name_last: `last name${now}`,
+                    tel: `090${now}`,
+                    email: `${now}${process.env.SSKTS_DEVELOPER_EMAIL}`,
+                    group: sskts.factory.ownerGroup.ANONYMOUS
+                }
+            }
+        };
+        await supertest(app)
+            .put(`/transactions/${TEST_TRANSACTION_ID}/owners/${TEST_OWNER_ID}`)
+            .set('authorization', `Bearer ${TEST_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send(body)
+            .expect(httpStatus.OK)
+            .then((response) => {
+                assert.equal(response.body.data.type, 'owners');
+            });
+
+        // プロフィール更新されているかどうか確認
+        const ownerDoc = <mongoose.Document>await ownerAdapter.model.findById(TEST_OWNER_ID).exec();
+        assert.equal(ownerDoc.get('group'), body.data.attributes.group);
+        assert.equal(ownerDoc.get('name_first'), body.data.attributes.name_first);
+        assert.equal(ownerDoc.get('name_last'), body.data.attributes.name_last);
+        assert.equal(ownerDoc.get('tel'), body.data.attributes.tel);
+        assert.equal(ownerDoc.get('email'), body.data.attributes.email);
+    });
+
+    it('匿名所有者から会員所有者にできる', async () => {
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+
+        const now = Date.now().toString();
+        const body = {
+            data: {
+                type: 'owners',
+                id: TEST_OWNER_ID,
+                attributes: {
+                    username: `username${now}`,
+                    password: `password${now}`,
+                    name_first: `first name${now}`,
+                    name_last: `last name${now}`,
+                    tel: `090${now}`,
+                    email: `${now}${process.env.SSKTS_DEVELOPER_EMAIL}`,
+                    group: sskts.factory.ownerGroup.MEMBER
+                }
+            }
+        };
+        await supertest(app)
+            .put(`/transactions/${TEST_TRANSACTION_ID}/owners/${TEST_OWNER_ID}`)
+            .set('authorization', `Bearer ${TEST_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send(body)
+            .expect(httpStatus.OK)
+            .then((response) => {
+                assert.equal(response.body.data.type, 'owners');
+            });
+
+        // プロフィール更新されているかどうか確認
+        const ownerDoc = <mongoose.Document>await ownerAdapter.model.findById(TEST_OWNER_ID).exec();
+        assert.equal(ownerDoc.get('group'), body.data.attributes.group);
+        assert.equal(ownerDoc.get('username'), body.data.attributes.username);
+        assert.equal(ownerDoc.get('name_first'), body.data.attributes.name_first);
+        assert.equal(ownerDoc.get('name_last'), body.data.attributes.name_last);
+        assert.equal(ownerDoc.get('tel'), body.data.attributes.tel);
+        assert.equal(ownerDoc.get('email'), body.data.attributes.email);
+    });
+});
+
+describe('取引中にカード登録', () => {
+    let TEST_ACCESS_TOKEN: string;
+    let TEST_TRANSACTION_ID: string;
+    let TEST_OWNER_ID: string;
+
+    beforeEach(async () => {
+        // 匿名で取引開始
+        TEST_ACCESS_TOKEN = await OAuthScenario.loginAsAdmin();
+        const startTransactionResult = await TransactionScenario.start(TEST_ACCESS_TOKEN);
+        TEST_TRANSACTION_ID = startTransactionResult.transactionId;
+        TEST_OWNER_ID = startTransactionResult.ownerId;
+    });
+
+    afterEach(async () => {
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: TEST_TRANSACTION_ID }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(TEST_TRANSACTION_ID).exec();
+        await ownerAdapter.model.findByIdAndRemove(TEST_OWNER_ID).exec();
+    });
+
+    it('会員所有者に変更後、カード登録できる', async () => {
+        const now = Date.now().toString();
+        const body = {
+            data: {
+                type: 'owners',
+                id: TEST_OWNER_ID,
+                attributes: {
+                    username: `username${now}`,
+                    password: `password${now}`,
+                    name_first: `first name${now}`,
+                    name_last: `last name${now}`,
+                    tel: `090${now}`,
+                    email: `${now}${process.env.SSKTS_DEVELOPER_EMAIL}`,
+                    group: sskts.factory.ownerGroup.MEMBER
+                }
+            }
+        };
+        await supertest(app)
+            .put(`/transactions/${TEST_TRANSACTION_ID}/owners/${TEST_OWNER_ID}`)
+            .set('authorization', `Bearer ${TEST_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send(body)
+            .expect(httpStatus.OK)
+            .then((response) => {
+                assert.equal(response.body.data.type, 'owners');
+            });
+
+        await supertest(app)
+            .post(`/transactions/${TEST_TRANSACTION_ID}/owners/${TEST_OWNER_ID}/cards`)
+            .set('authorization', `Bearer ${TEST_ACCESS_TOKEN}`)
+            .set('Accept', 'application/json')
+            .send({
+                data: {
+                    type: 'cards',
+                    attributes: {
+                        card_no: '4111111111111111',
+                        card_pass: '',
+                        expire: '2812',
+                        holder_name: 'AA BB'
+                    }
+                }
+            })
+            .expect(httpStatus.CREATED)
+            .then((response) => {
+                assert.equal(response.body.data.type, 'cards');
+            });
+
+        // カードの存在を確認
+        const cards = await sskts.service.member.findCards(TEST_OWNER_ID)();
+        assert.equal(cards.length, 1);
     });
 });

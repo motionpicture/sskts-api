@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * performanceルーター
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,11 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * performanceルーター
- *
- * @ignore
- */
 const express_1 = require("express");
 const performanceRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
@@ -23,7 +23,7 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 performanceRouter.use(authentication_1.default);
-performanceRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) => {
+performanceRouter.get('/:id', permitScopes_1.default(['admin', 'performances', 'performances.read-only']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -50,7 +50,7 @@ performanceRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) 
         next(error);
     }
 }));
-performanceRouter.get('', permitScopes_1.default(['admin']), (req, _, next) => {
+performanceRouter.get('', permitScopes_1.default(['admin', 'performances', 'performances.read-only']), (req, _, next) => {
     req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
     req.checkQuery('day', 'invalid day').notEmpty().withMessage('day is required');
     next();

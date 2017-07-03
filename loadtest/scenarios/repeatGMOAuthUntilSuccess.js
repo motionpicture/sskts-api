@@ -38,14 +38,14 @@ exports.default = (config) => __awaiter(this, void 0, void 0, function* () {
             // GMOオーソリ取得
             // tslint:disable-next-line:no-magic-numbers
             const orderId = `${config.orderIdPrefix}${`00${countTry}`.slice(-2)}`;
-            const entryTranResult = yield GMO.CreditService.entryTran({
+            const entryTranResult = yield GMO.services.credit.entryTran({
                 shopId: config.gmoShopId,
                 shopPass: config.gmoShopPass,
                 orderId: orderId,
-                jobCd: GMO.Util.JOB_CD_AUTH,
+                jobCd: GMO.utils.util.JOB_CD_AUTH,
                 amount: config.amount
             });
-            const execTranResult = yield GMO.CreditService.execTran({
+            const execTranResult = yield GMO.services.credit.execTran({
                 accessId: entryTranResult.accessId,
                 accessPass: entryTranResult.accessPass,
                 orderId: orderId,

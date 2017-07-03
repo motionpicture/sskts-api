@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * transactionルーター
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,11 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * transactionルーター
- *
- * @ignore
- */
 const express_1 = require("express");
 const transactionRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
@@ -53,14 +53,13 @@ transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin', 'tra
         });
         debug('starting a transaction...scope:', scope);
         // 会員としてログインしている場合は所有者IDを指定して開始する
-        const ownerId = (req.getUser().owner !== undefined) ? req.getUser().owner.id : undefined;
-        const state = (req.getUser().state !== undefined) ? req.getUser().state : '';
+        const ownerId = (req.getUser().owner !== undefined) ? req.getUser().owner : undefined;
         const transactionOption = yield sskts.service.transaction.start({
             // tslint:disable-next-line:no-magic-numbers
             expiresAt: moment.unix(parseInt(req.body.expires_at, 10)).toDate(),
             // tslint:disable-next-line:no-magic-numbers
             maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
-            state: state,
+            clientUser: req.getUser(),
             scope: scope,
             ownerId: ownerId
         })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
@@ -89,7 +88,7 @@ transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin', 'tra
         next(error);
     }
 }));
-transactionRouter.post('/makeInquiry', permitScopes_1.default(['admin']), (req, _, next) => {
+transactionRouter.post('/makeInquiry', permitScopes_1.default(['admin', 'transactions', 'transactions.read-only']), (req, _, next) => {
     req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
     req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
     req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
@@ -124,7 +123,7 @@ transactionRouter.post('/makeInquiry', permitScopes_1.default(['admin']), (req, 
         next(error);
     }
 }));
-transactionRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) => {
+transactionRouter.get('/:id', permitScopes_1.default(['admin', 'transactions', 'transactions.read-only']), (_1, _2, next) => {
     // todo validation
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -152,7 +151,7 @@ transactionRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) 
         next(error);
     }
 }));
-transactionRouter.patch('/:id/anonymousOwner', permitScopes_1.default(['admin']), (req, _, next) => {
+transactionRouter.patch('/:id/anonymousOwner', permitScopes_1.default(['admin', 'transactions.owners']), (req, _, next) => {
     req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
     req.checkBody('name_last', 'invalid name_last').optional().notEmpty().withMessage('name_last should not be empty');
     req.checkBody('tel', 'invalid tel').optional().notEmpty().withMessage('tel should not be empty');
@@ -160,20 +159,149 @@ transactionRouter.patch('/:id/anonymousOwner', permitScopes_1.default(['admin'])
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transactionWithId.updateAnonymousOwner({
-            transaction_id: req.params.id,
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        // 取引から匿名所有者を取り出す
+        const transactionOption = yield sskts.service.transactionWithId.findById(req.params.id)(transactionAdapter);
+        const transaction = transactionOption.get();
+        const anonymousOwner = transaction.owners.find((owner) => owner.group === sskts.factory.ownerGroup.ANONYMOUS);
+        if (anonymousOwner === undefined) {
+            throw new Error('anonymous owner not found');
+        }
+        // 匿名所有者に対してプロフィールをマージする
+        const profile = sskts.factory.owner.anonymous.create({
+            id: anonymousOwner.id,
             name_first: req.body.name_first,
             name_last: req.body.name_last,
-            tel: req.body.tel,
-            email: req.body.email
-        })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
+            email: req.body.email,
+            tel: req.body.tel
+        });
+        yield sskts.service.transactionWithId.setOwnerProfile(req.params.id, profile)(ownerAdapter, transactionAdapter);
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
         next(error);
     }
 }));
-transactionRouter.post('/:id/authorizations/gmo', permitScopes_1.default(['admin']), (req, _, next) => {
+/**
+ * 取引中の所有者情報を変更する
+ */
+transactionRouter.put('/:id/owners/:ownerId', permitScopes_1.default(['admin', 'transactions.owners']), (req, _, next) => {
+    const availableGroups = [sskts.factory.ownerGroup.ANONYMOUS, sskts.factory.ownerGroup.MEMBER];
+    // const availableGroups = ['ANONYMOUS'];
+    req.checkBody('data').notEmpty().withMessage('required');
+    req.checkBody('data.type').equals('owners').withMessage('must be \'owners\'');
+    req.checkBody('data.id').equals(req.params.ownerId).withMessage('must be req.params.ownerId');
+    req.checkBody('data.attributes').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.name_first').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.name_last').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.tel').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.email').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.group').notEmpty().withMessage('required')
+        .matches(new RegExp(`^(${availableGroups.join('|')})$`))
+        .withMessage(`must be one of '${availableGroups.join('\', \'')}'`);
+    req.checkBody('data.attributes.username').optional().notEmpty().withMessage('required');
+    req.checkBody('data.attributes.password').optional().notEmpty().withMessage('required');
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // 会員フローの場合は使用できない
+        // todo レスポンスはどんなのが適切か
+        if (req.getUser().owner !== undefined) {
+            res.status(http_status_1.FORBIDDEN).end('Forbidden');
+            return;
+        }
+        // プロフィールを置換する
+        let profile;
+        switch (req.body.data.attributes.group) {
+            // 匿名所有者に置換の場合
+            case sskts.factory.ownerGroup.ANONYMOUS:
+                profile = sskts.factory.owner.anonymous.create({
+                    id: req.params.ownerId,
+                    name_first: req.body.data.attributes.name_first,
+                    name_last: req.body.data.attributes.name_last,
+                    email: req.body.data.attributes.email,
+                    tel: req.body.data.attributes.tel
+                });
+                break;
+            // 会員所有者に置換の場合
+            case sskts.factory.ownerGroup.MEMBER:
+                profile = yield sskts.factory.owner.member.create({
+                    id: req.params.ownerId,
+                    username: req.body.data.attributes.username,
+                    password: req.body.data.attributes.password,
+                    name_first: req.body.data.attributes.name_first,
+                    name_last: req.body.data.attributes.name_last,
+                    email: req.body.data.attributes.email,
+                    tel: req.body.data.attributes.tel
+                });
+                break;
+            default:
+                // 他の所有者グループは非対応
+                // todo レスポンスはどんなのが適切か
+                res.status(http_status_1.FORBIDDEN).end('Forbidden');
+                return;
+        }
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        yield sskts.service.transactionWithId.setOwnerProfile(req.params.id, profile)(ownerAdapter, transactionAdapter);
+        res.status(http_status_1.OK).json({
+            data: {
+                type: 'owners',
+                id: req.params.ownerId,
+                attributes: {}
+            }
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 会員カード追加
+ */
+transactionRouter.post('/:id/owners/:ownerId/cards', permitScopes_1.default(['admin', 'transactions.owners.cards']), (req, _2, next) => {
+    /*
+    req.body = {
+        data: {
+            type: 'cards',
+            attributes: {
+                card_no: 'xxx',
+                card_pass: '',
+                expire: 'xxx',
+                holder_name: 'xxx',
+                token: 'xxx',
+            }
+        }
+    }
+    */
+    req.checkBody('data').notEmpty().withMessage('required');
+    req.checkBody('data.type').equals('cards').withMessage('must be \'cards\'');
+    req.checkBody('data.attributes').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.card_no').optional().notEmpty().withMessage('required');
+    // req.checkBody('data.attributes.card_pass').optional().notEmpty().withMessage('required');
+    req.checkBody('data.attributes.expire').optional().notEmpty().withMessage('required');
+    req.checkBody('data.attributes.holder_name').optional().notEmpty().withMessage('required');
+    req.checkBody('data.attributes.token').optional().notEmpty().withMessage('required');
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // 生のカード情報の場合
+        const card = sskts.factory.card.gmo.createUncheckedCardRaw(req.body.data.attributes);
+        const addedCard = yield sskts.service.member.addCard(req.params.ownerId, card)();
+        res.status(http_status_1.CREATED).json({
+            data: {
+                type: 'cards',
+                id: addedCard.id.toString(),
+                attributes: Object.assign({}, addedCard, { id: undefined })
+            }
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+transactionRouter.post('/:id/authorizations/gmo', permitScopes_1.default(['admin', 'transactions.authorizations']), (req, _, next) => {
     req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
     req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
     req.checkBody('gmo_shop_id', 'invalid gmo_shop_id').notEmpty().withMessage('gmo_shop_id is required');
@@ -212,7 +340,7 @@ transactionRouter.post('/:id/authorizations/gmo', permitScopes_1.default(['admin
         next(error);
     }
 }));
-transactionRouter.post('/:id/authorizations/coaSeatReservation', permitScopes_1.default(['admin']), (req, _, next) => {
+transactionRouter.post('/:id/authorizations/coaSeatReservation', permitScopes_1.default(['admin', 'transactions.authorizations']), (req, _, next) => {
     req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
     req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
     req.checkBody('coa_tmp_reserve_num', 'invalid coa_tmp_reserve_num').notEmpty().withMessage('coa_tmp_reserve_num is required');
@@ -279,7 +407,7 @@ transactionRouter.post('/:id/authorizations/coaSeatReservation', permitScopes_1.
         next(error);
     }
 }));
-transactionRouter.post('/:id/authorizations/mvtk', permitScopes_1.default(['admin']), (req, _, next) => {
+transactionRouter.post('/:id/authorizations/mvtk', permitScopes_1.default(['admin', 'transactions.authorizations']), (req, _, next) => {
     req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
     req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
     req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
@@ -328,7 +456,7 @@ transactionRouter.post('/:id/authorizations/mvtk', permitScopes_1.default(['admi
         next(error);
     }
 }));
-transactionRouter.delete('/:id/authorizations/:authorization_id', permitScopes_1.default(['admin']), (_1, _2, next) => {
+transactionRouter.delete('/:id/authorizations/:authorization_id', permitScopes_1.default(['admin', 'transactions.authorizations']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -339,7 +467,7 @@ transactionRouter.delete('/:id/authorizations/:authorization_id', permitScopes_1
         next(error);
     }
 }));
-transactionRouter.patch('/:id/enableInquiry', permitScopes_1.default(['admin']), (req, _, next) => {
+transactionRouter.patch('/:id/enableInquiry', permitScopes_1.default(['admin', 'transactions']), (req, _, next) => {
     req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
     req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
     req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
@@ -358,7 +486,7 @@ transactionRouter.patch('/:id/enableInquiry', permitScopes_1.default(['admin']),
         next(error);
     }
 }));
-transactionRouter.post('/:id/notifications/email', permitScopes_1.default(['admin']), (req, _, next) => {
+transactionRouter.post('/:id/notifications/email', permitScopes_1.default(['admin', 'transactions.notifications']), (req, _, next) => {
     req.checkBody('from', 'invalid from').notEmpty().withMessage('from is required');
     req.checkBody('to', 'invalid to').notEmpty().withMessage('to is required').isEmail();
     req.checkBody('subject', 'invalid subject').notEmpty().withMessage('subject is required');
@@ -384,7 +512,7 @@ transactionRouter.post('/:id/notifications/email', permitScopes_1.default(['admi
         next(error);
     }
 }));
-transactionRouter.delete('/:id/notifications/:notification_id', permitScopes_1.default(['admin']), (_1, _2, next) => {
+transactionRouter.delete('/:id/notifications/:notification_id', permitScopes_1.default(['admin', 'transactions.notifications']), (_1, _2, next) => {
     // todo validations
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -396,7 +524,7 @@ transactionRouter.delete('/:id/notifications/:notification_id', permitScopes_1.d
         next(error);
     }
 }));
-transactionRouter.patch('/:id/close', permitScopes_1.default(['admin']), (_1, _2, next) => {
+transactionRouter.patch('/:id/close', permitScopes_1.default(['admin', 'transactions']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

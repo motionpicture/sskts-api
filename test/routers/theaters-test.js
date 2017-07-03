@@ -16,23 +16,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
-const app = require("../app/app");
-const TEST_VALID_THEATER_ID = '118';
+const app = require("../../app/app");
+const Resources = require("../resources");
+const OAuthScenario = require("../scenarios/oauth");
 let connection;
-let accessToken;
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    accessToken = yield supertest(app)
-        .post('/oauth/token')
-        .send({
-        assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-        scope: 'admin'
-    })
-        .then((response) => {
-        return response.body.access_token;
-    });
     // 全て削除してからテスト開始
     const theaterAdapter = sskts.adapter.theater(connection);
     yield theaterAdapter.model.remove({}).exec();
@@ -41,12 +33,10 @@ describe('GET /theaters/:id', () => {
     it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/theaters/0000000000')
-            .expect(httpStatus.UNAUTHORIZED)
-            .then((response) => {
-            assert.equal(response.text, 'Unauthorized');
-        });
+            .expect(httpStatus.UNAUTHORIZED);
     }));
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get('/theaters/0000000000')
             .set('authorization', `Bearer ${accessToken}`)
@@ -59,12 +49,14 @@ describe('GET /theaters/:id', () => {
     }));
     it('found', () => __awaiter(this, void 0, void 0, function* () {
         // テストデータインポート
+        yield Resources.importMasters(moment().add(1, 'days').toDate());
+        // テストデータインポート
         const theaterAdapter = sskts.adapter.theater(connection);
-        yield sskts.service.master.importTheater(TEST_VALID_THEATER_ID)(theaterAdapter);
         const theaterDoc = yield theaterAdapter.model.findOne().exec();
         if (theaterDoc === null) {
             throw new Error('test data not imported');
         }
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get(`/theaters/${theaterDoc.get('id')}`)
             .set('authorization', `Bearer ${accessToken}`)
@@ -74,25 +66,21 @@ describe('GET /theaters/:id', () => {
             .then((response) => {
             assert.equal(response.body.data.type, 'theaters');
             assert.equal(response.body.data.id, theaterDoc.get('id'));
-            assert.equal(response.body.data.attributes.id, theaterDoc.get('id'));
         });
     }));
 });
 describe('劇場検索', () => {
     before(() => __awaiter(this, void 0, void 0, function* () {
         // テストデータインポート
-        const theaterAdapter = sskts.adapter.theater(connection);
-        yield sskts.service.master.importTheater(TEST_VALID_THEATER_ID)(theaterAdapter);
+        yield Resources.importMasters(moment().add(1, 'days').toDate());
     }));
     it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/theaters')
-            .expect(httpStatus.UNAUTHORIZED)
-            .then((response) => {
-            assert.equal(response.text, 'Unauthorized');
-        });
+            .expect(httpStatus.UNAUTHORIZED);
     }));
     it('レスポンスの型が適切', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get('/theaters')
             .set('authorization', `Bearer ${accessToken}`)

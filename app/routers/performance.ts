@@ -3,6 +3,7 @@
  *
  * @ignore
  */
+
 import { Router } from 'express';
 const performanceRouter = Router();
 
@@ -19,7 +20,7 @@ performanceRouter.use(authentication);
 
 performanceRouter.get(
     '/:id',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'performances', 'performances.read-only']),
     (_1, _2, next) => {
         next();
     },
@@ -51,7 +52,7 @@ performanceRouter.get(
 
 performanceRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'performances', 'performances.read-only']),
     (req, _, next) => {
         req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
         req.checkQuery('day', 'invalid day').notEmpty().withMessage('day is required');
