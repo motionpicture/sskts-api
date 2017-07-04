@@ -17,7 +17,6 @@ const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../../app/app");
 let TEST_CLIENT_ID;
@@ -27,7 +26,7 @@ let TEST_BODY_CLIENT_CREDENTIALS;
 let TEST_BODY_PASSWORD;
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
     TEST_CLIENT_ID = `sskts-api:test:oauth${Date.now().toString()}`;
     TEST_BODY_CLIENT_CREDENTIALS = {
         grant_type: 'client_credentials',

@@ -4,9 +4,9 @@
  * @ignore
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
-import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
@@ -15,9 +15,9 @@ import * as redis from '../../redis';
 const MONGOOSE_CONNECTION_READY_STATE_CONNECTED = 1;
 const INTERVALS_CHECK_CONNECTION = 2000;
 
-let connection: mongoose.Connection;
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 
 describe('ヘルスチェック', () => {
@@ -25,7 +25,10 @@ describe('ヘルスチェック', () => {
         await new Promise((resolve, reject) => {
             const timer = setInterval(
                 async () => {
-                    if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redis.getClient().connected) {
+                    if (
+                        sskts.mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED
+                        || !redis.getClient().connected
+                    ) {
                         return;
                     }
 
@@ -54,7 +57,10 @@ describe('ヘルスチェック', () => {
         await new Promise((resolve, reject) => {
             const timer = setInterval(
                 async () => {
-                    if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redis.getClient().connected) {
+                    if (
+                        sskts.mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED
+                        || !redis.getClient().connected
+                    ) {
                         return;
                     }
 
@@ -62,7 +68,7 @@ describe('ヘルスチェック', () => {
 
                     try {
                         // mongooseデフォルトコネクションを切断
-                        await mongoose.connection.close();
+                        await sskts.mongoose.connection.close();
 
                         await supertest(app)
                             .get('/health')
@@ -71,7 +77,7 @@ describe('ヘルスチェック', () => {
                             .then();
 
                         // mongodb接続しなおす
-                        mongoose.connect(process.env.MONGOLAB_URI, (err: any) => {
+                        sskts.mongoose.connect(process.env.MONGOLAB_URI, (err: any) => {
                             if (err instanceof Error) {
                                 reject(err);
                             } else {

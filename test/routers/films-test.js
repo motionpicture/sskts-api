@@ -17,14 +17,13 @@ const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
 const moment = require("moment");
-const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../../app/app");
 const Resources = require("../resources");
 const OAuthScenario = require("../scenarios/oauth");
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
     // 全て削除してからテスト開始
     const filmAdapter = sskts.adapter.film(connection);
     yield filmAdapter.model.remove({}).exec();

@@ -19,7 +19,6 @@ const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const moment = require("moment");
-const mongoose = require("mongoose");
 const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -62,7 +61,7 @@ transactionRouter.post('/startIfPossible', permitScopes_1.default(['admin', 'tra
             clientUser: req.getUser(),
             scope: scope,
             ownerId: ownerId
-        })(sskts.adapter.owner(mongoose.connection), sskts.adapter.transaction(mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
+        })(sskts.adapter.owner(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
         transactionOption.match({
             Some: (transaction) => {
                 // tslint:disable-next-line:no-string-literal
@@ -100,7 +99,7 @@ transactionRouter.post('/makeInquiry', permitScopes_1.default(['admin', 'transac
             reserve_num: req.body.inquiry_id,
             tel: req.body.inquiry_pass
         });
-        const option = yield sskts.service.transaction.makeInquiry(key)(sskts.adapter.transaction(mongoose.connection));
+        const option = yield sskts.service.transaction.makeInquiry(key)(sskts.adapter.transaction(sskts.mongoose.connection));
         option.match({
             Some: (transaction) => {
                 res.json({
@@ -128,7 +127,7 @@ transactionRouter.get('/:id', permitScopes_1.default(['admin', 'transactions', '
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const option = yield sskts.service.transactionWithId.findById(req.params.id)(sskts.adapter.transaction(mongoose.connection));
+        const option = yield sskts.service.transactionWithId.findById(req.params.id)(sskts.adapter.transaction(sskts.mongoose.connection));
         option.match({
             Some: (transaction) => {
                 res.json({
@@ -159,8 +158,8 @@ transactionRouter.patch('/:id/anonymousOwner', permitScopes_1.default(['admin', 
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
         // 取引から匿名所有者を取り出す
         const transactionOption = yield sskts.service.transactionWithId.findById(req.params.id)(transactionAdapter);
         const transaction = transactionOption.get();
@@ -242,8 +241,8 @@ transactionRouter.put('/:id/owners/:ownerId', permitScopes_1.default(['admin', '
                 res.status(http_status_1.FORBIDDEN).end('Forbidden');
                 return;
         }
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
         yield sskts.service.transactionWithId.setOwnerProfile(req.params.id, profile)(ownerAdapter, transactionAdapter);
         res.status(http_status_1.OK).json({
             data: {
@@ -328,7 +327,7 @@ transactionRouter.post('/:id/authorizations/gmo', permitScopes_1.default(['admin
             gmo_pay_type: req.body.gmo_pay_type,
             price: req.body.gmo_amount
         });
-        yield sskts.service.transactionWithId.addGMOAuthorization(req.params.id, authorization)(sskts.adapter.transaction(mongoose.connection));
+        yield sskts.service.transactionWithId.addGMOAuthorization(req.params.id, authorization)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.OK).json({
             data: {
                 type: 'authorizations',
@@ -395,7 +394,7 @@ transactionRouter.post('/:id/authorizations/coaSeatReservation', permitScopes_1.
             // tslint:disable-next-line:no-magic-numbers
             price: parseInt(req.body.price, 10)
         });
-        yield sskts.service.transactionWithId.addCOASeatReservationAuthorization(req.params.id, authorization)(sskts.adapter.transaction(mongoose.connection));
+        yield sskts.service.transactionWithId.addCOASeatReservationAuthorization(req.params.id, authorization)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.OK).json({
             data: {
                 type: 'authorizations',
@@ -444,7 +443,7 @@ transactionRouter.post('/:id/authorizations/mvtk', permitScopes_1.default(['admi
             zsk_info: req.body.zsk_info,
             skhn_cd: req.body.skhn_cd
         });
-        yield sskts.service.transactionWithId.addMvtkAuthorization(req.params.id, authorization)(sskts.adapter.transaction(mongoose.connection));
+        yield sskts.service.transactionWithId.addMvtkAuthorization(req.params.id, authorization)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.OK).json({
             data: {
                 type: 'authorizations',
@@ -460,7 +459,7 @@ transactionRouter.delete('/:id/authorizations/:authorization_id', permitScopes_1
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transactionWithId.removeAuthorization(req.params.id, req.params.authorization_id)(sskts.adapter.transaction(mongoose.connection));
+        yield sskts.service.transactionWithId.removeAuthorization(req.params.id, req.params.authorization_id)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -479,7 +478,7 @@ transactionRouter.patch('/:id/enableInquiry', permitScopes_1.default(['admin', '
             reserve_num: req.body.inquiry_id,
             tel: req.body.inquiry_pass
         });
-        yield sskts.service.transactionWithId.enableInquiry(req.params.id, key)(sskts.adapter.transaction(mongoose.connection));
+        yield sskts.service.transactionWithId.enableInquiry(req.params.id, key)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -500,7 +499,7 @@ transactionRouter.post('/:id/notifications/email', permitScopes_1.default(['admi
             subject: req.body.subject,
             content: req.body.content
         });
-        yield sskts.service.transactionWithId.addEmail(req.params.id, notification)(sskts.adapter.transaction(mongoose.connection));
+        yield sskts.service.transactionWithId.addEmail(req.params.id, notification)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.OK).json({
             data: {
                 type: 'notifications',
@@ -517,7 +516,7 @@ transactionRouter.delete('/:id/notifications/:notification_id', permitScopes_1.d
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(sskts.adapter.transaction(mongoose.connection));
+        yield sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -528,7 +527,7 @@ transactionRouter.patch('/:id/close', permitScopes_1.default(['admin', 'transact
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transactionWithId.close(req.params.id)(sskts.adapter.transaction(mongoose.connection));
+        yield sskts.service.transactionWithId.close(req.params.id)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {

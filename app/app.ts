@@ -4,6 +4,7 @@
  * @ignore
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as createDebug from 'debug';
@@ -11,7 +12,6 @@ import * as express from 'express';
 import expressValidator = require('express-validator'); // tslint:disable-line:no-require-imports
 import * as helmet from 'helmet';
 import * as i18n from 'i18n';
-import * as mongoose from 'mongoose';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
@@ -85,9 +85,9 @@ i18n.configure({
 // i18n の設定を有効化
 app.use(i18n.init);
 
-// Use native promises
-(<any>mongoose).Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions);
+// @types/mongooseが古くて、新しいMongoDBクライアントの接続オプションに適合していない
+// 型定義の更新待ち
+sskts.mongoose.connect(process.env.MONGOLAB_URI, <any>mongooseConnectionOptions);
 
 // routers
 app.use('/health', healthRouter);

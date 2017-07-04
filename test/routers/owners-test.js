@@ -16,7 +16,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
-const mongoose = require("mongoose");
 const supertest = require("supertest");
 const util = require("util");
 const app = require("../../app/app");
@@ -35,7 +34,7 @@ const TEST_BODY_ADD_CARD = {
 };
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 }));
 describe('会員プロフィール取得', () => {
     let memberOwner;

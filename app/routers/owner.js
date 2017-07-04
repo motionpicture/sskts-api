@@ -18,7 +18,6 @@ const ownerRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const requireMember_1 = require("../middlewares/requireMember");
@@ -34,7 +33,7 @@ ownerRouter.get('/me/profile', permitScopes_1.default(['owners.profile', 'owners
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const ownerId = req.getUser().owner;
-        const profileOption = yield sskts.service.member.getProfile(ownerId)(sskts.adapter.owner(mongoose.connection));
+        const profileOption = yield sskts.service.member.getProfile(ownerId)(sskts.adapter.owner(sskts.mongoose.connection));
         debug('profileOption is', profileOption);
         profileOption.match({
             Some: (profile) => {
@@ -90,7 +89,7 @@ ownerRouter.put('/me/profile', permitScopes_1.default(['owners.profile']), (req,
     try {
         const ownerId = req.getUser().owner;
         const profile = sskts.factory.owner.member.createVariableFields(req.body.data.attributes);
-        yield sskts.service.member.updateProfile(ownerId, profile)(sskts.adapter.owner(mongoose.connection));
+        yield sskts.service.member.updateProfile(ownerId, profile)(sskts.adapter.owner(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -190,7 +189,7 @@ ownerRouter.get('/me/assets/seatReservation', permitScopes_1.default(['owners.as
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const ownerId = req.getUser().owner;
-        const data = yield sskts.service.member.findSeatReservationAssets(ownerId)(sskts.adapter.asset(mongoose.connection))
+        const data = yield sskts.service.member.findSeatReservationAssets(ownerId)(sskts.adapter.asset(sskts.mongoose.connection))
             .then((assets) => {
             return assets.map((asset) => {
                 return {

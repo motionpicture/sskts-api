@@ -16,7 +16,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
 const debug = createDebug('sskts-api:controllers:oauth');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
@@ -78,7 +77,7 @@ exports.issueCredentialsByAssertion = issueCredentialsByAssertion;
 function issueCredentialsByClient(clientId, state, scopes) {
     return __awaiter(this, void 0, void 0, function* () {
         // クライアントの存在確認
-        const clientAdapter = sskts.adapter.client(mongoose.connection);
+        const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
         const clientDoc = yield clientAdapter.clientModel.findById(clientId, '_id').exec();
         if (clientDoc === null) {
             throw new Error(exports.MESSAGE_CLIENT_NOT_FOUND);
@@ -95,7 +94,7 @@ exports.issueCredentialsByClient = issueCredentialsByClient;
 function issueCredentialsByPassword(username, password, scopes) {
     return __awaiter(this, void 0, void 0, function* () {
         // ログイン確認
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
         const memberOption = yield sskts.service.member.login(username, password)(ownerAdapter);
         if (memberOption.isEmpty) {
             throw new Error(exports.MESSAGE_INVALID_USERNAME_OR_PASSWORD);

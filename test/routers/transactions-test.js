@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
-const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../../app/app");
 const Resources = require("../resources");
@@ -25,7 +24,7 @@ const TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS = 60;
 const TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
     // 全て削除してからテスト開始
     const transactionAdapter = sskts.adapter.transaction(connection);
     yield transactionAdapter.transactionModel.remove({}).exec();
@@ -458,15 +457,15 @@ describe('取引中に匿名所有者更新', () => {
         TEST_OWNER_ID = startTransactionResult.ownerId;
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
         // テストデータ削除
         yield transactionAdapter.transactionEventModel.remove({ transaction: TEST_TRANSACTION_ID }).exec();
         yield transactionAdapter.transactionModel.findByIdAndRemove(TEST_TRANSACTION_ID).exec();
         yield ownerAdapter.model.findByIdAndRemove(TEST_OWNER_ID).exec();
     }));
     it('更新できる', () => __awaiter(this, void 0, void 0, function* () {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
         const now = Date.now().toString();
         const profile = {
             name_first: `first name${now}`,
@@ -500,15 +499,15 @@ describe('取引中に所有者置換', () => {
         TEST_OWNER_ID = startTransactionResult.ownerId;
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
         // テストデータ削除
         yield transactionAdapter.transactionEventModel.remove({ transaction: TEST_TRANSACTION_ID }).exec();
         yield transactionAdapter.transactionModel.findByIdAndRemove(TEST_TRANSACTION_ID).exec();
         yield ownerAdapter.model.findByIdAndRemove(TEST_OWNER_ID).exec();
     }));
     it('匿名所有者から匿名所有者にできる', () => __awaiter(this, void 0, void 0, function* () {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
         const now = Date.now().toString();
         const body = {
             data: {
@@ -541,7 +540,7 @@ describe('取引中に所有者置換', () => {
         assert.equal(ownerDoc.get('email'), body.data.attributes.email);
     }));
     it('匿名所有者から会員所有者にできる', () => __awaiter(this, void 0, void 0, function* () {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
         const now = Date.now().toString();
         const body = {
             data: {
@@ -589,8 +588,8 @@ describe('取引中にカード登録', () => {
         TEST_OWNER_ID = startTransactionResult.ownerId;
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
         // テストデータ削除
         yield transactionAdapter.transactionEventModel.remove({ transaction: TEST_TRANSACTION_ID }).exec();
         yield transactionAdapter.transactionModel.findByIdAndRemove(TEST_TRANSACTION_ID).exec();

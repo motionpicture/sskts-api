@@ -8,7 +8,6 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as jwt from 'jsonwebtoken';
-import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
@@ -19,9 +18,9 @@ const TEST_PASSWORD = 'password';
 let TEST_BODY_CLIENT_CREDENTIALS: any;
 let TEST_BODY_PASSWORD: any;
 
-let connection: mongoose.Connection;
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 
     TEST_CLIENT_ID = `sskts-api:test:oauth${Date.now().toString()}`;
     TEST_BODY_CLIENT_CREDENTIALS = {

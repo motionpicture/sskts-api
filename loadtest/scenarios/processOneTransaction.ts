@@ -4,8 +4,7 @@
  * @namespace loadtest/scenarios/processOneTransaction
  */
 
-import * as COA from '@motionpicture/coa-service';
-import * as GMO from '@motionpicture/gmo-service';
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
 import * as moment from 'moment';
@@ -158,7 +157,7 @@ export default async (config: IConfig) => {
     const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
 
     // 販売可能チケット検索
-    const salesTicketResult = await COA.ReserveService.salesTicket({
+    const salesTicketResult = await sskts.COA.ReserveService.salesTicket({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -168,7 +167,7 @@ export default async (config: IConfig) => {
     debug('salesTicketResult:', salesTicketResult);
 
     // COA空席確認
-    const getStateReserveSeatResult = await COA.ReserveService.stateReserveSeat({
+    const getStateReserveSeatResult = await sskts.COA.ReserveService.stateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -189,7 +188,7 @@ export default async (config: IConfig) => {
     const totalPrice = salesTicketResult[0].sale_price;
 
     // COA仮予約
-    const reserveSeatsTemporarilyResult2 = await COA.ReserveService.updTmpReserveSeat({
+    const reserveSeatsTemporarilyResult2 = await sskts.COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -260,15 +259,15 @@ export default async (config: IConfig) => {
     // tslint:disable-next-line:no-magic-numbers
     const orderId = `${moment().format('YYYYMMDD')}${config.theaterId}${`00000000${coaSeatAuthorization.coa_tmp_reserve_num}`.slice(-8)}00`;
     // GMOオーソリ取得
-    const entryTranResult2 = await GMO.services.credit.entryTran({
+    const entryTranResult2 = await sskts.GMO.services.credit.entryTran({
         shopId: config.gmoShopId,
         shopPass: config.gmoShopPass,
         orderId: orderId,
-        jobCd: GMO.utils.util.JOB_CD_AUTH,
+        jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
         amount: totalPrice
     });
 
-    const execTranResult2 = await GMO.services.credit.execTran({
+    const execTranResult2 = await sskts.GMO.services.credit.execTran({
         accessId: entryTranResult2.accessId,
         accessPass: entryTranResult2.accessPass,
         orderId: orderId,
@@ -293,8 +292,8 @@ export default async (config: IConfig) => {
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult2.accessId,
             gmo_access_pass: entryTranResult2.accessPass,
-            gmo_job_cd: GMO.utils.util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.utils.util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
         },
         json: true,
         resolveWithFullResponse: true

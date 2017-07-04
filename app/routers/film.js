@@ -17,7 +17,6 @@ const express_1 = require("express");
 const filmRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -26,7 +25,7 @@ filmRouter.get('/:id', permitScopes_1.default(['admin', 'films', 'films.read-onl
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const option = yield sskts.service.master.findFilm(req.params.id)(sskts.adapter.film(mongoose.connection));
+        const option = yield sskts.service.master.findFilm(req.params.id)(sskts.adapter.film(sskts.mongoose.connection));
         option.match({
             Some: (film) => {
                 res.json({

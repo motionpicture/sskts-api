@@ -9,7 +9,6 @@ const performanceRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
 import { NOT_FOUND } from 'http-status';
-import * as mongoose from 'mongoose';
 
 import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
@@ -27,7 +26,7 @@ performanceRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.master.findPerformance(req.params.id)(sskts.adapter.performance(mongoose.connection));
+            const option = await sskts.service.master.findPerformance(req.params.id)(sskts.adapter.performance(sskts.mongoose.connection));
             option.match({
                 Some: (performance) => {
                     res.json({
@@ -62,7 +61,7 @@ performanceRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const performanceAdapter = sskts.adapter.performance(mongoose.connection);
+            const performanceAdapter = sskts.adapter.performance(sskts.mongoose.connection);
             const performanceStockStatusAdapter = sskts.adapter.stockStatus.performance(redis.getClient());
             const performances = await sskts.service.master.searchPerformances({
                 day: req.query.day,

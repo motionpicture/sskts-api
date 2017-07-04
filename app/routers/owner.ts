@@ -10,7 +10,6 @@ const ownerRouter = Router();
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { CREATED, NO_CONTENT, NOT_FOUND } from 'http-status';
-import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -35,7 +34,7 @@ ownerRouter.get(
     async (req, res, next) => {
         try {
             const ownerId = <string>req.getUser().owner;
-            const profileOption = await sskts.service.member.getProfile(ownerId)(sskts.adapter.owner(mongoose.connection));
+            const profileOption = await sskts.service.member.getProfile(ownerId)(sskts.adapter.owner(sskts.mongoose.connection));
             debug('profileOption is', profileOption);
             profileOption.match({
                 Some: (profile) => {
@@ -99,7 +98,7 @@ ownerRouter.put(
         try {
             const ownerId = <string>req.getUser().owner;
             const profile = sskts.factory.owner.member.createVariableFields(req.body.data.attributes);
-            await sskts.service.member.updateProfile(ownerId, profile)(sskts.adapter.owner(mongoose.connection));
+            await sskts.service.member.updateProfile(ownerId, profile)(sskts.adapter.owner(sskts.mongoose.connection));
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -228,7 +227,7 @@ ownerRouter.get(
     async (req, res, next) => {
         try {
             const ownerId = <string>req.getUser().owner;
-            const data = await sskts.service.member.findSeatReservationAssets(ownerId)(sskts.adapter.asset(mongoose.connection))
+            const data = await sskts.service.member.findSeatReservationAssets(ownerId)(sskts.adapter.asset(sskts.mongoose.connection))
                 .then((assets) => {
                     return assets.map((asset) => {
                         return {

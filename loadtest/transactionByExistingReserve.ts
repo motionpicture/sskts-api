@@ -6,7 +6,7 @@
  * @ignore
  */
 
-import * as GMO from '@motionpicture/gmo-service';
+import * as sskts from '@motionpicture/sskts-domain';
 import * as httpStatus from 'http-status';
 import * as moment from 'moment';
 import * as request from 'request-promise-native';
@@ -148,8 +148,8 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
             gmo_amount: totalPrice,
             gmo_access_id: gmoAuthResult.accessId,
             gmo_access_pass: gmoAuthResult.accessPass,
-            gmo_job_cd: GMO.utils.util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.utils.util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
         },
         json: true,
         simple: false,

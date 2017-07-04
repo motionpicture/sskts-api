@@ -11,7 +11,6 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, OK } from 'http-status';
 import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 
 import * as redis from '../../redis';
 
@@ -69,8 +68,8 @@ transactionRouter.post(
                 scope: scope,
                 ownerId: ownerId
             })(
-                sskts.adapter.owner(mongoose.connection),
-                sskts.adapter.transaction(mongoose.connection),
+                sskts.adapter.owner(sskts.mongoose.connection),
+                sskts.adapter.transaction(sskts.mongoose.connection),
                 sskts.adapter.transactionCount(redis.getClient())
                 );
 
@@ -118,7 +117,7 @@ transactionRouter.post(
                 reserve_num: req.body.inquiry_id,
                 tel: req.body.inquiry_pass
             });
-            const option = await sskts.service.transaction.makeInquiry(key)(sskts.adapter.transaction(mongoose.connection));
+            const option = await sskts.service.transaction.makeInquiry(key)(sskts.adapter.transaction(sskts.mongoose.connection));
 
             option.match({
                 Some: (transaction) => {
@@ -154,7 +153,9 @@ transactionRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.transactionWithId.findById(req.params.id)(sskts.adapter.transaction(mongoose.connection));
+            const option = await sskts.service.transactionWithId.findById(req.params.id)(
+                sskts.adapter.transaction(sskts.mongoose.connection)
+            );
             option.match({
                 Some: (transaction) => {
                     res.json({
@@ -192,8 +193,8 @@ transactionRouter.patch(
     validator,
     async (req, res, next) => {
         try {
-            const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-            const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+            const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+            const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
 
             // 取引から匿名所有者を取り出す
             const transactionOption = await sskts.service.transactionWithId.findById(req.params.id)(transactionAdapter);
@@ -291,8 +292,8 @@ transactionRouter.put(
                     return;
             }
 
-            const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-            const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+            const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+            const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
             await sskts.service.transactionWithId.setOwnerProfile(req.params.id, profile)(ownerAdapter, transactionAdapter);
 
             res.status(OK).json({
@@ -393,7 +394,7 @@ transactionRouter.post(
                 price: req.body.gmo_amount
             });
             await sskts.service.transactionWithId.addGMOAuthorization(req.params.id, authorization)(
-                sskts.adapter.transaction(mongoose.connection)
+                sskts.adapter.transaction(sskts.mongoose.connection)
             );
 
             res.status(OK).json({
@@ -470,7 +471,7 @@ transactionRouter.post(
                 price: parseInt(req.body.price, 10)
             });
             await sskts.service.transactionWithId.addCOASeatReservationAuthorization(req.params.id, authorization)(
-                sskts.adapter.transaction(mongoose.connection));
+                sskts.adapter.transaction(sskts.mongoose.connection));
 
             res.status(OK).json({
                 data: {
@@ -528,7 +529,7 @@ transactionRouter.post(
                 skhn_cd: req.body.skhn_cd
             });
             await sskts.service.transactionWithId.addMvtkAuthorization(req.params.id, authorization)(
-                sskts.adapter.transaction(mongoose.connection)
+                sskts.adapter.transaction(sskts.mongoose.connection)
             );
 
             res.status(OK).json({
@@ -553,7 +554,7 @@ transactionRouter.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transactionWithId.removeAuthorization(req.params.id, req.params.authorization_id)(
-                sskts.adapter.transaction(mongoose.connection)
+                sskts.adapter.transaction(sskts.mongoose.connection)
             );
 
             res.status(NO_CONTENT).end();
@@ -582,7 +583,7 @@ transactionRouter.patch(
                 tel: req.body.inquiry_pass
             });
             await sskts.service.transactionWithId.enableInquiry(req.params.id, key)(
-                sskts.adapter.transaction(mongoose.connection)
+                sskts.adapter.transaction(sskts.mongoose.connection)
             );
 
             res.status(NO_CONTENT).end();
@@ -612,7 +613,9 @@ transactionRouter.post(
                 subject: req.body.subject,
                 content: req.body.content
             });
-            await sskts.service.transactionWithId.addEmail(req.params.id, notification)(sskts.adapter.transaction(mongoose.connection));
+            await sskts.service.transactionWithId.addEmail(req.params.id, notification)(
+                sskts.adapter.transaction(sskts.mongoose.connection)
+            );
 
             res.status(OK).json({
                 data: {
@@ -638,7 +641,7 @@ transactionRouter.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(
-                sskts.adapter.transaction(mongoose.connection)
+                sskts.adapter.transaction(sskts.mongoose.connection)
             );
 
             res.status(NO_CONTENT).end();
@@ -657,7 +660,7 @@ transactionRouter.patch(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transactionWithId.close(req.params.id)(sskts.adapter.transaction(mongoose.connection));
+            await sskts.service.transactionWithId.close(req.params.id)(sskts.adapter.transaction(sskts.mongoose.connection));
 
             res.status(NO_CONTENT).end();
         } catch (error) {

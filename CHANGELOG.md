@@ -38,11 +38,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 - redisクライアント取得モジュールにおいて、再生成時にクライアントを使えなくなるバグを修正。
+- sskts-domainの依存パッケージをうまくアップデートできない問題を解消。mongoose,redis,coa-service,gmo-serviceをsskts-domainの内部モジュールを使用するように変更。
 
 ### Security
 - [tslint](https://github.com/palantir/tslint)を5.4.3にアップデート。
 - [typescript@2.4.0](https://github.com/Microsoft/TypeScript)にアップデート。
 - 依存パッケージをアップデート。
+- update package [@motionpicture/sskts-domain@^20.1.0](https://www.npmjs.com/package/@motionpicture/sskts-domain)
 
 ## v9.1.0 - 2017-06-12
 ### Added

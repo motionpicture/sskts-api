@@ -6,11 +6,10 @@
 
 import * as sskts from '@motionpicture/sskts-domain';
 import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 
-let connection: mongoose.Connection;
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 
 export type IClient = sskts.factory.client.IClient;

@@ -4,13 +4,10 @@
  * @ignore
  */
 
-import * as COA from '@motionpicture/coa-service';
-import * as GMO from '@motionpicture/gmo-service';
 import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
@@ -31,9 +28,9 @@ interface IPurchaser {
     group: sskts.factory.ownerGroup;
 }
 
-let connection: mongoose.Connection;
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 
 describe('一般購入シナリオ', () => {
@@ -172,7 +169,7 @@ async function processTransactionByPerformance(performanceId: string, purchaser:
     const promoterOwnerId = <string>startTransactionResult.promoterOwnerId;
 
     // 販売可能チケット検索
-    const salesTicketResult = await COA.ReserveService.salesTicket({
+    const salesTicketResult = await sskts.COA.ReserveService.salesTicket({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -181,7 +178,7 @@ async function processTransactionByPerformance(performanceId: string, purchaser:
     });
 
     // COA空席確認
-    const getStateReserveSeatResult = await COA.ReserveService.stateReserveSeat({
+    const getStateReserveSeatResult = await sskts.COA.ReserveService.stateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -198,7 +195,7 @@ async function processTransactionByPerformance(performanceId: string, purchaser:
     }
 
     // COA仮予約
-    const reserveSeatsTemporarilyResult = await COA.ReserveService.updTmpReserveSeat({
+    const reserveSeatsTemporarilyResult = await sskts.COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -259,7 +256,7 @@ async function processTransactionByPerformance(performanceId: string, purchaser:
         .then((response) => response.body.data.id);
 
     // COA仮予約削除
-    await COA.ReserveService.delTmpReserve({
+    await sskts.COA.ReserveService.delTmpReserve({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -278,15 +275,15 @@ async function processTransactionByPerformance(performanceId: string, purchaser:
 
     // GMOオーソリ取得
     let orderId = Date.now().toString();
-    const entryTranResult = await GMO.services.credit.entryTran({
+    const entryTranResult = await sskts.GMO.services.credit.entryTran({
         shopId: TEST_GMO_SHOP_ID,
         shopPass: TEST_GMO_SHOP_PASS,
         orderId: orderId,
-        jobCd: GMO.utils.util.JOB_CD_AUTH,
+        jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
         amount: totalPrice
     });
 
-    await GMO.services.credit.execTran({
+    await sskts.GMO.services.credit.execTran({
         accessId: entryTranResult.accessId,
         accessPass: entryTranResult.accessPass,
         orderId: orderId,
@@ -310,19 +307,19 @@ async function processTransactionByPerformance(performanceId: string, purchaser:
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult.accessId,
             gmo_access_pass: entryTranResult.accessPass,
-            gmo_job_cd: GMO.utils.util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.utils.util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
         })
         .expect(httpStatus.OK)
         .then((response) => response.body.data.id);
 
     // GMOオーソリ取消
-    await GMO.services.credit.alterTran({
+    await sskts.GMO.services.credit.alterTran({
         shopId: TEST_GMO_SHOP_ID,
         shopPass: TEST_GMO_SHOP_PASS,
         accessId: entryTranResult.accessId,
         accessPass: entryTranResult.accessPass,
-        jobCd: GMO.utils.util.JOB_CD_VOID
+        jobCd: sskts.GMO.utils.util.JOB_CD_VOID
     });
 
     // GMOオーソリ削除
@@ -333,7 +330,7 @@ async function processTransactionByPerformance(performanceId: string, purchaser:
         .expect(httpStatus.NO_CONTENT);
 
     // COA仮予約2回目
-    const reserveSeatsTemporarilyResult2 = await COA.ReserveService.updTmpReserveSeat({
+    const reserveSeatsTemporarilyResult2 = await sskts.COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -392,15 +389,15 @@ async function processTransactionByPerformance(performanceId: string, purchaser:
 
     // GMOオーソリ取得(2回目)
     orderId = Date.now().toString();
-    const entryTranResult2 = await GMO.services.credit.entryTran({
+    const entryTranResult2 = await sskts.GMO.services.credit.entryTran({
         shopId: TEST_GMO_SHOP_ID,
         shopPass: TEST_GMO_SHOP_PASS,
         orderId: orderId,
-        jobCd: GMO.utils.util.JOB_CD_AUTH,
+        jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
         amount: totalPrice
     });
 
-    await GMO.services.credit.execTran({
+    await sskts.GMO.services.credit.execTran({
         accessId: entryTranResult2.accessId,
         accessPass: entryTranResult2.accessPass,
         orderId: orderId,
@@ -424,8 +421,8 @@ async function processTransactionByPerformance(performanceId: string, purchaser:
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult2.accessId,
             gmo_access_pass: entryTranResult2.accessPass,
-            gmo_job_cd: GMO.utils.util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.utils.util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
         })
         .expect(httpStatus.OK);
 

@@ -8,16 +8,15 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
 import * as Resources from '../resources';
 import * as OAuthScenario from '../scenarios/oauth';
 
-let connection: mongoose.Connection;
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 
     // 全て削除してからテスト開始
     const theaterAdapter = sskts.adapter.theater(connection);

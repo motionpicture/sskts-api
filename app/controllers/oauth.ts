@@ -8,7 +8,6 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
-import * as mongoose from 'mongoose';
 
 const debug = createDebug('sskts-api:controllers:oauth');
 // todo どこで定義するか
@@ -84,7 +83,7 @@ export async function issueCredentialsByAssertion(assertion: string, scopes: str
  */
 export async function issueCredentialsByClient(clientId: string, state: string, scopes: string[]): Promise<ICredentials> {
     // クライアントの存在確認
-    const clientAdapter = sskts.adapter.client(mongoose.connection);
+    const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
     const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
     if (clientDoc === null) {
         throw new Error(MESSAGE_CLIENT_NOT_FOUND);
@@ -101,7 +100,7 @@ export async function issueCredentialsByClient(clientId: string, state: string, 
 
 export async function issueCredentialsByPassword(username: string, password: string, scopes: string[]): Promise<ICredentials> {
     // ログイン確認
-    const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+    const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
     const memberOption = await sskts.service.member.login(username, password)(ownerAdapter);
     if (memberOption.isEmpty) {
         throw new Error(MESSAGE_INVALID_USERNAME_OR_PASSWORD);

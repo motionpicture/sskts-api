@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * ムビチケを使って購入する取引フローテストスクリプト
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,12 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * ムビチケを使って購入する取引フローテストスクリプト
- *
- * @ignore
- */
-const COA = require("@motionpicture/coa-service");
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const httpStatus = require("http-status");
 const moment = require("moment");
@@ -41,7 +41,7 @@ function main() {
         // パフォーマンス取得
         debug('finding performance...');
         response = yield request.get({
-            url: `${API_ENDPOINT}/performances/` + performanceId,
+            url: `${API_ENDPOINT}/performances/${performanceId}`,
             auth: { bearer: accessToken },
             json: true,
             simple: false,
@@ -55,7 +55,7 @@ function main() {
         // 作品取得
         debug('finding film...');
         response = yield request.get({
-            url: `${API_ENDPOINT}/films/` + performance.film.id,
+            url: `${API_ENDPOINT}/films/${performance.film.id}`,
             auth: { bearer: accessToken },
             json: true,
             simple: false,
@@ -69,7 +69,7 @@ function main() {
         // スクリーン取得
         debug('finding screen...');
         response = yield request.get({
-            url: `${API_ENDPOINT}/screens/` + performance.screen.id,
+            url: `${API_ENDPOINT}/screens/${performance.screen.id}`,
             auth: { bearer: accessToken },
             json: true,
             simple: false,
@@ -118,7 +118,7 @@ function main() {
         });
         const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
         // 販売可能チケット検索
-        const salesTicketResult = yield COA.ReserveService.salesTicket({
+        const salesTicketResult = yield sskts.COA.ReserveService.salesTicket({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -126,7 +126,7 @@ function main() {
             time_begin: timeBegin
         });
         // COA空席確認
-        const getStateReserveSeatResult = yield COA.ReserveService.stateReserveSeat({
+        const getStateReserveSeatResult = yield sskts.COA.ReserveService.stateReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -144,7 +144,7 @@ function main() {
             throw new Error('no available seats.');
         }
         // COA仮予約
-        const reserveSeatsTemporarilyResult = yield COA.ReserveService.updTmpReserveSeat({
+        const reserveSeatsTemporarilyResult = yield sskts.COA.ReserveService.updTmpReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -232,7 +232,7 @@ function main() {
             throw new Error(response.body.message);
         }
         // COA本予約
-        // const updateReserveResult = await COA.ReserveService.updReserve({
+        // const updateReserveResult = await sskts.COA.ReserveService.updReserve({
         //     theater_code: theaterCode,
         //     date_jouei: dateJouei,
         //     title_code: titleCode,

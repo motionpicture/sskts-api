@@ -15,7 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const GMO = require("@motionpicture/gmo-service");
+const sskts = require("@motionpicture/sskts-domain");
 const httpStatus = require("http-status");
 const moment = require("moment");
 const request = require("request-promise-native");
@@ -139,8 +139,8 @@ function main(coaSeatAuthorization, makeInrquiryResult) {
                 gmo_amount: totalPrice,
                 gmo_access_id: gmoAuthResult.accessId,
                 gmo_access_pass: gmoAuthResult.accessPass,
-                gmo_job_cd: GMO.utils.util.JOB_CD_AUTH,
-                gmo_pay_type: GMO.utils.util.PAY_TYPE_CREDIT
+                gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+                gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
             },
             json: true,
             simple: false,

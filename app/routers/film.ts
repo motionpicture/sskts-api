@@ -9,7 +9,6 @@ const filmRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
 import { NOT_FOUND } from 'http-status';
-import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -26,7 +25,7 @@ filmRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.master.findFilm(req.params.id)(sskts.adapter.film(mongoose.connection));
+            const option = await sskts.service.master.findFilm(req.params.id)(sskts.adapter.film(sskts.mongoose.connection));
             option.match({
                 Some: (film) => {
                     res.json({

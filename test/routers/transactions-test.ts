@@ -6,7 +6,6 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
-import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
@@ -16,9 +15,9 @@ import * as TransactionScenario from '../scenarios/transaction';
 
 const TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS = 60;
 const TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
-let connection: mongoose.Connection;
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 
     // 全て削除してからテスト開始
     const transactionAdapter = sskts.adapter.transaction(connection);
@@ -510,8 +509,8 @@ describe('取引中に匿名所有者更新', () => {
     });
 
     afterEach(async () => {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
 
         // テストデータ削除
         await transactionAdapter.transactionEventModel.remove({ transaction: TEST_TRANSACTION_ID }).exec();
@@ -520,7 +519,7 @@ describe('取引中に匿名所有者更新', () => {
     });
 
     it('更新できる', async () => {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
 
         const now = Date.now().toString();
         const profile = {
@@ -537,7 +536,7 @@ describe('取引中に匿名所有者更新', () => {
             .expect(httpStatus.NO_CONTENT);
 
         // プロフィール更新されているかどうか確認
-        const ownerDoc = <mongoose.Document>await ownerAdapter.model.findById(TEST_OWNER_ID).exec();
+        const ownerDoc = <sskts.mongoose.Document>await ownerAdapter.model.findById(TEST_OWNER_ID).exec();
         assert.equal(ownerDoc.get('name_first'), profile.name_first);
         assert.equal(ownerDoc.get('name_last'), profile.name_last);
         assert.equal(ownerDoc.get('tel'), profile.tel);
@@ -559,8 +558,8 @@ describe('取引中に所有者置換', () => {
     });
 
     afterEach(async () => {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
 
         // テストデータ削除
         await transactionAdapter.transactionEventModel.remove({ transaction: TEST_TRANSACTION_ID }).exec();
@@ -569,7 +568,7 @@ describe('取引中に所有者置換', () => {
     });
 
     it('匿名所有者から匿名所有者にできる', async () => {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
 
         const now = Date.now().toString();
         const body = {
@@ -596,7 +595,7 @@ describe('取引中に所有者置換', () => {
             });
 
         // プロフィール更新されているかどうか確認
-        const ownerDoc = <mongoose.Document>await ownerAdapter.model.findById(TEST_OWNER_ID).exec();
+        const ownerDoc = <sskts.mongoose.Document>await ownerAdapter.model.findById(TEST_OWNER_ID).exec();
         assert.equal(ownerDoc.get('group'), body.data.attributes.group);
         assert.equal(ownerDoc.get('name_first'), body.data.attributes.name_first);
         assert.equal(ownerDoc.get('name_last'), body.data.attributes.name_last);
@@ -605,7 +604,7 @@ describe('取引中に所有者置換', () => {
     });
 
     it('匿名所有者から会員所有者にできる', async () => {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
 
         const now = Date.now().toString();
         const body = {
@@ -634,7 +633,7 @@ describe('取引中に所有者置換', () => {
             });
 
         // プロフィール更新されているかどうか確認
-        const ownerDoc = <mongoose.Document>await ownerAdapter.model.findById(TEST_OWNER_ID).exec();
+        const ownerDoc = <sskts.mongoose.Document>await ownerAdapter.model.findById(TEST_OWNER_ID).exec();
         assert.equal(ownerDoc.get('group'), body.data.attributes.group);
         assert.equal(ownerDoc.get('username'), body.data.attributes.username);
         assert.equal(ownerDoc.get('name_first'), body.data.attributes.name_first);
@@ -658,8 +657,8 @@ describe('取引中にカード登録', () => {
     });
 
     afterEach(async () => {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-        const transactionAdapter = sskts.adapter.transaction(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
 
         // テストデータ削除
         await transactionAdapter.transactionEventModel.remove({ transaction: TEST_TRANSACTION_ID }).exec();

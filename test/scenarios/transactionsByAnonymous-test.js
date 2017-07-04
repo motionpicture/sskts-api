@@ -13,13 +13,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const COA = require("@motionpicture/coa-service");
-const GMO = require("@motionpicture/gmo-service");
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
 const moment = require("moment");
-const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../../app/app");
 const Resources = require("../resources");
@@ -29,7 +26,7 @@ const TEST_GMO_SHOP_ID = 'tshop00026096';
 const TEST_GMO_SHOP_PASS = 'xbxmkaa6';
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 }));
 describe('一般購入シナリオ', () => {
     it('成立までたどりつけて照会できる', () => __awaiter(this, void 0, void 0, function* () {
@@ -144,7 +141,7 @@ function processTransactionByPerformance(performanceId, purchaser) {
         const anonymousOwnerId = startTransactionResult.ownerId;
         const promoterOwnerId = startTransactionResult.promoterOwnerId;
         // 販売可能チケット検索
-        const salesTicketResult = yield COA.ReserveService.salesTicket({
+        const salesTicketResult = yield sskts.COA.ReserveService.salesTicket({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -152,7 +149,7 @@ function processTransactionByPerformance(performanceId, purchaser) {
             time_begin: timeBegin
         });
         // COA空席確認
-        const getStateReserveSeatResult = yield COA.ReserveService.stateReserveSeat({
+        const getStateReserveSeatResult = yield sskts.COA.ReserveService.stateReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -168,7 +165,7 @@ function processTransactionByPerformance(performanceId, purchaser) {
             throw new Error('no available seats.');
         }
         // COA仮予約
-        const reserveSeatsTemporarilyResult = yield COA.ReserveService.updTmpReserveSeat({
+        const reserveSeatsTemporarilyResult = yield sskts.COA.ReserveService.updTmpReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -226,7 +223,7 @@ function processTransactionByPerformance(performanceId, purchaser) {
             .expect(httpStatus.OK)
             .then((response) => response.body.data.id);
         // COA仮予約削除
-        yield COA.ReserveService.delTmpReserve({
+        yield sskts.COA.ReserveService.delTmpReserve({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -243,14 +240,14 @@ function processTransactionByPerformance(performanceId, purchaser) {
             .expect(httpStatus.NO_CONTENT);
         // GMOオーソリ取得
         let orderId = Date.now().toString();
-        const entryTranResult = yield GMO.services.credit.entryTran({
+        const entryTranResult = yield sskts.GMO.services.credit.entryTran({
             shopId: TEST_GMO_SHOP_ID,
             shopPass: TEST_GMO_SHOP_PASS,
             orderId: orderId,
-            jobCd: GMO.utils.util.JOB_CD_AUTH,
+            jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
             amount: totalPrice
         });
-        yield GMO.services.credit.execTran({
+        yield sskts.GMO.services.credit.execTran({
             accessId: entryTranResult.accessId,
             accessPass: entryTranResult.accessPass,
             orderId: orderId,
@@ -273,18 +270,18 @@ function processTransactionByPerformance(performanceId, purchaser) {
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult.accessId,
             gmo_access_pass: entryTranResult.accessPass,
-            gmo_job_cd: GMO.utils.util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.utils.util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
         })
             .expect(httpStatus.OK)
             .then((response) => response.body.data.id);
         // GMOオーソリ取消
-        yield GMO.services.credit.alterTran({
+        yield sskts.GMO.services.credit.alterTran({
             shopId: TEST_GMO_SHOP_ID,
             shopPass: TEST_GMO_SHOP_PASS,
             accessId: entryTranResult.accessId,
             accessPass: entryTranResult.accessPass,
-            jobCd: GMO.utils.util.JOB_CD_VOID
+            jobCd: sskts.GMO.utils.util.JOB_CD_VOID
         });
         // GMOオーソリ削除
         yield supertest(app)
@@ -293,7 +290,7 @@ function processTransactionByPerformance(performanceId, purchaser) {
             .set('Accept', 'application/json')
             .expect(httpStatus.NO_CONTENT);
         // COA仮予約2回目
-        const reserveSeatsTemporarilyResult2 = yield COA.ReserveService.updTmpReserveSeat({
+        const reserveSeatsTemporarilyResult2 = yield sskts.COA.ReserveService.updTmpReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -350,14 +347,14 @@ function processTransactionByPerformance(performanceId, purchaser) {
             .expect(httpStatus.OK);
         // GMOオーソリ取得(2回目)
         orderId = Date.now().toString();
-        const entryTranResult2 = yield GMO.services.credit.entryTran({
+        const entryTranResult2 = yield sskts.GMO.services.credit.entryTran({
             shopId: TEST_GMO_SHOP_ID,
             shopPass: TEST_GMO_SHOP_PASS,
             orderId: orderId,
-            jobCd: GMO.utils.util.JOB_CD_AUTH,
+            jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
             amount: totalPrice
         });
-        yield GMO.services.credit.execTran({
+        yield sskts.GMO.services.credit.execTran({
             accessId: entryTranResult2.accessId,
             accessPass: entryTranResult2.accessPass,
             orderId: orderId,
@@ -380,8 +377,8 @@ function processTransactionByPerformance(performanceId, purchaser) {
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult2.accessId,
             gmo_access_pass: entryTranResult2.accessPass,
-            gmo_job_cd: GMO.utils.util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.utils.util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
         })
             .expect(httpStatus.OK);
         // 購入者情報登録(会員の場合カード登録も)

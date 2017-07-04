@@ -13,9 +13,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
-const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../../app/app");
 const redis = require("../../redis");
@@ -23,13 +23,14 @@ const MONGOOSE_CONNECTION_READY_STATE_CONNECTED = 1;
 const INTERVALS_CHECK_CONNECTION = 2000;
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 }));
 describe('ヘルスチェック', () => {
     it('mongodbとredisに接続済みであれば健康', () => __awaiter(this, void 0, void 0, function* () {
         yield new Promise((resolve, reject) => {
             const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
-                if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redis.getClient().connected) {
+                if (sskts.mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED
+                    || !redis.getClient().connected) {
                     return;
                 }
                 clearInterval(timer);
@@ -52,20 +53,21 @@ describe('ヘルスチェック', () => {
     it('mongodb接続切断後アクセスすればBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
         yield new Promise((resolve, reject) => {
             const timer = setInterval(() => __awaiter(this, void 0, void 0, function* () {
-                if (mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED || !redis.getClient().connected) {
+                if (sskts.mongoose.connection.readyState !== MONGOOSE_CONNECTION_READY_STATE_CONNECTED
+                    || !redis.getClient().connected) {
                     return;
                 }
                 clearInterval(timer);
                 try {
                     // mongooseデフォルトコネクションを切断
-                    yield mongoose.connection.close();
+                    yield sskts.mongoose.connection.close();
                     yield supertest(app)
                         .get('/health')
                         .set('Accept', 'application/json')
                         .expect(httpStatus.BAD_REQUEST)
                         .then();
                     // mongodb接続しなおす
-                    mongoose.connect(process.env.MONGOLAB_URI, (err) => {
+                    sskts.mongoose.connect(process.env.MONGOLAB_URI, (err) => {
                         if (err instanceof Error) {
                             reject(err);
                         }

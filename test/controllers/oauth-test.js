@@ -15,7 +15,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
-const mongoose = require("mongoose");
 const oauthController = require("../../app/controllers/oauth");
 describe('oauthコントローラー 主張から資格情報を発行する', () => {
     it('主張が不適切なので発行できない', () => __awaiter(this, void 0, void 0, function* () {
@@ -36,7 +35,7 @@ describe('oauthコントローラー 主張から資格情報を発行する', (
 });
 describe('oauthコントローラー クライアントIDから資格情報を発行する', () => {
     before(() => {
-        mongoose.connect(process.env.MONGOLAB_URI);
+        sskts.mongoose.connect(process.env.MONGOLAB_URI);
     });
     it('クライアントが存在しないので発行できない', () => __awaiter(this, void 0, void 0, function* () {
         let issueError;
@@ -58,7 +57,7 @@ describe('oauthコントローラー クライアントIDから資格情報を�
             notes: { en: '', ja: '' },
             email: process.env.SSKTS_DEVELOPER_EMAIL
         });
-        const clientAdapter = sskts.adapter.client(mongoose.connection);
+        const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
         yield clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { new: true, upsert: true }).exec();
         const credentials = yield oauthController.issueCredentialsByClient(client.id, 'test', ['admin']);
         assert.equal(typeof credentials.access_token, 'string');

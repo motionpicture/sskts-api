@@ -4,6 +4,7 @@
  *
  * @ignore
  */
+const sskts = require("@motionpicture/sskts-domain");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const createDebug = require("debug");
@@ -11,7 +12,6 @@ const express = require("express");
 const expressValidator = require("express-validator"); // tslint:disable-line:no-require-imports
 const helmet = require("helmet");
 const i18n = require("i18n");
-const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const basicAuth_1 = require("./middlewares/basicAuth");
 const errorHandler_1 = require("./middlewares/errorHandler");
@@ -73,9 +73,9 @@ i18n.configure({
 });
 // i18n の設定を有効化
 app.use(i18n.init);
-// Use native promises
-mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
+// @types/mongooseが古くて、新しいMongoDBクライアントの接続オプションに適合していない
+// 型定義の更新待ち
+sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 // routers
 app.use('/health', health_1.default);
 app.use('/oauth', oauth_1.default);

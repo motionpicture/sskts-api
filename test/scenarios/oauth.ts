@@ -4,15 +4,15 @@
  * @ignore
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as httpStatus from 'http-status';
-import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
 
-let connection: mongoose.Connection;
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 
 /**

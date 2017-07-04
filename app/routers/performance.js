@@ -17,7 +17,6 @@ const express_1 = require("express");
 const performanceRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
 const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -27,7 +26,7 @@ performanceRouter.get('/:id', permitScopes_1.default(['admin', 'performances', '
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const option = yield sskts.service.master.findPerformance(req.params.id)(sskts.adapter.performance(mongoose.connection));
+        const option = yield sskts.service.master.findPerformance(req.params.id)(sskts.adapter.performance(sskts.mongoose.connection));
         option.match({
             Some: (performance) => {
                 res.json({
@@ -56,7 +55,7 @@ performanceRouter.get('', permitScopes_1.default(['admin', 'performances', 'perf
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const performanceAdapter = sskts.adapter.performance(mongoose.connection);
+        const performanceAdapter = sskts.adapter.performance(sskts.mongoose.connection);
         const performanceStockStatusAdapter = sskts.adapter.stockStatus.performance(redis.getClient());
         const performances = yield sskts.service.master.searchPerformances({
             day: req.query.day,

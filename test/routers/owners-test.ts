@@ -7,7 +7,6 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
-import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 import * as util from 'util';
 
@@ -26,9 +25,9 @@ const TEST_BODY_ADD_CARD = {
         }
     }
 };
-let connection: mongoose.Connection;
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 
 describe('会員プロフィール取得', () => {
