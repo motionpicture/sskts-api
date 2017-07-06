@@ -301,31 +301,41 @@ transactionRouter.post('/:id/owners/:ownerId/cards', permitScopes_1.default(['ad
     }
 }));
 transactionRouter.post('/:id/authorizations/gmo', permitScopes_1.default(['admin', 'transactions.authorizations']), (req, _, next) => {
-    req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
-    req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
-    req.checkBody('gmo_shop_id', 'invalid gmo_shop_id').notEmpty().withMessage('gmo_shop_id is required');
-    req.checkBody('gmo_shop_pass', 'invalid gmo_shop_pass').notEmpty().withMessage('gmo_shop_pass is required');
-    req.checkBody('gmo_order_id', 'invalid gmo_order_id').notEmpty().withMessage('gmo_order_id is required');
-    req.checkBody('gmo_amount', 'invalid gmo_amount').notEmpty().withMessage('gmo_amount is required');
-    req.checkBody('gmo_access_id', 'invalid gmo_access_id').notEmpty().withMessage('gmo_access_id is required');
-    req.checkBody('gmo_access_pass', 'invalid gmo_access_pass').notEmpty().withMessage('gmo_access_pass is required');
-    req.checkBody('gmo_job_cd', 'invalid gmo_job_cd').notEmpty().withMessage('gmo_job_cd is required');
-    req.checkBody('gmo_pay_type', 'invalid gmo_pay_type').notEmpty().withMessage('gmo_pay_type is required');
+    // 互換性維持のための対応
+    if (req.body.data === undefined) {
+        req.body.data = {
+            type: 'authorizations',
+            attributes: req.body
+        };
+    }
+    req.checkBody('data').notEmpty().withMessage('required');
+    req.checkBody('data.type').equals('authorizations').withMessage('must be \'authorizations\'');
+    req.checkBody('data.attributes').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
+    req.checkBody('data.attributes.owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
+    req.checkBody('data.attributes.gmo_shop_id', 'invalid gmo_shop_id').notEmpty().withMessage('gmo_shop_id is required');
+    req.checkBody('data.attributes.gmo_shop_pass', 'invalid gmo_shop_pass').notEmpty().withMessage('gmo_shop_pass is required');
+    req.checkBody('data.attributes.gmo_order_id', 'invalid gmo_order_id').notEmpty().withMessage('gmo_order_id is required');
+    req.checkBody('data.attributes.gmo_amount', 'invalid gmo_amount').notEmpty().withMessage('gmo_amount is required');
+    req.checkBody('data.attributes.gmo_access_id', 'invalid gmo_access_id').notEmpty().withMessage('gmo_access_id is required');
+    req.checkBody('data.attributes.gmo_access_pass', 'invalid gmo_access_pass').notEmpty().withMessage('gmo_access_pass is required');
+    req.checkBody('data.attributes.gmo_job_cd', 'invalid gmo_job_cd').notEmpty().withMessage('gmo_job_cd is required');
+    req.checkBody('data.attributes.gmo_pay_type', 'invalid gmo_pay_type').notEmpty().withMessage('gmo_pay_type is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const authorization = sskts.factory.authorization.gmo.create({
-            owner_from: req.body.owner_from,
-            owner_to: req.body.owner_to,
-            gmo_shop_id: req.body.gmo_shop_id,
-            gmo_shop_pass: req.body.gmo_shop_pass,
-            gmo_order_id: req.body.gmo_order_id,
-            gmo_amount: req.body.gmo_amount,
-            gmo_access_id: req.body.gmo_access_id,
-            gmo_access_pass: req.body.gmo_access_pass,
-            gmo_job_cd: req.body.gmo_job_cd,
-            gmo_pay_type: req.body.gmo_pay_type,
-            price: req.body.gmo_amount
+            owner_from: req.body.data.attributes.owner_from,
+            owner_to: req.body.data.attributes.owner_to,
+            gmo_shop_id: req.body.data.attributes.gmo_shop_id,
+            gmo_shop_pass: req.body.data.attributes.gmo_shop_pass,
+            gmo_order_id: req.body.data.attributes.gmo_order_id,
+            gmo_amount: req.body.data.attributes.gmo_amount,
+            gmo_access_id: req.body.data.attributes.gmo_access_id,
+            gmo_access_pass: req.body.data.attributes.gmo_access_pass,
+            gmo_job_cd: req.body.data.attributes.gmo_job_cd,
+            gmo_pay_type: req.body.data.attributes.gmo_pay_type,
+            price: req.body.data.attributes.gmo_amount
         });
         yield sskts.service.transactionWithId.addGMOAuthorization(req.params.id, authorization)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.OK).json({
@@ -340,35 +350,48 @@ transactionRouter.post('/:id/authorizations/gmo', permitScopes_1.default(['admin
     }
 }));
 transactionRouter.post('/:id/authorizations/coaSeatReservation', permitScopes_1.default(['admin', 'transactions.authorizations']), (req, _, next) => {
-    req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
-    req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
-    req.checkBody('coa_tmp_reserve_num', 'invalid coa_tmp_reserve_num').notEmpty().withMessage('coa_tmp_reserve_num is required');
-    req.checkBody('coa_theater_code', 'invalid coa_theater_code').notEmpty().withMessage('coa_theater_code is required');
-    req.checkBody('coa_date_jouei', 'invalid coa_date_jouei').notEmpty().withMessage('coa_date_jouei is required');
-    req.checkBody('coa_title_code', 'invalid coa_title_code').notEmpty().withMessage('coa_title_code is required');
-    req.checkBody('coa_title_branch_num', 'invalid coa_title_branch_num').notEmpty().withMessage('coa_title_branch_num is required');
-    req.checkBody('coa_time_begin', 'invalid coa_time_begin').notEmpty().withMessage('coa_time_begin is required');
-    req.checkBody('coa_screen_code', 'invalid coa_screen_code').notEmpty().withMessage('coa_screen_code is required');
-    req.checkBody('seats', 'invalid seats').notEmpty().withMessage('seats is required');
-    req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
+    // 互換性維持のための対応
+    if (req.body.data === undefined) {
+        req.body.data = {
+            type: 'authorizations',
+            attributes: req.body
+        };
+    }
+    req.checkBody('data').notEmpty().withMessage('required');
+    req.checkBody('data.type').equals('authorizations').withMessage('must be \'authorizations\'');
+    req.checkBody('data.attributes').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
+    req.checkBody('data.attributes.owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
+    req.checkBody('data.attributes.coa_tmp_reserve_num', 'invalid coa_tmp_reserve_num')
+        .notEmpty().withMessage('coa_tmp_reserve_num is required');
+    req.checkBody('data.attributes.coa_theater_code', 'invalid coa_theater_code')
+        .notEmpty().withMessage('coa_theater_code is required');
+    req.checkBody('data.attributes.coa_date_jouei', 'invalid coa_date_jouei').notEmpty().withMessage('coa_date_jouei is required');
+    req.checkBody('data.attributes.coa_title_code', 'invalid coa_title_code').notEmpty().withMessage('coa_title_code is required');
+    req.checkBody('data.attributes.coa_title_branch_num', 'invalid coa_title_branch_num')
+        .notEmpty().withMessage('coa_title_branch_num is required');
+    req.checkBody('data.attributes.coa_time_begin', 'invalid coa_time_begin').notEmpty().withMessage('coa_time_begin is required');
+    req.checkBody('data.attributes.coa_screen_code', 'invalid coa_screen_code').notEmpty().withMessage('coa_screen_code is required');
+    req.checkBody('data.attributes.seats', 'invalid seats').notEmpty().withMessage('seats is required');
+    req.checkBody('data.attributes.price', 'invalid price').notEmpty().withMessage('price is required').isInt();
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const authorization = sskts.factory.authorization.coaSeatReservation.create({
-            owner_from: req.body.owner_from,
-            owner_to: req.body.owner_to,
+            owner_from: req.body.data.attributes.owner_from,
+            owner_to: req.body.data.attributes.owner_to,
             // tslint:disable-next-line:no-magic-numbers
-            coa_tmp_reserve_num: parseInt(req.body.coa_tmp_reserve_num, 10),
-            coa_theater_code: req.body.coa_theater_code,
-            coa_date_jouei: req.body.coa_date_jouei,
-            coa_title_code: req.body.coa_title_code,
-            coa_title_branch_num: req.body.coa_title_branch_num,
-            coa_time_begin: req.body.coa_time_begin,
-            coa_screen_code: req.body.coa_screen_code,
-            assets: req.body.seats.map((seat) => {
+            coa_tmp_reserve_num: parseInt(req.body.data.attributes.coa_tmp_reserve_num, 10),
+            coa_theater_code: req.body.data.attributes.coa_theater_code,
+            coa_date_jouei: req.body.data.attributes.coa_date_jouei,
+            coa_title_code: req.body.data.attributes.coa_title_code,
+            coa_title_branch_num: req.body.data.attributes.coa_title_branch_num,
+            coa_time_begin: req.body.data.attributes.coa_time_begin,
+            coa_screen_code: req.body.data.attributes.coa_screen_code,
+            assets: req.body.data.attributes.seats.map((seat) => {
                 return sskts.factory.asset.seatReservation.createWithoutDetails({
                     ownership: sskts.factory.ownership.create({
-                        owner: req.body.owner_to
+                        owner: req.body.data.attributes.owner_to
                     }),
                     authorizations: [],
                     performance: seat.performance,
@@ -392,7 +415,7 @@ transactionRouter.post('/:id/authorizations/coaSeatReservation', permitScopes_1.
                 });
             }),
             // tslint:disable-next-line:no-magic-numbers
-            price: parseInt(req.body.price, 10)
+            price: parseInt(req.body.data.attributes.price, 10)
         });
         yield sskts.service.transactionWithId.addCOASeatReservationAuthorization(req.params.id, authorization)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.OK).json({
@@ -407,41 +430,52 @@ transactionRouter.post('/:id/authorizations/coaSeatReservation', permitScopes_1.
     }
 }));
 transactionRouter.post('/:id/authorizations/mvtk', permitScopes_1.default(['admin', 'transactions.authorizations']), (req, _, next) => {
-    req.checkBody('owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
-    req.checkBody('owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
-    req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
-    req.checkBody('kgygish_cd', 'invalid kgygish_cd').notEmpty().withMessage('kgygish_cd is required');
-    req.checkBody('yyk_dvc_typ', 'invalid yyk_dvc_typ').notEmpty().withMessage('yyk_dvc_typ is required');
-    req.checkBody('trksh_flg', 'invalid trksh_flg').notEmpty().withMessage('trksh_flg is required');
-    req.checkBody('kgygish_sstm_zskyyk_no', 'invalid kgygish_sstm_zskyyk_no')
+    // 互換性維持のための対応
+    if (req.body.data === undefined) {
+        req.body.data = {
+            type: 'authorizations',
+            attributes: req.body
+        };
+    }
+    req.checkBody('data').notEmpty().withMessage('required');
+    req.checkBody('data.type').equals('authorizations').withMessage('must be \'authorizations\'');
+    req.checkBody('data.attributes').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.owner_from', 'invalid owner_from').notEmpty().withMessage('owner_from is required');
+    req.checkBody('data.attributes.owner_to', 'invalid owner_to').notEmpty().withMessage('owner_to is required');
+    req.checkBody('data.attributes.price', 'invalid price').notEmpty().withMessage('price is required').isInt();
+    req.checkBody('data.attributes.kgygish_cd', 'invalid kgygish_cd').notEmpty().withMessage('kgygish_cd is required');
+    req.checkBody('data.attributes.yyk_dvc_typ', 'invalid yyk_dvc_typ').notEmpty().withMessage('yyk_dvc_typ is required');
+    req.checkBody('data.attributes.trksh_flg', 'invalid trksh_flg').notEmpty().withMessage('trksh_flg is required');
+    req.checkBody('data.attributes.kgygish_sstm_zskyyk_no', 'invalid kgygish_sstm_zskyyk_no')
         .notEmpty().withMessage('kgygish_sstm_zskyyk_no is required');
-    req.checkBody('kgygish_usr_zskyyk_no', 'invalid kgygish_usr_zskyyk_no').notEmpty().withMessage('kgygish_usr_zskyyk_no is required');
-    req.checkBody('jei_dt', 'invalid jei_dt').notEmpty().withMessage('jei_dt is required');
-    req.checkBody('kij_ymd', 'invalid kij_ymd').notEmpty().withMessage('kij_ymd is required');
-    req.checkBody('st_cd', 'invalid st_cd').notEmpty().withMessage('st_cd is required');
-    req.checkBody('scren_cd', 'invalid scren_cd').notEmpty().withMessage('scren_cd is required');
-    req.checkBody('knyknr_no_info', 'invalid knyknr_no_info').notEmpty().withMessage('knyknr_no_info is required');
-    req.checkBody('zsk_info', 'invalid zsk_info').notEmpty().withMessage('zsk_info is required');
-    req.checkBody('skhn_cd', 'invalid skhn_cd').notEmpty().withMessage('skhn_cd is required');
+    req.checkBody('data.attributes.kgygish_usr_zskyyk_no', 'invalid kgygish_usr_zskyyk_no')
+        .notEmpty().withMessage('kgygish_usr_zskyyk_no is required');
+    req.checkBody('data.attributes.jei_dt', 'invalid jei_dt').notEmpty().withMessage('jei_dt is required');
+    req.checkBody('data.attributes.kij_ymd', 'invalid kij_ymd').notEmpty().withMessage('kij_ymd is required');
+    req.checkBody('data.attributes.st_cd', 'invalid st_cd').notEmpty().withMessage('st_cd is required');
+    req.checkBody('data.attributes.scren_cd', 'invalid scren_cd').notEmpty().withMessage('scren_cd is required');
+    req.checkBody('data.attributes.knyknr_no_info', 'invalid knyknr_no_info').notEmpty().withMessage('knyknr_no_info is required');
+    req.checkBody('data.attributes.zsk_info', 'invalid zsk_info').notEmpty().withMessage('zsk_info is required');
+    req.checkBody('data.attributes.skhn_cd', 'invalid skhn_cd').notEmpty().withMessage('skhn_cd is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const authorization = sskts.factory.authorization.mvtk.create({
-            owner_from: req.body.owner_from,
-            owner_to: req.body.owner_to,
-            price: parseInt(req.body.price, 10),
-            kgygish_cd: req.body.kgygish_cd,
-            yyk_dvc_typ: req.body.yyk_dvc_typ,
-            trksh_flg: req.body.trksh_flg,
-            kgygish_sstm_zskyyk_no: req.body.kgygish_sstm_zskyyk_no,
-            kgygish_usr_zskyyk_no: req.body.kgygish_usr_zskyyk_no,
-            jei_dt: req.body.jei_dt,
-            kij_ymd: req.body.kij_ymd,
-            st_cd: req.body.st_cd,
-            scren_cd: req.body.scren_cd,
-            knyknr_no_info: req.body.knyknr_no_info,
-            zsk_info: req.body.zsk_info,
-            skhn_cd: req.body.skhn_cd
+            owner_from: req.body.data.attributes.owner_from,
+            owner_to: req.body.data.attributes.owner_to,
+            price: parseInt(req.body.data.attributes.price, 10),
+            kgygish_cd: req.body.data.attributes.kgygish_cd,
+            yyk_dvc_typ: req.body.data.attributes.yyk_dvc_typ,
+            trksh_flg: req.body.data.attributes.trksh_flg,
+            kgygish_sstm_zskyyk_no: req.body.data.attributes.kgygish_sstm_zskyyk_no,
+            kgygish_usr_zskyyk_no: req.body.data.attributes.kgygish_usr_zskyyk_no,
+            jei_dt: req.body.data.attributes.jei_dt,
+            kij_ymd: req.body.data.attributes.kij_ymd,
+            st_cd: req.body.data.attributes.st_cd,
+            scren_cd: req.body.data.attributes.scren_cd,
+            knyknr_no_info: req.body.data.attributes.knyknr_no_info,
+            zsk_info: req.body.data.attributes.zsk_info,
+            skhn_cd: req.body.data.attributes.skhn_cd
         });
         yield sskts.service.transactionWithId.addMvtkAuthorization(req.params.id, authorization)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.OK).json({
@@ -486,18 +520,28 @@ transactionRouter.patch('/:id/enableInquiry', permitScopes_1.default(['admin', '
     }
 }));
 transactionRouter.post('/:id/notifications/email', permitScopes_1.default(['admin', 'transactions.notifications']), (req, _, next) => {
-    req.checkBody('from', 'invalid from').notEmpty().withMessage('from is required');
-    req.checkBody('to', 'invalid to').notEmpty().withMessage('to is required').isEmail();
-    req.checkBody('subject', 'invalid subject').notEmpty().withMessage('subject is required');
-    req.checkBody('content', 'invalid content').notEmpty().withMessage('content is required');
+    // 互換性維持のための対応
+    if (req.body.data === undefined) {
+        req.body.data = {
+            type: 'notifications',
+            attributes: req.body
+        };
+    }
+    req.checkBody('data').notEmpty().withMessage('required');
+    req.checkBody('data.type').equals('notifications').withMessage('must be \'notifications\'');
+    req.checkBody('data.attributes').notEmpty().withMessage('required');
+    req.checkBody('data.attributes.from', 'invalid from').notEmpty().withMessage('from is required');
+    req.checkBody('data.attributes.to', 'invalid to').notEmpty().withMessage('to is required').isEmail();
+    req.checkBody('data.attributes.subject', 'invalid subject').notEmpty().withMessage('subject is required');
+    req.checkBody('data.attributes.content', 'invalid content').notEmpty().withMessage('content is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const notification = sskts.factory.notification.email.create({
-            from: req.body.from,
-            to: req.body.to,
-            subject: req.body.subject,
-            content: req.body.content
+            from: req.body.data.attributes.from,
+            to: req.body.data.attributes.to,
+            subject: req.body.data.attributes.subject,
+            content: req.body.data.attributes.content
         });
         yield sskts.service.transactionWithId.addEmail(req.params.id, notification)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.OK).json({
