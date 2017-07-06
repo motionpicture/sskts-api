@@ -8,23 +8,13 @@ import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as supertest from 'supertest';
 
-import * as app from '../app/app';
-
-let accessToken: string;
-before(async () => {
-    accessToken = await supertest(app)
-        .post('/oauth/token')
-        .send({
-            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-            scope: 'admin'
-        })
-        .then((response) => {
-            return <string>response.body.access_token;
-        });
-});
+import * as app from '../../app/app';
+import * as OAuthScenario from '../scenarios/oauth';
 
 describe('/dev/500', () => {
     it('ok', async () => {
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
         await supertest(app)
             .get('/dev/500')
             .set('authorization', `Bearer ${accessToken}`)
@@ -45,9 +35,7 @@ describe('/dev/environmentVariables', () => {
                 assertion: process.env.SSKTS_API_REFRESH_TOKEN,
                 scopes: ['invalidscope']
             })
-            .then((response) => {
-                return <string>response.body.access_token;
-            });
+            .then((response) => <string>response.body.access_token);
 
         await supertest(app)
             .get('/dev/environmentVariables')
@@ -55,11 +43,13 @@ describe('/dev/environmentVariables', () => {
             .set('Accept', 'application/json')
             .expect(httpStatus.FORBIDDEN)
             .then((response) => {
-                assert.equal(response.text, 'Forbidden');
+                assert.equal(typeof response.text, 'string');
             });
     });
 
     it('ok', async () => {
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
         await supertest(app)
             .get('/dev/environmentVariables')
             .set('authorization', `Bearer ${accessToken}`)
@@ -74,13 +64,12 @@ describe('/dev/environmentVariables', () => {
 
 describe('/dev/mongoose/connect', () => {
     it('ok', async () => {
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
         await supertest(app)
             .get('/dev/mongoose/connect')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
-            .expect(httpStatus.NO_CONTENT)
-            .then((response) => {
-                assert.equal(response.text, '');
-            });
+            .expect(httpStatus.NO_CONTENT);
     });
 });

@@ -6,25 +6,16 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
-import * as mongoose from 'mongoose';
+import * as moment from 'moment';
 import * as supertest from 'supertest';
 
-import * as app from '../app/app';
+import * as app from '../../app/app';
+import * as Resources from '../resources';
+import * as OAuthScenario from '../scenarios/oauth';
 
-const theaterId = '118';
-let connection: mongoose.Connection;
-let accessToken: string;
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    accessToken = await supertest(app)
-        .post('/oauth/token')
-        .send({
-            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-            scope: 'admin'
-        })
-        .then((response) => {
-            return <string>response.body.access_token;
-        });
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 
     // 全て削除してからテスト開始
     const screenAdapter = sskts.adapter.screen(connection);
@@ -35,13 +26,12 @@ describe('GET /screens/:id', () => {
     it('アクセストークン必須', async () => {
         await supertest(app)
             .get('/screens/0000000000')
-            .expect(httpStatus.UNAUTHORIZED)
-            .then((response) => {
-                assert.equal(response.text, 'Unauthorized');
-            });
+            .expect(httpStatus.UNAUTHORIZED);
     });
 
     it('not found', async () => {
+        const accessToken = await OAuthScenario.loginAsAdmin();
+
         await supertest(app)
             .get('/screens/0000000000')
             .set('authorization', `Bearer ${accessToken}`)
@@ -55,15 +45,15 @@ describe('GET /screens/:id', () => {
 
     it('found', async () => {
         // テストデータインポート
-        const theaterAdapter = sskts.adapter.theater(connection);
-        const screenAdapter = sskts.adapter.screen(connection);
-        await sskts.service.master.importTheater(theaterId)(theaterAdapter);
-        await sskts.service.master.importScreens(theaterId)(theaterAdapter, screenAdapter);
+        await Resources.importMasters(moment().add(1, 'days').toDate());
 
+        const screenAdapter = sskts.adapter.screen(connection);
         const screenDoc = await screenAdapter.model.findOne().exec();
         if (screenDoc === null) {
             throw new Error('test data not imported');
         }
+
+        const accessToken = await OAuthScenario.loginAsAdmin();
 
         await supertest(app)
             .get(`/screens/${screenDoc.get('id')}`)
@@ -74,7 +64,6 @@ describe('GET /screens/:id', () => {
             .then((response) => {
                 assert.equal(response.body.data.type, 'screens');
                 assert.equal(response.body.data.id, screenDoc.get('id'));
-                assert.equal(response.body.data.attributes.id, screenDoc.get('id'));
             });
     });
 });

@@ -5,8 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- パスワード認可タイプを追加。ユーザーネームとパスワードでアクセストークンを取得可能なように対応。
+- 会員ログイン必須ミドルウェアを追加。
+- 会員プロフィール取得エンドポイントを追加。
+- 会員プロフィール更新エンドポイントを追加。
+- 会員カード検索エンドポイントを追加。
+- 会員カード追加エンドポイントを追加。
+- 会員カード削除エンドポイントを追加。
+- 会員座席予約資産検索エンドポイントを追加。
 
 ### Changed
+- パフォーマンス在庫状況表現を空席率(%)に変更。
+- 会員としても取引を開始できるように、取引開始サービスを拡張。
+- クライアントユーザー情報を取引に保管するように変更。
+- 各エンドポイントのスコープを具体的に調整。
 
 ### Deprecated
 
@@ -30,11 +42,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 - redisクライアント取得モジュールにおいて、再生成時にクライアントを使えなくなるバグを修正。
+- sskts-domainの依存パッケージをうまくアップデートできない問題を解消。mongoose,redis,coa-service,gmo-serviceをsskts-domainの内部モジュールを使用するように変更。
 
 ### Security
 - [tslint](https://github.com/palantir/tslint)を5.4.3にアップデート。
 - [typescript@2.4.0](https://github.com/Microsoft/TypeScript)にアップデート。
 - 依存パッケージをアップデート。
+- update package [@motionpicture/sskts-domain@^20.1.0](https://www.npmjs.com/package/@motionpicture/sskts-domain)
 
 ## v9.1.0 - 2017-06-12
 ### Added

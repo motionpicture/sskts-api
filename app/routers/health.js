@@ -13,11 +13,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const express = require("express");
 const healthRouter = express.Router();
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
 const redis = require("../../redis");
 const debug = createDebug('sskts-api:healthRouter');
 // 接続確認をあきらめる時間(ミリ秒)
@@ -28,7 +28,7 @@ healthRouter.get('', (_, res, next) => __awaiter(this, void 0, void 0, function*
             new Promise((resolve, reject) => {
                 let givenUpChecking = false;
                 // mongodb接続状態チェック
-                mongoose.connection.db.admin().ping((err, result) => {
+                sskts.mongoose.connection.db.admin().ping((err, result) => {
                     debug('mongodb ping:', err, result);
                     // すでにあきらめていたら何もしない
                     if (givenUpChecking) {

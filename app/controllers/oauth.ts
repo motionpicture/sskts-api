@@ -8,11 +8,15 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
-import * as mongoose from 'mongoose';
 
 const debug = createDebug('sskts-api:controllers:oauth');
 // todo どこで定義するか
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
+
+export const MESSAGE_UNIMPLEMENTED_GRANT_TYPE = 'grant_type not implemented';
+export const MESSAGE_CLIENT_NOT_FOUND = 'client not found';
+export const MESSAGE_INVALID_USERNAME_OR_PASSWORD = 'invalid username or password';
+export const MESSAGE_INVALID_ASSERTION = 'client not foundinvalid assertion';
 
 /**
  * 資格情報インターフェース
@@ -39,20 +43,15 @@ export async function issueCredentials(req: Request): Promise<ICredentials> {
         case 'client_credentials':
             return await issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
 
+        case 'password':
+            return await issueCredentialsByPassword(
+                req.body.client_id, req.body.state, req.body.username, req.body.password, req.body.scopes
+            );
+
         default:
             // 非対応認可タイプ
-            throw new Error('grant_type not implemented');
+            throw new Error(MESSAGE_UNIMPLEMENTED_GRANT_TYPE);
     }
-
-    // usernameとpassword照合
-    // const owner = await chevre.Models.Owner.findOne({ username: req.body.username }).exec();
-    // if (owner === null) {
-    //     throw new Error('owner not found');
-    // }
-    // if (owner.get('password_hash') !== chevre.CommonUtil.createHash(req.body.password, owner.get('password_salt'))) {
-    //     throw new Error('invalid username or password');
-    // }
-
 }
 
 /**
@@ -64,12 +63,15 @@ export async function issueCredentials(req: Request): Promise<ICredentials> {
  */
 export async function issueCredentialsByAssertion(assertion: string, scopes: string[]): Promise<ICredentials> {
     if (assertion !== process.env.SSKTS_API_REFRESH_TOKEN) {
-        throw new Error('invalid assertion');
+        throw new Error(MESSAGE_INVALID_ASSERTION);
     }
 
-    const payload = {
+    // todo clientとstateどうするか
+    const payload = sskts.factory.clientUser.create({
+        client: '',
+        state: '',
         scopes: scopes
-    };
+    });
 
     return await payload2credentials(payload);
 }
@@ -83,17 +85,45 @@ export async function issueCredentialsByAssertion(assertion: string, scopes: str
  */
 export async function issueCredentialsByClient(clientId: string, state: string, scopes: string[]): Promise<ICredentials> {
     // クライアントの存在確認
-    const clientAdapter = sskts.adapter.client(mongoose.connection);
-    const clientDoc = await clientAdapter.clientModel.findById(clientId, 'name').exec();
+    const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+    const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
     if (clientDoc === null) {
-        throw new Error('client not found');
+        throw new Error(MESSAGE_CLIENT_NOT_FOUND);
     }
 
-    const payload = {
-        client: clientDoc.toObject(),
+    const payload = sskts.factory.clientUser.create({
+        client: clientId,
         state: state,
         scopes: scopes
-    };
+    });
+
+    return await payload2credentials(payload);
+}
+
+export async function issueCredentialsByPassword(
+    clientId: string, state: string, username: string, password: string, scopes: string[]
+): Promise<ICredentials> {
+    // クライアントの存在確認
+    const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+    const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
+    if (clientDoc === null) {
+        throw new Error(MESSAGE_CLIENT_NOT_FOUND);
+    }
+
+    // ログイン確認
+    const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+    const memberOption = await sskts.service.member.login(username, password)(ownerAdapter);
+    if (memberOption.isEmpty) {
+        throw new Error(MESSAGE_INVALID_USERNAME_OR_PASSWORD);
+    }
+
+    const owner = memberOption.get();
+    const payload = sskts.factory.clientUser.create({
+        client: clientId,
+        state: state,
+        owner: owner.id,
+        scopes: scopes
+    });
 
     return await payload2credentials(payload);
 }
@@ -104,7 +134,7 @@ export async function issueCredentialsByClient(clientId: string, state: string, 
  * @param {object} payload 変換したいデータ
  * @returns {Promise<ICredentials>} 資格情報
  */
-export async function payload2credentials(payload: object): Promise<ICredentials> {
+export async function payload2credentials(payload: Express.IUser): Promise<ICredentials> {
     return new Promise<ICredentials>((resolve, reject) => {
         debug('signing...', payload);
         jwt.sign(

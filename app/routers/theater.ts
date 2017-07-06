@@ -10,7 +10,6 @@ const theaterRouter = Router();
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { NOT_FOUND } from 'http-status';
-import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -29,7 +28,7 @@ theaterRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.master.findTheater(req.params.id)(sskts.adapter.theater(mongoose.connection));
+            const option = await sskts.service.master.findTheater(req.params.id)(sskts.adapter.theater(sskts.mongoose.connection));
             debug('option is', option);
             option.match({
                 Some: (theater) => {
@@ -62,7 +61,7 @@ theaterRouter.get(
     validator,
     async (__, res, next) => {
         try {
-            const theaterAdapter = sskts.adapter.theater(mongoose.connection);
+            const theaterAdapter = sskts.adapter.theater(sskts.mongoose.connection);
             const theaters = await sskts.service.master.searchTheaters({
             })(theaterAdapter);
 

@@ -14,19 +14,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const createDebug = require("debug");
 const http_status_1 = require("http-status");
+const debug = createDebug('sskts-api:middlewares:validator');
 exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
+        const errors = validatorResult.array().map((mappedRrror) => {
+            return {
+                source: { parameter: mappedRrror.param },
+                title: 'invalid parameter',
+                detail: mappedRrror.msg
+            };
+        });
+        debug('responding...', errors);
         res.status(http_status_1.BAD_REQUEST);
         res.json({
-            errors: validatorResult.array().map((mappedRrror) => {
-                return {
-                    source: { parameter: mappedRrror.param },
-                    title: 'invalid parameter',
-                    detail: mappedRrror.msg
-                };
-            })
+            errors: errors
         });
         return;
     }

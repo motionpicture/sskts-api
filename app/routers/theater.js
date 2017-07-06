@@ -18,7 +18,6 @@ const theaterRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -28,7 +27,7 @@ theaterRouter.get('/:id', permitScopes_1.default(['admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const option = yield sskts.service.master.findTheater(req.params.id)(sskts.adapter.theater(mongoose.connection));
+        const option = yield sskts.service.master.findTheater(req.params.id)(sskts.adapter.theater(sskts.mongoose.connection));
         debug('option is', option);
         option.match({
             Some: (theater) => {
@@ -56,7 +55,7 @@ theaterRouter.get('', permitScopes_1.default(['admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const theaterAdapter = sskts.adapter.theater(mongoose.connection);
+        const theaterAdapter = sskts.adapter.theater(sskts.mongoose.connection);
         const theaters = yield sskts.service.master.searchTheaters({})(theaterAdapter);
         const data = theaters.map((theater) => {
             return {

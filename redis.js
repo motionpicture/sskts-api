@@ -5,14 +5,14 @@
  * @module
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
-const redis = require("redis");
 const debug = createDebug('sskts-api:redis');
 const CONNECT_TIMEOUT_IN_MILLISECONDS = 3600000;
 const MAX_ATTEMPTS = 10;
 let client;
 function createClient() {
-    const c = redis.createClient({
+    const c = sskts.redis.createClient({
         host: process.env.REDIS_HOST,
         port: process.env.REDIS_PORT,
         password: process.env.REDIS_KEY,

@@ -17,38 +17,26 @@ const sskts = require("@motionpicture/sskts-domain");
 const assert = require("assert");
 const httpStatus = require("http-status");
 const moment = require("moment");
-const mongoose = require("mongoose");
 const supertest = require("supertest");
-const app = require("../app/app");
-const TEST_THEATER_ID = '118';
+const app = require("../../app/app");
+const Resources = require("../resources");
+const OAuthScenario = require("../scenarios/oauth");
 let connection;
-let accessToken;
 before(() => __awaiter(this, void 0, void 0, function* () {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    accessToken = yield supertest(app)
-        .post('/oauth/token')
-        .send({
-        assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-        scope: 'admin'
-    })
-        .then((response) => {
-        return response.body.access_token;
-    });
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 }));
 describe('パフォーマンス検索', () => {
     it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/performances')
-            .expect(httpStatus.UNAUTHORIZED)
-            .then((response) => {
-            assert.equal(response.text, 'Unauthorized');
-        });
+            .expect(httpStatus.UNAUTHORIZED);
     }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get('/performances')
             .query({
-            theater: TEST_THEATER_ID,
+            theater: Resources.THEATER_ID,
             day: moment().format('YYYYMMDD')
         })
             .set('authorization', `Bearer ${accessToken}`)
@@ -60,6 +48,7 @@ describe('パフォーマンス検索', () => {
         });
     }));
     it('検索条件に劇場が足りない', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get('/performances')
             .query({
@@ -71,7 +60,6 @@ describe('パフォーマンス検索', () => {
             .expect(httpStatus.BAD_REQUEST)
             .then((response) => {
             assert(Array.isArray(response.body.errors));
-            assert.equal(response.body.errors[0].source.parameter, 'theater');
         });
     }));
 });
@@ -84,12 +72,10 @@ describe('GET /performances/:id', () => {
     it('アクセストークン必須', () => __awaiter(this, void 0, void 0, function* () {
         yield supertest(app)
             .get('/performances/0000000000')
-            .expect(httpStatus.UNAUTHORIZED)
-            .then((response) => {
-            assert.equal(response.text, 'Unauthorized');
-        });
+            .expect(httpStatus.UNAUTHORIZED);
     }));
     it('not found', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get('/performances/0000000000')
             .set('authorization', `Bearer ${accessToken}`)
@@ -102,18 +88,13 @@ describe('GET /performances/:id', () => {
     }));
     it('found', () => __awaiter(this, void 0, void 0, function* () {
         // テストデータインポート
-        const theaterAdapter = sskts.adapter.theater(connection);
-        const filmAdapter = sskts.adapter.film(connection);
-        const screenAdapter = sskts.adapter.screen(connection);
+        yield Resources.importMasters(moment().add(1, 'days').toDate());
         const performanceAdapter = sskts.adapter.performance(connection);
-        yield sskts.service.master.importTheater(TEST_THEATER_ID)(theaterAdapter);
-        yield sskts.service.master.importScreens(TEST_THEATER_ID)(theaterAdapter, screenAdapter);
-        yield sskts.service.master.importFilms(TEST_THEATER_ID)(theaterAdapter, filmAdapter);
-        yield sskts.service.master.importPerformances(TEST_THEATER_ID, '20170301', '20170303')(filmAdapter, screenAdapter, performanceAdapter);
         const performanceDoc = yield performanceAdapter.model.findOne().exec();
         if (performanceDoc === null) {
             throw new Error('test data not imported');
         }
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get(`/performances/${performanceDoc.get('id')}`)
             .set('authorization', `Bearer ${accessToken}`)
@@ -123,7 +104,6 @@ describe('GET /performances/:id', () => {
             .then((response) => {
             assert.equal(response.body.data.type, 'performances');
             assert.equal(response.body.data.id, performanceDoc.get('id'));
-            assert.equal(response.body.data.attributes.id, performanceDoc.get('id'));
         });
     }));
 });

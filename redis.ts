@@ -4,17 +4,17 @@
  * @module
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
-import * as redis from 'redis';
 
 const debug = createDebug('sskts-api:redis');
 const CONNECT_TIMEOUT_IN_MILLISECONDS = 3600000;
 const MAX_ATTEMPTS = 10;
 
-let client: redis.RedisClient | undefined;
+let client: sskts.redis.RedisClient | undefined;
 
 function createClient() {
-    const c = redis.createClient({
+    const c = sskts.redis.createClient({
         host: process.env.REDIS_HOST,
         port: process.env.REDIS_PORT,
         password: process.env.REDIS_KEY,

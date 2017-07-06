@@ -1,68 +1,134 @@
 /**
- * 取引シナリオテスト
+ * 会員としての取引シナリオテスト
  *
  * @ignore
  */
 
-import * as COA from '@motionpicture/coa-service';
-import * as GMO from '@motionpicture/gmo-service';
 import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
 import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
+import * as Resources from '../resources';
+import * as OAuthScenario from './oauth';
+import * as TransactionScenario from './transaction';
 
-const TEST_THEATER_ID = '118';
 const TEST_GMO_SHOP_ID = 'tshop00026096';
 const TEST_GMO_SHOP_PASS = 'xbxmkaa6';
-const TEST_OWNER = {
-    name_first: 'てつ',
-    name_last: 'やまざき',
-    tel: '09012345678',
-    email: process.env.SSKTS_DEVELOPER_EMAIL
-};
 
-let connection: mongoose.Connection;
+interface IPurchaser {
+    username?: string;
+    password?: string;
+    name_first: string;
+    name_last: string;
+    tel: string;
+    email: string;
+    group: sskts.factory.ownerGroup;
+}
+
+let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-
-    // 全て削除してからテスト開始
-    const performanceAdapter = sskts.adapter.performance(connection);
-    await performanceAdapter.model.remove({}).exec();
+    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 
 describe('一般購入シナリオ', () => {
+    let client: Resources.IClient;
+    beforeEach(async () => {
+        client = await Resources.createClient();
+    });
+    afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+    });
+
     it('成立までたどりつけて照会できる', async () => {
         // テストデータインポート
-        const theaterAdapter = sskts.adapter.theater(connection);
-        const filmAdapter = sskts.adapter.film(connection);
-        const screenAdapter = sskts.adapter.screen(connection);
         const performanceAdapter = sskts.adapter.performance(connection);
-        const tomorrow = moment().add(1, 'day');
 
-        await sskts.service.master.importTheater(TEST_THEATER_ID)(theaterAdapter);
-        await sskts.service.master.importScreens(TEST_THEATER_ID)(theaterAdapter, screenAdapter);
-        await sskts.service.master.importFilms(TEST_THEATER_ID)(theaterAdapter, filmAdapter);
-        await sskts.service.master.importPerformances(
-            TEST_THEATER_ID,
-            tomorrow.format('YYYYMMDD'),
-            tomorrow.format('YYYYMMDD')
-        )(filmAdapter, screenAdapter, performanceAdapter);
+        const tomorrow = moment().add(1, 'day');
+        await Resources.importMasters(moment().add(1, 'day').toDate());
 
         // パフォーマンスをひとつ取得して購入フローへ
         const performanceDoc = await performanceAdapter.model.findOne({ day: tomorrow.format('YYYYMMDD') }).exec();
         if (performanceDoc === null) {
-            throw new Error('performance tomorrow not foundF');
+            throw new Error('performance tomorrow not found');
         }
-        const makeInquiryResult = await processTransactionByPerformance(performanceDoc.get(('id')));
+
+        const purchaser = {
+            name_first: 'てつ',
+            name_last: 'やまざき',
+            tel: '09012345678',
+            email: process.env.SSKTS_DEVELOPER_EMAIL,
+            group: sskts.factory.ownerGroup.ANONYMOUS
+        };
+
+        const makeInquiryResult = await processTransactionByPerformance(performanceDoc.get(('id')), purchaser);
         assert.equal(makeInquiryResult.type, 'transactions');
         assert.equal(typeof makeInquiryResult.id, 'string');
         assert.equal(makeInquiryResult.id, makeInquiryResult.attributes.id);
         assert.equal(makeInquiryResult.attributes.status, sskts.factory.transactionStatus.CLOSED);
         assert.equal(makeInquiryResult.attributes.queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+
+        // 匿名所有者が取引に存在することを確認
+        const ownerInTransaction = makeInquiryResult.attributes.owners.find(
+            (owner: any) => owner.group === sskts.factory.ownerGroup.ANONYMOUS
+        );
+        assert.notEqual(ownerInTransaction, undefined);
+    });
+
+    it('途中で会員になり、成立までたどりつけて照会できる、かつ、ログインできる', async () => {
+        // テストデータインポート
+        const performanceAdapter = sskts.adapter.performance(connection);
+
+        const tomorrow = moment().add(1, 'day');
+        await Resources.importMasters(moment().add(1, 'day').toDate());
+
+        // パフォーマンスをひとつ取得して購入フローへ
+        const performanceDoc = await performanceAdapter.model.findOne({ day: tomorrow.format('YYYYMMDD') }).exec();
+        if (performanceDoc === null) {
+            throw new Error('performance tomorrow not found');
+        }
+
+        const purchaser = {
+            username: `sskts-api:test:scenarios:transactions-test:${Date.now().toString()}`,
+            password: 'password',
+            name_first: 'てつ',
+            name_last: 'やまざき',
+            tel: '09012345678',
+            email: process.env.SSKTS_DEVELOPER_EMAIL,
+            group: sskts.factory.ownerGroup.MEMBER
+        };
+
+        // ログインできないことを確認
+        await OAuthScenario.loginAsMember(
+            client.id, 'test', purchaser.username, purchaser.password, ['owners']
+        ).catch((error) => {
+            assert(error instanceof Error);
+        });
+
+        // 取引が成立までたどりつけることを確認
+        const makeInquiryResult = await processTransactionByPerformance(performanceDoc.get(('id')), purchaser);
+        assert.equal(makeInquiryResult.type, 'transactions');
+        assert.equal(typeof makeInquiryResult.id, 'string');
+        assert.equal(makeInquiryResult.id, makeInquiryResult.attributes.id);
+        assert.equal(makeInquiryResult.attributes.status, sskts.factory.transactionStatus.CLOSED);
+        assert.equal(makeInquiryResult.attributes.queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+
+        // 会員所有者が取引に存在することを確認
+        const ownerInTransaction = makeInquiryResult.attributes.owners.find(
+            (owner: any) => owner.group === sskts.factory.ownerGroup.MEMBER
+        );
+        assert.notEqual(ownerInTransaction, undefined);
+
+        // ログインできることを確認
+        await OAuthScenario.loginAsMember(
+            client.id, 'test', purchaser.username, purchaser.password, ['owners']
+        ).then((acccessToken) => {
+            assert.equal(typeof acccessToken, 'string');
+        });
     });
 });
 
@@ -73,56 +139,33 @@ describe('一般購入シナリオ', () => {
  * @returns {any} makeInquiryResult 取引照会結果
  */
 // tslint:disable-next-line:max-func-body-length
-async function processTransactionByPerformance(performanceId: string) {
+async function processTransactionByPerformance(performanceId: string, purchaser: IPurchaser) {
     // アクセストークン取得
-    const accessToken = await supertest(app)
-        .post('/oauth/token')
-        .send({
-            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-            scope: 'admin'
-        })
-        .then((response) => {
-            return <string>response.body.access_token;
-        });
+    const accessToken = await OAuthScenario.loginAsAdmin();
 
     // パフォーマンス取得
     const performance = await supertest(app)
         .get(`/performances/${performanceId}`)
         .set('authorization', `Bearer ${accessToken}`)
         .set('Accept', 'application/json')
-        .then((response) => {
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-
-            return response.body.data.attributes;
-        });
+        .expect(httpStatus.OK)
+        .then((response) => response.body.data.attributes);
 
     // 作品取得
     const film = await supertest(app)
         .get(`/films/${performance.film.id}`)
         .set('authorization', `Bearer ${accessToken}`)
         .set('Accept', 'application/json')
-        .then((response) => {
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-
-            return response.body.data.attributes;
-        });
+        .expect(httpStatus.OK)
+        .then((response) => response.body.data.attributes);
 
     // スクリーン取得
     const screen = await supertest(app)
         .get(`/screens/${performance.screen.id}`)
         .set('authorization', `Bearer ${accessToken}`)
         .set('Accept', 'application/json')
-        .then((response) => {
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-
-            return response.body.data.attributes;
-        });
+        .expect(httpStatus.OK)
+        .then((response) => response.body.data.attributes);
 
     const theaterCode = performance.theater.id;
     const dateJouei = performance.day;
@@ -132,44 +175,13 @@ async function processTransactionByPerformance(performanceId: string) {
     const screenCode = screen.coa_screen_code;
 
     // 取引開始
-    // 30分後のunix timestampを送信する場合
-    // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
-    const transaction = await supertest(app)
-        .post('/transactions/startIfPossible')
-        .set('authorization', `Bearer ${accessToken}`)
-        .set('Accept', 'application/json')
-        .send({
-            expires_at: moment().add(30, 'minutes').unix() // tslint:disable-line:no-magic-numbers
-        })
-        .then((response) => {
-            if (response.status === httpStatus.NOT_FOUND) {
-                throw new Error('please try later');
-            }
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-
-            return response.body.data;
-        });
-
-    const transactionId = <string>transaction.id;
-
-    interface IOwner {
-        id: string;
-        group: string;
-    }
-    const owners: IOwner[] = transaction.attributes.owners;
-    const promoterOwner = owners.find((owner) => {
-        return (owner.group === 'PROMOTER');
-    });
-    const promoterOwnerId = (promoterOwner !== undefined) ? promoterOwner.id : null;
-    const anonymousOwner = owners.find((owner) => {
-        return (owner.group === 'ANONYMOUS');
-    });
-    const anonymousOwnerId = (anonymousOwner !== undefined) ? anonymousOwner.id : null;
+    const startTransactionResult = await TransactionScenario.start(accessToken);
+    const transactionId = <string>startTransactionResult.transactionId;
+    const anonymousOwnerId = <string>startTransactionResult.ownerId;
+    const promoterOwnerId = <string>startTransactionResult.promoterOwnerId;
 
     // 販売可能チケット検索
-    const salesTicketResult = await COA.ReserveService.salesTicket({
+    const salesTicketResult = await sskts.COA.ReserveService.salesTicket({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -178,7 +190,7 @@ async function processTransactionByPerformance(performanceId: string) {
     });
 
     // COA空席確認
-    const getStateReserveSeatResult = await COA.ReserveService.stateReserveSeat({
+    const getStateReserveSeatResult = await sskts.COA.ReserveService.stateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -195,7 +207,7 @@ async function processTransactionByPerformance(performanceId: string) {
     }
 
     // COA仮予約
-    const reserveSeatsTemporarilyResult = await COA.ReserveService.updTmpReserveSeat({
+    const reserveSeatsTemporarilyResult = await sskts.COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -252,16 +264,11 @@ async function processTransactionByPerformance(performanceId: string) {
             }),
             price: totalPrice
         })
-        .then((response) => {
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-
-            return response.body.data.id;
-        });
+        .expect(httpStatus.OK)
+        .then((response) => response.body.data.id);
 
     // COA仮予約削除
-    await COA.ReserveService.delTmpReserve({
+    await sskts.COA.ReserveService.delTmpReserve({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -276,24 +283,19 @@ async function processTransactionByPerformance(performanceId: string) {
         .del(`/transactions/${transactionId}/authorizations/${coaAuthorizationId}`)
         .set('authorization', `Bearer ${accessToken}`)
         .set('Accept', 'application/json')
-        .send({})
-        .then((response) => {
-            if (response.status !== httpStatus.NO_CONTENT) {
-                throw new Error(response.text);
-            }
-        });
+        .expect(httpStatus.NO_CONTENT);
 
     // GMOオーソリ取得
     let orderId = Date.now().toString();
-    const entryTranResult = await GMO.CreditService.entryTran({
+    const entryTranResult = await sskts.GMO.services.credit.entryTran({
         shopId: TEST_GMO_SHOP_ID,
         shopPass: TEST_GMO_SHOP_PASS,
         orderId: orderId,
-        jobCd: GMO.Util.JOB_CD_AUTH,
+        jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
         amount: totalPrice
     });
 
-    await GMO.CreditService.execTran({
+    await sskts.GMO.services.credit.execTran({
         accessId: entryTranResult.accessId,
         accessPass: entryTranResult.accessPass,
         orderId: orderId,
@@ -317,24 +319,19 @@ async function processTransactionByPerformance(performanceId: string) {
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult.accessId,
             gmo_access_pass: entryTranResult.accessPass,
-            gmo_job_cd: GMO.Util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
         })
-        .then((response) => {
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-
-            return response.body.data.id;
-        });
+        .expect(httpStatus.OK)
+        .then((response) => response.body.data.id);
 
     // GMOオーソリ取消
-    await GMO.CreditService.alterTran({
+    await sskts.GMO.services.credit.alterTran({
         shopId: TEST_GMO_SHOP_ID,
         shopPass: TEST_GMO_SHOP_PASS,
         accessId: entryTranResult.accessId,
         accessPass: entryTranResult.accessPass,
-        jobCd: GMO.Util.JOB_CD_VOID
+        jobCd: sskts.GMO.utils.util.JOB_CD_VOID
     });
 
     // GMOオーソリ削除
@@ -342,15 +339,10 @@ async function processTransactionByPerformance(performanceId: string) {
         .del(`/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`)
         .set('authorization', `Bearer ${accessToken}`)
         .set('Accept', 'application/json')
-        .send({})
-        .then((response) => {
-            if (response.status !== httpStatus.NO_CONTENT) {
-                throw new Error(response.text);
-            }
-        });
+        .expect(httpStatus.NO_CONTENT);
 
     // COA仮予約2回目
-    const reserveSeatsTemporarilyResult2 = await COA.ReserveService.updTmpReserveSeat({
+    const reserveSeatsTemporarilyResult2 = await sskts.COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -405,23 +397,19 @@ async function processTransactionByPerformance(performanceId: string) {
             }),
             price: totalPrice
         })
-        .then((response) => {
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-        });
+        .expect(httpStatus.OK);
 
     // GMOオーソリ取得(2回目)
     orderId = Date.now().toString();
-    const entryTranResult2 = await GMO.CreditService.entryTran({
+    const entryTranResult2 = await sskts.GMO.services.credit.entryTran({
         shopId: TEST_GMO_SHOP_ID,
         shopPass: TEST_GMO_SHOP_PASS,
         orderId: orderId,
-        jobCd: GMO.Util.JOB_CD_AUTH,
+        jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
         amount: totalPrice
     });
 
-    await GMO.CreditService.execTran({
+    await sskts.GMO.services.credit.execTran({
         accessId: entryTranResult2.accessId,
         accessPass: entryTranResult2.accessPass,
         orderId: orderId,
@@ -445,31 +433,72 @@ async function processTransactionByPerformance(performanceId: string) {
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult2.accessId,
             gmo_access_pass: entryTranResult2.accessPass,
-            gmo_job_cd: GMO.Util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
         })
-        .then((response) => {
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-        });
+        .expect(httpStatus.OK);
 
-    // 購入者情報登録
-    await supertest(app)
-        .patch(`/transactions/${transactionId}/anonymousOwner`)
-        .set('authorization', `Bearer ${accessToken}`)
-        .set('Accept', 'application/json')
-        .send({
-            name_first: TEST_OWNER.name_first,
-            name_last: TEST_OWNER.name_last,
-            tel: TEST_OWNER.tel,
-            email: TEST_OWNER.email
-        })
-        .then((response) => {
-            if (response.status !== httpStatus.NO_CONTENT) {
-                throw new Error(response.text);
-            }
-        });
+    // 購入者情報登録(会員の場合カード登録も)
+    switch (purchaser.group) {
+        case sskts.factory.ownerGroup.ANONYMOUS:
+            await supertest(app)
+                .patch(`/transactions/${transactionId}/anonymousOwner`)
+                .set('authorization', `Bearer ${accessToken}`)
+                .set('Accept', 'application/json')
+                .send({
+                    name_first: purchaser.name_first,
+                    name_last: purchaser.name_last,
+                    tel: purchaser.tel,
+                    email: purchaser.email
+                })
+                .expect(httpStatus.NO_CONTENT);
+
+            break;
+
+        case sskts.factory.ownerGroup.MEMBER:
+            await supertest(app)
+                .put(`/transactions/${transactionId}/owners/${anonymousOwnerId}`)
+                .set('authorization', `Bearer ${accessToken}`)
+                .set('Accept', 'application/json')
+                .send({
+                    data: {
+                        type: 'owners',
+                        id: anonymousOwnerId,
+                        attributes: {
+                            username: purchaser.username,
+                            password: purchaser.password,
+                            name_first: purchaser.name_first,
+                            name_last: purchaser.name_last,
+                            tel: purchaser.tel,
+                            email: purchaser.email,
+                            group: purchaser.group
+                        }
+                    }
+                })
+                .expect(httpStatus.OK);
+
+            await supertest(app)
+                .post(`/transactions/${transactionId}/owners/${anonymousOwnerId}/cards`)
+                .set('authorization', `Bearer ${accessToken}`)
+                .set('Accept', 'application/json')
+                .send({
+                    data: {
+                        type: 'cards',
+                        attributes: {
+                            card_no: '4111111111111111',
+                            card_pass: '',
+                            expire: '2812',
+                            holder_name: 'AA BB'
+                        }
+                    }
+                })
+                .expect(httpStatus.CREATED);
+
+            break;
+
+        default:
+            break;
+    }
 
     // 照会情報登録(購入番号と電話番号で照会する場合)
     await supertest(app)
@@ -479,13 +508,9 @@ async function processTransactionByPerformance(performanceId: string) {
         .send({
             inquiry_theater: theaterCode,
             inquiry_id: reserveSeatsTemporarilyResult2.tmp_reserve_num,
-            inquiry_pass: TEST_OWNER.tel
+            inquiry_pass: purchaser.tel
         })
-        .then((response) => {
-            if (response.status !== httpStatus.NO_CONTENT) {
-                throw new Error(response.text);
-            }
-        });
+        .expect(httpStatus.NO_CONTENT);
 
     // メール追加
     const content = `
@@ -498,7 +523,7 @@ sskts-api:examples:transaction 様\n
 -------------------------------------------------------------------\n
 \n
 ◆購入番号 ：${reserveSeatsTemporarilyResult2.tmp_reserve_num}\n
-◆電話番号 ：${TEST_OWNER.tel}\n
+◆電話番号 ：${purchaser.tel}\n
 ◆合計金額 ：${totalPrice}円\n
 \n
 ※このアドレスは送信専用です。返信はできませんのであらかじめご了承下さい。\n
@@ -517,13 +542,8 @@ http://www.cinemasunshine.co.jp/\n
             subject: '購入完了',
             content: content
         })
-        .then((response) => {
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-
-            return <string>response.body.data.id;
-        });
+        .expect(httpStatus.OK)
+        .then((response) => <string>response.body.data.id);
 
     // メール削除
     await supertest(app)
@@ -532,11 +552,7 @@ http://www.cinemasunshine.co.jp/\n
         .set('Accept', 'application/json')
         .send({
         })
-        .then((response) => {
-            if (response.status !== httpStatus.NO_CONTENT) {
-                throw new Error(response.text);
-            }
-        });
+        .expect(httpStatus.NO_CONTENT);
 
     // 再度メール追加
     await supertest(app)
@@ -549,11 +565,7 @@ http://www.cinemasunshine.co.jp/\n
             subject: '購入完了',
             content: content
         })
-        .then((response) => {
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-        });
+        .expect(httpStatus.OK);
 
     // 取引成立
     await supertest(app)
@@ -562,11 +574,7 @@ http://www.cinemasunshine.co.jp/\n
         .set('Accept', 'application/json')
         .send({
         })
-        .then((response) => {
-            if (response.status !== httpStatus.NO_CONTENT) {
-                throw new Error(response.text);
-            }
-        });
+        .expect(httpStatus.NO_CONTENT);
 
     // 照会してみる
     return await supertest(app)
@@ -576,17 +584,8 @@ http://www.cinemasunshine.co.jp/\n
         .send({
             inquiry_theater: theaterCode,
             inquiry_id: reserveSeatsTemporarilyResult2.tmp_reserve_num,
-            inquiry_pass: TEST_OWNER.tel
+            inquiry_pass: purchaser.tel
         })
-        .then((response) => {
-            if (response.status === httpStatus.NOT_FOUND) {
-                throw new Error('transaction not found');
-            }
-
-            if (response.status !== httpStatus.OK) {
-                throw new Error(response.text);
-            }
-
-            return response.body.data;
-        });
+        .expect(httpStatus.OK)
+        .then((response) => response.body.data);
 }

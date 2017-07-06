@@ -4,12 +4,12 @@
  * @ignore
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as express from 'express';
 const healthRouter = express.Router();
 
 import * as createDebug from 'debug';
 import { OK } from 'http-status';
-import * as mongoose from 'mongoose';
 
 import * as redis from '../../redis';
 
@@ -26,7 +26,7 @@ healthRouter.get(
                     let givenUpChecking = false;
 
                     // mongodb接続状態チェック
-                    mongoose.connection.db.admin().ping((err, result) => {
+                    sskts.mongoose.connection.db.admin().ping((err, result) => {
                         debug('mongodb ping:', err, result);
                         // すでにあきらめていたら何もしない
                         if (givenUpChecking) {
