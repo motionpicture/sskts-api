@@ -92,7 +92,7 @@ function processTransactionByPerformance(performanceId, client, memberOwner) {
     return __awaiter(this, void 0, void 0, function* () {
         // アクセストークン取得
         const accessToken4client = yield OAuthScenario.loginAsClient(client.id, ['performances.read-only', 'screens.read-only', 'films.read-only'], `state${Date.now().toString()}`);
-        const accessToken4member = yield OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, [
+        const accessToken4member = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, [
             'transactions', 'transactions.authorizations', 'transactions.notifications',
             'owners', 'owners.profile', 'owners.cards', 'owners.assets'
         ]);

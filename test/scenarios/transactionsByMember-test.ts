@@ -102,6 +102,8 @@ async function processTransactionByPerformance(performanceId: string, client: Re
     );
 
     const accessToken4member = await OAuthScenario.loginAsMember(
+        client.id,
+        'test',
         memberOwner.username,
         memberOwner.password,
         [

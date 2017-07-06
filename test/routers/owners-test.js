@@ -37,12 +37,17 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 }));
 describe('会員プロフィール取得', () => {
+    let client;
     let memberOwner;
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         // テスト会員作成
+        client = yield Resources.createClient();
         memberOwner = yield Resources.createMemberOwner();
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
@@ -62,15 +67,7 @@ describe('会員プロフィール取得', () => {
             .expect(httpStatus.FORBIDDEN);
     }));
     it('会員としてログインすれば取得できる', () => __awaiter(this, void 0, void 0, function* () {
-        const accessToken = yield supertest(app)
-            .post('/oauth/token')
-            .send({
-            grant_type: 'password',
-            username: memberOwner.username,
-            password: memberOwner.password,
-            scopes: ['owners.profile']
-        })
-            .then((response) => response.body.access_token);
+        const accessToken = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, ['owners.profile']);
         yield supertest(app)
             .get('/owners/me/profile')
             .set('authorization', `Bearer ${accessToken}`)
@@ -83,15 +80,7 @@ describe('会員プロフィール取得', () => {
         });
     }));
     it('万が一会員情報が消えた場合NotFound', () => __awaiter(this, void 0, void 0, function* () {
-        const accessToken = yield supertest(app)
-            .post('/oauth/token')
-            .send({
-            grant_type: 'password',
-            username: memberOwner.username,
-            password: memberOwner.password,
-            scopes: ['owners.profile']
-        })
-            .then((response) => response.body.access_token);
+        const accessToken = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, ['owners.profile']);
         // テスト会員を強制的に削除
         const ownerAdapter = sskts.adapter.owner(connection);
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
@@ -107,18 +96,23 @@ describe('会員プロフィール取得', () => {
     }));
 });
 describe('プロフィール更新', () => {
+    let client;
     let memberOwner;
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         // テスト会員作成
+        client = yield Resources.createClient();
         memberOwner = yield Resources.createMemberOwner();
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     }));
     it('更新できる', () => __awaiter(this, void 0, void 0, function* () {
-        const accessToken = yield OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['owners.profile']);
+        const accessToken = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, ['owners.profile']);
         const now = Date.now().toString();
         const email = util.format('%s+%s@%s', process.env.SSKTS_DEVELOPER_EMAIL.split('@')[0], now, process.env.SSKTS_DEVELOPER_EMAIL.split('@')[1]);
         const body = {
@@ -150,18 +144,23 @@ describe('プロフィール更新', () => {
     }));
 });
 describe('カード取得', () => {
+    let client;
     let memberOwner;
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         // テスト会員作成
+        client = yield Resources.createClient();
         memberOwner = yield Resources.createMemberOwner();
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     }));
     it('取得できる', () => __awaiter(this, void 0, void 0, function* () {
-        const accessToken = yield OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['owners.cards']);
+        const accessToken = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, ['owners.cards']);
         yield supertest(app)
             .get('/owners/me/cards')
             .set('authorization', `Bearer ${accessToken}`)
@@ -173,26 +172,23 @@ describe('カード取得', () => {
     }));
 });
 describe('カード追加', () => {
+    let client;
     let memberOwner;
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         // テスト会員作成
+        client = yield Resources.createClient();
         memberOwner = yield Resources.createMemberOwner();
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     }));
     it('生のカード情報で追加できる', () => __awaiter(this, void 0, void 0, function* () {
-        const accessToken = yield supertest(app)
-            .post('/oauth/token')
-            .send({
-            grant_type: 'password',
-            username: memberOwner.username,
-            password: memberOwner.password,
-            scopes: ['owners.cards']
-        })
-            .then((response) => response.body.access_token);
+        const accessToken = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, ['owners.cards']);
         yield supertest(app)
             .post('/owners/me/cards')
             .set('authorization', `Bearer ${accessToken}`)
@@ -205,26 +201,23 @@ describe('カード追加', () => {
     }));
 });
 describe('カード削除', () => {
+    let client;
     let memberOwner;
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         // テスト会員作成
+        client = yield Resources.createClient();
         memberOwner = yield Resources.createMemberOwner();
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     }));
     it('追加後、削除できる', () => __awaiter(this, void 0, void 0, function* () {
-        const accessToken = yield supertest(app)
-            .post('/oauth/token')
-            .send({
-            grant_type: 'password',
-            username: memberOwner.username,
-            password: memberOwner.password,
-            scopes: ['owners.cards']
-        })
-            .then((response) => response.body.access_token);
+        const accessToken = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, ['owners.cards']);
         // まず追加
         const addedCardId = yield supertest(app)
             .post('/owners/me/cards')
@@ -242,18 +235,23 @@ describe('カード削除', () => {
     }));
 });
 describe('座席予約資産検索', () => {
+    let client;
     let memberOwner;
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         // テスト会員作成
+        client = yield Resources.createClient();
         memberOwner = yield Resources.createMemberOwner();
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     }));
     it('検索できる', () => __awaiter(this, void 0, void 0, function* () {
-        const accessToken = yield OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['owners.assets']);
+        const accessToken = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, ['owners.assets']);
         yield supertest(app)
             .get('/owners/me/assets/seatReservation')
             .set('authorization', `Bearer ${accessToken}`)

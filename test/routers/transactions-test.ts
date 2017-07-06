@@ -66,15 +66,21 @@ describe('GET /transactions/:id', () => {
 });
 
 describe('取引開始', () => {
+    let client: Resources.IClient;
     let memberOwner: Resources.IMemberOwner;
     beforeEach(async () => {
         process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS = TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
         process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT;
 
+        client = await Resources.createClient();
         // テスト会員作成
         memberOwner = await Resources.createMemberOwner();
     });
     afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
@@ -120,7 +126,9 @@ describe('取引開始', () => {
     });
 
     it('スコープ不足で開始できない', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['xxx']);
+        const accessToken = await OAuthScenario.loginAsMember(
+            client.id, 'test', memberOwner.username, memberOwner.password, ['xxx']
+        );
 
         await supertest(app)
             .post('/transactions/startIfPossible')
@@ -162,7 +170,9 @@ describe('取引開始', () => {
     it('会員所有者として開始できる', async () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
 
-        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['transactions']);
+        const accessToken = await OAuthScenario.loginAsMember(
+            client.id, 'test', memberOwner.username, memberOwner.password, ['transactions']
+        );
 
         const transactionId = await supertest(app)
             .post('/transactions/startIfPossible')

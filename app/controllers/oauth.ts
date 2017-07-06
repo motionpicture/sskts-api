@@ -44,7 +44,9 @@ export async function issueCredentials(req: Request): Promise<ICredentials> {
             return await issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
 
         case 'password':
-            return await issueCredentialsByPassword(req.body.username, req.body.password, req.body.scopes);
+            return await issueCredentialsByPassword(
+                req.body.client_id, req.body.state, req.body.username, req.body.password, req.body.scopes
+            );
 
         default:
             // 非対応認可タイプ
@@ -98,7 +100,16 @@ export async function issueCredentialsByClient(clientId: string, state: string, 
     return await payload2credentials(payload);
 }
 
-export async function issueCredentialsByPassword(username: string, password: string, scopes: string[]): Promise<ICredentials> {
+export async function issueCredentialsByPassword(
+    clientId: string, state: string, username: string, password: string, scopes: string[]
+): Promise<ICredentials> {
+    // クライアントの存在確認
+    const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+    const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
+    if (clientDoc === null) {
+        throw new Error(MESSAGE_CLIENT_NOT_FOUND);
+    }
+
     // ログイン確認
     const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
     const memberOption = await sskts.service.member.login(username, password)(ownerAdapter);
@@ -106,11 +117,10 @@ export async function issueCredentialsByPassword(username: string, password: str
         throw new Error(MESSAGE_INVALID_USERNAME_OR_PASSWORD);
     }
 
-    // todo clientとstateも追加
     const owner = memberOption.get();
     const payload = sskts.factory.clientUser.create({
-        client: '',
-        state: '',
+        client: clientId,
+        state: state,
         owner: owner.id,
         scopes: scopes
     });

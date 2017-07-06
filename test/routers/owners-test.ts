@@ -31,12 +31,18 @@ before(async () => {
 });
 
 describe('会員プロフィール取得', () => {
+    let client: Resources.IClient;
     let memberOwner: Resources.IMemberOwner;
     beforeEach(async () => {
         // テスト会員作成
+        client = await Resources.createClient();
         memberOwner = await Resources.createMemberOwner();
     });
     afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
@@ -60,15 +66,9 @@ describe('会員プロフィール取得', () => {
     });
 
     it('会員としてログインすれば取得できる', async () => {
-        const accessToken = await supertest(app)
-            .post('/oauth/token')
-            .send({
-                grant_type: 'password',
-                username: memberOwner.username,
-                password: memberOwner.password,
-                scopes: ['owners.profile']
-            })
-            .then((response) => <string>response.body.access_token);
+        const accessToken = await OAuthScenario.loginAsMember(
+            client.id, 'test', memberOwner.username, memberOwner.password, ['owners.profile']
+        );
 
         await supertest(app)
             .get('/owners/me/profile')
@@ -83,15 +83,9 @@ describe('会員プロフィール取得', () => {
     });
 
     it('万が一会員情報が消えた場合NotFound', async () => {
-        const accessToken = await supertest(app)
-            .post('/oauth/token')
-            .send({
-                grant_type: 'password',
-                username: memberOwner.username,
-                password: memberOwner.password,
-                scopes: ['owners.profile']
-            })
-            .then((response) => <string>response.body.access_token);
+        const accessToken = await OAuthScenario.loginAsMember(
+            client.id, 'test', memberOwner.username, memberOwner.password, ['owners.profile']
+        );
 
         // テスト会員を強制的に削除
         const ownerAdapter = sskts.adapter.owner(connection);
@@ -110,19 +104,27 @@ describe('会員プロフィール取得', () => {
 });
 
 describe('プロフィール更新', () => {
+    let client: Resources.IClient;
     let memberOwner: Resources.IMemberOwner;
     beforeEach(async () => {
         // テスト会員作成
+        client = await Resources.createClient();
         memberOwner = await Resources.createMemberOwner();
     });
     afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     });
 
     it('更新できる', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['owners.profile']);
+        const accessToken = await OAuthScenario.loginAsMember(
+            client.id, 'test', memberOwner.username, memberOwner.password, ['owners.profile']
+        );
 
         const now = Date.now().toString();
         const email = util.format(
@@ -163,19 +165,27 @@ describe('プロフィール更新', () => {
 });
 
 describe('カード取得', () => {
+    let client: Resources.IClient;
     let memberOwner: Resources.IMemberOwner;
     beforeEach(async () => {
         // テスト会員作成
+        client = await Resources.createClient();
         memberOwner = await Resources.createMemberOwner();
     });
     afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     });
 
     it('取得できる', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['owners.cards']);
+        const accessToken = await OAuthScenario.loginAsMember(
+            client.id, 'test', memberOwner.username, memberOwner.password, ['owners.cards']
+        );
 
         await supertest(app)
             .get('/owners/me/cards')
@@ -189,27 +199,27 @@ describe('カード取得', () => {
 });
 
 describe('カード追加', () => {
+    let client: Resources.IClient;
     let memberOwner: Resources.IMemberOwner;
     beforeEach(async () => {
         // テスト会員作成
+        client = await Resources.createClient();
         memberOwner = await Resources.createMemberOwner();
     });
     afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     });
 
     it('生のカード情報で追加できる', async () => {
-        const accessToken = await supertest(app)
-            .post('/oauth/token')
-            .send({
-                grant_type: 'password',
-                username: memberOwner.username,
-                password: memberOwner.password,
-                scopes: ['owners.cards']
-            })
-            .then((response) => <string>response.body.access_token);
+        const accessToken = await OAuthScenario.loginAsMember(
+            client.id, 'test', memberOwner.username, memberOwner.password, ['owners.cards']
+        );
 
         await supertest(app)
             .post('/owners/me/cards')
@@ -224,27 +234,27 @@ describe('カード追加', () => {
 });
 
 describe('カード削除', () => {
+    let client: Resources.IClient;
     let memberOwner: Resources.IMemberOwner;
     beforeEach(async () => {
         // テスト会員作成
+        client = await Resources.createClient();
         memberOwner = await Resources.createMemberOwner();
     });
     afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     });
 
     it('追加後、削除できる', async () => {
-        const accessToken = await supertest(app)
-            .post('/oauth/token')
-            .send({
-                grant_type: 'password',
-                username: memberOwner.username,
-                password: memberOwner.password,
-                scopes: ['owners.cards']
-            })
-            .then((response) => <string>response.body.access_token);
+        const accessToken = await OAuthScenario.loginAsMember(
+            client.id, 'test', memberOwner.username, memberOwner.password, ['owners.cards']
+        );
 
         // まず追加
         const addedCardId = await supertest(app)
@@ -265,19 +275,27 @@ describe('カード削除', () => {
 });
 
 describe('座席予約資産検索', () => {
+    let client: Resources.IClient;
     let memberOwner: Resources.IMemberOwner;
     beforeEach(async () => {
         // テスト会員作成
+        client = await Resources.createClient();
         memberOwner = await Resources.createMemberOwner();
     });
     afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     });
 
     it('検索できる', async () => {
-        const accessToken = await OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['owners.assets']);
+        const accessToken = await OAuthScenario.loginAsMember(
+            client.id, 'test', memberOwner.username, memberOwner.password, ['owners.assets']
+        );
 
         await supertest(app)
             .get('/owners/me/assets/seatReservation')

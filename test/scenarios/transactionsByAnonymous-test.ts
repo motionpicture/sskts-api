@@ -34,6 +34,16 @@ before(async () => {
 });
 
 describe('一般購入シナリオ', () => {
+    let client: Resources.IClient;
+    beforeEach(async () => {
+        client = await Resources.createClient();
+    });
+    afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+    });
+
     it('成立までたどりつけて照会できる', async () => {
         // テストデータインポート
         const performanceAdapter = sskts.adapter.performance(connection);
@@ -93,10 +103,11 @@ describe('一般購入シナリオ', () => {
         };
 
         // ログインできないことを確認
-        await OAuthScenario.loginAsMember(purchaser.username, purchaser.password, ['owners'])
-            .catch((error) => {
-                assert(error instanceof Error);
-            });
+        await OAuthScenario.loginAsMember(
+            client.id, 'test', purchaser.username, purchaser.password, ['owners']
+        ).catch((error) => {
+            assert(error instanceof Error);
+        });
 
         // 取引が成立までたどりつけることを確認
         const makeInquiryResult = await processTransactionByPerformance(performanceDoc.get(('id')), purchaser);
@@ -113,10 +124,11 @@ describe('一般購入シナリオ', () => {
         assert.notEqual(ownerInTransaction, undefined);
 
         // ログインできることを確認
-        await OAuthScenario.loginAsMember(purchaser.username, purchaser.password, ['owners'])
-            .then((acccessToken) => {
-                assert.equal(typeof acccessToken, 'string');
-            });
+        await OAuthScenario.loginAsMember(
+            client.id, 'test', purchaser.username, purchaser.password, ['owners']
+        ).then((acccessToken) => {
+            assert.equal(typeof acccessToken, 'string');
+        });
     });
 });
 

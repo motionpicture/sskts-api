@@ -62,17 +62,23 @@ export async function loginAsClient(clientId: string, scopes: string[], state: s
  * 会員としてログインする
  *
  * @export
+ * @param {string} clientId クライアントID
+ * @param {string} state 状態
  * @param {string} username ユーザーネーム
  * @param {string} password パスワード
  * @param {string[]} scopes スコープリスト
  * @returns {Promise<string>} アクセストークン
  */
-export async function loginAsMember(username: string, password: string, scopes: string[]): Promise<string> {
+export async function loginAsMember(
+    clientId: string, state: string, username: string, password: string, scopes: string[]
+): Promise<string> {
     return await supertest(app)
         .post('/oauth/token')
         .send({
             grant_type: 'password',
             scopes: scopes,
+            client_id: clientId,
+            state: state,
             username: username,
             password: password
         })

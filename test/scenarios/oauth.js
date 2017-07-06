@@ -72,18 +72,22 @@ exports.loginAsClient = loginAsClient;
  * 会員としてログインする
  *
  * @export
+ * @param {string} clientId クライアントID
+ * @param {string} state 状態
  * @param {string} username ユーザーネーム
  * @param {string} password パスワード
  * @param {string[]} scopes スコープリスト
  * @returns {Promise<string>} アクセストークン
  */
-function loginAsMember(username, password, scopes) {
+function loginAsMember(clientId, state, username, password, scopes) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield supertest(app)
             .post('/oauth/token')
             .send({
             grant_type: 'password',
             scopes: scopes,
+            client_id: clientId,
+            state: state,
             username: username,
             password: password
         })

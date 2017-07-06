@@ -37,7 +37,7 @@ function issueCredentials(req) {
             case 'client_credentials':
                 return yield issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
             case 'password':
-                return yield issueCredentialsByPassword(req.body.username, req.body.password, req.body.scopes);
+                return yield issueCredentialsByPassword(req.body.client_id, req.body.state, req.body.username, req.body.password, req.body.scopes);
             default:
                 // 非対応認可タイプ
                 throw new Error(exports.MESSAGE_UNIMPLEMENTED_GRANT_TYPE);
@@ -91,19 +91,24 @@ function issueCredentialsByClient(clientId, state, scopes) {
     });
 }
 exports.issueCredentialsByClient = issueCredentialsByClient;
-function issueCredentialsByPassword(username, password, scopes) {
+function issueCredentialsByPassword(clientId, state, username, password, scopes) {
     return __awaiter(this, void 0, void 0, function* () {
+        // クライアントの存在確認
+        const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+        const clientDoc = yield clientAdapter.clientModel.findById(clientId, '_id').exec();
+        if (clientDoc === null) {
+            throw new Error(exports.MESSAGE_CLIENT_NOT_FOUND);
+        }
         // ログイン確認
         const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
         const memberOption = yield sskts.service.member.login(username, password)(ownerAdapter);
         if (memberOption.isEmpty) {
             throw new Error(exports.MESSAGE_INVALID_USERNAME_OR_PASSWORD);
         }
-        // todo clientとstateも追加
         const owner = memberOption.get();
         const payload = sskts.factory.clientUser.create({
-            client: '',
-            state: '',
+            client: clientId,
+            state: state,
             owner: owner.id,
             scopes: scopes
         });

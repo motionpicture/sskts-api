@@ -29,6 +29,15 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
 }));
 describe('一般購入シナリオ', () => {
+    let client;
+    beforeEach(() => __awaiter(this, void 0, void 0, function* () {
+        client = yield Resources.createClient();
+    }));
+    afterEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+    }));
     it('成立までたどりつけて照会できる', () => __awaiter(this, void 0, void 0, function* () {
         // テストデータインポート
         const performanceAdapter = sskts.adapter.performance(connection);
@@ -76,8 +85,7 @@ describe('一般購入シナリオ', () => {
             group: sskts.factory.ownerGroup.MEMBER
         };
         // ログインできないことを確認
-        yield OAuthScenario.loginAsMember(purchaser.username, purchaser.password, ['owners'])
-            .catch((error) => {
+        yield OAuthScenario.loginAsMember(client.id, 'test', purchaser.username, purchaser.password, ['owners']).catch((error) => {
             assert(error instanceof Error);
         });
         // 取引が成立までたどりつけることを確認
@@ -91,8 +99,7 @@ describe('一般購入シナリオ', () => {
         const ownerInTransaction = makeInquiryResult.attributes.owners.find((owner) => owner.group === sskts.factory.ownerGroup.MEMBER);
         assert.notEqual(ownerInTransaction, undefined);
         // ログインできることを確認
-        yield OAuthScenario.loginAsMember(purchaser.username, purchaser.password, ['owners'])
-            .then((acccessToken) => {
+        yield OAuthScenario.loginAsMember(client.id, 'test', purchaser.username, purchaser.password, ['owners']).then((acccessToken) => {
             assert.equal(typeof acccessToken, 'string');
         });
     }));

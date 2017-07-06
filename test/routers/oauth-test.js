@@ -19,6 +19,7 @@ const httpStatus = require("http-status");
 const jwt = require("jsonwebtoken");
 const supertest = require("supertest");
 const app = require("../../app/app");
+const Resources = require("../resources");
 let TEST_CLIENT_ID;
 let TEST_USERNAME;
 const TEST_PASSWORD = 'password';
@@ -38,6 +39,8 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     TEST_BODY_PASSWORD = {
         grant_type: 'password',
         scopes: ['test'],
+        client_id: '',
+        state: 'test',
         username: TEST_USERNAME,
         password: TEST_PASSWORD
     };
@@ -193,6 +196,16 @@ describe('クライアント情報認可', () => {
     }));
 });
 describe('パスワード認可', () => {
+    let client;
+    beforeEach(() => __awaiter(this, void 0, void 0, function* () {
+        client = yield Resources.createClient();
+        TEST_BODY_PASSWORD.client_id = client.id;
+    }));
+    afterEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+    }));
     it('スコープ不足ならBAD_REQUEST', () => __awaiter(this, void 0, void 0, function* () {
         const data = Object.assign({}, TEST_BODY_PASSWORD, { scopes: undefined });
         yield supertest(app)

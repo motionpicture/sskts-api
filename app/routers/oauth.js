@@ -40,6 +40,8 @@ oauthRouter.post('/token', (req, _, next) => {
             req.checkBody('state', 'invalid state').notEmpty().withMessage('state is required');
             break;
         case 'password':
+            req.checkBody('client_id', 'invalid client_id').notEmpty().withMessage('client_id is required');
+            req.checkBody('state', 'invalid state').notEmpty().withMessage('state is required');
             req.checkBody('username', 'invalid username').notEmpty().withMessage('username is required');
             req.checkBody('password', 'invalid password').notEmpty().withMessage('password is required');
             break;

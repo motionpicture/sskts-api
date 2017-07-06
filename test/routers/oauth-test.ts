@@ -11,6 +11,7 @@ import * as jwt from 'jsonwebtoken';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
+import * as Resources from '../resources';
 
 let TEST_CLIENT_ID: string;
 let TEST_USERNAME: string;
@@ -33,6 +34,8 @@ before(async () => {
     TEST_BODY_PASSWORD = {
         grant_type: 'password',
         scopes: ['test'],
+        client_id: '',
+        state: 'test',
         username: TEST_USERNAME,
         password: TEST_PASSWORD
     };
@@ -201,6 +204,17 @@ describe('クライアント情報認可', () => {
 });
 
 describe('パスワード認可', () => {
+    let client: Resources.IClient;
+    beforeEach(async () => {
+        client = await Resources.createClient();
+        TEST_BODY_PASSWORD.client_id = client.id;
+    });
+    afterEach(async () => {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        await clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
+    });
+
     it('スコープ不足ならBAD_REQUEST', async () => {
         const data = { ...TEST_BODY_PASSWORD, ...{ scopes: undefined } };
         await supertest(app)

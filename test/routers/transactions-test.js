@@ -66,14 +66,19 @@ describe('GET /transactions/:id', () => {
     }));
 });
 describe('取引開始', () => {
+    let client;
     let memberOwner;
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS = TEST_TRANSACTIONS_COUNT_UNIT_IN_SECONDS;
         process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT = TEST_NUMBER_OF_TRANSACTIONS_PER_UNIT;
+        client = yield Resources.createClient();
         // テスト会員作成
         memberOwner = yield Resources.createMemberOwner();
     }));
     afterEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テストクライアント削除
+        const clientAdapter = sskts.adapter.client(connection);
+        yield clientAdapter.clientModel.findByIdAndRemove(client.id).exec();
         // テスト会員削除
         const ownerAdapter = sskts.adapter.owner(connection);
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
@@ -112,7 +117,7 @@ describe('取引開始', () => {
         });
     }));
     it('スコープ不足で開始できない', () => __awaiter(this, void 0, void 0, function* () {
-        const accessToken = yield OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['xxx']);
+        const accessToken = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, ['xxx']);
         yield supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${accessToken}`)
@@ -146,7 +151,7 @@ describe('取引開始', () => {
     }));
     it('会員所有者として開始できる', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = sskts.adapter.transaction(connection);
-        const accessToken = yield OAuthScenario.loginAsMember(memberOwner.username, memberOwner.password, ['transactions']);
+        const accessToken = yield OAuthScenario.loginAsMember(client.id, 'test', memberOwner.username, memberOwner.password, ['transactions']);
         const transactionId = yield supertest(app)
             .post('/transactions/startIfPossible')
             .set('authorization', `Bearer ${accessToken}`)
