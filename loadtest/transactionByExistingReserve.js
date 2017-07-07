@@ -15,7 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const GMO = require("@motionpicture/gmo-service");
+const sskts = require("@motionpicture/sskts-domain");
 const httpStatus = require("http-status");
 const moment = require("moment");
 const request = require("request-promise-native");
@@ -139,8 +139,8 @@ function main(coaSeatAuthorization, makeInrquiryResult) {
                 gmo_amount: totalPrice,
                 gmo_access_id: gmoAuthResult.accessId,
                 gmo_access_pass: gmoAuthResult.accessPass,
-                gmo_job_cd: GMO.Util.JOB_CD_AUTH,
-                gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
+                gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+                gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
             },
             json: true,
             simple: false,
@@ -267,7 +267,7 @@ let count = 0;
 let numberOfClosedTransactions = 0;
 let numberOfProcessedTransactions = 0;
 const MAX_NUBMER_OF_PARALLEL_TASKS = 1800;
-const INTERVAL_MILLISECONDS = 500;
+const INTERVAL_MILLISECONDS = 1000;
 const results = [];
 // まず普通にひとつの取引プロセス
 processOneTransaction_1.default({

@@ -18,6 +18,9 @@ export default [
     ),
     (req: Request, __: Response, next: NextFunction) => {
         debug('req.user:', req.user);
+        // todo getUserメソッドを宣言する場所はここでよい？
+        // oauthを通過した場合のみ{req.user}を使用するはずなので、これで問題ないはず。
+        req.getUser = () => req.user;
 
         next();
     }

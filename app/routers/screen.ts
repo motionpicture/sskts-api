@@ -3,12 +3,12 @@
  *
  * @ignore
  */
+
 import { Router } from 'express';
 const screenRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
 import { NOT_FOUND } from 'http-status';
-import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -18,14 +18,14 @@ screenRouter.use(authentication);
 
 screenRouter.get(
     '/:id',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'screens', 'screens.read-only']),
     (_1, _2, next) => {
         next();
     },
     validator,
     async (req, res, next) => {
         try {
-            const option = await sskts.service.master.findScreen(req.params.id)(sskts.adapter.screen(mongoose.connection));
+            const option = await sskts.service.master.findScreen(req.params.id)(sskts.adapter.screen(sskts.mongoose.connection));
             option.match({
                 Some: (screen) => {
                     res.json({

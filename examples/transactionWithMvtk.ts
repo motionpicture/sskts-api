@@ -3,7 +3,8 @@
  *
  * @ignore
  */
-import * as COA from '@motionpicture/coa-service';
+
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
 import * as moment from 'moment';
@@ -34,7 +35,7 @@ async function main() {
     // パフォーマンス取得
     debug('finding performance...');
     response = await request.get({
-        url: `${API_ENDPOINT}/performances/` + performanceId,
+        url: `${API_ENDPOINT}/performances/${performanceId}`,
         auth: { bearer: accessToken },
         json: true,
         simple: false,
@@ -49,7 +50,7 @@ async function main() {
     // 作品取得
     debug('finding film...');
     response = await request.get({
-        url: `${API_ENDPOINT}/films/` + performance.film.id,
+        url: `${API_ENDPOINT}/films/${performance.film.id}`,
         auth: { bearer: accessToken },
         json: true,
         simple: false,
@@ -64,7 +65,7 @@ async function main() {
     // スクリーン取得
     debug('finding screen...');
     response = await request.get({
-        url: `${API_ENDPOINT}/screens/` + performance.screen.id,
+        url: `${API_ENDPOINT}/screens/${performance.screen.id}`,
         auth: { bearer: accessToken },
         json: true,
         simple: false,
@@ -121,16 +122,17 @@ async function main() {
     const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
 
     // 販売可能チケット検索
-    const salesTicketResult = await COA.ReserveService.salesTicket({
+    const salesTicketResult = await sskts.COA.ReserveService.salesTicket({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
         title_branch_num: titleBranchNum,
-        time_begin: timeBegin
+        time_begin: timeBegin,
+        flg_member: '0'
     });
 
     // COA空席確認
-    const getStateReserveSeatResult = await COA.ReserveService.stateReserveSeat({
+    const getStateReserveSeatResult = await sskts.COA.ReserveService.stateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -149,7 +151,7 @@ async function main() {
     }
 
     // COA仮予約
-    const reserveSeatsTemporarilyResult = await COA.ReserveService.updTmpReserveSeat({
+    const reserveSeatsTemporarilyResult = await sskts.COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -240,7 +242,7 @@ async function main() {
     }
 
     // COA本予約
-    // const updateReserveResult = await COA.ReserveService.updReserve({
+    // const updateReserveResult = await sskts.COA.ReserveService.updReserve({
     //     theater_code: theaterCode,
     //     date_jouei: dateJouei,
     //     title_code: titleCode,
@@ -299,7 +301,7 @@ async function main() {
                 }
             ],
             zsk_info: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
-                return { zsk_cd: tmpReserve.seat_num }
+                return { zsk_cd: tmpReserve.seat_num };
             }),
             skhn_cd: '1622700'
         },

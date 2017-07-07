@@ -13,8 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const COA = require("@motionpicture/coa-service");
-const GMO = require("@motionpicture/gmo-service");
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const httpStatus = require("http-status");
 const moment = require("moment");
@@ -139,16 +138,17 @@ exports.default = (config) => __awaiter(this, void 0, void 0, function* () {
     });
     const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
     // 販売可能チケット検索
-    const salesTicketResult = yield COA.ReserveService.salesTicket({
+    const salesTicketResult = yield sskts.COA.ReserveService.salesTicket({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
         title_branch_num: titleBranchNum,
-        time_begin: timeBegin
+        time_begin: timeBegin,
+        flg_member: '0'
     });
     debug('salesTicketResult:', salesTicketResult);
     // COA空席確認
-    const getStateReserveSeatResult = yield COA.ReserveService.stateReserveSeat({
+    const getStateReserveSeatResult = yield sskts.COA.ReserveService.stateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -167,7 +167,7 @@ exports.default = (config) => __awaiter(this, void 0, void 0, function* () {
     }
     const totalPrice = salesTicketResult[0].sale_price;
     // COA仮予約
-    const reserveSeatsTemporarilyResult2 = yield COA.ReserveService.updTmpReserveSeat({
+    const reserveSeatsTemporarilyResult2 = yield sskts.COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -236,14 +236,14 @@ exports.default = (config) => __awaiter(this, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
     const orderId = `${moment().format('YYYYMMDD')}${config.theaterId}${`00000000${coaSeatAuthorization.coa_tmp_reserve_num}`.slice(-8)}00`;
     // GMOオーソリ取得
-    const entryTranResult2 = yield GMO.CreditService.entryTran({
+    const entryTranResult2 = yield sskts.GMO.services.credit.entryTran({
         shopId: config.gmoShopId,
         shopPass: config.gmoShopPass,
         orderId: orderId,
-        jobCd: GMO.Util.JOB_CD_AUTH,
+        jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
         amount: totalPrice
     });
-    const execTranResult2 = yield GMO.CreditService.execTran({
+    const execTranResult2 = yield sskts.GMO.services.credit.execTran({
         accessId: entryTranResult2.accessId,
         accessPass: entryTranResult2.accessPass,
         orderId: orderId,
@@ -267,8 +267,8 @@ exports.default = (config) => __awaiter(this, void 0, void 0, function* () {
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult2.accessId,
             gmo_access_pass: entryTranResult2.accessPass,
-            gmo_job_cd: GMO.Util.JOB_CD_AUTH,
-            gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
+            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
         },
         json: true,
         resolveWithFullResponse: true

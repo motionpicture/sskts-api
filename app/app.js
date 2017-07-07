@@ -4,6 +4,7 @@
  *
  * @ignore
  */
+const sskts = require("@motionpicture/sskts-domain");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const createDebug = require("debug");
@@ -11,7 +12,6 @@ const express = require("express");
 const expressValidator = require("express-validator"); // tslint:disable-line:no-require-imports
 const helmet = require("helmet");
 const i18n = require("i18n");
-const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const basicAuth_1 = require("./middlewares/basicAuth");
 const errorHandler_1 = require("./middlewares/errorHandler");
@@ -20,6 +20,7 @@ const dev_1 = require("./routers/dev");
 const film_1 = require("./routers/film");
 const health_1 = require("./routers/health");
 const oauth_1 = require("./routers/oauth");
+const owner_1 = require("./routers/owner");
 const performance_1 = require("./routers/performance");
 const screen_1 = require("./routers/screen");
 const theater_1 = require("./routers/theater");
@@ -41,6 +42,14 @@ app.use(helmet.hsts({
     maxAge: SIXTY_DAYS_IN_SECONDS,
     includeSubdomains: false
 }));
+// api version
+// tslint:disable-next-line:no-require-imports no-var-requires
+const packageInfo = require('../package.json');
+debug('packageInfo is', packageInfo);
+app.use((__, res, next) => {
+    res.setHeader('x-api-verion', packageInfo.version);
+    next();
+});
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
     app.get('/dev/uncaughtexception', (req) => {
@@ -72,12 +81,13 @@ i18n.configure({
 });
 // i18n の設定を有効化
 app.use(i18n.init);
-// Use native promises
-mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
+// @types/mongooseが古くて、新しいMongoDBクライアントの接続オプションに適合していない
+// 型定義の更新待ち
+sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 // routers
 app.use('/health', health_1.default);
 app.use('/oauth', oauth_1.default);
+app.use('/owners', owner_1.default);
 app.use('/theaters', theater_1.default);
 app.use('/films', film_1.default);
 app.use('/screens', screen_1.default);

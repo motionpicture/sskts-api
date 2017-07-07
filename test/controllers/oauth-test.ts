@@ -6,7 +6,6 @@
 
 import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
-import * as mongoose from 'mongoose';
 
 import * as oauthController from '../../app/controllers/oauth';
 
@@ -32,7 +31,7 @@ describe('oauthコントローラー 主張から資格情報を発行する', (
 
 describe('oauthコントローラー クライアントIDから資格情報を発行する', () => {
     before(() => {
-        mongoose.connect(process.env.MONGOLAB_URI);
+        sskts.mongoose.connect(process.env.MONGOLAB_URI);
     });
 
     it('クライアントが存在しないので発行できない', async () => {
@@ -54,9 +53,9 @@ describe('oauthコントローラー クライアントIDから資格情報を�
             name: { en: '', ja: '' },
             description: { en: '', ja: '' },
             notes: { en: '', ja: '' },
-            email: 'test@example.com'
+            email: process.env.SSKTS_DEVELOPER_EMAIL
         });
-        const clientAdapter = sskts.adapter.client(mongoose.connection);
+        const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
         await clientAdapter.clientModel.findByIdAndUpdate(client.id, client, { new: true, upsert: true }).exec();
 
         const credentials = await oauthController.issueCredentialsByClient(client.id, 'test', ['admin']);
@@ -71,7 +70,12 @@ describe('oauthコントローラー クライアントIDから資格情報を�
 
 describe('oauthコントローラー 任意のデータをJWTを使用して資格情報へ変換する', () => {
     it('変換できる', async () => {
-        const credentials = await oauthController.payload2credentials({});
+        const payload = sskts.factory.clientUser.create({
+            client: 'xxx',
+            state: 'xxx',
+            scopes: ['xxx']
+        });
+        const credentials = await oauthController.payload2credentials(payload);
 
         assert.equal(typeof credentials.access_token, 'string');
         assert.equal(typeof credentials.expires_in, 'number');

@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * 取引フローテストスクリプト
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,13 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * 取引フローテストスクリプト
- *
- * @ignore
- */
-const COA = require("@motionpicture/coa-service");
-const GMO = require("@motionpicture/gmo-service");
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const httpStatus = require("http-status");
 const moment = require("moment");
@@ -27,7 +26,7 @@ function main() {
         let response;
         const gmoShopId = 'tshop00026096';
         const gmoShopPass = 'xbxmkaa6';
-        const performanceId = '11820170608993000401240'; // パフォーマンスID 空席なくなったら変更する
+        const performanceId = '11820170704995000601500'; // パフォーマンスID 空席なくなったら変更する
         // アクセストークン取得
         response = yield request.post({
             url: `${API_ENDPOINT}/oauth/token`,
@@ -121,16 +120,17 @@ function main() {
         });
         const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
         // 販売可能チケット検索
-        const salesTicketResult = yield COA.ReserveService.salesTicket({
+        const salesTicketResult = yield sskts.COA.ReserveService.salesTicket({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
             title_branch_num: titleBranchNum,
-            time_begin: timeBegin
+            time_begin: timeBegin,
+            flg_member: '0'
         });
         debug('salesTicketResult:', salesTicketResult);
         // COA空席確認
-        const getStateReserveSeatResult = yield COA.ReserveService.stateReserveSeat({
+        const getStateReserveSeatResult = yield sskts.COA.ReserveService.stateReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -148,7 +148,7 @@ function main() {
             throw new Error('no available seats.');
         }
         // COA仮予約
-        const reserveSeatsTemporarilyResult = yield COA.ReserveService.updTmpReserveSeat({
+        const reserveSeatsTemporarilyResult = yield sskts.COA.ReserveService.updTmpReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -214,7 +214,7 @@ function main() {
         }
         const coaAuthorizationId = response.body.data.id;
         // COA仮予約削除
-        yield COA.ReserveService.delTmpReserve({
+        yield sskts.COA.ReserveService.delTmpReserve({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -240,14 +240,14 @@ function main() {
         }
         // GMOオーソリ取得
         let orderId = Date.now().toString();
-        const entryTranResult = yield GMO.CreditService.entryTran({
+        const entryTranResult = yield sskts.GMO.CreditService.entryTran({
             shopId: gmoShopId,
             shopPass: gmoShopPass,
             orderId: orderId,
-            jobCd: GMO.Util.JOB_CD_AUTH,
+            jobCd: sskts.GMO.Util.JOB_CD_AUTH,
             amount: totalPrice
         });
-        const execTranResult = yield GMO.CreditService.execTran({
+        const execTranResult = yield sskts.GMO.CreditService.execTran({
             accessId: entryTranResult.accessId,
             accessPass: entryTranResult.accessPass,
             orderId: orderId,
@@ -271,8 +271,8 @@ function main() {
                 gmo_amount: totalPrice,
                 gmo_access_id: entryTranResult.accessId,
                 gmo_access_pass: entryTranResult.accessPass,
-                gmo_job_cd: GMO.Util.JOB_CD_AUTH,
-                gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
+                gmo_job_cd: sskts.GMO.Util.JOB_CD_AUTH,
+                gmo_pay_type: sskts.GMO.Util.PAY_TYPE_CREDIT
             },
             json: true,
             simple: false,
@@ -284,12 +284,12 @@ function main() {
         }
         const gmoAuthorizationId = response.body.data.id;
         // GMOオーソリ取消
-        const alterTranResult = yield GMO.CreditService.alterTran({
+        const alterTranResult = yield sskts.GMO.CreditService.alterTran({
             shopId: gmoShopId,
             shopPass: gmoShopPass,
             accessId: entryTranResult.accessId,
             accessPass: entryTranResult.accessPass,
-            jobCd: GMO.Util.JOB_CD_VOID
+            jobCd: sskts.GMO.Util.JOB_CD_VOID
         });
         debug('alterTranResult:', alterTranResult);
         // GMOオーソリ削除
@@ -307,7 +307,7 @@ function main() {
             throw new Error(response.body.message);
         }
         // COA仮予約2回目
-        const reserveSeatsTemporarilyResult2 = yield COA.ReserveService.updTmpReserveSeat({
+        const reserveSeatsTemporarilyResult2 = yield sskts.COA.ReserveService.updTmpReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -372,14 +372,14 @@ function main() {
         }
         // GMOオーソリ取得(2回目)
         orderId = Date.now().toString();
-        const entryTranResult2 = yield GMO.CreditService.entryTran({
+        const entryTranResult2 = yield sskts.GMO.CreditService.entryTran({
             shopId: gmoShopId,
             shopPass: gmoShopPass,
             orderId: orderId,
-            jobCd: GMO.Util.JOB_CD_AUTH,
+            jobCd: sskts.GMO.Util.JOB_CD_AUTH,
             amount: totalPrice
         });
-        const execTranResult2 = yield GMO.CreditService.execTran({
+        const execTranResult2 = yield sskts.GMO.CreditService.execTran({
             accessId: entryTranResult2.accessId,
             accessPass: entryTranResult2.accessPass,
             orderId: orderId,
@@ -403,8 +403,8 @@ function main() {
                 gmo_amount: totalPrice,
                 gmo_access_id: entryTranResult2.accessId,
                 gmo_access_pass: entryTranResult2.accessPass,
-                gmo_job_cd: GMO.Util.JOB_CD_AUTH,
-                gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
+                gmo_job_cd: sskts.GMO.Util.JOB_CD_AUTH,
+                gmo_pay_type: sskts.GMO.Util.PAY_TYPE_CREDIT
             },
             json: true,
             resolveWithFullResponse: true

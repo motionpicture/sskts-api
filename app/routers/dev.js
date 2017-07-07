@@ -5,10 +5,10 @@
  * @ignore
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const express = require("express");
 const devRouter = express.Router();
 const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
 const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -25,7 +25,7 @@ devRouter.get('/environmentVariables', permitScopes_1.default(['admin']), (__, r
     });
 });
 devRouter.get('/mongoose/connect', (__, res) => {
-    mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default, () => {
+    sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default, () => {
         res.status(http_status_1.NO_CONTENT).end();
     });
 });

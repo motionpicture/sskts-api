@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const GMO = require("@motionpicture/gmo-service");
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const wait_1 = require("./wait");
 const debug = createDebug('sskts-api:loadtest:scenarios:repeatGMOAuthUntilSuccess');
@@ -38,14 +38,14 @@ exports.default = (config) => __awaiter(this, void 0, void 0, function* () {
             // GMOオーソリ取得
             // tslint:disable-next-line:no-magic-numbers
             const orderId = `${config.orderIdPrefix}${`00${countTry}`.slice(-2)}`;
-            const entryTranResult = yield GMO.CreditService.entryTran({
+            const entryTranResult = yield sskts.GMO.services.credit.entryTran({
                 shopId: config.gmoShopId,
                 shopPass: config.gmoShopPass,
                 orderId: orderId,
-                jobCd: GMO.Util.JOB_CD_AUTH,
+                jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
                 amount: config.amount
             });
-            const execTranResult = yield GMO.CreditService.execTran({
+            const execTranResult = yield sskts.GMO.services.credit.execTran({
                 accessId: entryTranResult.accessId,
                 accessPass: entryTranResult.accessPass,
                 orderId: orderId,

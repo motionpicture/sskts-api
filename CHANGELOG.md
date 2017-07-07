@@ -16,6 +16,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v9.4.0 - 2017-07-07
+### Added
+- パスワード認可タイプを追加。ユーザーネームとパスワードでアクセストークンを取得可能なように対応。
+- 会員ログイン必須ミドルウェアを追加。
+- 会員プロフィール取得エンドポイントを追加。
+- 会員プロフィール更新エンドポイントを追加。
+- 会員カード検索エンドポイントを追加。
+- 会員カード追加エンドポイントを追加。
+- 会員カード削除エンドポイントを追加。
+- 会員座席予約資産検索エンドポイントを追加。
+- レスポンスヘッダーにx-api-versionを追加。
+
+### Changed
+- パフォーマンス在庫状況表現を空席率(%)に変更。
+- 会員としても取引を開始できるように、取引開始サービスを拡張。
+- クライアントユーザー情報を取引に保管するように変更。
+- 各エンドポイントのスコープを具体的に調整。
+- 取引GMO承認追加のパラメーターをdataで括るように変更(互換性は維持)
+- 取引COA座席予約承認追加のパラメーターをdataで括るように変更(互換性は維持)
+- 取引ムビチけ承認追加のパラメーターをdataで括るように変更(互換性は維持)
+- 取引メール通知追加のパラメーターをdataで括るように変更(互換性は維持)
+
+### Security
+- update package [tslint@5.5.0](https://www.npmjs.com/package/tslint)
+- update package [tslint-microsoft-contrib@5.0.1](https://github.com/Microsoft/tslint-microsoft-contrib)
+- update package [snyk@1.36.2](https://www.npmjs.com/package/snyk)
+- update package [nyc@11.0.3](https://www.npmjs.com/package/nyc)
+- update package [typescript@2.4.1](https://www.npmjs.com/package/typescript)
+
 ## v9.3.0 - 2017-06-28
 ### Changed
 - パフォーマンス在庫状況表現を空席率(%)に変更。
@@ -30,11 +59,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 - redisクライアント取得モジュールにおいて、再生成時にクライアントを使えなくなるバグを修正。
+- sskts-domainの依存パッケージをうまくアップデートできない問題を解消。mongoose,redis,coa-service,gmo-serviceをsskts-domainの内部モジュールを使用するように変更。
 
 ### Security
 - [tslint](https://github.com/palantir/tslint)を5.4.3にアップデート。
 - [typescript@2.4.0](https://github.com/Microsoft/TypeScript)にアップデート。
 - 依存パッケージをアップデート。
+- update package [@motionpicture/sskts-domain@^20.1.0](https://www.npmjs.com/package/@motionpicture/sskts-domain)
 
 ## v9.1.0 - 2017-06-12
 ### Added

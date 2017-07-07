@@ -16,21 +16,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const httpStatus = require("http-status");
 const supertest = require("supertest");
-const app = require("../app/app");
-let accessToken;
-before(() => __awaiter(this, void 0, void 0, function* () {
-    accessToken = yield supertest(app)
-        .post('/oauth/token')
-        .send({
-        assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-        scope: 'admin'
-    })
-        .then((response) => {
-        return response.body.access_token;
-    });
-}));
+const app = require("../../app/app");
+const OAuthScenario = require("../scenarios/oauth");
 describe('/dev/500', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get('/dev/500')
             .set('authorization', `Bearer ${accessToken}`)
@@ -50,19 +40,18 @@ describe('/dev/environmentVariables', () => {
             assertion: process.env.SSKTS_API_REFRESH_TOKEN,
             scopes: ['invalidscope']
         })
-            .then((response) => {
-            return response.body.access_token;
-        });
+            .then((response) => response.body.access_token);
         yield supertest(app)
             .get('/dev/environmentVariables')
             .set('authorization', `Bearer ${invalidAccessToken}`)
             .set('Accept', 'application/json')
             .expect(httpStatus.FORBIDDEN)
             .then((response) => {
-            assert.equal(response.text, 'Forbidden');
+            assert.equal(typeof response.text, 'string');
         });
     }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get('/dev/environmentVariables')
             .set('authorization', `Bearer ${accessToken}`)
@@ -76,13 +65,11 @@ describe('/dev/environmentVariables', () => {
 });
 describe('/dev/mongoose/connect', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = yield OAuthScenario.loginAsAdmin();
         yield supertest(app)
             .get('/dev/mongoose/connect')
             .set('authorization', `Bearer ${accessToken}`)
             .set('Accept', 'application/json')
-            .expect(httpStatus.NO_CONTENT)
-            .then((response) => {
-            assert.equal(response.text, '');
-        });
+            .expect(httpStatus.NO_CONTENT);
     }));
 });
