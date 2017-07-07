@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v9.4.0 - 2017-07-07
+### Added
 - パスワード認可タイプを追加。ユーザーネームとパスワードでアクセストークンを取得可能なように対応。
 - 会員ログイン必須ミドルウェアを追加。
 - 会員プロフィール取得エンドポイントを追加。
@@ -24,12 +37,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 取引COA座席予約承認追加のパラメーターをdataで括るように変更(互換性は維持)
 - 取引ムビチけ承認追加のパラメーターをdataで括るように変更(互換性は維持)
 - 取引メール通知追加のパラメーターをdataで括るように変更(互換性は維持)
-
-### Deprecated
-
-### Removed
-
-### Fixed
 
 ### Security
 - update package [tslint@5.5.0](https://www.npmjs.com/package/tslint)
