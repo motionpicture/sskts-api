@@ -153,7 +153,8 @@ function processTransactionByPerformance(performanceId, purchaser) {
             date_jouei: dateJouei,
             title_code: titleCode,
             title_branch_num: titleBranchNum,
-            time_begin: timeBegin
+            time_begin: timeBegin,
+            flg_member: '0'
         });
         // COA空席確認
         const getStateReserveSeatResult = yield sskts.COA.ReserveService.stateReserveSeat({

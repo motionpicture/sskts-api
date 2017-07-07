@@ -42,6 +42,11 @@ app.use(helmet.hsts({
     maxAge: SIXTY_DAYS_IN_SECONDS,
     includeSubdomains: false
 }));
+// api versioin
+app.use((__, res, next) => {
+    res.setHeader('x-api-verion', process.env.npm_package_version);
+    next();
+});
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
     app.get('/dev/uncaughtexception', (req) => {

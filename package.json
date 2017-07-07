@@ -46,14 +46,14 @@
     "jsdoc": "^3.4.3",
     "mocha": "^3.4.2",
     "nsp": "^2.6.3",
-    "nyc": "^11.0.2",
+    "nyc": "^11.0.3",
     "request-promise-native": "^1.0.4",
     "rimraf": "^2.6.1",
-    "snyk": "^1.36.0",
+    "snyk": "^1.36.2",
     "supertest": "^3.0.0",
-    "tslint": "^5.4.3",
-    "tslint-microsoft-contrib": "^5.0.0",
-    "typescript": "^2.4.0"
+    "tslint": "^5.5.0",
+    "tslint-microsoft-contrib": "^5.0.1",
+    "typescript": "^2.4.1"
   },
   "engines": {
     "node": ">=6.9.1",

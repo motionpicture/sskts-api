@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 会員カード追加エンドポイントを追加。
 - 会員カード削除エンドポイントを追加。
 - 会員座席予約資産検索エンドポイントを追加。
+- レスポンスヘッダーにx-api-versionを追加。
 
 ### Changed
 - パフォーマンス在庫状況表現を空席率(%)に変更。
@@ -31,6 +32,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+- update package [tslint@5.5.0](https://www.npmjs.com/package/tslint)
+- update package [tslint-microsoft-contrib@5.0.1](https://github.com/Microsoft/tslint-microsoft-contrib)
+- update package [snyk@1.36.2](https://www.npmjs.com/package/snyk)
+- update package [nyc@11.0.3](https://www.npmjs.com/package/nyc)
+- update package [typescript@2.4.1](https://www.npmjs.com/package/typescript)
 
 ## v9.3.0 - 2017-06-28
 ### Changed

@@ -267,7 +267,7 @@ let count = 0;
 let numberOfClosedTransactions = 0;
 let numberOfProcessedTransactions = 0;
 const MAX_NUBMER_OF_PARALLEL_TASKS = 1800;
-const INTERVAL_MILLISECONDS = 500;
+const INTERVAL_MILLISECONDS = 1000;
 const results = [];
 // まず普通にひとつの取引プロセス
 processOneTransaction_1.default({
