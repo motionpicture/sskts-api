@@ -48,9 +48,12 @@ app.use(helmet.hsts({
     includeSubdomains: false
 }));
 
-// api versioin
+// api version
+// tslint:disable-next-line:no-require-imports no-var-requires
+const packageInfo = require('../package.json');
+debug('packageInfo is', packageInfo);
 app.use((__, res, next) => {
-    res.setHeader('x-api-verion', <string>process.env.npm_package_version);
+    res.setHeader('x-api-verion', <string>packageInfo.version);
     next();
 });
 

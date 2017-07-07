@@ -42,9 +42,12 @@ app.use(helmet.hsts({
     maxAge: SIXTY_DAYS_IN_SECONDS,
     includeSubdomains: false
 }));
-// api versioin
+// api version
+// tslint:disable-next-line:no-require-imports no-var-requires
+const packageInfo = require('../package.json');
+debug('packageInfo is', packageInfo);
 app.use((__, res, next) => {
-    res.setHeader('x-api-verion', process.env.npm_package_version);
+    res.setHeader('x-api-verion', packageInfo.version);
     next();
 });
 if (process.env.NODE_ENV !== 'production') {
