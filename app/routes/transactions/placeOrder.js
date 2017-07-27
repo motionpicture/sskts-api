@@ -28,6 +28,7 @@ placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'transactions']), (req, _, next) => {
     // expiresはsecondsのUNIXタイムスタンプで
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isInt();
+    req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -61,7 +62,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'tr
             clientUser: req.getUser(),
             scope: scope,
             agentId: ownerId,
-            sellerId: '597012c4ca579a808193cde2' // todo 動的に変更
+            sellerId: req.body.sellerId
         })(sskts.adapter.person(sskts.mongoose.connection), sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
         transactionOption.match({
             Some: (transaction) => {

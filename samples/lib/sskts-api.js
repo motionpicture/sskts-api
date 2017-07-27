@@ -151,7 +151,8 @@ var transaction;
                     url: `${API_ENDPOINT}/transactions/placeOrder/start`,
                     auth: { bearer: yield args.auth.getAccessToken() },
                     body: {
-                        expires: args.expires.valueOf()
+                        expires: args.expires.valueOf(),
+                        sellerId: args.sellerId
                     },
                     json: true,
                     simple: false,

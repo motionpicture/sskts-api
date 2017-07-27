@@ -48,6 +48,7 @@ function main() {
         const screenCode = individualScreeningEvent.coaInfo.screenCode;
         // 劇場のショップを検索
         const seller = movieTheaters.find((movieTheater) => movieTheater.location.branchCode === theaterCode);
+        debug('seller is', seller);
         // 取引開始
         // 1分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
