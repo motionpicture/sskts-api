@@ -6,55 +6,33 @@
 
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
-import * as httpStatus from 'http-status';
 import * as moment from 'moment';
-import * as request from 'request-promise-native';
 import * as util from 'util';
 
 import * as Scenarios from '../scenarios';
 
 const debug = createDebug('sskts-api:examples');
-const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 
-// tslint:disable-next-line:max-func-body-length cyclomatic-complexity
+// tslint:disable-next-line:max-func-body-length
 async function main() {
-    // アクセストークン取得
-    const accessToken = await Scenarios.getAccessToken();
+    const auth = new Scenarios.OAuth2(
+        <string>process.env.SSKTS_API_REFRESH_TOKEN,
+        ['admin']
+    );
 
     // 上映イベント検索
-    const eventIdentifier = await request.get({
-        url: `${API_ENDPOINT}/events/individualScreeningEvent`,
-        qs: {
+    const individualScreeningEvents = await Scenarios.event.searchIndividualScreeningEvent({
+        auth: auth,
+        searchConditions: {
             theater: '118',
             day: moment().format('YYYYMMDD')
-        },
-        auth: { bearer: accessToken },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true
-    }).then((response) => {
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
         }
-
-        return response.body.data[0].identifier;
     });
 
     // イベント情報取得
-    const individualScreeningEvent = await request.get({
-        url: `${API_ENDPOINT}/events/individualScreeningEvent/${eventIdentifier}`,
-        auth: { bearer: accessToken },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true
-    }).then((response) => {
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
-        }
-
-        debug('event detail is', response.body.data);
-
-        return response.body.data;
+    const individualScreeningEvent = await Scenarios.event.findIndividualScreeningEvent({
+        auth: auth,
+        identifier: individualScreeningEvents[0].identifier
     });
 
     const theaterCode = individualScreeningEvent.coaInfo.theaterCode;
@@ -68,25 +46,9 @@ async function main() {
     // 1分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
     debug('starting transaction...');
-    const transaction = await request.post({
-        url: `${API_ENDPOINT}/transactions/placeOrder/start`,
-        auth: { bearer: accessToken },
-        body: {
-            expires: moment().add(1, 'minutes').unix()
-        },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true
-    }).then((response) => {
-        debug('transaction start result:', response.statusCode, response.body);
-        if (response.statusCode === httpStatus.NOT_FOUND) {
-            throw new Error('please try later');
-        }
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
-        }
-
-        return response.body.data;
+    const transaction = await Scenarios.transaction.placeOrder.start({
+        auth: auth,
+        expires: moment().add(1, 'minutes').toDate()
     });
 
     // 販売可能チケット検索
@@ -123,45 +85,33 @@ async function main() {
     debug('authorizing seat reservation...');
     const totalPrice = salesTicketResult[0].salePrice;
 
-    const seatReservationAuthorization = await request.post({
-        url: `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/seatReservationAuthorization`,
-        auth: { bearer: accessToken },
-        body: {
-            eventIdentifier: individualScreeningEvent.identifier,
-            offers: [
-                {
-                    seatSection: sectionCode,
-                    seatNumber: freeSeatCodes[0],
-                    ticket: {
-                        ticketCode: salesTicketResult[0].ticketCode,
-                        stdPrice: salesTicketResult[0].stdPrice,
-                        addPrice: salesTicketResult[0].addPrice,
-                        disPrice: 0,
-                        salePrice: salesTicketResult[0].salePrice,
-                        mvtkAppPrice: 0,
-                        ticketCount: 1,
-                        seatNum: freeSeatCodes[0],
-                        addGlasses: 0,
-                        kbnEisyahousiki: '00',
-                        mvtkNum: '',
-                        mvtkKbnDenshiken: '00',
-                        mvtkKbnMaeuriken: '00',
-                        mvtkKbnKensyu: '00',
-                        mvtkSalesPrice: 0
-                    }
+    const seatReservationAuthorization = await Scenarios.transaction.placeOrder.createSeatReservationAuthorization({
+        auth: auth,
+        transactionId: transaction.id,
+        eventIdentifier: individualScreeningEvent.identifier,
+        offers: [
+            {
+                seatSection: sectionCode,
+                seatNumber: freeSeatCodes[0],
+                ticket: {
+                    ticketCode: salesTicketResult[0].ticketCode,
+                    stdPrice: salesTicketResult[0].stdPrice,
+                    addPrice: salesTicketResult[0].addPrice,
+                    disPrice: 0,
+                    salePrice: salesTicketResult[0].salePrice,
+                    mvtkAppPrice: 0,
+                    ticketCount: 1,
+                    seatNum: freeSeatCodes[0],
+                    addGlasses: 0,
+                    kbnEisyahousiki: '00',
+                    mvtkNum: '',
+                    mvtkKbnDenshiken: '00',
+                    mvtkKbnMaeuriken: '00',
+                    mvtkKbnKensyu: '00',
+                    mvtkSalesPrice: 0
                 }
-            ]
-        },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true
-    }).then((response) => {
-        debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
-        }
-
-        return response.body.data;
+            }
+        ]
     });
     debug('seatReservationAuthorization is', seatReservationAuthorization);
 
@@ -191,28 +141,17 @@ async function main() {
         '01'
     );
     debug('adding authorizations gmo...');
-    const gmoAuthorization = await request.post({
-        url: `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/paymentInfos/creditCard`,
-        auth: { bearer: accessToken },
-        body: {
-            orderId: orderId,
-            amount: totalPrice,
+    const gmoAuthorization = await Scenarios.transaction.placeOrder.authorizeGMOCard({
+        auth: auth,
+        transactionId: transaction.id,
+        orderId: orderId,
+        amount: totalPrice,
+        creditCard: {
             method: '1',
             cardNo: '4111111111111111',
             expire: '2012',
             securityCode: '123'
-            // token: '' // トークン決済の場合こちら
-        },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true
-    }).then((response) => {
-        debug('addGMOAuthorization result:', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
         }
-
-        return response.body.data;
     });
     debug('gmoAuthorization is', gmoAuthorization);
 
@@ -315,20 +254,12 @@ async function main() {
         givenName: 'てつ',
         familyName: 'やまざき',
         telephone: '09012345678',
-        email: process.env.SSKTS_DEVELOPER_EMAIL
+        email: <string>process.env.SSKTS_DEVELOPER_EMAIL
     };
-
-    await request.put({
-        url: `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/agent/profile`,
-        auth: { bearer: accessToken },
-        body: profile,
-        json: true,
-        resolveWithFullResponse: true
-    }).then((response) => {
-        debug('anonymousOwner updated.', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.NO_CONTENT) {
-            throw new Error(response.body.message);
-        }
+    await Scenarios.transaction.placeOrder.setAgentProfile({
+        auth: auth,
+        transactionId: transaction.id,
+        profile: profile
     });
 
     // メール追加
@@ -380,19 +311,9 @@ async function main() {
 
     // 取引成立
     debug('confirming transaction...');
-    const order = await request.post({
-        url: `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/confirm`,
-        auth: { bearer: accessToken },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true
-    }).then((response) => {
-        debug('confirmed', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.CREATED) {
-            throw new Error(response.body.message);
-        }
-
-        return response.body.data;
+    const order = await Scenarios.transaction.placeOrder.confirm({
+        auth: auth,
+        transactionId: transaction.id
     });
     debug('your order is', order);
 

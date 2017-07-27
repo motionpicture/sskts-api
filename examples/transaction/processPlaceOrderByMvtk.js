@@ -1,6 +1,6 @@
 "use strict";
 /**
- * ムビチケを使って購入する取引フローテストスクリプト
+ * ムビチケを使って購入する注文取引プロセスサンプル
  *
  * @ignore
  */
@@ -18,7 +18,7 @@ const createDebug = require("debug");
 const httpStatus = require("http-status");
 const moment = require("moment");
 const request = require("request-promise-native");
-const Scenarios = require("./scenarios");
+const Scenarios = require("../scenarios");
 const debug = createDebug('sskts-api:examples');
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
@@ -27,12 +27,12 @@ function main() {
         let response;
         const performanceId = '11820170331170190502020'; // パフォーマンスID 空席なくなったら変更する
         // アクセストークン取得
-        const accessToken = yield Scenarios.getAccessToken();
+        const auth = new Scenarios.OAuth2(process.env.SSKTS_API_REFRESH_TOKEN, ['admin']);
         // パフォーマンス取得
         debug('finding performance...');
         response = yield request.get({
             url: `${API_ENDPOINT}/performances/${performanceId}`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             json: true,
             simple: false,
             resolveWithFullResponse: true
@@ -46,7 +46,7 @@ function main() {
         debug('finding film...');
         response = yield request.get({
             url: `${API_ENDPOINT}/films/${performance.film.id}`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             json: true,
             simple: false,
             resolveWithFullResponse: true
@@ -60,7 +60,7 @@ function main() {
         debug('finding screen...');
         response = yield request.get({
             url: `${API_ENDPOINT}/screens/${performance.screen.id}`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             json: true,
             simple: false,
             resolveWithFullResponse: true
@@ -82,7 +82,7 @@ function main() {
         debug('starting transaction...');
         response = yield request.post({
             url: `${API_ENDPOINT}/transactions/startIfPossible`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             body: {
                 expires_at: moment().add(30, 'minutes').unix() // tslint:disable-line:no-magic-numbers
             },
@@ -156,7 +156,7 @@ function main() {
         const totalPrice = salesTicketResult[0].salePrice + salesTicketResult[0].salePrice;
         response = yield request.post({
             url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             body: {
                 owner_from: promoterOwnerId,
                 owner_to: anonymousOwnerId,
@@ -208,7 +208,7 @@ function main() {
         const tel = '09012345678';
         response = yield request.patch({
             url: `${API_ENDPOINT}/transactions/${transactionId}/anonymousOwner`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             body: {
                 name_first: 'Tetsu',
                 name_last: 'Yamazaki',
@@ -256,7 +256,7 @@ function main() {
         debug('adding authorizations mvtk...');
         response = yield request.post({
             url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/mvtk`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             body: {
                 owner_from: anonymousOwnerId,
                 owner_to: promoterOwnerId,
@@ -295,7 +295,7 @@ function main() {
         debug('enabling inquiry...');
         response = yield request.patch({
             url: `${API_ENDPOINT}/transactions/${transactionId}/enableInquiry`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             body: {
                 inquiry_theater: theaterCode,
                 inquiry_id: reserveSeatsTemporarilyResult.tmpReserveNum,
@@ -332,7 +332,7 @@ http://www.cinemasunshine.co.jp/\n
         debug('adding email...');
         response = yield request.post({
             url: `${API_ENDPOINT}/transactions/${transactionId}/notifications/email`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             body: {
                 from: 'noreply@example.com',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
@@ -352,7 +352,7 @@ http://www.cinemasunshine.co.jp/\n
         debug('closing transaction...');
         response = yield request.patch({
             url: `${API_ENDPOINT}/transactions/${transactionId}/close`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             body: {},
             json: true,
             simple: false,
@@ -365,7 +365,7 @@ http://www.cinemasunshine.co.jp/\n
         // 照会してみる
         response = yield request.post({
             url: `${API_ENDPOINT}/transactions/makeInquiry`,
-            auth: { bearer: accessToken },
+            auth: { bearer: yield auth.getAccessToken() },
             body: {
                 inquiry_theater: theaterCode,
                 inquiry_id: reserveSeatsTemporarilyResult.tmpReserveNum,

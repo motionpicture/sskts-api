@@ -15,48 +15,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
-const httpStatus = require("http-status");
 const moment = require("moment");
-const request = require("request-promise-native");
 const util = require("util");
 const Scenarios = require("../scenarios");
 const debug = createDebug('sskts-api:examples');
-const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
-// tslint:disable-next-line:max-func-body-length cyclomatic-complexity
+// tslint:disable-next-line:max-func-body-length
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        // アクセストークン取得
-        const accessToken = yield Scenarios.getAccessToken();
+        const auth = new Scenarios.OAuth2(process.env.SSKTS_API_REFRESH_TOKEN, ['admin']);
         // 上映イベント検索
-        const eventIdentifier = yield request.get({
-            url: `${API_ENDPOINT}/events/individualScreeningEvent`,
-            qs: {
+        const individualScreeningEvents = yield Scenarios.event.searchIndividualScreeningEvent({
+            auth: auth,
+            searchConditions: {
                 theater: '118',
                 day: moment().format('YYYYMMDD')
-            },
-            auth: { bearer: accessToken },
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true
-        }).then((response) => {
-            if (response.statusCode !== httpStatus.OK) {
-                throw new Error(response.body.message);
             }
-            return response.body.data[0].identifier;
         });
         // イベント情報取得
-        const individualScreeningEvent = yield request.get({
-            url: `${API_ENDPOINT}/events/individualScreeningEvent/${eventIdentifier}`,
-            auth: { bearer: accessToken },
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true
-        }).then((response) => {
-            if (response.statusCode !== httpStatus.OK) {
-                throw new Error(response.body.message);
-            }
-            debug('event detail is', response.body.data);
-            return response.body.data;
+        const individualScreeningEvent = yield Scenarios.event.findIndividualScreeningEvent({
+            auth: auth,
+            identifier: individualScreeningEvents[0].identifier
         });
         const theaterCode = individualScreeningEvent.coaInfo.theaterCode;
         const dateJouei = individualScreeningEvent.coaInfo.dateJouei;
@@ -68,24 +46,9 @@ function main() {
         // 1分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
         debug('starting transaction...');
-        const transaction = yield request.post({
-            url: `${API_ENDPOINT}/transactions/placeOrder/start`,
-            auth: { bearer: accessToken },
-            body: {
-                expires: moment().add(1, 'minutes').unix()
-            },
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true
-        }).then((response) => {
-            debug('transaction start result:', response.statusCode, response.body);
-            if (response.statusCode === httpStatus.NOT_FOUND) {
-                throw new Error('please try later');
-            }
-            if (response.statusCode !== httpStatus.OK) {
-                throw new Error(response.body.message);
-            }
-            return response.body.data;
+        const transaction = yield Scenarios.transaction.placeOrder.start({
+            auth: auth,
+            expires: moment().add(1, 'minutes').toDate()
         });
         // 販売可能チケット検索
         const salesTicketResult = yield sskts.COA.services.reserve.salesTicket({
@@ -118,44 +81,33 @@ function main() {
         // COAオーソリ追加
         debug('authorizing seat reservation...');
         const totalPrice = salesTicketResult[0].salePrice;
-        const seatReservationAuthorization = yield request.post({
-            url: `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/seatReservationAuthorization`,
-            auth: { bearer: accessToken },
-            body: {
-                eventIdentifier: individualScreeningEvent.identifier,
-                offers: [
-                    {
-                        seatSection: sectionCode,
-                        seatNumber: freeSeatCodes[0],
-                        ticket: {
-                            ticketCode: salesTicketResult[0].ticketCode,
-                            stdPrice: salesTicketResult[0].stdPrice,
-                            addPrice: salesTicketResult[0].addPrice,
-                            disPrice: 0,
-                            salePrice: salesTicketResult[0].salePrice,
-                            mvtkAppPrice: 0,
-                            ticketCount: 1,
-                            seatNum: freeSeatCodes[0],
-                            addGlasses: 0,
-                            kbnEisyahousiki: '00',
-                            mvtkNum: '',
-                            mvtkKbnDenshiken: '00',
-                            mvtkKbnMaeuriken: '00',
-                            mvtkKbnKensyu: '00',
-                            mvtkSalesPrice: 0
-                        }
+        const seatReservationAuthorization = yield Scenarios.transaction.placeOrder.createSeatReservationAuthorization({
+            auth: auth,
+            transactionId: transaction.id,
+            eventIdentifier: individualScreeningEvent.identifier,
+            offers: [
+                {
+                    seatSection: sectionCode,
+                    seatNumber: freeSeatCodes[0],
+                    ticket: {
+                        ticketCode: salesTicketResult[0].ticketCode,
+                        stdPrice: salesTicketResult[0].stdPrice,
+                        addPrice: salesTicketResult[0].addPrice,
+                        disPrice: 0,
+                        salePrice: salesTicketResult[0].salePrice,
+                        mvtkAppPrice: 0,
+                        ticketCount: 1,
+                        seatNum: freeSeatCodes[0],
+                        addGlasses: 0,
+                        kbnEisyahousiki: '00',
+                        mvtkNum: '',
+                        mvtkKbnDenshiken: '00',
+                        mvtkKbnMaeuriken: '00',
+                        mvtkKbnKensyu: '00',
+                        mvtkSalesPrice: 0
                     }
-                ]
-            },
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true
-        }).then((response) => {
-            debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
-            if (response.statusCode !== httpStatus.OK) {
-                throw new Error(response.body.message);
-            }
-            return response.body.data;
+                }
+            ]
         });
         debug('seatReservationAuthorization is', seatReservationAuthorization);
         // COAオーソリ削除
@@ -178,27 +130,17 @@ function main() {
         // tslint:disable-next-line:no-magic-numbers
         `00000000${seatReservationAuthorization.result.tmpReserveNum}`.slice(-8), '01');
         debug('adding authorizations gmo...');
-        const gmoAuthorization = yield request.post({
-            url: `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/paymentInfos/creditCard`,
-            auth: { bearer: accessToken },
-            body: {
-                orderId: orderId,
-                amount: totalPrice,
+        const gmoAuthorization = yield Scenarios.transaction.placeOrder.authorizeGMOCard({
+            auth: auth,
+            transactionId: transaction.id,
+            orderId: orderId,
+            amount: totalPrice,
+            creditCard: {
                 method: '1',
                 cardNo: '4111111111111111',
                 expire: '2012',
                 securityCode: '123'
-                // token: '' // トークン決済の場合こちら
-            },
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true
-        }).then((response) => {
-            debug('addGMOAuthorization result:', response.statusCode, response.body);
-            if (response.statusCode !== httpStatus.OK) {
-                throw new Error(response.body.message);
             }
-            return response.body.data;
         });
         debug('gmoAuthorization is', gmoAuthorization);
         // GMOオーソリ削除
@@ -299,17 +241,10 @@ function main() {
             telephone: '09012345678',
             email: process.env.SSKTS_DEVELOPER_EMAIL
         };
-        yield request.put({
-            url: `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/agent/profile`,
-            auth: { bearer: accessToken },
-            body: profile,
-            json: true,
-            resolveWithFullResponse: true
-        }).then((response) => {
-            debug('anonymousOwner updated.', response.statusCode, response.body);
-            if (response.statusCode !== httpStatus.NO_CONTENT) {
-                throw new Error(response.body.message);
-            }
+        yield Scenarios.transaction.placeOrder.setAgentProfile({
+            auth: auth,
+            transactionId: transaction.id,
+            profile: profile
         });
         // メール追加
         //     const content = `
@@ -358,18 +293,9 @@ function main() {
         // }
         // 取引成立
         debug('confirming transaction...');
-        const order = yield request.post({
-            url: `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/confirm`,
-            auth: { bearer: accessToken },
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true
-        }).then((response) => {
-            debug('confirmed', response.statusCode, response.body);
-            if (response.statusCode !== httpStatus.CREATED) {
-                throw new Error(response.body.message);
-            }
-            return response.body.data;
+        const order = yield Scenarios.transaction.placeOrder.confirm({
+            auth: auth,
+            transactionId: transaction.id
         });
         debug('your order is', order);
         // 照会してみる

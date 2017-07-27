@@ -5,38 +5,26 @@
  */
 
 import * as createDebug from 'debug';
-import * as httpStatus from 'http-status';
 import * as moment from 'moment';
-import * as request from 'request-promise-native';
-import * as util from 'util';
 
 import * as Scenarios from './scenarios';
 
 const debug = createDebug('sskts-api:examples');
-const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 
 async function main() {
-    const accessToken = await Scenarios.getAccessToken();
+    const auth = new Scenarios.OAuth2(
+        <string>process.env.SSKTS_API_REFRESH_TOKEN,
+        ['admin']
+    );
 
-    // 上映イベント検索
-    await request.get({
-        url: `${API_ENDPOINT}/events/individualScreeningEvent`,
-        qs: {
+    const individualScreeningEvents = await Scenarios.event.searchIndividualScreeningEvent({
+        auth: auth,
+        searchConditions: {
             theater: '118',
             day: moment().format('YYYYMMDD')
-        },
-        auth: { bearer: accessToken },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true
-    }).then((response) => {
-        debug('events searched', response.statusCode, response.body);
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
         }
-
-        debug('first event detail is', util.inspect(response.body.data[0]));
     });
+    debug('number of individualScreeningEvents is', individualScreeningEvents.length);
 }
 
 main().then(() => {
