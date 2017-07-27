@@ -4,24 +4,26 @@
  * @ignore
  */
 
-import * as sskts from '@motionpicture/sskts-domain';
+import { COA } from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as util from 'util';
 
-import * as Scenarios from '../scenarios';
+import * as sskts from '../lib/sskts-api';
 
-const debug = createDebug('sskts-api:examples');
+const debug = createDebug('sskts-api:samples');
 
 // tslint:disable-next-line:max-func-body-length
 async function main() {
-    const auth = new Scenarios.OAuth2(
-        <string>process.env.SSKTS_API_REFRESH_TOKEN,
+    const auth = new sskts.auth.OAuth2(
+        'motionpicture',
+        'motionpicture',
+        'teststate',
         ['admin']
     );
 
     // 上映イベント検索
-    const individualScreeningEvents = await Scenarios.event.searchIndividualScreeningEvent({
+    const individualScreeningEvents = await sskts.event.searchIndividualScreeningEvent({
         auth: auth,
         searchConditions: {
             theater: '118',
@@ -30,7 +32,7 @@ async function main() {
     });
 
     // イベント情報取得
-    const individualScreeningEvent = await Scenarios.event.findIndividualScreeningEvent({
+    const individualScreeningEvent = await sskts.event.findIndividualScreeningEvent({
         auth: auth,
         identifier: individualScreeningEvents[0].identifier
     });
@@ -46,24 +48,24 @@ async function main() {
     // 1分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
     debug('starting transaction...');
-    const transaction = await Scenarios.transaction.placeOrder.start({
+    const transaction = await sskts.transaction.placeOrder.start({
         auth: auth,
         expires: moment().add(1, 'minutes').toDate()
     });
 
     // 販売可能チケット検索
-    const salesTicketResult = await sskts.COA.services.reserve.salesTicket({
+    const salesTicketResult = await COA.services.reserve.salesTicket({
         theaterCode: theaterCode,
         dateJouei: dateJouei,
         titleCode: titleCode,
         titleBranchNum: titleBranchNum,
         timeBegin: timeBegin,
-        flgMember: sskts.COA.services.reserve.FlgMember.NonMember
+        flgMember: COA.services.reserve.FlgMember.NonMember
     });
     debug('salesTicketResult:', salesTicketResult);
 
     // COA空席確認
-    const getStateReserveSeatResult = await sskts.COA.services.reserve.stateReserveSeat({
+    const getStateReserveSeatResult = await COA.services.reserve.stateReserveSeat({
         theaterCode: theaterCode,
         dateJouei: dateJouei,
         titleCode: titleCode,
@@ -85,7 +87,7 @@ async function main() {
     debug('authorizing seat reservation...');
     const totalPrice = salesTicketResult[0].salePrice;
 
-    const seatReservationAuthorization = await Scenarios.transaction.placeOrder.createSeatReservationAuthorization({
+    const seatReservationAuthorization = await sskts.transaction.placeOrder.createSeatReservationAuthorization({
         auth: auth,
         transactionId: transaction.id,
         eventIdentifier: individualScreeningEvent.identifier,
@@ -141,7 +143,7 @@ async function main() {
         '01'
     );
     debug('adding authorizations gmo...');
-    const gmoAuthorization = await Scenarios.transaction.placeOrder.authorizeGMOCard({
+    const gmoAuthorization = await sskts.transaction.placeOrder.authorizeGMOCard({
         auth: auth,
         transactionId: transaction.id,
         orderId: orderId,
@@ -256,7 +258,7 @@ async function main() {
         telephone: '09012345678',
         email: <string>process.env.SSKTS_DEVELOPER_EMAIL
     };
-    await Scenarios.transaction.placeOrder.setAgentProfile({
+    await sskts.transaction.placeOrder.setAgentProfile({
         auth: auth,
         transactionId: transaction.id,
         profile: profile
@@ -264,7 +266,7 @@ async function main() {
 
     // メール追加
     //     const content = `
-    // sskts-api:examples 様\n
+    // sskts-api:samples 様\n
     // -------------------------------------------------------------------\n
     // この度はご購入いただき誠にありがとうございます。\n
     // -------------------------------------------------------------------\n
@@ -311,7 +313,7 @@ async function main() {
 
     // 取引成立
     debug('confirming transaction...');
-    const order = await Scenarios.transaction.placeOrder.confirm({
+    const order = await sskts.transaction.placeOrder.confirm({
         auth: auth,
         transactionId: transaction.id
     });

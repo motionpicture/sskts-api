@@ -1,6 +1,6 @@
 "use strict";
 /**
- * 劇場取得サンプル
+ * 劇場検索サンプル
  *
  * @ignore
  */
@@ -14,17 +14,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
-const Scenarios = require("./scenarios");
-const debug = createDebug('sskts-api:examples');
+const sskts = require("./lib/sskts-api");
+const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = new Scenarios.OAuth2(process.env.SSKTS_API_REFRESH_TOKEN, ['admin']);
-        // 劇場情報取得
-        const movieTheater = yield Scenarios.place.findMovieTheater({
-            auth: auth,
-            branchCode: '118'
+        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['admin']);
+        const movieTheaters = yield sskts.place.searchMovieTheaters({
+            auth: auth
         });
-        debug('movieTheater is', movieTheater);
+        debug('movieTheaters are', movieTheaters);
     });
 }
 main().then(() => {

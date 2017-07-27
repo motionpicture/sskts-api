@@ -6,18 +6,20 @@
 
 import * as createDebug from 'debug';
 
-import * as Scenarios from './scenarios';
+import * as sskts from './lib/sskts-api';
 
-const debug = createDebug('sskts-api:examples');
+const debug = createDebug('sskts-api:samples');
 
 async function main() {
-    const auth = new Scenarios.OAuth2(
-        <string>process.env.SSKTS_API_REFRESH_TOKEN,
+    const auth = new sskts.auth.OAuth2(
+        'motionpicture',
+        'motionpicture',
+        'teststate',
         ['admin']
     );
 
     // 劇場情報取得
-    const movieTheater = await Scenarios.place.findMovieTheater({
+    const movieTheater = await sskts.place.findMovieTheater({
         auth: auth,
         branchCode: '118'
     });

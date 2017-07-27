@@ -75,7 +75,7 @@
   "scripts": {
     "build": "tsc",
     "check": "npm run tslint && nsp check && npm run snyk",
-    "clean": "rimraf app/**/*.js server.js mongooseConnectionOptions.js redisClient.js examples/**/*.js test/**/*.js docs/**/* npm-debug.log*",
+    "clean": "rimraf app/**/*.js server.js mongooseConnectionOptions.js redisClient.js samples/**/*.js test/**/*.js docs/**/* npm-debug.log*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "nyc": "nyc mocha",
     "snyk": "snyk auth && snyk test --ignore-policy",

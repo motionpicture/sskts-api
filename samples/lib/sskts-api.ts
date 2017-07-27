@@ -1,54 +1,20 @@
 /**
- * APIシナリオ
+ * SSKTS API Node.js Client
+ *
+ * @ignore
  */
 
 import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
 import * as request from 'request-promise-native';
 
-const debug = createDebug('sskts-api:examples');
+import OAuth2client from './auth/oAuth2client';
+
+const debug = createDebug('sskts-api:samples');
 const API_ENDPOINT = <string>process.env.TEST_API_ENDPOINT;
 
-export class OAuth2 {
-    private credentials: {
-        access_token: string;
-        token_type: string;
-        expires: number;
-    };
-
-    private assertion: string;
-    private scopes: string[];
-
-    constructor(assertion: string, scopes: string[]) {
-        this.assertion = assertion;
-        this.scopes = scopes;
-    }
-
-    public async getAccessToken() {
-        debug('requesting access token...');
-
-        if (this.credentials === undefined) {
-            await this.refreshAccessToken();
-        }
-
-        return this.credentials.access_token;
-    }
-
-    public async refreshAccessToken() {
-        debug('requesting access token...');
-        await request.post({
-            url: `${API_ENDPOINT}/oauth/token`,
-            body: {
-                assertion: this.assertion,
-                scopes: this.scopes
-            },
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true
-        }).then((response) => {
-            this.credentials = response.body;
-        });
-    }
+export namespace auth {
+    export class OAuth2 extends OAuth2client { }
 }
 
 export namespace event {
@@ -56,7 +22,7 @@ export namespace event {
      * 上映イベント検索
      */
     export async function searchIndividualScreeningEvent(args: {
-        auth: OAuth2;
+        auth: OAuth2client;
         searchConditions: {
             theater: string;
             day: string;
@@ -82,7 +48,7 @@ export namespace event {
      * 上映イベント情報取得
      */
     export async function findIndividualScreeningEvent(args: {
-        auth: OAuth2;
+        auth: OAuth2client;
         identifier: string;
     }) {
         return await request.get({
@@ -110,7 +76,7 @@ export namespace place {
      * 劇場検索
      */
     export async function searchMovieTheaters(args: {
-        auth: OAuth2;
+        auth: OAuth2client;
         searchConditions?: {};
     }) {
         return await request.get({
@@ -134,7 +100,7 @@ export namespace place {
      * 劇場情報取得
      */
     export async function findMovieTheater(args: {
-        auth: OAuth2;
+        auth: OAuth2client;
         branchCode: string;
     }) {
         return await request.get({
@@ -157,7 +123,7 @@ export namespace place {
 export namespace transaction {
     export namespace placeOrder {
         export async function start(args: {
-            auth: OAuth2;
+            auth: OAuth2client;
             expires: Date;
         }) {
             return await request.post({
@@ -206,7 +172,7 @@ export namespace transaction {
         }
 
         export async function createSeatReservationAuthorization(args: {
-            auth: OAuth2;
+            auth: OAuth2client;
             transactionId: string;
             eventIdentifier: string;
             offers: IOffer[];
@@ -240,7 +206,7 @@ export namespace transaction {
         export type IGMOCardTokenized = string; // トークン決済の場合こちら
         export type IGMOCard = IGMOCardRaw | IGMOCardTokenized;
         export async function authorizeGMOCard(args: {
-            auth: OAuth2;
+            auth: OAuth2client;
             transactionId: string;
             orderId: string;
             amount: number;
@@ -278,7 +244,7 @@ export namespace transaction {
             email: string;
         }
         export async function setAgentProfile(args: {
-            auth: OAuth2;
+            auth: OAuth2client;
             transactionId: string;
             profile: IAgentProfile;
         }) {
@@ -297,7 +263,7 @@ export namespace transaction {
         }
 
         export async function confirm(args: {
-            auth: OAuth2;
+            auth: OAuth2client;
             transactionId: string;
         }) {
             return await request.post({

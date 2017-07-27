@@ -16,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const httpStatus = require("http-status");
 const request = require("request-promise-native");
-const debug = createDebug('sskts-api:examples');
+const debug = createDebug('sskts-api:samples');
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 function main() {
     return __awaiter(this, void 0, void 0, function* () {

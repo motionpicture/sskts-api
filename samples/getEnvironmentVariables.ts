@@ -8,7 +8,7 @@ import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
 import * as request from 'request-promise-native';
 
-const debug = createDebug('sskts-api:examples');
+const debug = createDebug('sskts-api:samples');
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 
 async function main() {

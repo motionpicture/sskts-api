@@ -319,7 +319,7 @@ exports.default = (config) => __awaiter(this, void 0, void 0, function* () {
     });
     // メール追加
     const content = `
-sskts-api:examples:transaction 様\n
+sskts-api:samples:transaction 様\n
 \n
 -------------------------------------------------------------------\n
 この度はご購入いただき誠にありがとうございます。\n

@@ -1,6 +1,8 @@
 "use strict";
 /**
- * APIシナリオ
+ * SSKTS API Node.js Client
+ *
+ * @ignore
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -14,41 +16,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const httpStatus = require("http-status");
 const request = require("request-promise-native");
-const debug = createDebug('sskts-api:examples');
+const oAuth2client_1 = require("./auth/oAuth2client");
+const debug = createDebug('sskts-api:samples');
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
-class OAuth2 {
-    constructor(assertion, scopes) {
-        this.assertion = assertion;
-        this.scopes = scopes;
+var auth;
+(function (auth) {
+    class OAuth2 extends oAuth2client_1.default {
     }
-    getAccessToken() {
-        return __awaiter(this, void 0, void 0, function* () {
-            debug('requesting access token...');
-            if (this.credentials === undefined) {
-                yield this.refreshAccessToken();
-            }
-            return this.credentials.access_token;
-        });
-    }
-    refreshAccessToken() {
-        return __awaiter(this, void 0, void 0, function* () {
-            debug('requesting access token...');
-            yield request.post({
-                url: `${API_ENDPOINT}/oauth/token`,
-                body: {
-                    assertion: this.assertion,
-                    scopes: this.scopes
-                },
-                json: true,
-                simple: false,
-                resolveWithFullResponse: true
-            }).then((response) => {
-                this.credentials = response.body;
-            });
-        });
-    }
-}
-exports.OAuth2 = OAuth2;
+    auth.OAuth2 = OAuth2;
+})(auth = exports.auth || (exports.auth = {}));
 var event;
 (function (event) {
     /**

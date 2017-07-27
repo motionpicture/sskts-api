@@ -1,6 +1,6 @@
 "use strict";
 /**
- * 上映イベント検索サンプル
+ * 劇場取得サンプル
  *
  * @ignore
  */
@@ -14,20 +14,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
-const moment = require("moment");
-const Scenarios = require("./scenarios");
-const debug = createDebug('sskts-api:examples');
+const sskts = require("./lib/sskts-api");
+const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = new Scenarios.OAuth2(process.env.SSKTS_API_REFRESH_TOKEN, ['admin']);
-        const individualScreeningEvents = yield Scenarios.event.searchIndividualScreeningEvent({
+        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['admin']);
+        // 劇場情報取得
+        const movieTheater = yield sskts.place.findMovieTheater({
             auth: auth,
-            searchConditions: {
-                theater: '118',
-                day: moment().format('YYYYMMDD')
-            }
+            branchCode: '118'
         });
-        debug('number of individualScreeningEvents is', individualScreeningEvents.length);
+        debug('movieTheater is', movieTheater);
     });
 }
 main().then(() => {

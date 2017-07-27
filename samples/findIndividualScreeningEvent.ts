@@ -7,18 +7,20 @@
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import * as Scenarios from './scenarios';
+import * as sskts from './lib/sskts-api';
 
-const debug = createDebug('sskts-api:examples');
+const debug = createDebug('sskts-api:samples');
 
 async function main() {
-    const auth = new Scenarios.OAuth2(
-        <string>process.env.SSKTS_API_REFRESH_TOKEN,
+    const auth = new sskts.auth.OAuth2(
+        'motionpicture',
+        'motionpicture',
+        'teststate',
         ['admin']
     );
 
     // 上映イベント検索
-    const individualScreeningEvents = await Scenarios.event.searchIndividualScreeningEvent({
+    const individualScreeningEvents = await sskts.event.searchIndividualScreeningEvent({
         auth: auth,
         searchConditions: {
             theater: '118',
@@ -27,7 +29,7 @@ async function main() {
     });
 
     // イベント情報取得
-    const individualScreeningEvent = await Scenarios.event.findIndividualScreeningEvent({
+    const individualScreeningEvent = await sskts.event.findIndividualScreeningEvent({
         auth: auth,
         identifier: individualScreeningEvents[0].identifier
     });
