@@ -18,7 +18,7 @@ async function main() {
         ['admin']
     );
 
-    const movieTheaters = await sskts.place.searchMovieTheaters({
+    const movieTheaters = await sskts.organization.searchMovieTheaters({
         auth: auth
     });
     debug('movieTheaters are', movieTheaters);

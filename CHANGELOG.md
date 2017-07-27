@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - eventsルーターを追加。
 - placesルーターを追加。
 - peopleルーターを追加。
+- organizationsルーターを追加。
 
 ### Changed
 

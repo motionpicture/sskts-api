@@ -36,19 +36,26 @@ function main() {
             auth: auth,
             identifier: individualScreeningEvents[0].identifier
         });
+        // 劇場ショップ検索
+        const movieTheaters = yield sskts.organization.searchMovieTheaters({
+            auth: auth
+        });
         const theaterCode = individualScreeningEvent.coaInfo.theaterCode;
         const dateJouei = individualScreeningEvent.coaInfo.dateJouei;
         const titleCode = individualScreeningEvent.coaInfo.titleCode;
         const titleBranchNum = individualScreeningEvent.coaInfo.titleBranchNum;
         const timeBegin = individualScreeningEvent.coaInfo.timeBegin;
         const screenCode = individualScreeningEvent.coaInfo.screenCode;
+        // 劇場のショップを検索
+        const seller = movieTheaters.find((movieTheater) => movieTheater.location.branchCode === theaterCode);
         // 取引開始
         // 1分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
         debug('starting transaction...');
         const transaction = yield sskts.transaction.placeOrder.start({
             auth: auth,
-            expires: moment().add(1, 'minutes').toDate()
+            expires: moment().add(1, 'minutes').toDate(),
+            sellerId: seller.id
         });
         // 販売可能チケット検索
         const salesTicketResult = yield sskts_domain_1.COA.services.reserve.salesTicket({

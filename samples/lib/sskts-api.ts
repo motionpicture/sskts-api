@@ -120,11 +120,38 @@ export namespace place {
     }
 }
 
+export namespace organization {
+    /**
+     * 劇場組織検索
+     */
+    export async function searchMovieTheaters(args: {
+        auth: OAuth2client;
+        searchConditions?: {};
+    }) {
+        return await request.get({
+            url: `${API_ENDPOINT}/organizations/movieTheater`,
+            qs: args.searchConditions,
+            auth: { bearer: await args.auth.getAccessToken() },
+            json: true,
+            simple: false,
+            resolveWithFullResponse: true
+        }).then((response) => {
+            debug('theater searched', response.statusCode, response.body);
+            if (response.statusCode !== httpStatus.OK) {
+                throw new Error(response.body.message);
+            }
+
+            return <any[]>response.body.data;
+        });
+    }
+}
+
 export namespace transaction {
     export namespace placeOrder {
         export async function start(args: {
             auth: OAuth2client;
-            expires: Date;
+            expires: Date; // 取引期限
+            sellerId: string; // ショップID
         }) {
             return await request.post({
                 url: `${API_ENDPOINT}/transactions/placeOrder/start`,

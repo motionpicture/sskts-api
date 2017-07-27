@@ -116,6 +116,31 @@ var place;
     }
     place.findMovieTheater = findMovieTheater;
 })(place = exports.place || (exports.place = {}));
+var organization;
+(function (organization) {
+    /**
+     * 劇場組織検索
+     */
+    function searchMovieTheaters(args) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield request.get({
+                url: `${API_ENDPOINT}/organizations/movieTheater`,
+                qs: args.searchConditions,
+                auth: { bearer: yield args.auth.getAccessToken() },
+                json: true,
+                simple: false,
+                resolveWithFullResponse: true
+            }).then((response) => {
+                debug('theater searched', response.statusCode, response.body);
+                if (response.statusCode !== httpStatus.OK) {
+                    throw new Error(response.body.message);
+                }
+                return response.body.data;
+            });
+        });
+    }
+    organization.searchMovieTheaters = searchMovieTheaters;
+})(organization = exports.organization || (exports.organization = {}));
 var transaction;
 (function (transaction) {
     let placeOrder;

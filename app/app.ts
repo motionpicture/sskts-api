@@ -22,6 +22,7 @@ import devRouter from './routes/dev';
 import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
 import oauthRouter from './routes/oauth';
+import organizationsRouter from './routes/organizations';
 import peopleRouter from './routes/people';
 import placesRouter from './routes/places';
 import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
@@ -99,6 +100,7 @@ sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, <any>mongooseConnection
 // routers
 app.use('/health', healthRouter);
 app.use('/oauth', oauthRouter);
+app.use('/organizations', organizationsRouter);
 app.use('/people', peopleRouter);
 app.use('/places', placesRouter);
 app.use('/events', eventsRouter);
