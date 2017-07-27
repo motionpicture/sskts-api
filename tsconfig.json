@@ -40,6 +40,6 @@
     "exclude": [
         "locales",
         "node_modules",
-        "public"
+        "test"
     ]
 }

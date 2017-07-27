@@ -21,7 +21,7 @@ let TEST_OWNER: sskts.factory.owner.member.IVariableFields;
 
 let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(<string>process.env.MONGOLAB_URI);
 
     const now = Date.now().toString();
     TEST_OWNER = {

@@ -5,12 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- eventsルーターを追加。
+- placesルーターを追加。
+- peopleルーターを追加。
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
+- films,screens,theaters,performancesルーターを削除。
 
 ### Fixed
 

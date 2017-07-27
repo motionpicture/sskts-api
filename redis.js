@@ -14,7 +14,8 @@ let client;
 function createClient() {
     const c = sskts.redis.createClient({
         host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT,
+        // tslint:disable-next-line:no-magic-numbers
+        port: parseInt(process.env.REDIS_PORT, 10),
         password: process.env.REDIS_KEY,
         tls: { servername: process.env.TEST_REDIS_HOST },
         // If you return a number from this function, the retry will happen exactly after that time in milliseconds.

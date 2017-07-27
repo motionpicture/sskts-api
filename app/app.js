@@ -16,15 +16,13 @@ const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const basicAuth_1 = require("./middlewares/basicAuth");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
-const dev_1 = require("./routers/dev");
-const film_1 = require("./routers/film");
-const health_1 = require("./routers/health");
-const oauth_1 = require("./routers/oauth");
-const owner_1 = require("./routers/owner");
-const performance_1 = require("./routers/performance");
-const screen_1 = require("./routers/screen");
-const theater_1 = require("./routers/theater");
-const transaction_1 = require("./routers/transaction");
+const dev_1 = require("./routes/dev");
+const events_1 = require("./routes/events");
+const health_1 = require("./routes/health");
+const oauth_1 = require("./routes/oauth");
+const people_1 = require("./routes/people");
+const places_1 = require("./routes/places");
+const placeOrder_1 = require("./routes/transactions/placeOrder");
 const debug = createDebug('sskts-api:*');
 const app = express();
 app.use(basicAuth_1.default); // ベーシック認証
@@ -87,12 +85,10 @@ sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.def
 // routers
 app.use('/health', health_1.default);
 app.use('/oauth', oauth_1.default);
-app.use('/owners', owner_1.default);
-app.use('/theaters', theater_1.default);
-app.use('/films', film_1.default);
-app.use('/screens', screen_1.default);
-app.use('/performances', performance_1.default);
-app.use('/transactions', transaction_1.default);
+app.use('/people', people_1.default);
+app.use('/places', places_1.default);
+app.use('/events', events_1.default);
+app.use('/transactions/placeOrder', placeOrder_1.default);
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', dev_1.default);
 }

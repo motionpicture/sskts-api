@@ -11,7 +11,7 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED } from 'http-status';
 import logger from '../logger';
 
 export default (err: any, __: Request, res: Response, next: NextFunction) => {
-    logger.error('sskts-api:iddleware:errorHandler', err);
+    logger.error('sskts-api:middleware:errorHandler', err);
 
     if (res.headersSent) {
         next(err);

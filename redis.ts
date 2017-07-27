@@ -15,10 +15,11 @@ let client: sskts.redis.RedisClient | undefined;
 
 function createClient() {
     const c = sskts.redis.createClient({
-        host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT,
-        password: process.env.REDIS_KEY,
-        tls: { servername: process.env.TEST_REDIS_HOST },
+        host: <string>process.env.REDIS_HOST,
+        // tslint:disable-next-line:no-magic-numbers
+        port: parseInt(<string>process.env.REDIS_PORT, 10),
+        password: <string>process.env.REDIS_KEY,
+        tls: { servername: <string>process.env.TEST_REDIS_HOST },
         // If you return a number from this function, the retry will happen exactly after that time in milliseconds.
         // If you return a non-number, no further retry will happen and all offline commands are flushed with errors.
         // Return an error to return that specific error to all offline commands.
@@ -84,7 +85,7 @@ function resetClient() {
     client = undefined;
 }
 
-export function getClient() {
+export function getClient(): sskts.redis.RedisClient {
     if (client === undefined) {
         client = createClient();
     }

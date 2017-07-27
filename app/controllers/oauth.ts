@@ -43,10 +43,10 @@ export async function issueCredentials(req: Request): Promise<ICredentials> {
         case 'client_credentials':
             return await issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
 
-        case 'password':
-            return await issueCredentialsByPassword(
-                req.body.client_id, req.body.state, req.body.username, req.body.password, req.body.scopes
-            );
+        // case 'password':
+        //     return await issueCredentialsByPassword(
+        //         req.body.client_id, req.body.state, req.body.username, req.body.password, req.body.scopes
+        //     );
 
         default:
             // 非対応認可タイプ
@@ -100,33 +100,33 @@ export async function issueCredentialsByClient(clientId: string, state: string, 
     return await payload2credentials(payload);
 }
 
-export async function issueCredentialsByPassword(
-    clientId: string, state: string, username: string, password: string, scopes: string[]
-): Promise<ICredentials> {
-    // クライアントの存在確認
-    const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
-    const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
-    if (clientDoc === null) {
-        throw new Error(MESSAGE_CLIENT_NOT_FOUND);
-    }
+// export async function issueCredentialsByPassword(
+//     clientId: string, state: string, username: string, password: string, scopes: string[]
+// ): Promise<ICredentials> {
+//     // クライアントの存在確認
+//     const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+//     const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
+//     if (clientDoc === null) {
+//         throw new Error(MESSAGE_CLIENT_NOT_FOUND);
+//     }
 
-    // ログイン確認
-    const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
-    const memberOption = await sskts.service.member.login(username, password)(ownerAdapter);
-    if (memberOption.isEmpty) {
-        throw new Error(MESSAGE_INVALID_USERNAME_OR_PASSWORD);
-    }
+//     // ログイン確認
+//     const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
+//     const memberOption = await sskts.service.member.login(username, password)(ownerAdapter);
+//     if (memberOption.isEmpty) {
+//         throw new Error(MESSAGE_INVALID_USERNAME_OR_PASSWORD);
+//     }
 
-    const owner = memberOption.get();
-    const payload = sskts.factory.clientUser.create({
-        client: clientId,
-        state: state,
-        owner: owner.id,
-        scopes: scopes
-    });
+//     const owner = memberOption.get();
+//     const payload = sskts.factory.clientUser.create({
+//         client: clientId,
+//         state: state,
+//         owner: owner.id,
+//         scopes: scopes
+//     });
 
-    return await payload2credentials(payload);
-}
+//     return await payload2credentials(payload);
+// }
 
 /**
  * 任意のデータをJWTを使用して資格情報へ変換する
@@ -139,7 +139,7 @@ export async function payload2credentials(payload: Express.IUser): Promise<ICred
         debug('signing...', payload);
         jwt.sign(
             payload,
-            process.env.SSKTS_API_SECRET,
+            <string>process.env.SSKTS_API_SECRET,
             {
                 expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
             },

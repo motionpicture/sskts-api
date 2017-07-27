@@ -13,7 +13,7 @@ const debug = createDebug('sskts-api:middlewares:authentication');
 export default [
     jwt(
         {
-            secret: process.env.SSKTS_API_SECRET
+            secret: <string>process.env.SSKTS_API_SECRET
         }
     ),
     (req: Request, __: Response, next: NextFunction) => {

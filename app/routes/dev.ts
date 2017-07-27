@@ -38,7 +38,7 @@ devRouter.get(
 devRouter.get(
     '/mongoose/connect',
     (__, res) => {
-        sskts.mongoose.connect(process.env.MONGOLAB_URI, <any>mongooseConnectionOptions, () => {
+        sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, <any>mongooseConnectionOptions, () => {
             res.status(NO_CONTENT).end();
         });
     });

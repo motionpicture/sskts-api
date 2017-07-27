@@ -1,4 +1,7 @@
 "use strict";
+/**
+ * APIシナリオ
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,18 +11,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * 取引フローテストスクリプト
- *
- * @ignore
- */
 const createDebug = require("debug");
+// import * as httpStatus from 'http-status';
 const request = require("request-promise-native");
 const debug = createDebug('sskts-api:examples');
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
-function main() {
+function getAccessToken() {
     return __awaiter(this, void 0, void 0, function* () {
-        const response = yield request.post({
+        debug('requesting access token...');
+        return yield request.post({
             url: `${API_ENDPOINT}/oauth/token`,
             body: {
                 assertion: process.env.SSKTS_API_REFRESH_TOKEN,
@@ -28,22 +28,7 @@ function main() {
             json: true,
             simple: false,
             resolveWithFullResponse: true
-        });
-        debug('oauth token result:', response.statusCode, response.body);
-        const accessToken = response.body.access_token;
-        const theaterResponse = yield request.get({
-            url: `${API_ENDPOINT}/theaters/118`,
-            // url: 'https://devssktsapionlinux.azurewebsites.net/theaters/118',
-            auth: { bearer: accessToken },
-            json: true,
-            simple: false,
-            resolveWithFullResponse: true
-        });
-        debug('theater result:', theaterResponse.statusCode, theaterResponse.body);
+        }).then((response) => response.body.access_token);
     });
 }
-main().then(() => {
-    debug('main processed.');
-}).catch((err) => {
-    console.error(err.message);
-});
+exports.getAccessToken = getAccessToken;

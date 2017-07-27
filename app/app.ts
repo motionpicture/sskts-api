@@ -18,15 +18,13 @@ import mongooseConnectionOptions from '../mongooseConnectionOptions';
 import basicAuth from './middlewares/basicAuth';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
-import devRouter from './routers/dev';
-import filmRouter from './routers/film';
-import healthRouter from './routers/health';
-import oauthRouter from './routers/oauth';
-import ownerRouter from './routers/owner';
-import performanceRouter from './routers/performance';
-import screenRouter from './routers/screen';
-import theaterRouter from './routers/theater';
-import transactionRouter from './routers/transaction';
+import devRouter from './routes/dev';
+import eventsRouter from './routes/events';
+import healthRouter from './routes/health';
+import oauthRouter from './routes/oauth';
+import peopleRouter from './routes/people';
+import placesRouter from './routes/places';
+import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
 
 const debug = createDebug('sskts-api:*');
 
@@ -96,17 +94,15 @@ app.use(i18n.init);
 
 // @types/mongooseが古くて、新しいMongoDBクライアントの接続オプションに適合していない
 // 型定義の更新待ち
-sskts.mongoose.connect(process.env.MONGOLAB_URI, <any>mongooseConnectionOptions);
+sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, <any>mongooseConnectionOptions);
 
 // routers
 app.use('/health', healthRouter);
 app.use('/oauth', oauthRouter);
-app.use('/owners', ownerRouter);
-app.use('/theaters', theaterRouter);
-app.use('/films', filmRouter);
-app.use('/screens', screenRouter);
-app.use('/performances', performanceRouter);
-app.use('/transactions', transactionRouter);
+app.use('/people', peopleRouter);
+app.use('/places', placesRouter);
+app.use('/events', eventsRouter);
+app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', devRouter);

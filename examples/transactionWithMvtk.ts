@@ -10,7 +10,9 @@ import * as httpStatus from 'http-status';
 import * as moment from 'moment';
 import * as request from 'request-promise-native';
 
-const debug = createDebug('sskts-api:examples:transactionWithMvtk');
+import * as Scenarios from './scenarios';
+
+const debug = createDebug('sskts-api:examples');
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 
 // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
@@ -19,18 +21,7 @@ async function main() {
     const performanceId = '11820170331170190502020'; // パフォーマンスID 空席なくなったら変更する
 
     // アクセストークン取得
-    response = await request.post({
-        url: `${API_ENDPOINT}/oauth/token`,
-        body: {
-            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
-            scope: 'admin'
-        },
-        json: true,
-        simple: false,
-        resolveWithFullResponse: true
-    });
-    debug('oauth token result:', response.statusCode, response.body);
-    const accessToken = response.body.access_token;
+    const accessToken = await Scenarios.getAccessToken();
 
     // パフォーマンス取得
     debug('finding performance...');
@@ -122,83 +113,83 @@ async function main() {
     const anonymousOwnerId = (anonymousOwner) ? anonymousOwner.id : null;
 
     // 販売可能チケット検索
-    const salesTicketResult = await sskts.COA.ReserveService.salesTicket({
-        theater_code: theaterCode,
-        date_jouei: dateJouei,
-        title_code: titleCode,
-        title_branch_num: titleBranchNum,
-        time_begin: timeBegin,
-        flg_member: '0'
+    const salesTicketResult = await sskts.COA.services.reserve.salesTicket({
+        theaterCode: theaterCode,
+        dateJouei: dateJouei,
+        titleCode: titleCode,
+        titleBranchNum: titleBranchNum,
+        timeBegin: timeBegin,
+        flgMember: sskts.COA.services.reserve.FlgMember.NonMember
     });
 
     // COA空席確認
-    const getStateReserveSeatResult = await sskts.COA.ReserveService.stateReserveSeat({
-        theater_code: theaterCode,
-        date_jouei: dateJouei,
-        title_code: titleCode,
-        title_branch_num: titleBranchNum,
-        time_begin: timeBegin,
-        screen_code: screenCode
+    const getStateReserveSeatResult = await sskts.COA.services.reserve.stateReserveSeat({
+        theaterCode: theaterCode,
+        dateJouei: dateJouei,
+        titleCode: titleCode,
+        titleBranchNum: titleBranchNum,
+        timeBegin: timeBegin,
+        screenCode: screenCode
     });
     debug('getStateReserveSeatResult is', getStateReserveSeatResult);
-    const sectionCode = getStateReserveSeatResult.list_seat[0].seat_section;
-    const freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
-        return freeSeat.seat_num;
+    const sectionCode = getStateReserveSeatResult.listSeat[0].seatSection;
+    const freeSeatCodes = getStateReserveSeatResult.listSeat[0].listFreeSeat.map((freeSeat) => {
+        return freeSeat.seatNum;
     });
     debug('freeSeatCodes count', freeSeatCodes.length);
-    if (getStateReserveSeatResult.cnt_reserve_free === 0) {
+    if (getStateReserveSeatResult.cntReserveFree === 0) {
         throw new Error('no available seats.');
     }
 
     // COA仮予約
-    const reserveSeatsTemporarilyResult = await sskts.COA.ReserveService.updTmpReserveSeat({
-        theater_code: theaterCode,
-        date_jouei: dateJouei,
-        title_code: titleCode,
-        title_branch_num: titleBranchNum,
-        time_begin: timeBegin,
-        screen_code: screenCode,
-        list_seat: [{
-            seat_section: sectionCode,
-            seat_num: freeSeatCodes[0]
+    const reserveSeatsTemporarilyResult = await sskts.COA.services.reserve.updTmpReserveSeat({
+        theaterCode: theaterCode,
+        dateJouei: dateJouei,
+        titleCode: titleCode,
+        titleBranchNum: titleBranchNum,
+        timeBegin: timeBegin,
+        screenCode: screenCode,
+        listSeat: [{
+            seatSection: sectionCode,
+            seatNum: freeSeatCodes[0]
         }, {
-            seat_section: sectionCode,
-            seat_num: freeSeatCodes[1]
+            seatSection: sectionCode,
+            seatNum: freeSeatCodes[1]
         }]
     });
     debug(reserveSeatsTemporarilyResult);
 
     // COAオーソリ追加
     debug('adding authorizations coaSeatReservation...');
-    const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
+    const totalPrice = salesTicketResult[0].salePrice + salesTicketResult[0].salePrice;
     response = await request.post({
         url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
         auth: { bearer: accessToken },
         body: {
             owner_from: promoterOwnerId,
             owner_to: anonymousOwnerId,
-            coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
+            coa_tmpReserveNum: reserveSeatsTemporarilyResult.tmpReserveNum,
             coa_theater_code: theaterCode,
             coa_date_jouei: dateJouei,
             coa_title_code: titleCode,
             coa_title_branch_num: titleBranchNum,
             coa_time_begin: timeBegin,
             coa_screen_code: screenCode,
-            seats: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
+            seats: reserveSeatsTemporarilyResult.listTmpReserve.map((tmpReserve) => {
                 return {
                     performance: performance.id,
-                    screen_section: tmpReserve.seat_section,
-                    seat_code: tmpReserve.seat_num,
-                    ticket_code: salesTicketResult[0].ticket_code,
+                    screen_section: tmpReserve.seatSection,
+                    seat_code: tmpReserve.seatNum,
+                    ticket_code: salesTicketResult[0].ticketCode,
                     ticket_name: {
-                        ja: salesTicketResult[0].ticket_name,
-                        en: salesTicketResult[0].ticket_name_eng
+                        ja: salesTicketResult[0].ticketName,
+                        en: salesTicketResult[0].ticketNameEng
                     },
-                    ticket_name_kana: salesTicketResult[0].ticket_name_kana,
-                    std_price: salesTicketResult[0].std_price,
-                    add_price: salesTicketResult[0].add_price,
+                    ticket_name_kana: salesTicketResult[0].ticketNameKana,
+                    std_price: salesTicketResult[0].stdPrice,
+                    add_price: salesTicketResult[0].addPrice,
                     dis_price: 0,
-                    sale_price: salesTicketResult[0].sale_price,
+                    sale_price: salesTicketResult[0].salePrice,
                     mvtk_app_price: 0,
                     add_glasses: 0,
                     kbn_eisyahousiki: '00',
@@ -249,7 +240,7 @@ async function main() {
     //     title_branch_num: titleBranchNum,
     //     time_begin: timeBegin,
     //     // screen_code: screenCode,
-    //     tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
+    //     tmpReserveNum: reserveSeatsTemporarilyResult.tmpReserveNum,
     //     reserve_name: '山崎 哲',
     //     reserve_name_jkana: 'ヤマザキ テツ',
     //     tel_num: '09012345678',
@@ -300,8 +291,8 @@ async function main() {
                     ]
                 }
             ],
-            zsk_info: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
-                return { zsk_cd: tmpReserve.seat_num };
+            zsk_info: reserveSeatsTemporarilyResult.listTmpReserve.map((tmpReserve) => {
+                return { zsk_cd: tmpReserve.seatNum };
             }),
             skhn_cd: '1622700'
         },
@@ -320,7 +311,7 @@ async function main() {
         auth: { bearer: accessToken },
         body: {
             inquiry_theater: theaterCode,
-            inquiry_id: reserveSeatsTemporarilyResult.tmp_reserve_num,
+            inquiry_id: reserveSeatsTemporarilyResult.tmpReserveNum,
             inquiry_pass: tel
         },
         json: true,
@@ -342,7 +333,7 @@ sskts-api:examples:transaction 様\n
 ※チケット発券時は、自動発券機に下記チケットQRコードをかざしていただくか、購入番号と電話番号を入力していただく必要があります。\n
 -------------------------------------------------------------------\n
 \n
-◆購入番号 ：${reserveSeatsTemporarilyResult.tmp_reserve_num}\n
+◆購入番号 ：${reserveSeatsTemporarilyResult.tmpReserveNum}\n
 ◆電話番号 ：09012345678\n
 ◆合計金額 ：${totalPrice}円\n
 \n
@@ -394,7 +385,7 @@ http://www.cinemasunshine.co.jp/\n
         auth: { bearer: accessToken },
         body: {
             inquiry_theater: theaterCode,
-            inquiry_id: reserveSeatsTemporarilyResult.tmp_reserve_num,
+            inquiry_id: reserveSeatsTemporarilyResult.tmpReserveNum,
             inquiry_pass: tel
         },
         json: true,
