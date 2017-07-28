@@ -17,7 +17,7 @@ organizationsRouter.use(authentication);
 
 organizationsRouter.get(
     '/movieTheater',
-    permitScopes(['admin', 'organizations', 'organizations.read-only']),
+    permitScopes(['organizations', 'organizations.read-only']),
     validator,
     async (__, res, next) => {
         try {

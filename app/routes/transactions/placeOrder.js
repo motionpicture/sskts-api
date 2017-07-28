@@ -25,7 +25,7 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 placeOrderTransactionsRouter.use(authentication_1.default);
-placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'transactions']), (req, _, next) => {
+placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     // expiresはsecondsのUNIXタイムスタンプで
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isInt();
     req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
@@ -91,7 +91,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'tr
 }));
 // placeOrderTransactionsRouter.get(
 //     '/:id',
-//     permitScopes(['admin', 'transactions', 'transactions.read-only']),
+//     permitScopes(['transactions', 'transactions.read-only']),
 //     (_1, _2, next) => {
 //         // todo validation
 //         next();
@@ -126,7 +126,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'tr
 // );
 // placeOrderTransactionsRouter.patch(
 //     '/:id/anonymousOwner',
-//     permitScopes(['admin', 'transactions.owners']),
+//     permitScopes(['transactions.owners']),
 //     (req, _, next) => {
 //         req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
 //         req.checkBody('name_last', 'invalid name_last').optional().notEmpty().withMessage('name_last should not be empty');
@@ -164,7 +164,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'tr
 /**
  * 購入者情報を変更する
  */
-placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['admin', 'transactions']), (req, _, next) => {
+placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('familyName').notEmpty().withMessage('required');
     req.checkBody('givenName').notEmpty().withMessage('required');
     req.checkBody('telephone').notEmpty().withMessage('required');
@@ -196,7 +196,7 @@ placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['
  */
 // placeOrderTransactionsRouter.post(
 //     '/:id/owners/:ownerId/cards',
-//     permitScopes(['admin', 'transactions.owners.cards']),
+//     permitScopes(['transactions.owners.cards']),
 //     (req, _2, next) => {
 //         /*
 //         req.body = {
@@ -240,7 +240,7 @@ placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['
 //         }
 //     }
 // );
-placeOrderTransactionsRouter.post('/:id/paymentInfos/creditCard', permitScopes_1.default(['admin', 'transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.post('/:id/paymentInfos/creditCard', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     // req.checkBody('data.orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
     // req.checkBody('data.amount', 'invalid amount').notEmpty().withMessage('amount is required');
     // req.checkBody('data.method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
@@ -269,7 +269,7 @@ placeOrderTransactionsRouter.post('/:id/paymentInfos/creditCard', permitScopes_1
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:id/seatReservationAuthorization', permitScopes_1.default(['admin', 'transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.post('/:id/seatReservationAuthorization', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -317,7 +317,7 @@ placeOrderTransactionsRouter.post('/:id/seatReservationAuthorization', permitSco
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:id/paymentInfos/mvtk', permitScopes_1.default(['admin', 'transactions']), (req, _, next) => {
+placeOrderTransactionsRouter.post('/:id/paymentInfos/mvtk', permitScopes_1.default(['transactions']), (req, _, next) => {
     // 互換性維持のための対応
     if (req.body.data === undefined) {
         req.body.data = {
@@ -355,7 +355,7 @@ placeOrderTransactionsRouter.post('/:id/paymentInfos/mvtk', permitScopes_1.defau
         next(error);
     }
 }));
-placeOrderTransactionsRouter.delete('/:id/seatReservationAuthorization/:authorizationId', permitScopes_1.default(['admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:id/seatReservationAuthorization/:authorizationId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(req.params.id, req.params.authorization_id)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
@@ -366,7 +366,7 @@ placeOrderTransactionsRouter.delete('/:id/seatReservationAuthorization/:authoriz
 }));
 // placeOrderTransactionsRouter.post(
 //     '/:id/notifications/email',
-//     permitScopes(['admin', 'transactions.notifications']),
+//     permitScopes(['transactions.notifications']),
 //     (req, _, next) => {
 //         // 互換性維持のための対応
 //         if (req.body.data === undefined) {
@@ -409,7 +409,7 @@ placeOrderTransactionsRouter.delete('/:id/seatReservationAuthorization/:authoriz
 // );
 // placeOrderTransactionsRouter.delete(
 //     '/:id/notifications/:notification_id',
-//     permitScopes(['admin', 'transactions.notifications']),
+//     permitScopes(['transactions.notifications']),
 //     (_1, _2, next) => {
 //         // todo validations
 //         next();
@@ -426,7 +426,7 @@ placeOrderTransactionsRouter.delete('/:id/seatReservationAuthorization/:authoriz
 //         }
 //     }
 // );
-placeOrderTransactionsRouter.post('/:id/confirm', permitScopes_1.default(['admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:id/confirm', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = yield sskts.service.transaction.placeOrder.confirm(req.params.id)(sskts.adapter.transaction(sskts.mongoose.connection));
         debug('transaction confirmed', order);

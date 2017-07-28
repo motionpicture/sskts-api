@@ -2,9 +2,11 @@
  * APIリクエストモジュール
  */
 
+import * as createDebug from 'debug';
 import * as request from 'request-promise-native';
 // import * as parseString from 'string-template';
 
+const debug = createDebug('sskts-api:apiRequest');
 const API_ENDPOINT = <string>process.env.TEST_API_ENDPOINT;
 
 export interface IOptions extends request.OptionsWithUri {
@@ -37,9 +39,22 @@ function createAPIRequest(options: IOptions) {
 
     return request(options)
         .then((response) => {
+            debug('request processed', response.statusCode, response.body);
             if (expectedStatusCodes.indexOf(response.statusCode) < 0) {
                 // todo エラーパターン
-                throw response.body;
+                if (typeof response.body === 'string') {
+                    throw new Error(response.body);
+                }
+
+                if (typeof response.body === 'object' && response.body.errors !== undefined) {
+                    const message = (<any[]>response.body.errors).map((error) => {
+                        return `[${error.title}]${error.detail}`;
+                    }).join(', ');
+
+                    throw new Error(message);
+                }
+
+                throw new Error('An unexpected error occurred');
             }
 
             if (response.body !== undefined && response.body.data !== undefined) {

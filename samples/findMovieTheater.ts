@@ -15,7 +15,7 @@ async function main() {
         'motionpicture',
         'motionpicture',
         'teststate',
-        ['admin']
+        ['places.read-only']
     );
 
     // 劇場情報取得

@@ -20,7 +20,7 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 organizationsRouter.use(authentication_1.default);
-organizationsRouter.get('/movieTheater', permitScopes_1.default(['admin', 'organizations', 'organizations.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
+organizationsRouter.get('/movieTheater', permitScopes_1.default(['organizations', 'organizations.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const movieTheaters = yield sskts.service.organization.searchMovieTheaters({})(sskts.adapter.organization(sskts.mongoose.connection));
         res.json({

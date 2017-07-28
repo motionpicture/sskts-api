@@ -15,7 +15,7 @@ async function main() {
         'motionpicture',
         'motionpicture',
         'teststate',
-        ['admin']
+        ['organizations.read-only']
     );
 
     const movieTheaters = await sskts.service.organization.searchMovieTheaters({

@@ -22,7 +22,7 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 eventsRouter.use(authentication_1.default);
-eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.params.identifier)(sskts.adapter.event(sskts.mongoose.connection)).then((option) => {
             option.match({
@@ -43,7 +43,7 @@ eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default
         next(error);
     }
 }));
-eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['admin', 'events', 'events.read-only']), (__1, __2, next) => {
+eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['events', 'events.read-only']), (__1, __2, next) => {
     // req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
     // req.checkQuery('day', 'invalid day').notEmpty().withMessage('day is required');
     next();

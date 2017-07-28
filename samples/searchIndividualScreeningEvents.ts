@@ -16,7 +16,7 @@ async function main() {
         'motionpicture',
         'motionpicture',
         'teststate',
-        ['admin']
+        ['events.read-only']
     );
 
     const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({

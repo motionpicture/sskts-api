@@ -15,10 +15,9 @@ async function main() {
         'motionpicture',
         'motionpicture',
         'teststate',
-        ['admin']
+        ['orders.read-only']
     );
 
-    // 劇場情報取得
     const order = await sskts.service.order.findByOrderInquiryKey({
         auth: auth,
         orderInquiryKey: {

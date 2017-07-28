@@ -21,7 +21,7 @@ ordersRouter.use(authentication);
  */
 ordersRouter.post(
     '/findByOrderInquiryKey',
-    permitScopes(['admin', 'orders', 'orders.read-only']),
+    permitScopes(['orders', 'orders.read-only']),
     (req, _, next) => {
         req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
         req.checkBody('orderNumber', 'invalid orderNumber').notEmpty().withMessage('orderNumber is required');

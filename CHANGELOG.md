@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 - films,screens,theaters,performancesルーターを削除。
+- adminスコープを削除。
 
 ### Fixed
 

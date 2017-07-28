@@ -22,7 +22,11 @@ const debug = createDebug('sskts-api:samples');
 // tslint:disable-next-line:max-func-body-length
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['admin']);
+        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', [
+            'transactions',
+            'events.read-only',
+            'organizations.read-only'
+        ]);
         // 上映イベント検索
         const individualScreeningEvents = yield sskts.service.event.searchIndividualScreeningEvent({
             auth: auth,

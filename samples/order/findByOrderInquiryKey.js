@@ -18,8 +18,7 @@ const sskts = require("../lib/sskts-api");
 const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['admin']);
-        // 劇場情報取得
+        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['orders.read-only']);
         const order = yield sskts.service.order.findByOrderInquiryKey({
             auth: auth,
             orderInquiryKey: {

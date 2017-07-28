@@ -24,7 +24,7 @@ ordersRouter.use(authentication_1.default);
 /**
  * 注文照会
  */
-ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['admin', 'orders', 'orders.read-only']), (req, _, next) => {
+ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'orders.read-only']), (req, _, next) => {
     req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
     req.checkBody('orderNumber', 'invalid orderNumber').notEmpty().withMessage('orderNumber is required');
     req.checkBody('telephone', 'invalid telephone').notEmpty().withMessage('telephone is required');

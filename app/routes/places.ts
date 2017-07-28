@@ -18,7 +18,7 @@ placesRouter.use(authentication);
 
 placesRouter.get(
     '/movieTheater/:branchCode',
-    permitScopes(['admin', 'places', 'places.read-only']),
+    permitScopes(['places', 'places.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -45,7 +45,7 @@ placesRouter.get(
 
 placesRouter.get(
     '/movieTheater',
-    permitScopes(['admin', 'places', 'places.read-only']),
+    permitScopes(['places', 'places.read-only']),
     validator,
     async (__, res, next) => {
         try {

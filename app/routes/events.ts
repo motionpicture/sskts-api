@@ -19,7 +19,7 @@ eventsRouter.use(authentication);
 
 eventsRouter.get(
     '/individualScreeningEvent/:identifier',
-    permitScopes(['admin', 'events', 'events.read-only']),
+    permitScopes(['events', 'events.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -47,7 +47,7 @@ eventsRouter.get(
 
 eventsRouter.get(
     '/individualScreeningEvent',
-    permitScopes(['admin', 'events', 'events.read-only']),
+    permitScopes(['events', 'events.read-only']),
     (__1, __2, next) => {
         // req.checkQuery('theater', 'invalid theater').notEmpty().withMessage('theater is required');
         // req.checkQuery('day', 'invalid day').notEmpty().withMessage('day is required');

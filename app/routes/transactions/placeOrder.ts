@@ -24,7 +24,7 @@ placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['admin', 'transactions']),
+    permitScopes(['transactions']),
     (req, _, next) => {
         // expiresはsecondsのUNIXタイムスタンプで
         req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isInt();
@@ -104,7 +104,7 @@ placeOrderTransactionsRouter.post(
 
 // placeOrderTransactionsRouter.get(
 //     '/:id',
-//     permitScopes(['admin', 'transactions', 'transactions.read-only']),
+//     permitScopes(['transactions', 'transactions.read-only']),
 //     (_1, _2, next) => {
 //         // todo validation
 
@@ -141,7 +141,7 @@ placeOrderTransactionsRouter.post(
 
 // placeOrderTransactionsRouter.patch(
 //     '/:id/anonymousOwner',
-//     permitScopes(['admin', 'transactions.owners']),
+//     permitScopes(['transactions.owners']),
 //     (req, _, next) => {
 //         req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
 //         req.checkBody('name_last', 'invalid name_last').optional().notEmpty().withMessage('name_last should not be empty');
@@ -186,7 +186,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:id/agent/profile',
-    permitScopes(['admin', 'transactions']),
+    permitScopes(['transactions']),
     (req, _, next) => {
         req.checkBody('familyName').notEmpty().withMessage('required');
         req.checkBody('givenName').notEmpty().withMessage('required');
@@ -229,7 +229,7 @@ placeOrderTransactionsRouter.put(
  */
 // placeOrderTransactionsRouter.post(
 //     '/:id/owners/:ownerId/cards',
-//     permitScopes(['admin', 'transactions.owners.cards']),
+//     permitScopes(['transactions.owners.cards']),
 //     (req, _2, next) => {
 //         /*
 //         req.body = {
@@ -277,7 +277,7 @@ placeOrderTransactionsRouter.put(
 
 placeOrderTransactionsRouter.post(
     '/:id/paymentInfos/creditCard',
-    permitScopes(['admin', 'transactions']),
+    permitScopes(['transactions']),
     (__1, __2, next) => {
         // req.checkBody('data.orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
         // req.checkBody('data.amount', 'invalid amount').notEmpty().withMessage('amount is required');
@@ -317,7 +317,7 @@ placeOrderTransactionsRouter.post(
 
 placeOrderTransactionsRouter.post(
     '/:id/seatReservationAuthorization',
-    permitScopes(['admin', 'transactions']),
+    permitScopes(['transactions']),
     (__1, __2, next) => {
         next();
     },
@@ -377,7 +377,7 @@ placeOrderTransactionsRouter.post(
 
 placeOrderTransactionsRouter.post(
     '/:id/paymentInfos/mvtk',
-    permitScopes(['admin', 'transactions']),
+    permitScopes(['transactions']),
     (req, _, next) => {
         // 互換性維持のための対応
         if (req.body.data === undefined) {
@@ -425,7 +425,7 @@ placeOrderTransactionsRouter.post(
 
 placeOrderTransactionsRouter.delete(
     '/:id/seatReservationAuthorization/:authorizationId',
-    permitScopes(['admin', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -442,7 +442,7 @@ placeOrderTransactionsRouter.delete(
 
 // placeOrderTransactionsRouter.post(
 //     '/:id/notifications/email',
-//     permitScopes(['admin', 'transactions.notifications']),
+//     permitScopes(['transactions.notifications']),
 //     (req, _, next) => {
 //         // 互換性維持のための対応
 //         if (req.body.data === undefined) {
@@ -489,7 +489,7 @@ placeOrderTransactionsRouter.delete(
 
 // placeOrderTransactionsRouter.delete(
 //     '/:id/notifications/:notification_id',
-//     permitScopes(['admin', 'transactions.notifications']),
+//     permitScopes(['transactions.notifications']),
 //     (_1, _2, next) => {
 //         // todo validations
 
@@ -511,7 +511,7 @@ placeOrderTransactionsRouter.delete(
 
 placeOrderTransactionsRouter.post(
     '/:id/confirm',
-    permitScopes(['admin', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         try {
