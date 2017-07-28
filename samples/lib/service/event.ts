@@ -1,9 +1,10 @@
 /**
- * SSKTS API Node.js Client
+ * イベントサービス
  *
- * @ignore
+ * @namespace service.event
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as httpStatus from 'http-status';
 import apiRequest from '../apiRequest';
 
@@ -14,11 +15,8 @@ import OAuth2client from '../auth/oAuth2client';
  */
 export async function searchIndividualScreeningEvent(args: {
     auth: OAuth2client;
-    searchConditions: {
-        theater: string;
-        day: string;
-    }
-}) {
+    searchConditions: sskts.service.event.ISearchPerformancesConditions
+}): Promise<sskts.factory.event.individualScreeningEvent.IEvent[]> {
     return await apiRequest({
         uri: '/events/individualScreeningEvent',
         qs: args.searchConditions,
@@ -34,7 +32,7 @@ export async function searchIndividualScreeningEvent(args: {
 export async function findIndividualScreeningEvent(args: {
     auth: OAuth2client;
     identifier: string;
-}) {
+}): Promise<any> {
     return await apiRequest({
         uri: `/events/individualScreeningEvent/${args.identifier}`,
         auth: { bearer: await args.auth.getAccessToken() },

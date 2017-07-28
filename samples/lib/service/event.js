@@ -1,8 +1,8 @@
 "use strict";
 /**
- * SSKTS API Node.js Client
+ * イベントサービス
  *
- * @ignore
+ * @namespace service.event
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {

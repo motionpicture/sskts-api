@@ -1,9 +1,10 @@
 /**
- * SSKTS API Node.js Client
+ * 場所サービス
  *
- * @ignore
+ * @namespace service.place
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as httpStatus from 'http-status';
 import apiRequest from '../apiRequest';
 
@@ -15,7 +16,7 @@ import OAuth2client from '../auth/oAuth2client';
 export async function searchMovieTheaters(args: {
     auth: OAuth2client;
     searchConditions?: {};
-}) {
+}): Promise<sskts.service.place.ISearchMovieTheaterResult[]> {
     return await apiRequest({
         uri: '/places/movieTheater',
         method: 'GET',
@@ -31,7 +32,7 @@ export async function searchMovieTheaters(args: {
 export async function findMovieTheater(args: {
     auth: OAuth2client;
     branchCode: string;
-}) {
+}): Promise<sskts.factory.place.movieTheater.IPlace | null> {
     return await apiRequest({
         uri: `/places/movieTheater/${args.branchCode}`,
         method: 'GET',

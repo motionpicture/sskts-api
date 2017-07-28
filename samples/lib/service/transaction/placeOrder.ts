@@ -18,7 +18,7 @@ export async function start(args: {
     auth: OAuth2client;
     expires: Date; // 取引期限
     sellerId: string; // ショップID
-}) {
+}): Promise<sskts.factory.transaction.ITransaction> {
     return await apiRequest({
         uri: '/transactions/placeOrder/start',
         method: 'POST',
@@ -61,7 +61,7 @@ export async function createSeatReservationAuthorization(args: {
     transactionId: string;
     eventIdentifier: string;
     offers: IOffer[];
-}) {
+}): Promise<sskts.factory.authorization.seatReservation.IAuthorization> {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/seatReservationAuthorization`,
         method: 'POST',
@@ -74,14 +74,14 @@ export async function createSeatReservationAuthorization(args: {
     });
 }
 
-export interface IGMOCardRaw {
+export interface ICreditCardRaw {
     method: string;
     cardNo: string;
     expire: string;
     securityCode: string;
 }
-export type IGMOCardTokenized = string; // トークン決済の場合こちら
-export type IGMOCard = IGMOCardRaw | IGMOCardTokenized;
+export type ICreditCardTokenized = string; // トークン決済の場合こちら
+export type ICreditCard = ICreditCardRaw | ICreditCardTokenized;
 
 /**
  * 決済方法として、クレジットカードを追加する
@@ -91,8 +91,8 @@ export async function authorizeGMOCard(args: {
     transactionId: string;
     orderId: string;
     amount: number;
-    creditCard: IGMOCard;
-}) {
+    creditCard: ICreditCard;
+}): Promise<sskts.factory.authorization.gmo.IAuthorization> {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/creditCard`,
         method: 'POST',
@@ -121,7 +121,7 @@ export async function createMvtkAuthorization(args: {
     auth: OAuth2client;
     transactionId: string;
     mvtk: IMvtk;
-}) {
+}): Promise<sskts.factory.authorization.mvtk.IAuthorization> {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/mvtk`,
         method: 'POST',
@@ -141,7 +141,7 @@ export async function setAgentProfile(args: {
     auth: OAuth2client;
     transactionId: string;
     profile: IAgentProfile;
-}) {
+}): Promise<void> {
     await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/agent/profile`,
         method: 'PUT',
@@ -154,7 +154,7 @@ export async function setAgentProfile(args: {
 export async function confirm(args: {
     auth: OAuth2client;
     transactionId: string;
-}) {
+}): Promise<sskts.factory.order.IOrder> {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/confirm`,
         method: 'POST',

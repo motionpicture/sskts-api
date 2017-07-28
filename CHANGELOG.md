@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - placesルーターを追加。
 - peopleルーターを追加。
 - organizationsルーターを追加。
+- typescript向けのクライアントライブラリを追加。
 
 ### Changed
 

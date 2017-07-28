@@ -1,26 +1,19 @@
 /**
- * SSKTS API Node.js Client
+ * 注文サービス
  *
- * @ignore
+ * @namespace service.order
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as httpStatus from 'http-status';
 import apiRequest from '../apiRequest';
 
 import OAuth2client from '../auth/oAuth2client';
 
-export interface IOrderInquiryKey {
-    theaterCode: string;
-    orderNumber: number;
-    telephone: string;
-}
-
-export type IOrder = any;
-
 export async function findByOrderInquiryKey(args: {
     auth: OAuth2client;
-    orderInquiryKey: IOrderInquiryKey;
-}): Promise<IOrder | null> {
+    orderInquiryKey: sskts.factory.orderInquiryKey.IOrderInquiryKey;
+}): Promise<sskts.factory.order.IOrder | null> {
     return await apiRequest({
         uri: '/orders/findByOrderInquiryKey',
         method: 'POST',

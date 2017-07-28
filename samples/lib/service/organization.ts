@@ -1,9 +1,10 @@
 /**
- * SSKTS API Node.js Client
+ * 組織サービス
  *
- * @ignore
+ * @namespace service.organization
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as httpStatus from 'http-status';
 import apiRequest from '../apiRequest';
 
@@ -15,7 +16,7 @@ import OAuth2client from '../auth/oAuth2client';
 export async function searchMovieTheaters(args: {
     auth: OAuth2client;
     searchConditions?: {};
-}): Promise<any[]> {
+}): Promise<sskts.service.organization.ISearchMovieTheaterResult[]> {
     return await apiRequest({
         uri: '/organizations/movieTheater',
         method: 'GET',

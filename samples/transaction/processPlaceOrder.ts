@@ -56,6 +56,9 @@ async function main() {
     // 劇場のショップを検索
     const seller = movieTheaters.find((movieTheater) => movieTheater.location.branchCode === theaterCode);
     debug('seller is', seller);
+    if (seller === undefined) {
+        throw new Error('劇場ショップはまだオープンしていません');
+    }
 
     // 取引開始
     // 1分後のunix timestampを送信する場合
