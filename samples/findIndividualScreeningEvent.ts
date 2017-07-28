@@ -20,7 +20,7 @@ async function main() {
     );
 
     // 上映イベント検索
-    const individualScreeningEvents = await sskts.event.searchIndividualScreeningEvent({
+    const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({
         auth: auth,
         searchConditions: {
             theater: '118',
@@ -29,7 +29,7 @@ async function main() {
     });
 
     // イベント情報取得
-    const individualScreeningEvent = await sskts.event.findIndividualScreeningEvent({
+    const individualScreeningEvent = await sskts.service.event.findIndividualScreeningEvent({
         auth: auth,
         identifier: individualScreeningEvents[0].identifier
     });

@@ -24,7 +24,7 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['admin']);
         // 上映イベント検索
-        const individualScreeningEvents = yield sskts.event.searchIndividualScreeningEvent({
+        const individualScreeningEvents = yield sskts.service.event.searchIndividualScreeningEvent({
             auth: auth,
             searchConditions: {
                 theater: '118',
@@ -32,12 +32,12 @@ function main() {
             }
         });
         // イベント情報取得
-        const individualScreeningEvent = yield sskts.event.findIndividualScreeningEvent({
+        const individualScreeningEvent = yield sskts.service.event.findIndividualScreeningEvent({
             auth: auth,
             identifier: individualScreeningEvents[0].identifier
         });
         // 劇場ショップ検索
-        const movieTheaters = yield sskts.organization.searchMovieTheaters({
+        const movieTheaters = yield sskts.service.organization.searchMovieTheaters({
             auth: auth
         });
         const theaterCode = individualScreeningEvent.coaInfo.theaterCode;
@@ -53,7 +53,7 @@ function main() {
         // 1分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
         debug('starting transaction...');
-        const transaction = yield sskts.transaction.placeOrder.start({
+        const transaction = yield sskts.service.transaction.placeOrder.start({
             auth: auth,
             expires: moment().add(1, 'minutes').toDate(),
             sellerId: seller.id
@@ -89,7 +89,7 @@ function main() {
         // COAオーソリ追加
         debug('authorizing seat reservation...');
         const totalPrice = salesTicketResult[0].salePrice;
-        const seatReservationAuthorization = yield sskts.transaction.placeOrder.createSeatReservationAuthorization({
+        const seatReservationAuthorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization({
             auth: auth,
             transactionId: transaction.id,
             eventIdentifier: individualScreeningEvent.identifier,
@@ -138,7 +138,7 @@ function main() {
         // tslint:disable-next-line:no-magic-numbers
         `00000000${seatReservationAuthorization.result.tmpReserveNum}`.slice(-8), '01');
         debug('adding authorizations gmo...');
-        const gmoAuthorization = yield sskts.transaction.placeOrder.authorizeGMOCard({
+        const gmoAuthorization = yield sskts.service.transaction.placeOrder.authorizeGMOCard({
             auth: auth,
             transactionId: transaction.id,
             orderId: orderId,
@@ -249,7 +249,7 @@ function main() {
             telephone: '09012345678',
             email: process.env.SSKTS_DEVELOPER_EMAIL
         };
-        yield sskts.transaction.placeOrder.setAgentProfile({
+        yield sskts.service.transaction.placeOrder.setAgentProfile({
             auth: auth,
             transactionId: transaction.id,
             profile: profile
@@ -301,7 +301,7 @@ function main() {
         // }
         // 取引成立
         debug('confirming transaction...');
-        const order = yield sskts.transaction.placeOrder.confirm({
+        const order = yield sskts.service.transaction.placeOrder.confirm({
             auth: auth,
             transactionId: transaction.id
         });

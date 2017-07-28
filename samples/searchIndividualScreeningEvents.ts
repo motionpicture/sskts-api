@@ -19,7 +19,7 @@ async function main() {
         ['admin']
     );
 
-    const individualScreeningEvents = await sskts.event.searchIndividualScreeningEvent({
+    const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({
         auth: auth,
         searchConditions: {
             theater: '118',

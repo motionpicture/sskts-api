@@ -20,6 +20,7 @@ const dev_1 = require("./routes/dev");
 const events_1 = require("./routes/events");
 const health_1 = require("./routes/health");
 const oauth_1 = require("./routes/oauth");
+const orders_1 = require("./routes/orders");
 const organizations_1 = require("./routes/organizations");
 const people_1 = require("./routes/people");
 const places_1 = require("./routes/places");
@@ -87,6 +88,7 @@ sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.def
 app.use('/health', health_1.default);
 app.use('/oauth', oauth_1.default);
 app.use('/organizations', organizations_1.default);
+app.use('/orders', orders_1.default);
 app.use('/people', people_1.default);
 app.use('/places', places_1.default);
 app.use('/events', events_1.default);

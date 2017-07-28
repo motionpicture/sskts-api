@@ -84,7 +84,8 @@ export default class OAuth2Client {
             },
             json: true,
             simple: false,
-            resolveWithFullResponse: true
+            resolveWithFullResponse: true,
+            useQuerystring: true
         }).then((response) => {
             if (response.statusCode !== httpStatus.OK) {
                 throw new Error(response.body.message);

@@ -23,7 +23,7 @@ async function main() {
     );
 
     // 上映イベント検索
-    const individualScreeningEvents = await sskts.event.searchIndividualScreeningEvent({
+    const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({
         auth: auth,
         searchConditions: {
             theater: '118',
@@ -32,13 +32,13 @@ async function main() {
     });
 
     // イベント情報取得
-    const individualScreeningEvent = await sskts.event.findIndividualScreeningEvent({
+    const individualScreeningEvent = await sskts.service.event.findIndividualScreeningEvent({
         auth: auth,
         identifier: individualScreeningEvents[0].identifier
     });
 
     // 劇場ショップ検索
-    const movieTheaters = await sskts.organization.searchMovieTheaters({
+    const movieTheaters = await sskts.service.organization.searchMovieTheaters({
         auth: auth
     });
 
@@ -57,7 +57,7 @@ async function main() {
     // 1分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
     debug('starting transaction...');
-    const transaction = await sskts.transaction.placeOrder.start({
+    const transaction = await sskts.service.transaction.placeOrder.start({
         auth: auth,
         expires: moment().add(1, 'minutes').toDate(),
         sellerId: seller.id
@@ -97,7 +97,7 @@ async function main() {
     debug('authorizing seat reservation...');
     const totalPrice = salesTicketResult[0].salePrice;
 
-    const seatReservationAuthorization = await sskts.transaction.placeOrder.createSeatReservationAuthorization({
+    const seatReservationAuthorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization({
         auth: auth,
         transactionId: transaction.id,
         eventIdentifier: individualScreeningEvent.identifier,
@@ -153,7 +153,7 @@ async function main() {
         '01'
     );
     debug('adding authorizations gmo...');
-    const gmoAuthorization = await sskts.transaction.placeOrder.authorizeGMOCard({
+    const gmoAuthorization = await sskts.service.transaction.placeOrder.authorizeGMOCard({
         auth: auth,
         transactionId: transaction.id,
         orderId: orderId,
@@ -268,7 +268,7 @@ async function main() {
         telephone: '09012345678',
         email: <string>process.env.SSKTS_DEVELOPER_EMAIL
     };
-    await sskts.transaction.placeOrder.setAgentProfile({
+    await sskts.service.transaction.placeOrder.setAgentProfile({
         auth: auth,
         transactionId: transaction.id,
         profile: profile
@@ -323,7 +323,7 @@ async function main() {
 
     // 取引成立
     debug('confirming transaction...');
-    const order = await sskts.transaction.placeOrder.confirm({
+    const order = await sskts.service.transaction.placeOrder.confirm({
         auth: auth,
         transactionId: transaction.id
     });

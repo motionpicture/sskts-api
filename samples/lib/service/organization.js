@@ -1,6 +1,6 @@
 "use strict";
 /**
- * 上映イベント検索サンプル
+ * SSKTS API Node.js Client
  *
  * @ignore
  */
@@ -13,25 +13,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const createDebug = require("debug");
-const moment = require("moment");
-const sskts = require("./lib/sskts-api");
-const debug = createDebug('sskts-api:samples');
-function main() {
+const httpStatus = require("http-status");
+const apiRequest_1 = require("../apiRequest");
+/**
+ * 劇場組織検索
+ */
+function searchMovieTheaters(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['admin']);
-        const individualScreeningEvents = yield sskts.service.event.searchIndividualScreeningEvent({
-            auth: auth,
-            searchConditions: {
-                theater: '118',
-                day: moment().format('YYYYMMDD')
-            }
+        return yield apiRequest_1.default({
+            uri: '/organizations/movieTheater',
+            method: 'GET',
+            expectedStatusCodes: [httpStatus.OK],
+            qs: args.searchConditions,
+            auth: { bearer: yield args.auth.getAccessToken() }
         });
-        debug('number of individualScreeningEvents is', individualScreeningEvents.length);
     });
 }
-main().then(() => {
-    debug('main processed.');
-}).catch((err) => {
-    console.error(err.message);
-});
+exports.searchMovieTheaters = searchMovieTheaters;

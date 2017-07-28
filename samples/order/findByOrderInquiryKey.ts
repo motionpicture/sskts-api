@@ -1,12 +1,12 @@
 /**
- * 劇場取得サンプル
+ * 注文照会サンプル
  *
  * @ignore
  */
 
 import * as createDebug from 'debug';
 
-import * as sskts from './lib/sskts-api';
+import * as sskts from '../lib/sskts-api';
 
 const debug = createDebug('sskts-api:samples');
 
@@ -19,11 +19,15 @@ async function main() {
     );
 
     // 劇場情報取得
-    const movieTheater = await sskts.service.place.findMovieTheater({
+    const order = await sskts.service.order.findByOrderInquiryKey({
         auth: auth,
-        branchCode: '118'
+        orderInquiryKey: {
+            telephone: '09012345678',
+            orderNumber: 3045,
+            theaterCode: '118'
+        }
     });
-    debug('movieTheater is', movieTheater);
+    debug('order is', order);
 }
 
 main().then(() => {

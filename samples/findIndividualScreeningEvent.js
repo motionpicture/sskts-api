@@ -21,7 +21,7 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['admin']);
         // 上映イベント検索
-        const individualScreeningEvents = yield sskts.event.searchIndividualScreeningEvent({
+        const individualScreeningEvents = yield sskts.service.event.searchIndividualScreeningEvent({
             auth: auth,
             searchConditions: {
                 theater: '118',
@@ -29,7 +29,7 @@ function main() {
             }
         });
         // イベント情報取得
-        const individualScreeningEvent = yield sskts.event.findIndividualScreeningEvent({
+        const individualScreeningEvent = yield sskts.service.event.findIndividualScreeningEvent({
             auth: auth,
             identifier: individualScreeningEvents[0].identifier
         });

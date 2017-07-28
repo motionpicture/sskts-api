@@ -19,7 +19,7 @@ const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['admin']);
-        const movieTheaters = yield sskts.organization.searchMovieTheaters({
+        const movieTheaters = yield sskts.service.organization.searchMovieTheaters({
             auth: auth
         });
         debug('movieTheaters are', movieTheaters);

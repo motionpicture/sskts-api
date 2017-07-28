@@ -102,49 +102,6 @@ placeOrderTransactionsRouter.post(
     }
 );
 
-// placeOrderTransactionsRouter.post(
-//     '/makeInquiry',
-//     permitScopes(['admin', 'transactions', 'transactions.read-only']),
-//     (req, _, next) => {
-//         req.checkBody('inquiry_theater', 'invalid inquiry_theater').notEmpty().withMessage('inquiry_theater is required');
-//         req.checkBody('inquiry_id', 'invalid inquiry_id').notEmpty().withMessage('inquiry_id is required');
-//         req.checkBody('inquiry_pass', 'invalid inquiry_pass').notEmpty().withMessage('inquiry_pass is required');
-
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const key = sskts.factory.transactionInquiryKey.create({
-//                 theater_code: req.body.inquiry_theater,
-//                 reserve_num: req.body.inquiry_id,
-//                 tel: req.body.inquiry_pass
-//             });
-//             const option = await sskts.service.transaction.makeInquiry(key)(sskts.adapter.transaction(sskts.mongoose.connection));
-
-//             option.match({
-//                 Some: (transaction) => {
-//                     res.json({
-//                         data: {
-//                             type: 'transactions',
-//                             id: transaction.id,
-//                             attributes: transaction
-//                         }
-//                     });
-//                 },
-//                 None: () => {
-//                     res.status(NOT_FOUND);
-//                     res.json({
-//                         data: null
-//                     });
-//                 }
-//             });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-
 // placeOrderTransactionsRouter.get(
 //     '/:id',
 //     permitScopes(['admin', 'transactions', 'transactions.read-only']),

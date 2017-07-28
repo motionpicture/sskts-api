@@ -1,6 +1,6 @@
 "use strict";
 /**
- * 上映イベント検索サンプル
+ * 注文照会サンプル
  *
  * @ignore
  */
@@ -14,20 +14,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
-const moment = require("moment");
-const sskts = require("./lib/sskts-api");
+const sskts = require("../lib/sskts-api");
 const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['admin']);
-        const individualScreeningEvents = yield sskts.service.event.searchIndividualScreeningEvent({
+        // 劇場情報取得
+        const order = yield sskts.service.order.findByOrderInquiryKey({
             auth: auth,
-            searchConditions: {
-                theater: '118',
-                day: moment().format('YYYYMMDD')
+            orderInquiryKey: {
+                telephone: '09012345678',
+                orderNumber: 3045,
+                theaterCode: '118'
             }
         });
-        debug('number of individualScreeningEvents is', individualScreeningEvents.length);
+        debug('order is', order);
     });
 }
 main().then(() => {
