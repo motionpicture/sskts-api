@@ -63,7 +63,7 @@ async function main() {
     // 取引開始
     // 1分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
-    debug('starting transaction...');
+    debug('注文取引を開始します...');
     const transaction = await sskts.service.transaction.placeOrder.start({
         auth: auth,
         expires: moment().add(1, 'minutes').toDate(),
@@ -79,7 +79,7 @@ async function main() {
         timeBegin: timeBegin,
         flgMember: COA.services.reserve.FlgMember.NonMember
     });
-    debug('salesTicketResult:', salesTicketResult);
+    debug('販売可能チケットは', salesTicketResult);
 
     // COA空席確認
     const getStateReserveSeatResult = await COA.services.reserve.stateReserveSeat({
@@ -90,21 +90,18 @@ async function main() {
         timeBegin: timeBegin,
         screenCode: screenCode
     });
-    debug('getStateReserveSeatResult is', getStateReserveSeatResult);
+    debug('空席情報は', getStateReserveSeatResult);
     const sectionCode = getStateReserveSeatResult.listSeat[0].seatSection;
     const freeSeatCodes = getStateReserveSeatResult.listSeat[0].listFreeSeat.map((freeSeat) => {
         return freeSeat.seatNum;
     });
-    debug('freeSeatCodes count', freeSeatCodes.length);
     if (getStateReserveSeatResult.cntReserveFree === 0) {
-        throw new Error('no available seats.');
+        throw new Error('空席がありません');
     }
 
-    // COAオーソリ追加
-    debug('authorizing seat reservation...');
-    const totalPrice = salesTicketResult[0].salePrice;
-
-    const seatReservationAuthorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization({
+    // 座席仮予約
+    debug('座席を仮予約します...');
+    let seatReservationAuthorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization({
         auth: auth,
         transactionId: transaction.id,
         eventIdentifier: individualScreeningEvent.identifier,
@@ -132,26 +129,52 @@ async function main() {
             }
         ]
     });
-    debug('seatReservationAuthorization is', seatReservationAuthorization);
+    debug('座席を仮予約しました', seatReservationAuthorization);
 
-    // COAオーソリ削除
-    // debug('removing authorizations coaSeatReservation...');
-    // response = await request.del({
-    //     url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/${coaAuthorizationId}`,
-    //     auth: { bearer: accessToken },
-    //     body: {
-    //     },
-    //     json: true,
-    //     simple: false,
-    //     resolveWithFullResponse: true
-    // });
-    // debug('removeCOASeatReservationAuthorization result:', response.statusCode, response.body);
-    // if (response.statusCode !== httpStatus.NO_CONTENT) {
-    //     throw new Error(response.body.message);
-    // }
+    // 座席仮予約取消
+    debug('座席仮予約を取り消します...');
+    await sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization({
+        auth: auth,
+        transactionId: transaction.id,
+        authorizationId: seatReservationAuthorization.id
+    });
 
-    // GMOオーソリ取得
-    const orderId = util.format(
+    // 再度座席仮予約
+    debug('座席を仮予約します...');
+    seatReservationAuthorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization({
+        auth: auth,
+        transactionId: transaction.id,
+        eventIdentifier: individualScreeningEvent.identifier,
+        offers: [
+            {
+                seatSection: sectionCode,
+                seatNumber: freeSeatCodes[0],
+                ticket: {
+                    ticketCode: salesTicketResult[1].ticketCode,
+                    stdPrice: salesTicketResult[1].stdPrice,
+                    addPrice: salesTicketResult[1].addPrice,
+                    disPrice: 0,
+                    salePrice: salesTicketResult[1].salePrice,
+                    mvtkAppPrice: 0,
+                    ticketCount: 1,
+                    seatNum: freeSeatCodes[0],
+                    addGlasses: 0,
+                    kbnEisyahousiki: '00',
+                    mvtkNum: '',
+                    mvtkKbnDenshiken: '00',
+                    mvtkKbnMaeuriken: '00',
+                    mvtkKbnKensyu: '00',
+                    mvtkSalesPrice: 0
+                }
+            }
+        ]
+    });
+    debug('座席を仮予約しました', seatReservationAuthorization);
+
+    const amount = seatReservationAuthorization.price;
+
+    // クレジットカードオーソリ取得
+    let orderId = util.format(
         '%s%s%s%s',
         moment().format('YYYYMMDD'),
         theaterCode,
@@ -159,12 +182,12 @@ async function main() {
         `00000000${seatReservationAuthorization.result.tmpReserveNum}`.slice(-8),
         '01'
     );
-    debug('adding authorizations gmo...');
-    const gmoAuthorization = await sskts.service.transaction.placeOrder.authorizeGMOCard({
+    debug('クレジットカードのオーソリをとります...');
+    let creditCardAuthorization = await sskts.service.transaction.placeOrder.authorizeGMOCard({
         auth: auth,
         transactionId: transaction.id,
         orderId: orderId,
-        amount: totalPrice,
+        amount: amount,
         creditCard: {
             method: '1',
             cardNo: '4111111111111111',
@@ -172,103 +195,42 @@ async function main() {
             securityCode: '123'
         }
     });
-    debug('gmoAuthorization is', gmoAuthorization);
+    debug('クレジットカードのオーソリがとれました', creditCardAuthorization);
 
-    // GMOオーソリ削除
-    // debug('removing authorizations gmo...');
-    // response = await request.del({
-    //     url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/${gmoAuthorizationId}`,
-    //     auth: { bearer: accessToken },
-    //     body: {
-    //     },
-    //     json: true,
-    //     simple: false,
-    //     resolveWithFullResponse: true
-    // });
-    // debug('removeGMOAuthorization result:', response.statusCode, response.body);
-    // if (response.statusCode !== httpStatus.NO_CONTENT) {
-    //     throw new Error(response.body.message);
-    // }
+    // クレジットカードオーソリ取消
+    debug('クレジットカードのオーソリを取り消します...');
+    await sskts.service.transaction.placeOrder.cancelCreditCardAuthorization({
+        auth: auth,
+        transactionId: transaction.id,
+        authorizationId: creditCardAuthorization.id
+    });
 
-    // COA仮予約2回目
-    // debug('adding authorizations coaSeatReservation...');
-    // response = await request.post({
-    //     url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/coaSeatReservation`,
-    //     auth: { bearer: accessToken },
-    //     body: {
-    //         owner_from: promoterOwnerId,
-    //         owner_to: anonymousOwnerId,
-    //         coa_tmpReserveNum: reserveSeatsTemporarilyResult2.tmpReserveNum,
-    //         coa_theater_code: theaterCode,
-    //         coa_date_jouei: dateJouei,
-    //         coa_title_code: titleCode,
-    //         coa_title_branch_num: titleBranchNum,
-    //         coa_time_begin: timeBegin,
-    //         coa_screen_code: screenCode,
-    //         seats: reserveSeatsTemporarilyResult2.listTmpReserve.map((tmpReserve) => {
-    //             return {
-    //                 individualScreeningEvent: individualScreeningEvent.id,
-    //                 screen_section: tmpReserve.seatSection,
-    //                 seat_code: tmpReserve.seatNum,
-    //                 ticket_code: salesTicketResult[0].ticketCode,
-    //                 ticket_name: {
-    //                     ja: salesTicketResult[0].ticketName,
-    //                     en: salesTicketResult[0].ticketNameEng
-    //                 },
-    //                 ticket_name_kana: salesTicketResult[0].ticketNameKana,
-    //                 std_price: salesTicketResult[0].stdPrice,
-    //                 add_price: salesTicketResult[0].addPrice,
-    //                 dis_price: 0,
-    //                 sale_price: salesTicketResult[0].salePrice,
-    //                 mvtk_app_price: 0,
-    //                 add_glasses: 0,
-    //                 kbn_eisyahousiki: '00',
-    //                 mvtk_num: '',
-    //                 mvtk_kbn_denshiken: '00',
-    //                 mvtk_kbn_maeuriken: '00',
-    //                 mvtk_kbn_kensyu: '00',
-    //                 mvtk_sales_price: 0
-    //             };
-    //         }),
-    //         price: totalPrice
-    //     },
-    //     json: true,
-    //     simple: false,
-    //     resolveWithFullResponse: true
-    // });
-    // debug('addCOASeatReservationAuthorization result:', response.statusCode, response.body);
-    // if (response.statusCode !== httpStatus.OK) {
-    //     throw new Error(response.body.message);
-    // }
-
-    // GMOオーソリ取得(2回目)
-    // orderId = Date.now().toString();
-    // debug('adding authorizations gmo...');
-    // response = await request.post({
-    //     url: `${API_ENDPOINT}/transactions/${transactionId}/authorizations/gmo`,
-    //     auth: { bearer: accessToken },
-    //     body: {
-    //         owner_from: anonymousOwnerId,
-    //         owner_to: promoterOwnerId,
-    //         gmo_shop_id: gmoShopId,
-    //         gmo_shop_pass: gmoShopPass,
-    //         gmo_order_id: orderId,
-    //         gmo_amount: totalPrice,
-    //         gmo_access_id: entryTranResult2.accessId,
-    //         gmo_access_pass: entryTranResult2.accessPass,
-    //         gmo_job_cd: sskts.GMO.Util.JOB_CD_AUTH,
-    //         gmo_pay_type: sskts.GMO.Util.PAY_TYPE_CREDIT
-    //     },
-    //     json: true,
-    //     resolveWithFullResponse: true
-    // });
-    // debug('addGMOAuthorization result:', response.statusCode, response.body);
-    // if (response.statusCode !== httpStatus.OK) {
-    //     throw new Error(response.body.message);
-    // }
+    // 再度クレジットカードオーソリ
+    orderId = util.format(
+        '%s%s%s%s',
+        moment().format('YYYYMMDD'),
+        theaterCode,
+        // tslint:disable-next-line:no-magic-numbers
+        `00000000${seatReservationAuthorization.result.tmpReserveNum}`.slice(-8),
+        '02'
+    );
+    debug('クレジットカードのオーソリをとります...');
+    creditCardAuthorization = await sskts.service.transaction.placeOrder.authorizeGMOCard({
+        auth: auth,
+        transactionId: transaction.id,
+        orderId: orderId,
+        amount: amount,
+        creditCard: {
+            method: '1',
+            cardNo: '4111111111111111',
+            expire: '2012',
+            securityCode: '123'
+        }
+    });
+    debug('クレジットカードのオーソリがとれました', creditCardAuthorization);
 
     // 購入者情報登録
-    debug('setting agent profile...');
+    debug('購入者情報を登録します...');
     const profile = {
         givenName: 'てつ',
         familyName: 'やまざき',
@@ -280,6 +242,7 @@ async function main() {
         transactionId: transaction.id,
         profile: profile
     });
+    debug('購入者情報を登録しました');
 
     // メール追加
     //     const content = `
@@ -289,7 +252,7 @@ async function main() {
     // -------------------------------------------------------------------\n
     // ◆購入番号 ：${seatReservationAuthorization.result.tmpReserveNum}\n
     // ◆電話番号 ${profile.telephone}\n
-    // ◆合計金額 ：${totalPrice}円\n
+    // ◆合計金額 ：${amount}円\n
     // -------------------------------------------------------------------\n
     // `;
     // debug('adding email...');
@@ -328,28 +291,13 @@ async function main() {
     //     throw new Error(response.body.message);
     // }
 
-    // 取引成立
-    debug('confirming transaction...');
+    // 取引確定
+    debug('注文取引を確定します...');
     const order = await sskts.service.transaction.placeOrder.confirm({
         auth: auth,
         transactionId: transaction.id
     });
-    debug('your order is', order);
-
-    // 照会してみる
-    // response = await request.post({
-    //     url: `${API_ENDPOINT}/transactions/makeInquiry`,
-    //     auth: { bearer: accessToken },
-    //     body: {
-    //         inquiry_theater: theaterCode,
-    //         inquiry_id: reserveSeatsTemporarilyResult2.tmpReserveNum,
-    //         inquiry_pass: tel
-    //     },
-    //     json: true,
-    //     simple: false,
-    //     resolveWithFullResponse: true
-    // });
-    // debug('makeInquiry result:', response.statusCode, response.body);
+    debug('注文が作成されました', order);
 }
 
 main().then(() => {

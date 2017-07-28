@@ -65,12 +65,28 @@ export async function createSeatReservationAuthorization(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/seatReservationAuthorization`,
         method: 'POST',
-        expectedStatusCodes: [httpStatus.OK],
+        expectedStatusCodes: [httpStatus.CREATED],
         auth: { bearer: await args.auth.getAccessToken() },
         body: {
             eventIdentifier: args.eventIdentifier,
             offers: args.offers
         }
+    });
+}
+
+/**
+ * 座席予約取消
+ */
+export async function cancelSeatReservationAuthorization(args: {
+    auth: OAuth2client;
+    transactionId: string;
+    authorizationId: string;
+}): Promise<void> {
+    return await apiRequest({
+        uri: `/transactions/placeOrder/${args.transactionId}/seatReservationAuthorization/${args.authorizationId}`,
+        method: 'DELETE',
+        expectedStatusCodes: [httpStatus.NO_CONTENT],
+        auth: { bearer: await args.auth.getAccessToken() }
     });
 }
 
@@ -96,7 +112,7 @@ export async function authorizeGMOCard(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/creditCard`,
         method: 'POST',
-        expectedStatusCodes: [httpStatus.OK],
+        expectedStatusCodes: [httpStatus.CREATED],
         auth: { bearer: await args.auth.getAccessToken() },
         body: {
             orderId: args.orderId,
@@ -107,6 +123,22 @@ export async function authorizeGMOCard(args: {
             securityCode: (typeof args.creditCard !== 'string') ? args.creditCard.securityCode : undefined,
             token: (typeof args.creditCard === 'string') ? args.creditCard : undefined
         }
+    });
+}
+
+/**
+ * クレジットカードオーソリ取消
+ */
+export async function cancelCreditCardAuthorization(args: {
+    auth: OAuth2client;
+    transactionId: string;
+    authorizationId: string;
+}): Promise<void> {
+    return await apiRequest({
+        uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/creditCard/${args.authorizationId}`,
+        method: 'DELETE',
+        expectedStatusCodes: [httpStatus.NO_CONTENT],
+        auth: { bearer: await args.auth.getAccessToken() }
     });
 }
 
@@ -125,9 +157,25 @@ export async function createMvtkAuthorization(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/mvtk`,
         method: 'POST',
-        expectedStatusCodes: [httpStatus.OK],
+        expectedStatusCodes: [httpStatus.CREATED],
         auth: { bearer: await args.auth.getAccessToken() },
         body: args.mvtk
+    });
+}
+
+/**
+ * ムビチケ取消
+ */
+export async function cancelMvtkAuthorization(args: {
+    auth: OAuth2client;
+    transactionId: string;
+    authorizationId: string;
+}): Promise<void> {
+    return await apiRequest({
+        uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/mvtk/${args.authorizationId}`,
+        method: 'DELETE',
+        expectedStatusCodes: [httpStatus.NO_CONTENT],
+        auth: { bearer: await args.auth.getAccessToken() }
     });
 }
 
@@ -137,6 +185,10 @@ export interface IAgentProfile {
     telephone: string;
     email: string;
 }
+
+/**
+ * 購入者情報登録
+ */
 export async function setAgentProfile(args: {
     auth: OAuth2client;
     transactionId: string;
@@ -151,6 +203,9 @@ export async function setAgentProfile(args: {
     });
 }
 
+/**
+ * 取引確定
+ */
 export async function confirm(args: {
     auth: OAuth2client;
     transactionId: string;

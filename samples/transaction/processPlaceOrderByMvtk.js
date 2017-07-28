@@ -31,7 +31,7 @@ function main() {
             auth: auth,
             searchConditions: {
                 theater: '118',
-                day: moment().format('YYYYMMDD')
+                day: moment().add(1, 'day').format('YYYYMMDD')
             }
         });
         // イベント情報取得
@@ -127,7 +127,45 @@ function main() {
         // 本当はここでムビチケ着券処理
         // ムビチケオーソリ追加(着券した体で) 値はほぼ適当です
         debug('adding authorizations mvtk...');
-        const mvtkAuthorization = yield sskts.service.transaction.placeOrder.createMvtkAuthorization({
+        let mvtkAuthorization = yield sskts.service.transaction.placeOrder.createMvtkAuthorization({
+            auth: auth,
+            transactionId: transaction.id,
+            mvtk: {
+                price: totalPrice,
+                kgygish_cd: 'SSK000',
+                yyk_dvc_typ: '00',
+                trksh_flg: '0',
+                kgygish_sstm_zskyyk_no: '118124',
+                kgygish_usr_zskyyk_no: '124',
+                jei_dt: '2017/03/0210: 00: 00',
+                kij_ymd: '2017/03/02',
+                st_cd: '15',
+                scren_cd: '1',
+                knyknr_no_info: [
+                    {
+                        knyknr_no: '4450899842',
+                        pin_cd: '7648',
+                        knsh_info: [
+                            { knsh_typ: '01', mi_num: '2' }
+                        ]
+                    }
+                ],
+                zsk_info: seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => {
+                    return { zsk_cd: tmpReserve.seatNum };
+                }),
+                skhn_cd: '1622700'
+            }
+        });
+        debug('addMvtkAuthorization is', mvtkAuthorization);
+        // ムビチケ取消
+        yield sskts.service.transaction.placeOrder.cancelMvtkAuthorization({
+            auth: auth,
+            transactionId: transaction.id,
+            authorizationId: mvtkAuthorization.id
+        });
+        // 再度ムビチケ追加
+        debug('adding authorizations mvtk...');
+        mvtkAuthorization = yield sskts.service.transaction.placeOrder.createMvtkAuthorization({
             auth: auth,
             transactionId: transaction.id,
             mvtk: {

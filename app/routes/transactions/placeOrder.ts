@@ -228,6 +228,64 @@ placeOrderTransactionsRouter.put(
 //     }
 // );
 
+/**
+ * 座席仮予約
+ */
+placeOrderTransactionsRouter.post(
+    '/:id/seatReservationAuthorization',
+    permitScopes(['transactions']),
+    (__1, __2, next) => {
+        next();
+    },
+    validator,
+    async (req, res, next) => {
+        try {
+            const findIndividualScreeningEventOption = await sskts.service.event.findIndividualScreeningEventByIdentifier(
+                req.body.eventIdentifier
+            )(sskts.adapter.event(sskts.mongoose.connection));
+
+            if (findIndividualScreeningEventOption.isEmpty) {
+                res.status(NOT_FOUND).json({
+                    data: null
+                });
+            } else {
+                const authorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization(
+                    req.params.id,
+                    findIndividualScreeningEventOption.get(),
+                    req.body.offers
+                )(sskts.adapter.transaction(sskts.mongoose.connection));
+
+                res.status(CREATED).json({
+                    data: authorization
+                });
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 座席仮予約削除
+ */
+placeOrderTransactionsRouter.delete(
+    '/:transactionId/seatReservationAuthorization/:authorizationId',
+    permitScopes(['transactions']),
+    validator,
+    async (req, res, next) => {
+        try {
+            await sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(
+                req.params.transactionId,
+                req.params.authorizationId
+            )(sskts.adapter.transaction(sskts.mongoose.connection));
+
+            res.status(NO_CONTENT).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 placeOrderTransactionsRouter.post(
     '/:id/paymentInfos/creditCard',
     permitScopes(['transactions']),
@@ -259,7 +317,7 @@ placeOrderTransactionsRouter.post(
                 sskts.adapter.transaction(sskts.mongoose.connection)
             );
 
-            res.status(OK).json({
+            res.status(CREATED).json({
                 data: authorization
             });
         } catch (error) {
@@ -268,40 +326,30 @@ placeOrderTransactionsRouter.post(
     }
 );
 
-placeOrderTransactionsRouter.post(
-    '/:id/seatReservationAuthorization',
+/**
+ * クレジットカードオーソリ取消
+ */
+placeOrderTransactionsRouter.delete(
+    '/:transactionId/paymentInfos/creditCard/:authorizationId',
     permitScopes(['transactions']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         try {
-            const findIndividualScreeningEventOption = await sskts.service.event.findIndividualScreeningEventByIdentifier(
-                req.body.eventIdentifier
-            )(sskts.adapter.event(sskts.mongoose.connection));
+            await sskts.service.transaction.placeOrder.cancelGMOAuthorization(
+                req.params.transactionId,
+                req.params.authorizationId
+            )(sskts.adapter.transaction(sskts.mongoose.connection));
 
-            if (findIndividualScreeningEventOption.isEmpty) {
-                res.status(NOT_FOUND).json({
-                    data: null
-                });
-            } else {
-                const authorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization(
-                    req.params.id,
-                    findIndividualScreeningEventOption.get(),
-                    req.body.offers
-                )(sskts.adapter.transaction(sskts.mongoose.connection));
-
-                res.status(OK).json({
-                    data: authorization
-                });
-            }
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }
     }
 );
 
+/**
+ * ムビチケ追加
+ */
 placeOrderTransactionsRouter.post(
     '/:id/paymentInfos/mvtk',
     permitScopes(['transactions']),
@@ -333,9 +381,30 @@ placeOrderTransactionsRouter.post(
                 sskts.adapter.transaction(sskts.mongoose.connection)
             );
 
-            res.status(OK).json({
+            res.status(CREATED).json({
                 data: authorization
             });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * ムビチケ取消
+ */
+placeOrderTransactionsRouter.delete(
+    '/:transactionId/paymentInfos/mvtk/:authorizationId',
+    permitScopes(['transactions']),
+    validator,
+    async (req, res, next) => {
+        try {
+            await sskts.service.transaction.placeOrder.cancelMvtkAuthorization(
+                req.params.transactionId,
+                req.params.authorizationId
+            )(sskts.adapter.transaction(sskts.mongoose.connection));
+
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }

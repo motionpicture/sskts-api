@@ -42,7 +42,7 @@ function createSeatReservationAuthorization(args) {
         return yield apiRequest_1.default({
             uri: `/transactions/placeOrder/${args.transactionId}/seatReservationAuthorization`,
             method: 'POST',
-            expectedStatusCodes: [httpStatus.OK],
+            expectedStatusCodes: [httpStatus.CREATED],
             auth: { bearer: yield args.auth.getAccessToken() },
             body: {
                 eventIdentifier: args.eventIdentifier,
@@ -53,6 +53,20 @@ function createSeatReservationAuthorization(args) {
 }
 exports.createSeatReservationAuthorization = createSeatReservationAuthorization;
 /**
+ * 座席予約取消
+ */
+function cancelSeatReservationAuthorization(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield apiRequest_1.default({
+            uri: `/transactions/placeOrder/${args.transactionId}/seatReservationAuthorization/${args.authorizationId}`,
+            method: 'DELETE',
+            expectedStatusCodes: [httpStatus.NO_CONTENT],
+            auth: { bearer: yield args.auth.getAccessToken() }
+        });
+    });
+}
+exports.cancelSeatReservationAuthorization = cancelSeatReservationAuthorization;
+/**
  * 決済方法として、クレジットカードを追加する
  */
 function authorizeGMOCard(args) {
@@ -60,7 +74,7 @@ function authorizeGMOCard(args) {
         return yield apiRequest_1.default({
             uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/creditCard`,
             method: 'POST',
-            expectedStatusCodes: [httpStatus.OK],
+            expectedStatusCodes: [httpStatus.CREATED],
             auth: { bearer: yield args.auth.getAccessToken() },
             body: {
                 orderId: args.orderId,
@@ -76,6 +90,20 @@ function authorizeGMOCard(args) {
 }
 exports.authorizeGMOCard = authorizeGMOCard;
 /**
+ * クレジットカードオーソリ取消
+ */
+function cancelCreditCardAuthorization(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield apiRequest_1.default({
+            uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/creditCard/${args.authorizationId}`,
+            method: 'DELETE',
+            expectedStatusCodes: [httpStatus.NO_CONTENT],
+            auth: { bearer: yield args.auth.getAccessToken() }
+        });
+    });
+}
+exports.cancelCreditCardAuthorization = cancelCreditCardAuthorization;
+/**
  * 決済方法として、ムビチケを追加する
  */
 function createMvtkAuthorization(args) {
@@ -83,13 +111,30 @@ function createMvtkAuthorization(args) {
         return yield apiRequest_1.default({
             uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/mvtk`,
             method: 'POST',
-            expectedStatusCodes: [httpStatus.OK],
+            expectedStatusCodes: [httpStatus.CREATED],
             auth: { bearer: yield args.auth.getAccessToken() },
             body: args.mvtk
         });
     });
 }
 exports.createMvtkAuthorization = createMvtkAuthorization;
+/**
+ * ムビチケ取消
+ */
+function cancelMvtkAuthorization(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield apiRequest_1.default({
+            uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/mvtk/${args.authorizationId}`,
+            method: 'DELETE',
+            expectedStatusCodes: [httpStatus.NO_CONTENT],
+            auth: { bearer: yield args.auth.getAccessToken() }
+        });
+    });
+}
+exports.cancelMvtkAuthorization = cancelMvtkAuthorization;
+/**
+ * 購入者情報登録
+ */
 function setAgentProfile(args) {
     return __awaiter(this, void 0, void 0, function* () {
         yield apiRequest_1.default({
@@ -102,6 +147,9 @@ function setAgentProfile(args) {
     });
 }
 exports.setAgentProfile = setAgentProfile;
+/**
+ * 取引確定
+ */
 function confirm(args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield apiRequest_1.default({
