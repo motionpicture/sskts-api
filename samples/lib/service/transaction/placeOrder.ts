@@ -1,14 +1,19 @@
 /**
- * SSKTS API Node.js Client
+ * 注文取引サービス
  *
- * @ignore
+ * @namespace service.transaction.placeOrder
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as httpStatus from 'http-status';
 import apiRequest from '../../apiRequest';
 
 import OAuth2client from '../../auth/oAuth2client';
 
+/**
+ * 取引を開始する
+ * 開始できない場合(混雑中など)、nullが返されます。
+ */
 export async function start(args: {
     auth: OAuth2client;
     expires: Date; // 取引期限
@@ -48,6 +53,9 @@ export interface IOffer {
     };
 }
 
+/**
+ * 取引に座席予約を追加する
+ */
 export async function createSeatReservationAuthorization(args: {
     auth: OAuth2client;
     transactionId: string;
@@ -74,6 +82,10 @@ export interface IGMOCardRaw {
 }
 export type IGMOCardTokenized = string; // トークン決済の場合こちら
 export type IGMOCard = IGMOCardRaw | IGMOCardTokenized;
+
+/**
+ * 決済方法として、クレジットカードを追加する
+ */
 export async function authorizeGMOCard(args: {
     auth: OAuth2client;
     transactionId: string;
@@ -95,6 +107,27 @@ export async function authorizeGMOCard(args: {
             securityCode: (typeof args.creditCard !== 'string') ? args.creditCard.securityCode : undefined,
             token: (typeof args.creditCard === 'string') ? args.creditCard : undefined
         }
+    });
+}
+
+export type IMvtk = sskts.factory.authorization.mvtk.IResult & {
+    price: number;
+};
+
+/**
+ * 決済方法として、ムビチケを追加する
+ */
+export async function createMvtkAuthorization(args: {
+    auth: OAuth2client;
+    transactionId: string;
+    mvtk: IMvtk;
+}) {
+    return await apiRequest({
+        uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/mvtk`,
+        method: 'POST',
+        expectedStatusCodes: [httpStatus.OK],
+        auth: { bearer: await args.auth.getAccessToken() },
+        body: args.mvtk
     });
 }
 

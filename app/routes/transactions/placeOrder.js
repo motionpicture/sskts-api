@@ -124,43 +124,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 //         }
 //     }
 // );
-// placeOrderTransactionsRouter.patch(
-//     '/:id/anonymousOwner',
-//     permitScopes(['transactions.owners']),
-//     (req, _, next) => {
-//         req.checkBody('name_first', 'invalid name_first').optional().notEmpty().withMessage('name_first should not be empty');
-//         req.checkBody('name_last', 'invalid name_last').optional().notEmpty().withMessage('name_last should not be empty');
-//         req.checkBody('tel', 'invalid tel').optional().notEmpty().withMessage('tel should not be empty');
-//         req.checkBody('email', 'invalid email').optional().notEmpty().withMessage('email should not be empty');
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
-//             const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
-//             // 取引から匿名所有者を取り出す
-//             const transactionOption = await sskts.service.transactionWithId.findById(req.params.id)(transactionAdapter);
-//             const transaction = transactionOption.get();
-//             const anonymousOwner = transaction.owners.find((owner) => owner.group === sskts.factory.ownerGroup.ANONYMOUS);
-//             if (anonymousOwner === undefined) {
-//                 throw new Error('anonymous owner not found');
-//             }
-//             // 匿名所有者に対してプロフィールをマージする
-//             const profile = sskts.factory.owner.anonymous.create({
-//                 id: anonymousOwner.id,
-//                 name_first: req.body.name_first,
-//                 name_last: req.body.name_last,
-//                 email: req.body.email,
-//                 tel: req.body.tel
-//             });
-//             await sskts.service.transactionWithId.setOwnerProfile(req.params.id, profile)(ownerAdapter, transactionAdapter);
-//             res.status(NO_CONTENT).end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
 /**
  * 購入者情報を変更する
  */
@@ -276,31 +239,7 @@ placeOrderTransactionsRouter.post('/:id/seatReservationAuthorization', permitSco
         yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(sskts.adapter.event(sskts.mongoose.connection)).then((option) => {
             option.match({
                 Some: (event) => __awaiter(this, void 0, void 0, function* () {
-                    const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.id, event, req.body.offers
-                    // [
-                    //     {
-                    //         seatSection: string;
-                    //         seatNumber: string;
-                    //         ticket: {
-                    //             ticket_code: string;
-                    //             std_price: number;
-                    //             add_price: number;
-                    //             dis_price: number;
-                    //             sale_price: number;
-                    //             mvtk_app_price: number;
-                    //             ticket_count: number;
-                    //             seat_num: string;
-                    //             add_glasses: number;
-                    //             kbn_eisyahousiki: string;
-                    //             mvtk_num: string;
-                    //             mvtk_kbn_denshiken: string;
-                    //             mvtk_kbn_maeuriken: string;
-                    //             mvtk_kbn_kensyu: string;
-                    //             mvtk_sales_price: number;
-                    //         }
-                    //     }
-                    // ]
-                    )(sskts.adapter.transaction(sskts.mongoose.connection));
+                    const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.id, event, req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));
                     res.status(http_status_1.OK).json({
                         data: authorization
                     });

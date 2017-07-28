@@ -1,8 +1,8 @@
 "use strict";
 /**
- * SSKTS API Node.js Client
+ * 注文取引サービス
  *
- * @ignore
+ * @namespace service.transaction.placeOrder
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -15,6 +15,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const httpStatus = require("http-status");
 const apiRequest_1 = require("../../apiRequest");
+/**
+ * 取引を開始する
+ * 開始できない場合(混雑中など)、nullが返されます。
+ */
 function start(args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield apiRequest_1.default({
@@ -30,6 +34,9 @@ function start(args) {
     });
 }
 exports.start = start;
+/**
+ * 取引に座席予約を追加する
+ */
 function createSeatReservationAuthorization(args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield apiRequest_1.default({
@@ -45,6 +52,9 @@ function createSeatReservationAuthorization(args) {
     });
 }
 exports.createSeatReservationAuthorization = createSeatReservationAuthorization;
+/**
+ * 決済方法として、クレジットカードを追加する
+ */
 function authorizeGMOCard(args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield apiRequest_1.default({
@@ -65,6 +75,21 @@ function authorizeGMOCard(args) {
     });
 }
 exports.authorizeGMOCard = authorizeGMOCard;
+/**
+ * 決済方法として、ムビチケを追加する
+ */
+function createMvtkAuthorization(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield apiRequest_1.default({
+            uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/mvtk`,
+            method: 'POST',
+            expectedStatusCodes: [httpStatus.OK],
+            auth: { bearer: yield args.auth.getAccessToken() },
+            body: args.mvtk
+        });
+    });
+}
+exports.createMvtkAuthorization = createMvtkAuthorization;
 function setAgentProfile(args) {
     return __awaiter(this, void 0, void 0, function* () {
         yield apiRequest_1.default({
