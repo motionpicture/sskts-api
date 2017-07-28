@@ -31,7 +31,7 @@ async function main() {
         auth: auth,
         searchConditions: {
             theater: '118',
-            day: moment().format('YYYYMMDD')
+            day: moment().add(1, 'day').format('YYYYMMDD')
         }
     });
 

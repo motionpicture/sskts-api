@@ -70,16 +70,11 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 // const host = req.headers['host'];
                 // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
                 res.json({
-                    data: {
-                        type: 'transactions',
-                        id: transaction.id,
-                        attributes: transaction
-                    }
+                    data: transaction
                 });
             },
             None: () => {
-                res.status(http_status_1.NOT_FOUND);
-                res.json({
+                res.status(http_status_1.NOT_FOUND).json({
                     data: null
                 });
             }
@@ -236,34 +231,24 @@ placeOrderTransactionsRouter.post('/:id/seatReservationAuthorization', permitSco
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(sskts.adapter.event(sskts.mongoose.connection)).then((option) => {
-            option.match({
-                Some: (event) => __awaiter(this, void 0, void 0, function* () {
-                    const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.id, event, req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));
-                    res.status(http_status_1.OK).json({
-                        data: authorization
-                    });
-                }),
-                None: () => {
-                    res.status(http_status_1.NOT_FOUND).json({
-                        data: null
-                    });
-                }
+        const findIndividualScreeningEventOption = yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(sskts.adapter.event(sskts.mongoose.connection));
+        if (findIndividualScreeningEventOption.isEmpty) {
+            res.status(http_status_1.NOT_FOUND).json({
+                data: null
             });
-        });
+        }
+        else {
+            const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.id, findIndividualScreeningEventOption.get(), req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));
+            res.status(http_status_1.OK).json({
+                data: authorization
+            });
+        }
     }
     catch (error) {
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:id/paymentInfos/mvtk', permitScopes_1.default(['transactions']), (req, _, next) => {
-    // 互換性維持のための対応
-    if (req.body.data === undefined) {
-        req.body.data = {
-            type: 'authorizations',
-            attributes: req.body
-        };
-    }
+placeOrderTransactionsRouter.post('/:id/paymentInfos/mvtk', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

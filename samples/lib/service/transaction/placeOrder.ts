@@ -40,10 +40,10 @@ export interface IOffer {
         addPrice: number;
         disPrice: number;
         salePrice: number;
-        mvtkAppPrice: 0,
-        ticketCount: 1,
+        mvtkAppPrice: number;
+        ticketCount: number;
         seatNum: string;
-        addGlasses: 0,
+        addGlasses: number;
         kbnEisyahousiki: string;
         mvtkNum: string;
         mvtkKbnDenshiken: string;

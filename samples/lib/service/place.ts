@@ -15,7 +15,7 @@ import OAuth2client from '../auth/oAuth2client';
  */
 export async function searchMovieTheaters(args: {
     auth: OAuth2client;
-    searchConditions?: {};
+    searchConditions?: sskts.service.place.ISearchMovieTheatersConditions;
 }): Promise<sskts.service.place.ISearchMovieTheaterResult[]> {
     return await apiRequest({
         uri: '/places/movieTheater',
