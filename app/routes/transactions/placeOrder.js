@@ -404,4 +404,21 @@ placeOrderTransactionsRouter.post('/:id/confirm', permitScopes_1.default(['trans
         next(error);
     }
 }));
+placeOrderTransactionsRouter.post('/:id/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // 取引が適切かどうかチェック
+        // todo その場で送信ではなくDBに登録するようにする
+        const sendEmailNotification = sskts.factory.notification.email.create({
+            from: req.body.from,
+            to: req.body.to,
+            subject: req.body.subject,
+            content: req.body.content
+        });
+        yield sskts.service.notification.sendEmail(sendEmailNotification)();
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = placeOrderTransactionsRouter;

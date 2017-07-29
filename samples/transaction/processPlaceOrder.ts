@@ -244,53 +244,6 @@ async function main() {
     });
     debug('購入者情報を登録しました');
 
-    // メール追加
-    //     const content = `
-    // sskts-api:samples 様\n
-    // -------------------------------------------------------------------\n
-    // この度はご購入いただき誠にありがとうございます。\n
-    // -------------------------------------------------------------------\n
-    // ◆購入番号 ：${seatReservationAuthorization.result.tmpReserveNum}\n
-    // ◆電話番号 ${profile.telephone}\n
-    // ◆合計金額 ：${amount}円\n
-    // -------------------------------------------------------------------\n
-    // `;
-    // debug('adding email...');
-    // response = await request.post({
-    //     url: `${API_ENDPOINT}/transactions/${transactionId}/notifications/email`,
-    //     auth: { bearer: accessToken },
-    //     body: {
-    //         from: 'noreply@example.com',
-    //         to: process.env.SSKTS_DEVELOPER_EMAIL,
-    //         subject: '購入完了',
-    //         content: content
-    //     },
-    //     json: true,
-    //     simple: false,
-    //     resolveWithFullResponse: true
-    // });
-    // debug('addEmail result:', response.statusCode, response.body);
-    // if (response.statusCode !== httpStatus.OK) {
-    //     throw new Error(response.body.message);
-    // }
-    // const notificationId = response.body.data.id;
-
-    // メール削除
-    // debug('removing email...');
-    // response = await request.del({
-    //     url: `${API_ENDPOINT}/transactions/${transactionId}/notifications/${notificationId}`,
-    //     auth: { bearer: accessToken },
-    //     body: {
-    //     },
-    //     json: true,
-    //     simple: false,
-    //     resolveWithFullResponse: true
-    // });
-    // debug('removeEmail result:', response.statusCode, response.body);
-    // if (response.statusCode !== httpStatus.NO_CONTENT) {
-    //     throw new Error(response.body.message);
-    // }
-
     // 取引確定
     debug('注文取引を確定します...');
     const order = await sskts.service.transaction.placeOrder.confirm({
@@ -298,6 +251,30 @@ async function main() {
         transactionId: transaction.id
     });
     debug('注文が作成されました', order);
+
+    // メール追加
+    debug('メール通知を実行します...');
+    const content = `
+sskts-api:samples 様\n
+-------------------------------------------------------------------\n
+この度はご購入いただき誠にありがとうございます。\n
+-------------------------------------------------------------------\n
+◆購入番号 ：${order.orderNumber}\n
+◆電話番号 ${profile.telephone}\n
+◆合計金額 ：${amount}円\n
+-------------------------------------------------------------------\n
+`;
+    await sskts.service.transaction.placeOrder.sendEmailNotification({
+        auth: auth,
+        transactionId: transaction.id,
+        emailNotification: {
+            from: 'noreply@example.com',
+            to: profile.email,
+            subject: '購入完了',
+            content: content
+        }
+    });
+    debug('メール通知が実行されました');
 }
 
 main().then(() => {

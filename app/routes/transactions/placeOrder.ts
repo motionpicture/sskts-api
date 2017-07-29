@@ -9,7 +9,7 @@ const placeOrderTransactionsRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
-import { CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, OK } from 'http-status';
+import { CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND } from 'http-status';
 import * as moment from 'moment';
 
 import * as redis from '../../../redis';
@@ -511,6 +511,30 @@ placeOrderTransactionsRouter.post(
             res.status(CREATED).json({
                 data: order
             });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+placeOrderTransactionsRouter.post(
+    '/:id/tasks/sendEmailNotification',
+    permitScopes(['transactions']),
+    validator,
+    async (req, res, next) => {
+        try {
+            // 取引が適切かどうかチェック
+
+            // todo その場で送信ではなくDBに登録するようにする
+            const sendEmailNotification = sskts.factory.notification.email.create({
+                from: req.body.from,
+                to: req.body.to,
+                subject: req.body.subject,
+                content: req.body.content
+            });
+            await sskts.service.notification.sendEmail(sendEmailNotification)();
+
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }

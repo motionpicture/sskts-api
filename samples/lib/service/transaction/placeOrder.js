@@ -161,3 +161,18 @@ function confirm(args) {
     });
 }
 exports.confirm = confirm;
+/**
+ * 確定した取引に関して、購入者にメール通知を送信する
+ */
+function sendEmailNotification(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield apiRequest_1.default({
+            uri: `/transactions/placeOrder/${args.transactionId}/tasks/sendEmailNotification`,
+            method: 'POST',
+            expectedStatusCodes: [httpStatus.NO_CONTENT],
+            auth: { bearer: yield args.auth.getAccessToken() },
+            body: args.emailNotification
+        });
+    });
+}
+exports.sendEmailNotification = sendEmailNotification;

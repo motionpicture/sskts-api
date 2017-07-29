@@ -217,3 +217,28 @@ export async function confirm(args: {
         auth: { bearer: await args.auth.getAccessToken() }
     });
 }
+
+export interface IEmailNotification {
+    // tslint:disable-next-line:no-reserved-keywords
+    from: string;
+    to: string;
+    subject: string;
+    content: string;
+}
+
+/**
+ * 確定した取引に関して、購入者にメール通知を送信する
+ */
+export async function sendEmailNotification(args: {
+    auth: OAuth2client;
+    transactionId: string;
+    emailNotification: IEmailNotification
+}): Promise<sskts.factory.order.IOrder> {
+    return await apiRequest({
+        uri: `/transactions/placeOrder/${args.transactionId}/tasks/sendEmailNotification`,
+        method: 'POST',
+        expectedStatusCodes: [httpStatus.NO_CONTENT],
+        auth: { bearer: await args.auth.getAccessToken() },
+        body: args.emailNotification
+    });
+}
