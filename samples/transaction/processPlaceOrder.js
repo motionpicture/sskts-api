@@ -227,17 +227,17 @@ function main() {
         });
         debug('注文が作成されました', order);
         // メール追加
-        debug('メール通知を実行します...');
         const content = `
-sskts-api:samples 様\n
--------------------------------------------------------------------\n
-この度はご購入いただき誠にありがとうございます。\n
--------------------------------------------------------------------\n
-◆購入番号 ：${order.orderNumber}\n
-◆電話番号 ${profile.telephone}\n
-◆合計金額 ：${amount}円\n
--------------------------------------------------------------------\n
+${order.customer.name} 様
+-------------------------------------------------------------------
+この度はご購入いただき誠にありがとうございます。
+-------------------------------------------------------------------
+◆購入番号 ：${order.orderInquiryKey.orderNumber}
+◆電話番号 ${order.orderInquiryKey.telephone}
+◆合計金額 ：${order.price}円
+-------------------------------------------------------------------
 `;
+        debug('メール通知を実行します...', content);
         yield sskts.service.transaction.placeOrder.sendEmailNotification({
             auth: auth,
             transactionId: transaction.id,
