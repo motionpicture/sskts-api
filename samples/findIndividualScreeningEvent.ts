@@ -16,7 +16,7 @@ async function main() {
         'motionpicture',
         'motionpicture',
         'teststate',
-        ['admin']
+        ['events.read-only']
     );
 
     // 上映イベント検索

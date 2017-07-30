@@ -13,10 +13,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const createDebug = require("debug");
 const express = require("express");
+// tslint:disable-next-line:no-require-imports no-var-requires
+const googleAuth = require('google-auth-library');
 const oauthRouter = express.Router();
 const oauthController = require("../controllers/oauth");
 const validator_1 = require("../middlewares/validator");
+const debug = createDebug('sskts-api:routes:oauth');
 oauthRouter.post('/token', (req, _, next) => {
     // 認可タイプ未指定であれば強制的にJWT Bearer Tokenタイプに
     // if (typeof req.body.grant_type !== 'string') {
@@ -53,6 +57,37 @@ oauthRouter.post('/token', (req, _, next) => {
         // 資格情報を発行する
         const credentials = yield oauthController.issueCredentials(req);
         res.json(credentials);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+oauthRouter.post('/token/signInWithGoogle', validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // idTokenをGoogleで検証
+        const CLIENT_ID = '932934324671-66kasujntj2ja7c5k4k55ij6pakpqir4.apps.googleusercontent.com';
+        const auth = new googleAuth();
+        const client = new auth.OAuth2(CLIENT_ID, '', '');
+        client.verifyIdToken(req.body.idToken, CLIENT_ID, 
+        // Or, if multiple clients access the backend:
+        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3],
+        (error, login) => __awaiter(this, void 0, void 0, function* () {
+            if (error !== null) {
+                next(error);
+                return;
+            }
+            const payload = login.getPayload();
+            debug('payload is', payload);
+            // const userid = payload.sub;
+            // If request specified a G Suite domain:
+            //var domain = payload['hd'];
+            // 資格情報を発行する
+            const credentials = yield oauthController.payload2credentials({
+                email: payload.email,
+                name: payload.name
+            });
+            res.json(credentials);
+        }));
     }
     catch (error) {
         next(error);

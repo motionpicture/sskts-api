@@ -4,11 +4,18 @@
  * @ignore
  */
 
+import * as createDebug from 'debug';
 import * as express from 'express';
+
+// tslint:disable-next-line:no-require-imports no-var-requires
+const googleAuth = require('google-auth-library');
+
 const oauthRouter = express.Router();
 
 import * as oauthController from '../controllers/oauth';
 import validator from '../middlewares/validator';
+
+const debug = createDebug('sskts-api:routes:oauth');
 
 oauthRouter.post(
     '/token',
@@ -61,6 +68,48 @@ oauthRouter.post(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
+
+oauthRouter.post(
+    '/token/signInWithGoogle',
+    validator,
+    async (req, res, next) => {
+        try {
+            // idTokenをGoogleで検証
+            const CLIENT_ID = '932934324671-66kasujntj2ja7c5k4k55ij6pakpqir4.apps.googleusercontent.com';
+            const auth = new googleAuth();
+            const client = new auth.OAuth2(CLIENT_ID, '', '');
+            client.verifyIdToken(
+                req.body.idToken,
+                CLIENT_ID,
+                // Or, if multiple clients access the backend:
+                //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3],
+                async (error: any, login: any) => {
+                    if (error !== null) {
+                        next(error);
+
+                        return;
+                    }
+
+                    const payload = login.getPayload();
+                    debug('payload is', payload);
+
+                    // const userid = payload.sub;
+                    // If request specified a G Suite domain:
+                    //var domain = payload['hd'];
+
+                    // 資格情報を発行する
+                    const credentials = await oauthController.payload2credentials(<any>{
+                        email: payload.email,
+                        name: payload.name
+                    });
+                    res.json(credentials);
+                });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 export default oauthRouter;
