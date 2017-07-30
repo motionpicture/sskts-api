@@ -76,36 +76,47 @@ oauthRouter.post(
     validator,
     async (req, res, next) => {
         try {
+
+            // 資格情報を発行する
+            const credentials = await oauthController.payload2credentials(<any>{
+                person: {
+                    id: '12345'
+                },
+                state: req.body.state,
+                scopes: req.body.scopes
+            });
+            res.json(credentials);
+
             // idTokenをGoogleで検証
-            const CLIENT_ID = '932934324671-66kasujntj2ja7c5k4k55ij6pakpqir4.apps.googleusercontent.com';
-            const auth = new googleAuth();
-            const client = new auth.OAuth2(CLIENT_ID, '', '');
-            client.verifyIdToken(
-                req.body.idToken,
-                CLIENT_ID,
-                // Or, if multiple clients access the backend:
-                //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3],
-                async (error: any, login: any) => {
-                    if (error !== null) {
-                        next(error);
+            // const CLIENT_ID = '932934324671-66kasujntj2ja7c5k4k55ij6pakpqir4.apps.googleusercontent.com';
+            // const auth = new googleAuth();
+            // const client = new auth.OAuth2(CLIENT_ID, '', '');
+            // client.verifyIdToken(
+            //     req.body.idToken,
+            //     CLIENT_ID,
+            //     // Or, if multiple clients access the backend:
+            //     //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3],
+            //     async (error: any, login: any) => {
+            //         if (error !== null) {
+            //             next(error);
 
-                        return;
-                    }
+            //             return;
+            //         }
 
-                    const payload = login.getPayload();
-                    debug('payload is', payload);
+            //         const payload = login.getPayload();
+            //         debug('payload is', payload);
 
-                    // const userid = payload.sub;
-                    // If request specified a G Suite domain:
-                    //var domain = payload['hd'];
+            //         // const userid = payload.sub;
+            //         // If request specified a G Suite domain:
+            //         //var domain = payload['hd'];
 
-                    // 資格情報を発行する
-                    const credentials = await oauthController.payload2credentials(<any>{
-                        email: payload.email,
-                        name: payload.name
-                    });
-                    res.json(credentials);
-                });
+            //         // 資格情報を発行する
+            //         const credentials = await oauthController.payload2credentials(<any>{
+            //             email: payload.email,
+            //             name: payload.name
+            //         });
+            //         res.json(credentials);
+            //     });
         } catch (error) {
             next(error);
         }
