@@ -4,19 +4,15 @@
  * @ignore
  */
 
-import * as sskts from '@motionpicture/sskts-domain';
-import * as createDebug from 'debug';
+// import * as createDebug from 'debug';
 import * as express from 'express';
-
-// tslint:disable-next-line:no-require-imports no-var-requires
-const googleAuth = require('google-auth-library');
 
 const oauthRouter = express.Router();
 
 import * as oauthController from '../controllers/oauth';
 import validator from '../middlewares/validator';
 
-const debug = createDebug('sskts-api:routes:oauth');
+// const debug = createDebug('sskts-api:routes:oauth');
 
 oauthRouter.post(
     '/token',
@@ -78,93 +74,27 @@ oauthRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-
             // 資格情報を発行する
-            // const credentials = await oauthController.payload2credentials(<any>{
-            //     person: {
-            //         id: '12345'
-            //     },
-            //     state: req.body.state,
-            //     scopes: req.body.scopes
-            // });
-            // res.json(credentials);
+            const credentials = await oauthController.issueCredentialsByGoogleToken(
+                req.body.idToken, req.body.client_id, req.body.state, req.body.scopes
+            );
+            res.json(credentials);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
-            async function verifyIdToken(idToken: string) {
-                return new Promise<any>((resolve, reject) => {
-
-                    // idTokenをGoogleで検証
-                    const CLIENT_ID = '932934324671-66kasujntj2ja7c5k4k55ij6pakpqir4.apps.googleusercontent.com';
-                    const auth = new googleAuth();
-                    const client = new auth.OAuth2(CLIENT_ID, '', '');
-                    client.verifyIdToken(
-                        idToken,
-                        CLIENT_ID,
-                        // Or, if multiple clients access the backend:
-                        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3],
-                        async (error: any, login: any) => {
-                            if (error !== null) {
-                                reject(error);
-
-                                return;
-                            }
-
-                            // todo audのチェック
-
-                            const payload = login.getPayload();
-                            debug('payload is', payload);
-
-                            // const userId = payload.sub;
-                            // If request specified a G Suite domain:
-                            //var domain = payload['hd'];
-
-                            resolve(payload);
-                        });
-                });
-            }
-
-            const userInfo = await verifyIdToken(req.body.idToken);
-
-            // 会員検索(なければ登録)
-            const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
-            const person = {
-                typeOf: 'Person',
-                email: userInfo.email,
-                givenName: '',
-                familyName: '',
-                telephone: '',
-                memberOf: {
-                    openId: {
-                        provider: userInfo.iss,
-                        userId: userInfo.sub
-                    },
-                    hostingOrganization: {},
-                    membershipNumber: `${userInfo.iss}-${userInfo.sub}`,
-                    programName: 'シネマサンシャインプレミアム'
-                }
-            };
-            const personDoc = await personAdapter.personModel.findOneAndUpdate(
-                {
-                    'memberOf.openId.provider': person.memberOf.openId.provider,
-                    'memberOf.openId.userId': person.memberOf.openId.userId
-                },
-                {
-                    $setOnInsert: person // 新規の場合のみ更新
-                },
-                {
-                    new: true, upsert: true
-                }
-            ).exec();
-
-            if (personDoc === null) {
-                throw new Error('member not found');
-            }
-
+oauthRouter.post(
+    '/token/signInWithLINE',
+    validator,
+    // tslint:disable-next-line:max-func-body-length
+    async (req, res, next) => {
+        try {
             // 資格情報を発行する
-            const credentials = await oauthController.payload2credentials(<any>{
-                person: personDoc.toObject(),
-                state: req.body.state,
-                scopes: req.body.scopes
-            });
+            const credentials = await oauthController.issueCredentialsByLINEAuthorizationCode(
+                req.body.code, req.body.redirectUri, req.body.client_id, req.body.state, req.body.scopes
+            );
             res.json(credentials);
         } catch (error) {
             next(error);

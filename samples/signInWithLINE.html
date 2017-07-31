@@ -1,0 +1,78 @@
+<html>
+<meta name="google-signin-client_id" content="932934324671-66kasujntj2ja7c5k4k55ij6pakpqir4.apps.googleusercontent.com">
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+
+<body onload="checkAuthorizationCode();">
+    <a href="#" onclick="signIn();">Log in with LINE</a>
+</body>
+
+<script>
+    var channelId = '1527681488';
+    var channelSecret = 'cf3540f8c004f9e8926a5090ae6a036d';
+    var redirectUri = location.href.replace(/\?.*$/, '');
+
+    function signIn() {
+        var state = 'teststate';
+
+        location.href = 'https://access.line.me/dialog/oauth/weblogin?response_type=code' +
+            '&client_id=' + channelId +
+            '&redirect_uri=' + encodeURIComponent(redirectUri) +
+            '&state=' + state;
+    }
+
+    function checkAuthorizationCode() {
+        var queries = getQueries();
+        if (queries.code) {
+            // LINEからの認可コードを使用してアクセストークンを取得しにいく
+            console.log('getting an access token...authorization code is', queries.code);
+            // getAccessToken(queries.code);
+            onSignIn(queries.code);
+        }
+    }
+
+    function onSignIn(authorizationCode) {
+        signInWithLINE(authorizationCode);
+    }
+
+    function getQueries() {
+        var vars = {}, max = 0, hash = "", array = "";
+        var url = window.location.search;
+
+        hash = url.slice(1).split('&');
+        max = hash.length;
+        for (var i = 0; i < max; i++) {
+            array = hash[i].split('=');
+            // vars.push(array[0]);
+            vars[array[0]] = array[1];
+        }
+
+        return vars;
+    }
+
+    function signOut() {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut().then(function () {
+            console.log('User signed out.');
+        });
+    }
+
+    function signInWithLINE(code) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:8081/oauth/token/signInWithLINE');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+            console.log('Signed in as: ' + xhr.responseText);
+            alert('LINEでログインしました' + xhr.responseText);
+        };
+        xhr.send(JSON.stringify({
+            client_id: 'motionpicture',
+            state: '',
+            scopes: [],
+            code: code,
+            redirectUri: redirectUri
+        }));
+    }
+
+</script>
+
+</html>

@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - organizationsルーターを追加。
 - typescript向けのクライアントライブラリを追加。
 - Google Sign-Inとの連携を追加。
+- LINE Loginとの連携を追加。
 
 ### Changed
 

@@ -8,6 +8,10 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
+import * as request from 'request-promise-native';
+
+// tslint:disable-next-line:no-require-imports no-var-requires
+const googleAuth = require('google-auth-library');
 
 const debug = createDebug('sskts-api:controllers:oauth');
 // todo どこで定義するか
@@ -100,33 +104,190 @@ export async function issueCredentialsByClient(clientId: string, state: string, 
     return await payload2credentials(payload);
 }
 
-// export async function issueCredentialsByPassword(
-//     clientId: string, state: string, username: string, password: string, scopes: string[]
-// ): Promise<ICredentials> {
-//     // クライアントの存在確認
-//     const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
-//     const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
-//     if (clientDoc === null) {
-//         throw new Error(MESSAGE_CLIENT_NOT_FOUND);
-//     }
+/**
+ * Googleのid tokenから資格情報を発行する
+ */
+export async function issueCredentialsByGoogleToken(
+    idToken: string, clientId: string, state: string, scopes: string[]
+): Promise<ICredentials> {
+    // クライアントの存在確認
+    const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+    const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
+    if (clientDoc === null) {
+        throw new Error(MESSAGE_CLIENT_NOT_FOUND);
+    }
 
-//     // ログイン確認
-//     const ownerAdapter = sskts.adapter.owner(sskts.mongoose.connection);
-//     const memberOption = await sskts.service.member.login(username, password)(ownerAdapter);
-//     if (memberOption.isEmpty) {
-//         throw new Error(MESSAGE_INVALID_USERNAME_OR_PASSWORD);
-//     }
+    const userInfo = await verifyGoogleIdToken(idToken);
 
-//     const owner = memberOption.get();
-//     const payload = sskts.factory.clientUser.create({
-//         client: clientId,
-//         state: state,
-//         owner: owner.id,
-//         scopes: scopes
-//     });
+    // 会員検索(なければ登録)
+    const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
+    const person = {
+        typeOf: 'Person',
+        email: userInfo.email,
+        givenName: '',
+        familyName: '',
+        telephone: '',
+        memberOf: {
+            openId: {
+                provider: userInfo.iss,
+                userId: userInfo.sub
+            },
+            hostingOrganization: {},
+            membershipNumber: `${userInfo.iss}-${userInfo.sub}`,
+            programName: 'シネマサンシャインプレミアム'
+        }
+    };
+    const personDoc = await personAdapter.personModel.findOneAndUpdate(
+        {
+            'memberOf.openId.provider': person.memberOf.openId.provider,
+            'memberOf.openId.userId': person.memberOf.openId.userId
+        },
+        {
+            $setOnInsert: person // 新規の場合のみ更新
+        },
+        { new: true, upsert: true }
+    ).exec();
 
-//     return await payload2credentials(payload);
-// }
+    if (personDoc === null) {
+        throw new Error('member not found');
+    }
+
+    const payload = sskts.factory.clientUser.create(<any>{
+        client: clientId,
+        person: personDoc.toObject(),
+        state: state,
+        scopes: scopes
+    });
+
+    return await payload2credentials(payload);
+}
+
+async function verifyGoogleIdToken(idToken: string) {
+    return new Promise<any>((resolve, reject) => {
+
+        // idTokenをGoogleで検証
+        const CLIENT_ID = '932934324671-66kasujntj2ja7c5k4k55ij6pakpqir4.apps.googleusercontent.com';
+        const auth = new googleAuth();
+        const client = new auth.OAuth2(CLIENT_ID, '', '');
+        client.verifyIdToken(
+            idToken,
+            CLIENT_ID,
+            // Or, if multiple clients access the backend:
+            //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3],
+            async (error: any, login: any) => {
+                if (error !== null) {
+                    reject(error);
+
+                    return;
+                }
+
+                // todo audのチェック
+
+                const payload = login.getPayload();
+                debug('payload is', payload);
+
+                // const userId = payload.sub;
+                // If request specified a G Suite domain:
+                //var domain = payload['hd'];
+
+                resolve(payload);
+            });
+    });
+}
+
+/**
+ * LINEの認可コードから資格情報を発行する
+ */
+export async function issueCredentialsByLINEAuthorizationCode(
+    code: string, redirectUri: string, clientId: string, state: string, scopes: string[]
+): Promise<ICredentials> {
+    // クライアントの存在確認
+    const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+    const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
+    if (clientDoc === null) {
+        throw new Error(MESSAGE_CLIENT_NOT_FOUND);
+    }
+
+    const form = {
+        grant_type: 'authorization_code',
+        client_id: '1527681488',
+        client_secret: 'cf3540f8c004f9e8926a5090ae6a036d',
+        code: code,
+        redirect_uri: redirectUri
+    };
+    debug('getting an access token...', form);
+    const accessToken = await request.post({
+        url: 'https://api.line.me/v2/oauth/accessToken',
+        form: form,
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true,
+        useQuerystring: true
+    }).then((response) => {
+        debug(response.body);
+
+        return response.body.access_token;
+    });
+    debug('an access token got', accessToken);
+
+    // LINEプロフィール取得
+    debug('getting user profiles...');
+    const profile = await request.get({
+        url: 'https://api.line.me/v2/profile',
+        auth: { bearer: accessToken },
+        json: true,
+        simple: false,
+        resolveWithFullResponse: true,
+        useQuerystring: true
+    }).then((response) => {
+        debug(response.body);
+
+        return response.body;
+    });
+    debug('profile is', profile);
+
+    // 会員検索(なければ登録)
+    const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
+    const person = {
+        typeOf: 'Person',
+        email: '',
+        givenName: '',
+        familyName: '',
+        telephone: '',
+        memberOf: {
+            openId: {
+                provider: 'LINE',
+                userId: profile.userId
+            },
+            hostingOrganization: {},
+            membershipNumber: `LINE-${profile.userId}`,
+            programName: 'シネマサンシャインプレミアム'
+        }
+    };
+    const personDoc = await personAdapter.personModel.findOneAndUpdate(
+        {
+            'memberOf.openId.provider': person.memberOf.openId.provider,
+            'memberOf.openId.userId': person.memberOf.openId.userId
+        },
+        {
+            $setOnInsert: person // 新規の場合のみ更新
+        },
+        { new: true, upsert: true }
+    ).exec();
+
+    if (personDoc === null) {
+        throw new Error('member not found');
+    }
+
+    const payload = sskts.factory.clientUser.create(<any>{
+        client: clientId,
+        person: personDoc.toObject(),
+        state: state,
+        scopes: scopes
+    });
+
+    return await payload2credentials(payload);
+}
 
 /**
  * 任意のデータをJWTを使用して資格情報へ変換する
