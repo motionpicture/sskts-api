@@ -98,7 +98,7 @@ peopleRouter.get('/me/creditCards', permitScopes_1.default(['people.creditCards'
                 siteId: process.env.GMO_SITE_ID,
                 sitePass: process.env.GMO_SITE_PASS,
                 memberId: req.user.person.id,
-                seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS
+                seqMode: sskts.GMO.utils.util.SeqMode.Physics
             });
         }
         catch (error) {
@@ -147,7 +147,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
                 siteId: process.env.GMO_SITE_ID,
                 sitePass: process.env.GMO_SITE_PASS,
                 memberId: req.user.person.id,
-                seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS,
+                seqMode: sskts.GMO.utils.util.SeqMode.Physics,
                 cardNo: req.body.cardNo,
                 cardPass: req.body.cardPass,
                 expire: req.body.expire,
@@ -159,7 +159,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
                 siteId: process.env.GMO_SITE_ID,
                 sitePass: process.env.GMO_SITE_PASS,
                 memberId: req.user.person.id,
-                seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS,
+                seqMode: sskts.GMO.utils.util.SeqMode.Physics,
                 cardSeq: saveCardResult.cardSeq
             });
             creditCard = searchCardResults[0];

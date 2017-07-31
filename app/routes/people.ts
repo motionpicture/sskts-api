@@ -122,7 +122,7 @@ peopleRouter.get(
                     siteId: <string>process.env.GMO_SITE_ID,
                     sitePass: <string>process.env.GMO_SITE_PASS,
                     memberId: req.user.person.id,
-                    seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS
+                    seqMode: sskts.GMO.utils.util.SeqMode.Physics
                 });
             } catch (error) {
                 throw new Error(error.errors[0].content);
@@ -183,7 +183,7 @@ peopleRouter.post(
                     siteId: <string>process.env.GMO_SITE_ID,
                     sitePass: <string>process.env.GMO_SITE_PASS,
                     memberId: req.user.person.id,
-                    seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS,
+                    seqMode: sskts.GMO.utils.util.SeqMode.Physics,
                     cardNo: req.body.cardNo,
                     cardPass: req.body.cardPass,
                     expire: req.body.expire,
@@ -196,7 +196,7 @@ peopleRouter.post(
                     siteId: <string>process.env.GMO_SITE_ID,
                     sitePass: <string>process.env.GMO_SITE_PASS,
                     memberId: req.user.person.id,
-                    seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS,
+                    seqMode: sskts.GMO.utils.util.SeqMode.Physics,
                     cardSeq: saveCardResult.cardSeq
                 });
 

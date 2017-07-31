@@ -181,12 +181,11 @@ function main() {
             transactionId: transaction.id,
             orderId: orderId,
             amount: amount,
-            method: '1',
+            method: sskts_domain_1.GMO.utils.util.Method.Lump,
             creditCard: {
                 memberId: 'me',
-                cardSeq: creditCards[0].cardSeq,
-                cardPass: undefined,
-                seqMode: '1'
+                cardSeq: creditCards[0].cardSeq
+                // cardPass: undefined
             }
         });
         debug('クレジットカードのオーソリがとれました', creditCardAuthorization);
@@ -207,12 +206,11 @@ function main() {
             transactionId: transaction.id,
             orderId: orderId,
             amount: amount,
-            method: '1',
+            method: sskts_domain_1.GMO.utils.util.Method.Lump,
             creditCard: {
                 memberId: 'me',
-                cardSeq: creditCards[0].cardSeq,
-                cardPass: undefined,
-                seqMode: '1'
+                cardSeq: creditCards[0].cardSeq
+                // cardPass: undefined
             }
         });
         debug('クレジットカードのオーソリがとれました', creditCardAuthorization);

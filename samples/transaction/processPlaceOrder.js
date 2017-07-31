@@ -172,7 +172,7 @@ function main() {
             transactionId: transaction.id,
             orderId: orderId,
             amount: amount,
-            method: '1',
+            method: sskts_domain_1.GMO.utils.util.Method.Lump,
             creditCard: {
                 cardNo: '4111111111111111',
                 expire: '2012',
@@ -197,7 +197,7 @@ function main() {
             transactionId: transaction.id,
             orderId: orderId,
             amount: amount,
-            method: '1',
+            method: sskts_domain_1.GMO.utils.util.Method.Lump,
             creditCard: {
                 cardNo: '4111111111111111',
                 expire: '2012',

@@ -148,8 +148,8 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
             gmo_amount: totalPrice,
             gmo_access_id: gmoAuthResult.accessId,
             gmo_access_pass: gmoAuthResult.accessPass,
-            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
-            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JobCd.Auth,
+            gmo_pay_type: sskts.GMO.utils.util.PayType.Credit
         },
         json: true,
         simple: false,

@@ -4,7 +4,7 @@
  * @ignore
  */
 
-import { COA } from '@motionpicture/sskts-domain';
+import { COA, GMO } from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as util from 'util';
@@ -188,7 +188,7 @@ async function main() {
         transactionId: transaction.id,
         orderId: orderId,
         amount: amount,
-        method: '1',
+        method: GMO.utils.util.Method.Lump,
         creditCard: {
             cardNo: '4111111111111111',
             expire: '2012',
@@ -220,7 +220,7 @@ async function main() {
         transactionId: transaction.id,
         orderId: orderId,
         amount: amount,
-        method: '1',
+        method: GMO.utils.util.Method.Lump,
         creditCard: {
             cardNo: '4111111111111111',
             expire: '2012',

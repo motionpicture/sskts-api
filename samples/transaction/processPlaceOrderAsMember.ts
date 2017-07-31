@@ -4,7 +4,7 @@
  * @ignore
  */
 
-import { COA } from '@motionpicture/sskts-domain';
+import { COA, GMO } from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as util from 'util';
@@ -200,12 +200,11 @@ async function main() {
         transactionId: transaction.id,
         orderId: orderId,
         amount: amount,
-        method: '1',
+        method: GMO.utils.util.Method.Lump,
         creditCard: {
             memberId: 'me',
-            cardSeq: creditCards[0].cardSeq,
-            cardPass: undefined,
-            seqMode: '1'
+            cardSeq: creditCards[0].cardSeq
+            // cardPass: undefined
         }
     });
     debug('クレジットカードのオーソリがとれました', creditCardAuthorization);
@@ -233,12 +232,11 @@ async function main() {
         transactionId: transaction.id,
         orderId: orderId,
         amount: amount,
-        method: '1',
+        method: GMO.utils.util.Method.Lump,
         creditCard: {
             memberId: 'me',
-            cardSeq: creditCards[0].cardSeq,
-            cardPass: undefined,
-            seqMode: '1'
+            cardSeq: creditCards[0].cardSeq
+            // cardPass: undefined
         }
     });
     debug('クレジットカードのオーソリがとれました', creditCardAuthorization);

@@ -264,7 +264,7 @@ export default async (config: IConfig) => {
         shopId: config.gmoShopId,
         shopPass: config.gmoShopPass,
         orderId: orderId,
-        jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
+        jobCd: sskts.GMO.utils.util.JobCd.Auth,
         amount: totalPrice
     });
 
@@ -272,7 +272,7 @@ export default async (config: IConfig) => {
         accessId: entryTranResult2.accessId,
         accessPass: entryTranResult2.accessPass,
         orderId: orderId,
-        method: '1',
+        method: sskts.GMO.utils.util.Method.Lump,
         cardNo: '4111111111111111',
         expire: '2012',
         securityCode: '123'
@@ -293,8 +293,8 @@ export default async (config: IConfig) => {
             gmo_amount: totalPrice,
             gmo_access_id: entryTranResult2.accessId,
             gmo_access_pass: entryTranResult2.accessPass,
-            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
-            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JobCd.Auth,
+            gmo_pay_type: sskts.GMO.utils.util.PayType.Credit
         },
         json: true,
         resolveWithFullResponse: true

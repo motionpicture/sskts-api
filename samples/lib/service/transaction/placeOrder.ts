@@ -16,8 +16,15 @@ import OAuth2client from '../../auth/oAuth2client';
  */
 export async function start(args: {
     auth: OAuth2client;
-    expires: Date; // 取引期限
-    sellerId: string; // ショップID
+    /**
+     * 取引期限
+     * 指定した日時を過ぎると、取引を進行することはできなくなります。
+     */
+    expires: Date;
+    /**
+     * 販売者ID
+     */
+    sellerId: string;
 }): Promise<sskts.factory.transaction.ITransaction> {
     return await apiRequest({
         uri: '/transactions/placeOrder/start',
@@ -31,6 +38,9 @@ export async function start(args: {
     });
 }
 
+/**
+ * 座席販売情報インターフェース
+ */
 export interface IOffer {
     seatSection: string;
     seatNumber: string;
@@ -58,8 +68,17 @@ export interface IOffer {
  */
 export async function createSeatReservationAuthorization(args: {
     auth: OAuth2client;
+    /**
+     * 取引ID
+     */
     transactionId: string;
+    /**
+     * イベント識別子
+     */
     eventIdentifier: string;
+    /**
+     * 座席販売情報
+     */
     offers: IOffer[];
 }): Promise<sskts.factory.authorization.seatReservation.IAuthorization> {
     return await apiRequest({
@@ -79,7 +98,13 @@ export async function createSeatReservationAuthorization(args: {
  */
 export async function cancelSeatReservationAuthorization(args: {
     auth: OAuth2client;
+    /**
+     * 取引ID
+     */
     transactionId: string;
+    /**
+     * 承認ID
+     */
     authorizationId: string;
 }): Promise<void> {
     return await apiRequest({
@@ -90,27 +115,30 @@ export async function cancelSeatReservationAuthorization(args: {
     });
 }
 
-export interface ICreditCardRaw {
-    cardNo: string;
-    expire: string;
-    securityCode: string;
-}
-export type ICreditCardTokenized = string; // トークン決済の場合こちら
-export interface ICreditCardOfMember {
-    cardSeq: number;
-    cardPass?: string;
-}
-export type ICreditCard = ICreditCardRaw | ICreditCardTokenized | ICreditCardOfMember;
-
 /**
  * クレジットカードのオーソリを取得する
  */
 export async function createCreditCardAuthorization(args: {
     auth: OAuth2client;
+    /**
+     * 取引ID
+     */
     transactionId: string;
+    /**
+     * オーダーID
+     */
     orderId: string;
+    /**
+     * 金額
+     */
     amount: number;
-    method: string;
+    /**
+     * 支払い方法
+     */
+    method: sskts.GMO.utils.util.Method;
+    /**
+     * クレジットカード情報
+     */
     creditCard: sskts.service.transaction.placeOrder.ICreditCard4authorization;
 }): Promise<sskts.factory.authorization.gmo.IAuthorization> {
     return await apiRequest({
@@ -132,7 +160,13 @@ export async function createCreditCardAuthorization(args: {
  */
 export async function cancelCreditCardAuthorization(args: {
     auth: OAuth2client;
+    /**
+     * 取引ID
+     */
     transactionId: string;
+    /**
+     * 承認ID
+     */
     authorizationId: string;
 }): Promise<void> {
     return await apiRequest({
@@ -152,7 +186,13 @@ export type IMvtk = sskts.factory.authorization.mvtk.IResult & {
  */
 export async function createMvtkAuthorization(args: {
     auth: OAuth2client;
+    /**
+     * 取引ID
+     */
     transactionId: string;
+    /**
+     * ムビチケ情報
+     */
     mvtk: IMvtk;
 }): Promise<sskts.factory.authorization.mvtk.IAuthorization> {
     return await apiRequest({
@@ -169,7 +209,13 @@ export async function createMvtkAuthorization(args: {
  */
 export async function cancelMvtkAuthorization(args: {
     auth: OAuth2client;
+    /**
+     * 取引ID
+     */
     transactionId: string;
+    /**
+     * 承認ID
+     */
     authorizationId: string;
 }): Promise<void> {
     return await apiRequest({
@@ -180,20 +226,19 @@ export async function cancelMvtkAuthorization(args: {
     });
 }
 
-export interface IAgentProfile {
-    givenName: string;
-    familyName: string;
-    telephone: string;
-    email: string;
-}
-
 /**
  * 購入者情報登録
  */
 export async function setAgentProfile(args: {
     auth: OAuth2client;
+    /**
+     * 取引ID
+     */
     transactionId: string;
-    profile: IAgentProfile;
+    /**
+     * 購入者情報
+     */
+    profile: sskts.factory.person.IProfile;
 }): Promise<void> {
     await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/agent/profile`,
@@ -209,6 +254,9 @@ export async function setAgentProfile(args: {
  */
 export async function confirm(args: {
     auth: OAuth2client;
+    /**
+     * 取引ID
+     */
     transactionId: string;
 }): Promise<sskts.factory.order.IOrder> {
     return await apiRequest({
@@ -232,7 +280,13 @@ export interface IEmailNotification {
  */
 export async function sendEmailNotification(args: {
     auth: OAuth2client;
+    /**
+     * 取引ID
+     */
     transactionId: string;
+    /**
+     * Eメール通知
+     */
     emailNotification: IEmailNotification
 }): Promise<sskts.factory.order.IOrder> {
     return await apiRequest({
