@@ -29,36 +29,23 @@ peopleRouter.get(
     permitScopes(['people.profile', 'people.profile.read-only']),
     async (req, res, next) => {
         try {
-            // const ownerId = <string>req.getUser().owner;
-            res.json({
-                data: {
-                    typeOf: 'Person',
-                    id: '12345',
-                    givenName: 'てつ',
-                    familyName: 'やまざき',
-                    email: 'ilovegadd@gmail.con',
-                    telephone: '09012345678'
-                }
-            });
-            // const profileOption = await sskts.service.member.getProfile(ownerId)(sskts.adapter.owner(sskts.mongoose.connection));
-            // debug('profileOption is', profileOption);
-            // profileOption.match({
-            //     Some: (profile) => {
-            //         res.json({
-            //             data: {
-            //                 type: 'people',
-            //                 id: ownerId,
-            //                 attributes: profile
-            //             }
-            //         });
-            //     },
-            //     None: () => {
-            //         res.status(NOT_FOUND);
-            //         res.json({
-            //             data: null
-            //         });
-            //     }
-            // });
+            const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
+            const personDoc = await personAdapter.personModel.findById(
+                req.user.person.id,
+                'typeOf givenName familyName email telephone'
+            ).exec();
+            debug('profile found', personDoc);
+
+            if (personDoc === null) {
+                res.status(httpStatus.NOT_FOUND).json({
+                    data: null
+                });
+            } else {
+                res.json({
+                    data: personDoc.toObject()
+                });
+
+            }
         } catch (error) {
             next(error);
         }
@@ -71,16 +58,22 @@ peopleRouter.get(
 peopleRouter.put(
     '/me/profile',
     permitScopes(['people.profile']),
-    (req, __, next) => {
+    (__1, __2, next) => {
 
         next();
     },
     validator,
     async (req, res, next) => {
         try {
-            // const ownerId = <string>req.getUser().owner;
-            // const profile = sskts.factory.owner.member.createVariableFields(req.body.data.attributes);
-            // await sskts.service.member.updateProfile(ownerId, profile)(sskts.adapter.owner(sskts.mongoose.connection));
+            const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
+            await personAdapter.personModel.findByIdAndUpdate(
+                req.user.person.id,
+                {
+                    givenName: req.body.givenName,
+                    familyName: req.body.familyName,
+                    telephone: req.body.telephone
+                }
+            ).exec();
 
             res.status(httpStatus.NO_CONTENT).end();
         } catch (error) {

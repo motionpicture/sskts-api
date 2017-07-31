@@ -13,6 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const express = require("express");
 // tslint:disable-next-line:no-require-imports no-var-requires
@@ -62,43 +63,82 @@ oauthRouter.post('/token', (req, _, next) => {
         next(error);
     }
 }));
-oauthRouter.post('/token/signInWithGoogle', validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+oauthRouter.post('/token/signInWithGoogle', validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 資格情報を発行する
+        // const credentials = await oauthController.payload2credentials(<any>{
+        //     person: {
+        //         id: '12345'
+        //     },
+        //     state: req.body.state,
+        //     scopes: req.body.scopes
+        // });
+        // res.json(credentials);
+        function verifyIdToken(idToken) {
+            return __awaiter(this, void 0, void 0, function* () {
+                return new Promise((resolve, reject) => {
+                    // idTokenをGoogleで検証
+                    const CLIENT_ID = '932934324671-66kasujntj2ja7c5k4k55ij6pakpqir4.apps.googleusercontent.com';
+                    const auth = new googleAuth();
+                    const client = new auth.OAuth2(CLIENT_ID, '', '');
+                    client.verifyIdToken(idToken, CLIENT_ID, 
+                    // Or, if multiple clients access the backend:
+                    //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3],
+                    (error, login) => __awaiter(this, void 0, void 0, function* () {
+                        if (error !== null) {
+                            reject(error);
+                            return;
+                        }
+                        // todo audのチェック
+                        const payload = login.getPayload();
+                        debug('payload is', payload);
+                        // const userId = payload.sub;
+                        // If request specified a G Suite domain:
+                        //var domain = payload['hd'];
+                        resolve(payload);
+                    }));
+                });
+            });
+        }
+        const userInfo = yield verifyIdToken(req.body.idToken);
+        // 会員検索(なければ登録)
+        const personAdapter = yield sskts.adapter.person(sskts.mongoose.connection);
+        const person = {
+            typeOf: 'Person',
+            email: userInfo.email,
+            givenName: '',
+            familyName: '',
+            telephone: '',
+            memberOf: {
+                openId: {
+                    provider: userInfo.iss,
+                    userId: userInfo.sub
+                },
+                hostingOrganization: {},
+                membershipNumber: `${userInfo.iss}-${userInfo.sub}`,
+                programName: 'シネマサンシャインプレミアム'
+            }
+        };
+        const personDoc = yield personAdapter.personModel.findOneAndUpdate({
+            'memberOf.openId.provider': person.memberOf.openId.provider,
+            'memberOf.openId.userId': person.memberOf.openId.userId
+        }, {
+            $setOnInsert: person // 新規の場合のみ更新
+        }, {
+            new: true, upsert: true
+        }).exec();
+        if (personDoc === null) {
+            throw new Error('member not found');
+        }
+        // 資格情報を発行する
         const credentials = yield oauthController.payload2credentials({
-            person: {
-                id: '12345'
-            },
+            person: personDoc.toObject(),
             state: req.body.state,
             scopes: req.body.scopes
         });
         res.json(credentials);
-        // idTokenをGoogleで検証
-        // const CLIENT_ID = '932934324671-66kasujntj2ja7c5k4k55ij6pakpqir4.apps.googleusercontent.com';
-        // const auth = new googleAuth();
-        // const client = new auth.OAuth2(CLIENT_ID, '', '');
-        // client.verifyIdToken(
-        //     req.body.idToken,
-        //     CLIENT_ID,
-        //     // Or, if multiple clients access the backend:
-        //     //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3],
-        //     async (error: any, login: any) => {
-        //         if (error !== null) {
-        //             next(error);
-        //             return;
-        //         }
-        //         const payload = login.getPayload();
-        //         debug('payload is', payload);
-        //         // const userid = payload.sub;
-        //         // If request specified a G Suite domain:
-        //         //var domain = payload['hd'];
-        //         // 資格情報を発行する
-        //         const credentials = await oauthController.payload2credentials(<any>{
-        //             email: payload.email,
-        //             name: payload.name
-        //         });
-        //         res.json(credentials);
-        //     });
     }
     catch (error) {
         next(error);

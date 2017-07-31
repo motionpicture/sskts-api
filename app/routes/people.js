@@ -15,6 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const peopleRouter = express_1.Router();
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const httpStatus = require("http-status");
 const authentication_1 = require("../middlewares/authentication");
@@ -29,36 +30,19 @@ peopleRouter.use(authentication_1.default);
  */
 peopleRouter.get('/me/profile', permitScopes_1.default(['people.profile', 'people.profile.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // const ownerId = <string>req.getUser().owner;
-        res.json({
-            data: {
-                typeOf: 'Person',
-                id: '12345',
-                givenName: 'てつ',
-                familyName: 'やまざき',
-                email: 'ilovegadd@gmail.con',
-                telephone: '09012345678'
-            }
-        });
-        // const profileOption = await sskts.service.member.getProfile(ownerId)(sskts.adapter.owner(sskts.mongoose.connection));
-        // debug('profileOption is', profileOption);
-        // profileOption.match({
-        //     Some: (profile) => {
-        //         res.json({
-        //             data: {
-        //                 type: 'people',
-        //                 id: ownerId,
-        //                 attributes: profile
-        //             }
-        //         });
-        //     },
-        //     None: () => {
-        //         res.status(NOT_FOUND);
-        //         res.json({
-        //             data: null
-        //         });
-        //     }
-        // });
+        const personAdapter = yield sskts.adapter.person(sskts.mongoose.connection);
+        const personDoc = yield personAdapter.personModel.findById(req.user.person.id, 'typeOf givenName familyName email telephone').exec();
+        debug('profile found', personDoc);
+        if (personDoc === null) {
+            res.status(httpStatus.NOT_FOUND).json({
+                data: null
+            });
+        }
+        else {
+            res.json({
+                data: personDoc.toObject()
+            });
+        }
     }
     catch (error) {
         next(error);
@@ -67,13 +51,16 @@ peopleRouter.get('/me/profile', permitScopes_1.default(['people.profile', 'peopl
 /**
  * 会員プロフィール更新
  */
-peopleRouter.put('/me/profile', permitScopes_1.default(['people.profile']), (req, __, next) => {
+peopleRouter.put('/me/profile', permitScopes_1.default(['people.profile']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // const ownerId = <string>req.getUser().owner;
-        // const profile = sskts.factory.owner.member.createVariableFields(req.body.data.attributes);
-        // await sskts.service.member.updateProfile(ownerId, profile)(sskts.adapter.owner(sskts.mongoose.connection));
+        const personAdapter = yield sskts.adapter.person(sskts.mongoose.connection);
+        yield personAdapter.personModel.findByIdAndUpdate(req.user.person.id, {
+            givenName: req.body.givenName,
+            familyName: req.body.familyName,
+            telephone: req.body.telephone
+        }).exec();
         res.status(httpStatus.NO_CONTENT).end();
     }
     catch (error) {

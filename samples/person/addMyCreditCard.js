@@ -14,7 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
-const sskts = require("./lib/sskts-api");
+const sskts = require("../lib/sskts-api");
 const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
