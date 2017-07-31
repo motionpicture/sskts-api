@@ -53,15 +53,15 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         });
         debug('starting a transaction...scope:', scope);
         // 会員としてログインしている場合は所有者IDを指定して開始する
-        const ownerId = (req.getUser().owner !== undefined) ? req.getUser().owner : undefined;
+        const agentId = (req.user.person !== undefined) ? req.user.person.id : undefined;
         const transactionOption = yield sskts.service.transaction.placeOrder.start({
             // tslint:disable-next-line:no-magic-numbers
             expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
             // tslint:disable-next-line:no-magic-numbers
             maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
-            clientUser: req.getUser(),
+            clientUser: req.user,
             scope: scope,
-            agentId: ownerId,
+            agentId: agentId,
             sellerId: req.body.sellerId
         })(sskts.adapter.person(sskts.mongoose.connection), sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
         transactionOption.match({
@@ -150,55 +150,6 @@ placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['
     }
 }));
 /**
- * 会員カード追加
- */
-// placeOrderTransactionsRouter.post(
-//     '/:id/owners/:ownerId/cards',
-//     permitScopes(['transactions.owners.cards']),
-//     (req, _2, next) => {
-//         /*
-//         req.body = {
-//             data: {
-//                 type: 'cards',
-//                 attributes: {
-//                     card_no: 'xxx',
-//                     card_pass: '',
-//                     expire: 'xxx',
-//                     holder_name: 'xxx',
-//                     token: 'xxx',
-//                 }
-//             }
-//         }
-//         */
-//         req.checkBody('data').notEmpty().withMessage('required');
-//         req.checkBody('data.type').equals('cards').withMessage('must be \'cards\'');
-//         req.checkBody('data.attributes').notEmpty().withMessage('required');
-//         req.checkBody('card_no').optional().notEmpty().withMessage('required');
-//         // req.checkBody('card_pass').optional().notEmpty().withMessage('required');
-//         req.checkBody('expire').optional().notEmpty().withMessage('required');
-//         req.checkBody('holder_name').optional().notEmpty().withMessage('required');
-//         req.checkBody('token').optional().notEmpty().withMessage('required');
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             // 生のカード情報の場合
-//             const card = sskts.factory.card.gmo.createUncheckedCardRaw(req.body.data.attributes);
-//             const addedCard = await sskts.service.member.addCard(req.params.ownerId, card)();
-//             res.status(CREATED).json({
-//                 data: {
-//                     type: 'cards',
-//                     id: addedCard.id.toString(),
-//                     attributes: { ...addedCard, ...{ id: undefined } }
-//                 }
-//             });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-/**
  * 座席仮予約
  */
 placeOrderTransactionsRouter.post('/:id/seatReservationAuthorization', permitScopes_1.default(['transactions']), (__1, __2, next) => {
@@ -243,20 +194,95 @@ placeOrderTransactionsRouter.post('/:id/paymentInfos/creditCard', permitScopes_1
     // req.checkBody('data.securityCode', 'invalid securityCode').notEmpty().withMessage('gmo_access_pass is required');
     // req.checkBody('data.token', 'invalid token').notEmpty().withMessage('gmo_job_cd is required');
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const gmoAuthorization = {
+        const authorization = {
             orderId: req.body.orderId,
             amount: req.body.amount,
             method: req.body.method,
             cardNo: req.body.cardNo,
             expire: req.body.expire,
             securityCode: req.body.securityCode,
-            token: req.body.token
+            token: req.body.token,
+            memberId: (req.user.person !== undefined) ? req.user.person.id : undefined,
+            seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS,
+            // tslint:disable-next-line:no-magic-numbers
+            cardSeq: parseInt(req.body.cardSeq, 10),
+            cardPass: req.body.cardPass
         };
-        const authorization = yield sskts.service.transaction.placeOrder.authorizeGMOCard(req.params.id, gmoAuthorization)(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection));
+        debug('authorization is', authorization);
+        const organizationAdapter = sskts.adapter.organization(sskts.mongoose.connection);
+        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
+        // const authorization = await sskts.service.transaction.placeOrder.authorizeGMOCard(req.params.id, gmoAuthorization)(
+        //     sskts.adapter.organization(sskts.mongoose.connection),
+        //     sskts.adapter.transaction(sskts.mongoose.connection)
+        // );
+        const transaction = yield transactionAdapter.transactionModel.findOne({
+            _id: req.params.id,
+            typeOf: 'PlaceOrder',
+            status: sskts.factory.transactionStatusType.InProgress
+        }).exec()
+            .then((doc) => {
+            if (doc === null) {
+                throw new Error('transaction not found');
+            }
+            return doc.toObject();
+        });
+        // GMOショップ情報取得
+        const movieTheater = yield organizationAdapter.organizationModel.findById(transaction.seller.id).exec()
+            .then((doc) => {
+            if (doc === null) {
+                throw new Error('movieTheater not found');
+            }
+            return doc.toObject();
+        });
+        // GMOオーソリ取得
+        const entryTranResult = yield sskts.GMO.CreditService.entryTran({
+            shopId: movieTheater.gmoInfo.shopID,
+            shopPass: movieTheater.gmoInfo.shopPass,
+            orderId: authorization.orderId,
+            jobCd: sskts.GMO.Util.JOB_CD_AUTH,
+            amount: authorization.amount
+        });
+        const execTranResult = yield sskts.GMO.CreditService.execTran({
+            accessId: entryTranResult.accessId,
+            accessPass: entryTranResult.accessPass,
+            orderId: authorization.orderId,
+            method: authorization.method,
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            cardNo: authorization.cardNo,
+            expire: authorization.expire,
+            securityCode: authorization.securityCode,
+            token: authorization.token,
+            memberId: authorization.memberId,
+            seqMode: authorization.seqMode,
+            cardSeq: authorization.cardSeq,
+            cardPass: authorization.cardPass
+        });
+        debug(execTranResult);
+        // GMOオーソリ追加
+        debug('adding authorizations gmo...');
+        const gmoAuthorization = sskts.factory.authorization.gmo.create({
+            price: authorization.amount,
+            object: {
+                shopId: movieTheater.gmoInfo.shopID,
+                shopPass: movieTheater.gmoInfo.shopPass,
+                orderId: authorization.orderId,
+                amount: authorization.amount,
+                accessId: entryTranResult.accessId,
+                accessPass: entryTranResult.accessPass,
+                jobCd: sskts.GMO.Util.JOB_CD_AUTH,
+                payType: sskts.GMO.Util.PAY_TYPE_CREDIT
+            },
+            result: execTranResult
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, { $push: { 'object.paymentInfo': gmoAuthorization } }).exec();
+        debug('GMOAuthorization added.');
         res.status(http_status_1.CREATED).json({
-            data: authorization
+            data: gmoAuthorization
         });
     }
     catch (error) {

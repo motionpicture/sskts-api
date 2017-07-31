@@ -79,10 +79,12 @@ function authorizeGMOCard(args) {
             body: {
                 orderId: args.orderId,
                 amount: args.amount,
-                method: (typeof args.creditCard !== 'string') ? args.creditCard.method : undefined,
-                cardNo: (typeof args.creditCard !== 'string') ? args.creditCard.cardNo : undefined,
-                expire: (typeof args.creditCard !== 'string') ? args.creditCard.expire : undefined,
-                securityCode: (typeof args.creditCard !== 'string') ? args.creditCard.securityCode : undefined,
+                method: args.method,
+                cardNo: (typeof args.creditCard === 'object') ? args.creditCard.cardNo : undefined,
+                expire: (typeof args.creditCard === 'object') ? args.creditCard.expire : undefined,
+                securityCode: (typeof args.creditCard === 'object') ? args.creditCard.securityCode : undefined,
+                cardSeq: (typeof args.creditCard === 'object') ? args.creditCard.cardSeq : undefined,
+                cardPass: (typeof args.creditCard === 'object') ? args.creditCard.cardPass : undefined,
                 token: (typeof args.creditCard === 'string') ? args.creditCard : undefined
             }
         });
