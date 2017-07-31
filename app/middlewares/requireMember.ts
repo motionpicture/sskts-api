@@ -13,7 +13,7 @@ const debug = createDebug('sskts-api:middlewares:requireMember');
 export default (req: Request, res: Response, next: NextFunction) => {
     // 会員としてログイン済みであればOK
     if (isMember(req.getUser())) {
-        debug('logged in as owner', req.getUser().owner);
+        debug('logged in as owner', req.getUser().person);
         next();
 
         return;
@@ -23,5 +23,5 @@ export default (req: Request, res: Response, next: NextFunction) => {
 };
 
 export function isMember(user: Express.IUser) {
-    return (user.owner !== undefined);
+    return (user.person !== undefined);
 }

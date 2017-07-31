@@ -32,7 +32,8 @@ function main() {
             profile: {
                 givenName: 'めい',
                 familyName: 'せい',
-                telephone: '09012345678'
+                telephone: '09012345678',
+                email: 'ilovegadd@gmail.com'
             }
         });
         debug('profile updated');

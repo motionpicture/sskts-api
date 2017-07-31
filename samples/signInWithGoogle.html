@@ -35,6 +35,9 @@
             console.log('Signed in as: ' + xhr.responseText);
         };
         xhr.send(JSON.stringify({
+            client_id: 'motionpicture',
+            state: '',
+            scopes: [],
             idToken: idToken
         }));
     }

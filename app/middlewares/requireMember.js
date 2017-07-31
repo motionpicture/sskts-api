@@ -11,13 +11,13 @@ const debug = createDebug('sskts-api:middlewares:requireMember');
 exports.default = (req, res, next) => {
     // 会員としてログイン済みであればOK
     if (isMember(req.getUser())) {
-        debug('logged in as owner', req.getUser().owner);
+        debug('logged in as owner', req.getUser().person);
         next();
         return;
     }
     res.status(http_status_1.FORBIDDEN).end('Forbidden');
 };
 function isMember(user) {
-    return (user.owner !== undefined);
+    return (user.person !== undefined);
 }
 exports.isMember = isMember;

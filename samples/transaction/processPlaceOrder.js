@@ -167,7 +167,7 @@ function main() {
         // tslint:disable-next-line:no-magic-numbers
         `00000000${seatReservationAuthorization.result.tmpReserveNum}`.slice(-8), '01');
         debug('クレジットカードのオーソリをとります...');
-        let creditCardAuthorization = yield sskts.service.transaction.placeOrder.authorizeGMOCard({
+        let creditCardAuthorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization({
             auth: auth,
             transactionId: transaction.id,
             orderId: orderId,
@@ -192,7 +192,7 @@ function main() {
         // tslint:disable-next-line:no-magic-numbers
         `00000000${seatReservationAuthorization.result.tmpReserveNum}`.slice(-8), '02');
         debug('クレジットカードのオーソリをとります...');
-        creditCardAuthorization = yield sskts.service.transaction.placeOrder.authorizeGMOCard({
+        creditCardAuthorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization({
             auth: auth,
             transactionId: transaction.id,
             orderId: orderId,

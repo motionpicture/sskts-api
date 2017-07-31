@@ -183,7 +183,7 @@ async function main() {
         '01'
     );
     debug('クレジットカードのオーソリをとります...');
-    let creditCardAuthorization = await sskts.service.transaction.placeOrder.authorizeGMOCard({
+    let creditCardAuthorization = await sskts.service.transaction.placeOrder.createCreditCardAuthorization({
         auth: auth,
         transactionId: transaction.id,
         orderId: orderId,
@@ -215,7 +215,7 @@ async function main() {
         '02'
     );
     debug('クレジットカードのオーソリをとります...');
-    creditCardAuthorization = await sskts.service.transaction.placeOrder.authorizeGMOCard({
+    creditCardAuthorization = await sskts.service.transaction.placeOrder.createCreditCardAuthorization({
         auth: auth,
         transactionId: transaction.id,
         orderId: orderId,

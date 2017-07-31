@@ -84,41 +84,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         next(error);
     }
 }));
-// placeOrderTransactionsRouter.get(
-//     '/:id',
-//     permitScopes(['transactions', 'transactions.read-only']),
-//     (_1, _2, next) => {
-//         // todo validation
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const option = await sskts.service.transactionWithId.findById(req.params.id)(
-//                 sskts.adapter.transaction(sskts.mongoose.connection)
-//             );
-//             option.match({
-//                 Some: (transaction) => {
-//                     res.json({
-//                         data: {
-//                             type: 'transactions',
-//                             id: transaction.id,
-//                             attributes: transaction
-//                         }
-//                     });
-//                 },
-//                 None: () => {
-//                     res.status(NOT_FOUND);
-//                     res.json({
-//                         data: null
-//                     });
-//                 }
-//             });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
 /**
  * 購入者情報を変更する
  */
@@ -132,7 +97,7 @@ placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['
     try {
         // 会員フローの場合は使用できない
         // todo レスポンスはどんなのが適切か
-        if (req.getUser().owner !== undefined) {
+        if (req.getUser().person !== undefined) {
             res.status(http_status_1.FORBIDDEN).end('Forbidden');
             return;
         }
@@ -198,91 +163,15 @@ placeOrderTransactionsRouter.post('/:id/paymentInfos/creditCard', permitScopes_1
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const authorization = {
-            orderId: req.body.orderId,
-            amount: req.body.amount,
-            method: req.body.method,
-            cardNo: req.body.cardNo,
-            expire: req.body.expire,
-            securityCode: req.body.securityCode,
-            token: req.body.token,
-            memberId: (req.user.person !== undefined) ? req.user.person.id : undefined,
-            seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS,
-            // tslint:disable-next-line:no-magic-numbers
-            cardSeq: parseInt(req.body.cardSeq, 10),
-            cardPass: req.body.cardPass
-        };
-        debug('authorization is', authorization);
-        const organizationAdapter = sskts.adapter.organization(sskts.mongoose.connection);
-        const transactionAdapter = sskts.adapter.transaction(sskts.mongoose.connection);
-        // const authorization = await sskts.service.transaction.placeOrder.authorizeGMOCard(req.params.id, gmoAuthorization)(
-        //     sskts.adapter.organization(sskts.mongoose.connection),
-        //     sskts.adapter.transaction(sskts.mongoose.connection)
-        // );
-        const transaction = yield transactionAdapter.transactionModel.findOne({
-            _id: req.params.id,
-            typeOf: 'PlaceOrder',
-            status: sskts.factory.transactionStatusType.InProgress
-        }).exec()
-            .then((doc) => {
-            if (doc === null) {
-                throw new Error('transaction not found');
-            }
-            return doc.toObject();
+        // 会員IDを強制的にログイン中の人物IDに変更
+        const creditCard = Object.assign({}, req.body.creditCard, {
+            memberId: (req.user.person !== undefined) ? req.user.person.id : undefined
         });
-        // GMOショップ情報取得
-        const movieTheater = yield organizationAdapter.organizationModel.findById(transaction.seller.id).exec()
-            .then((doc) => {
-            if (doc === null) {
-                throw new Error('movieTheater not found');
-            }
-            return doc.toObject();
-        });
-        // GMOオーソリ取得
-        const entryTranResult = yield sskts.GMO.CreditService.entryTran({
-            shopId: movieTheater.gmoInfo.shopID,
-            shopPass: movieTheater.gmoInfo.shopPass,
-            orderId: authorization.orderId,
-            jobCd: sskts.GMO.Util.JOB_CD_AUTH,
-            amount: authorization.amount
-        });
-        const execTranResult = yield sskts.GMO.CreditService.execTran({
-            accessId: entryTranResult.accessId,
-            accessPass: entryTranResult.accessPass,
-            orderId: authorization.orderId,
-            method: authorization.method,
-            siteId: process.env.GMO_SITE_ID,
-            sitePass: process.env.GMO_SITE_PASS,
-            cardNo: authorization.cardNo,
-            expire: authorization.expire,
-            securityCode: authorization.securityCode,
-            token: authorization.token,
-            memberId: authorization.memberId,
-            seqMode: authorization.seqMode,
-            cardSeq: authorization.cardSeq,
-            cardPass: authorization.cardPass
-        });
-        debug(execTranResult);
-        // GMOオーソリ追加
-        debug('adding authorizations gmo...');
-        const gmoAuthorization = sskts.factory.authorization.gmo.create({
-            price: authorization.amount,
-            object: {
-                shopId: movieTheater.gmoInfo.shopID,
-                shopPass: movieTheater.gmoInfo.shopPass,
-                orderId: authorization.orderId,
-                amount: authorization.amount,
-                accessId: entryTranResult.accessId,
-                accessPass: entryTranResult.accessPass,
-                jobCd: sskts.GMO.Util.JOB_CD_AUTH,
-                payType: sskts.GMO.Util.PAY_TYPE_CREDIT
-            },
-            result: execTranResult
-        });
-        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, { $push: { 'object.paymentInfo': gmoAuthorization } }).exec();
-        debug('GMOAuthorization added.');
+        debug('authorizing credit card...', creditCard);
+        debug('authorizing credit card...', req.body.creditCard);
+        const authorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(req.params.id, req.body.orderId, req.body.amount, req.body.method, creditCard)(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
-            data: gmoAuthorization
+            data: authorization
         });
     }
     catch (error) {
