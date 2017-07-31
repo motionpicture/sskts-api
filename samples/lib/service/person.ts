@@ -75,7 +75,7 @@ export async function addMyCreditCard(args: {
 }): Promise<any> {
     return await apiRequest({
         uri: '/people/me/creditCards',
-        body: args,
+        body: args.creditCard,
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'POST',
         expectedStatusCodes: [httpStatus.CREATED]

@@ -68,7 +68,7 @@ function addMyCreditCard(args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield apiRequest_1.default({
             uri: '/people/me/creditCards',
-            body: args,
+            body: args.creditCard,
             auth: { bearer: yield args.auth.getAccessToken() },
             method: 'POST',
             expectedStatusCodes: [httpStatus.CREATED]

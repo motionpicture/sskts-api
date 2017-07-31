@@ -90,30 +90,46 @@ peopleRouter.get(
     permitScopes(['people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
-            // const ownerId = <string>req.getUser().owner;
-            // const data = await sskts.service.member.findCards(ownerId)()
-            //     .then((cards) => {
-            //         return cards.map((card) => {
-            //             return {
-            //                 type: 'cards',
-            //                 id: card.id.toString(),
-            //                 attributes: { ...card, ...{ id: undefined } }
-            //             };
-            //         });
-            //     });
+            const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
+            const personDoc = await personAdapter.personModel.findById(
+                req.user.person.id,
+                'givenName familyName'
+            ).exec();
+
+            if (personDoc === null) {
+                throw new Error('person not found');
+            }
+
+            let searchCardResults: sskts.GMO.services.card.ISearchCardResult[];
+            try {
+                // まずGMO会員登録
+                const gmoMember = await sskts.GMO.services.card.searchMember({
+                    siteId: <string>process.env.GMO_SITE_ID,
+                    sitePass: <string>process.env.GMO_SITE_PASS,
+                    memberId: req.user.person.id
+                });
+                if (gmoMember === null) {
+                    const saveMemberResult = await sskts.GMO.services.card.saveMember({
+                        siteId: <string>process.env.GMO_SITE_ID,
+                        sitePass: <string>process.env.GMO_SITE_PASS,
+                        memberId: req.user.person.id,
+                        memberName: `${personDoc.get('familyName')} ${personDoc.get('givenName')}`
+                    });
+                    debug('GMO saveMember processed', saveMemberResult);
+                }
+
+                searchCardResults = await sskts.GMO.services.card.searchCard({
+                    siteId: <string>process.env.GMO_SITE_ID,
+                    sitePass: <string>process.env.GMO_SITE_PASS,
+                    memberId: req.user.person.id,
+                    seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS
+                });
+            } catch (error) {
+                throw new Error(error.errors[0].content);
+            }
 
             res.json({
-                data: [
-                    {
-                        typeOf: 'CreditCard',
-                        id: '12345',
-                        cardSeq: '0',
-                        cardName: 'Visa',
-                        cardNo: '*************111',
-                        expire: '18/ 12',
-                        holderName: 'Tetsu Yamazaki'
-                    }
-                ]
+                data: searchCardResults
             });
         } catch (error) {
             next(error);
@@ -127,36 +143,78 @@ peopleRouter.get(
 peopleRouter.post(
     '/me/creditCards',
     permitScopes(['people.creditCards']),
-    (req, _2, next) => {
+    (__1, __2, next) => {
         next();
     },
     validator,
     async (req, res, next) => {
         try {
+            const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
+            const personDoc = await personAdapter.personModel.findById(
+                req.user.person.id,
+                'givenName familyName'
+            ).exec();
+
+            if (personDoc === null) {
+                throw new Error('person not found');
+            }
+
+            // GMOカード登録
+            let creditCard: sskts.GMO.services.card.ISearchCardResult;
+            try {
+                // まずGMO会員登録
+                const gmoMember = await sskts.GMO.services.card.searchMember({
+                    siteId: <string>process.env.GMO_SITE_ID,
+                    sitePass: <string>process.env.GMO_SITE_PASS,
+                    memberId: req.user.person.id
+                });
+                if (gmoMember === null) {
+                    const saveMemberResult = await sskts.GMO.services.card.saveMember({
+                        siteId: <string>process.env.GMO_SITE_ID,
+                        sitePass: <string>process.env.GMO_SITE_PASS,
+                        memberId: req.user.person.id,
+                        memberName: `${personDoc.get('familyName')} ${personDoc.get('givenName')}`
+                    });
+                    debug('GMO saveMember processed', saveMemberResult);
+                }
+
+                debug('saving a card to GMO...');
+                const saveCardResult = await sskts.GMO.services.card.saveCard({
+                    siteId: <string>process.env.GMO_SITE_ID,
+                    sitePass: <string>process.env.GMO_SITE_PASS,
+                    memberId: req.user.person.id,
+                    seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS,
+                    cardNo: req.body.cardNo,
+                    cardPass: req.body.cardPass,
+                    expire: req.body.expire,
+                    holderName: req.body.holderName,
+                    token: req.body.token
+                });
+                debug('card saved', saveCardResult);
+
+                const searchCardResults = await sskts.GMO.services.card.searchCard({
+                    siteId: <string>process.env.GMO_SITE_ID,
+                    sitePass: <string>process.env.GMO_SITE_PASS,
+                    memberId: req.user.person.id,
+                    seqMode: sskts.GMO.utils.util.SEQ_MODE_PHYSICS,
+                    cardSeq: saveCardResult.cardSeq
+                });
+
+                creditCard = searchCardResults[0];
+            } catch (error) {
+                throw new Error(error.errors[0].content);
+            }
+
             res.status(httpStatus.CREATED).json({
                 data: {
                     typeOf: 'CreditCard',
-                    id: '12345',
-                    cardSeq: '0',
-                    cardName: 'Visa',
-                    cardNo: '*************111',
-                    expire: '18/ 12',
-                    holderName: 'Tetsu Yamazaki'
+                    cardSeq: creditCard.cardSeq,
+                    cardName: creditCard.cardName,
+                    cardNo: creditCard.cardNo,
+                    expire: creditCard.expire,
+                    holderName: creditCard.holderName
                 }
             });
-            // const ownerId = <string>req.getUser().owner;
-
-            // // 生のカード情報の場合
-            // const card = sskts.factory.card.gmo.createUncheckedCardRaw(req.body.data.attributes);
-            // const addedCard = await sskts.service.member.addCard(ownerId, card)();
-
-            // res.status(CREATED).json({
-            //     data: {
-            //         type: 'cards',
-            //         id: addedCard.id.toString(),
-            //         attributes: { ...addedCard, ...{ id: undefined } }
-            //     }
-            // });
         } catch (error) {
             next(error);
         }
