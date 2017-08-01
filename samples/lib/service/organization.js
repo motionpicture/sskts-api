@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const httpStatus = require("http-status");
+const http_status_1 = require("http-status");
 const apiRequest_1 = require("../apiRequest");
 /**
  * 劇場組織検索
@@ -23,7 +23,7 @@ function searchMovieTheaters(args) {
         return yield apiRequest_1.default({
             uri: '/organizations/movieTheater',
             method: 'GET',
-            expectedStatusCodes: [httpStatus.OK],
+            expectedStatusCodes: [http_status_1.OK],
             auth: { bearer: yield args.auth.getAccessToken() },
             qs: args.searchConditions
         });
@@ -38,7 +38,7 @@ function findMovieTheaterByBranchCode(args) {
         return yield apiRequest_1.default({
             uri: `/organizations/movieTheater/${args.branchCode}`,
             method: 'GET',
-            expectedStatusCodes: [httpStatus.NOT_FOUND, httpStatus.OK],
+            expectedStatusCodes: [http_status_1.NOT_FOUND, http_status_1.OK],
             auth: { bearer: yield args.auth.getAccessToken() }
         });
     });

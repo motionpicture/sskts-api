@@ -5,7 +5,7 @@
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
-import * as httpStatus from 'http-status';
+import { CREATED, NO_CONTENT, NOT_FOUND, OK } from 'http-status';
 import apiRequest from '../../apiRequest';
 
 import OAuth2client from '../../auth/oAuth2client';
@@ -29,7 +29,7 @@ export async function start(args: {
     return await apiRequest({
         uri: '/transactions/placeOrder/start',
         method: 'POST',
-        expectedStatusCodes: [httpStatus.NOT_FOUND, httpStatus.OK],
+        expectedStatusCodes: [NOT_FOUND, OK],
         auth: { bearer: await args.auth.getAccessToken() },
         body: {
             expires: args.expires.valueOf(),
@@ -84,7 +84,7 @@ export async function createSeatReservationAuthorization(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/seatReservationAuthorization`,
         method: 'POST',
-        expectedStatusCodes: [httpStatus.CREATED],
+        expectedStatusCodes: [CREATED],
         auth: { bearer: await args.auth.getAccessToken() },
         body: {
             eventIdentifier: args.eventIdentifier,
@@ -110,7 +110,7 @@ export async function cancelSeatReservationAuthorization(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/seatReservationAuthorization/${args.authorizationId}`,
         method: 'DELETE',
-        expectedStatusCodes: [httpStatus.NO_CONTENT],
+        expectedStatusCodes: [NO_CONTENT],
         auth: { bearer: await args.auth.getAccessToken() }
     });
 }
@@ -144,7 +144,7 @@ export async function createCreditCardAuthorization(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/creditCard`,
         method: 'POST',
-        expectedStatusCodes: [httpStatus.CREATED],
+        expectedStatusCodes: [CREATED],
         auth: { bearer: await args.auth.getAccessToken() },
         body: {
             orderId: args.orderId,
@@ -172,7 +172,7 @@ export async function cancelCreditCardAuthorization(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/creditCard/${args.authorizationId}`,
         method: 'DELETE',
-        expectedStatusCodes: [httpStatus.NO_CONTENT],
+        expectedStatusCodes: [NO_CONTENT],
         auth: { bearer: await args.auth.getAccessToken() }
     });
 }
@@ -198,7 +198,7 @@ export async function createMvtkAuthorization(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/mvtk`,
         method: 'POST',
-        expectedStatusCodes: [httpStatus.CREATED],
+        expectedStatusCodes: [CREATED],
         auth: { bearer: await args.auth.getAccessToken() },
         body: args.mvtk
     });
@@ -221,7 +221,7 @@ export async function cancelMvtkAuthorization(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/paymentInfos/mvtk/${args.authorizationId}`,
         method: 'DELETE',
-        expectedStatusCodes: [httpStatus.NO_CONTENT],
+        expectedStatusCodes: [NO_CONTENT],
         auth: { bearer: await args.auth.getAccessToken() }
     });
 }
@@ -243,7 +243,7 @@ export async function setAgentProfile(args: {
     await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/agent/profile`,
         method: 'PUT',
-        expectedStatusCodes: [httpStatus.NO_CONTENT],
+        expectedStatusCodes: [NO_CONTENT],
         auth: { bearer: await args.auth.getAccessToken() },
         body: args.profile
     });
@@ -262,7 +262,7 @@ export async function confirm(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/confirm`,
         method: 'POST',
-        expectedStatusCodes: [httpStatus.CREATED],
+        expectedStatusCodes: [CREATED],
         auth: { bearer: await args.auth.getAccessToken() }
     });
 }
@@ -292,7 +292,7 @@ export async function sendEmailNotification(args: {
     return await apiRequest({
         uri: `/transactions/placeOrder/${args.transactionId}/tasks/sendEmailNotification`,
         method: 'POST',
-        expectedStatusCodes: [httpStatus.NO_CONTENT],
+        expectedStatusCodes: [NO_CONTENT],
         auth: { bearer: await args.auth.getAccessToken() },
         body: args.emailNotification
     });

@@ -5,7 +5,7 @@
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
-import * as httpStatus from 'http-status';
+import { NOT_FOUND, OK } from 'http-status';
 import apiRequest from '../apiRequest';
 
 import OAuth2client from '../auth/oAuth2client';
@@ -25,7 +25,7 @@ export async function searchIndividualScreeningEvent(args: {
         qs: args.searchConditions,
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'GET',
-        expectedStatusCodes: [httpStatus.OK]
+        expectedStatusCodes: [OK]
     });
 }
 
@@ -44,6 +44,6 @@ export async function findIndividualScreeningEvent(args: {
         uri: `/events/individualScreeningEvent/${args.identifier}`,
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'GET',
-        expectedStatusCodes: [httpStatus.OK, httpStatus.NOT_FOUND]
+        expectedStatusCodes: [OK, NOT_FOUND]
     });
 }

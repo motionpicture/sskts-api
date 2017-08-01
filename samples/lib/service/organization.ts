@@ -5,7 +5,7 @@
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
-import * as httpStatus from 'http-status';
+import { NOT_FOUND, OK } from 'http-status';
 import apiRequest from '../apiRequest';
 
 import OAuth2client from '../auth/oAuth2client';
@@ -23,7 +23,7 @@ export async function searchMovieTheaters(args: {
     return await apiRequest({
         uri: '/organizations/movieTheater',
         method: 'GET',
-        expectedStatusCodes: [httpStatus.OK],
+        expectedStatusCodes: [OK],
         auth: { bearer: await args.auth.getAccessToken() },
         qs: args.searchConditions
     });
@@ -42,7 +42,7 @@ export async function findMovieTheaterByBranchCode(args: {
     return await apiRequest({
         uri: `/organizations/movieTheater/${args.branchCode}`,
         method: 'GET',
-        expectedStatusCodes: [httpStatus.NOT_FOUND, httpStatus.OK],
+        expectedStatusCodes: [NOT_FOUND, OK],
         auth: { bearer: await args.auth.getAccessToken() }
     });
 }

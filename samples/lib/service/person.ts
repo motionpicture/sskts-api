@@ -5,7 +5,7 @@
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
-import * as httpStatus from 'http-status';
+import { CREATED, NO_CONTENT, OK } from 'http-status';
 import apiRequest from '../apiRequest';
 
 import OAuth2client from '../auth/oAuth2client';
@@ -20,7 +20,7 @@ export async function getMyProfile(args: {
         uri: '/people/me/profile',
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'GET',
-        expectedStatusCodes: [httpStatus.OK]
+        expectedStatusCodes: [OK]
     });
 }
 
@@ -39,7 +39,7 @@ export async function updateMyProfile(args: {
         body: args.profile,
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'PUT',
-        expectedStatusCodes: [httpStatus.NO_CONTENT]
+        expectedStatusCodes: [NO_CONTENT]
     });
 }
 
@@ -53,7 +53,7 @@ export async function findMyCreditCards(args: {
         uri: '/people/me/creditCards',
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'GET',
-        expectedStatusCodes: [httpStatus.OK]
+        expectedStatusCodes: [OK]
     });
 }
 
@@ -78,6 +78,6 @@ export async function addMyCreditCard(args: {
         body: args.creditCard,
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'POST',
-        expectedStatusCodes: [httpStatus.CREATED]
+        expectedStatusCodes: [CREATED]
     });
 }

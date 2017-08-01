@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const httpStatus = require("http-status");
+const http_status_1 = require("http-status");
 const apiRequest_1 = require("../apiRequest");
 /**
  * プロフィール取得
@@ -24,7 +24,7 @@ function getMyProfile(args) {
             uri: '/people/me/profile',
             auth: { bearer: yield args.auth.getAccessToken() },
             method: 'GET',
-            expectedStatusCodes: [httpStatus.OK]
+            expectedStatusCodes: [http_status_1.OK]
         });
     });
 }
@@ -39,7 +39,7 @@ function updateMyProfile(args) {
             body: args.profile,
             auth: { bearer: yield args.auth.getAccessToken() },
             method: 'PUT',
-            expectedStatusCodes: [httpStatus.NO_CONTENT]
+            expectedStatusCodes: [http_status_1.NO_CONTENT]
         });
     });
 }
@@ -53,7 +53,7 @@ function findMyCreditCards(args) {
             uri: '/people/me/creditCards',
             auth: { bearer: yield args.auth.getAccessToken() },
             method: 'GET',
-            expectedStatusCodes: [httpStatus.OK]
+            expectedStatusCodes: [http_status_1.OK]
         });
     });
 }
@@ -68,7 +68,7 @@ function addMyCreditCard(args) {
             body: args.creditCard,
             auth: { bearer: yield args.auth.getAccessToken() },
             method: 'POST',
-            expectedStatusCodes: [httpStatus.CREATED]
+            expectedStatusCodes: [http_status_1.CREATED]
         });
     });
 }

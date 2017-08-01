@@ -23,15 +23,37 @@ async function main() {
             'transactions',
             'events.read-only',
             'organizations.read-only',
-            'people.creditCards'
+            'people.creditCards',
+            'people.profile'
         ]
     );
 
     // Googleから受け取ったid_tokenを使ってサインイン
     await auth.signInWithGoogle(
         // tslint:disable-next-line:max-line-length
-        'eyJhbGciOiJSUzI1NiIsImtpZCI6IjY3ODU2OGM4YWRiMmVjYzA3ZDE0M2RiNTE0Y2M3YTk5NTIwN2RmMzYifQ.eyJhenAiOiI5MzI5MzQzMjQ2NzEtNjZrYXN1am50ajJqYTdjNWs0azU1aWo2cGFrcHFpcjQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI5MzI5MzQzMjQ2NzEtNjZrYXN1am50ajJqYTdjNWs0azU1aWo2cGFrcHFpcjQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDgwMTczNzA5ODQ2NDQ2NDkyODgiLCJlbWFpbCI6Imlsb3ZlZ2FkZEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6Ikw4amNlWnNsTGRWSmE5MTRYMkFZQmciLCJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiaWF0IjoxNTAxNDk1NTg2LCJleHAiOjE1MDE0OTkxODYsIm5hbWUiOiJUZXRzdSBZYW1hemFraSIsInBpY3R1cmUiOiJodHRwczovL2xoNi5nb29nbGV1c2VyY29udGVudC5jb20vLVRpM29LMmwxNmJzL0FBQUFBQUFBQUFJL0FBQUFBQUFBNjNNL01Dc0JlWWNpWnpJL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJUZXRzdSIsImZhbWlseV9uYW1lIjoiWWFtYXpha2kiLCJsb2NhbGUiOiJlbiJ9.hRzsZWD32bOpnNcEcBh3hBLJCqFsPlKgvTBJt6pZ8HmrR49mv-2U0mosQAeVWA-ODNQOP4d50Qwhtgj9ZcUx-koxQP4AnORRD1fJNV1VK-_9oC9bkR4h77qukVjWgQ_uns7JIHjmMhuNSXzatXQ_C6rKk4x-tzsYbfiYhVpC4ZC_cv62CSe-dqEzJbRGV1-ZohlBee4Cko-dte5vsk03pWnFD_QV8UMr3o-9taigHnDwz71AdniippOkwRqgGuNv5XG_Gedppxc6TvWwyq9yUS9dAMPyB3swTQ95mhq50T0JWDnNqi4cRMvCr7zWHkEWWw8uEJkvjveONgzE_E7EZQ'
+        'eyJhbGciOiJSUzI1NiIsImtpZCI6IjU2NjE5YWRiMjJkMWE1NDU2MjAzNmJmNTEwODBmZjZjZjdjZTNjZjIifQ.eyJhenAiOiI5MzI5MzQzMjQ2NzEtNjZrYXN1am50ajJqYTdjNWs0azU1aWo2cGFrcHFpcjQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI5MzI5MzQzMjQ2NzEtNjZrYXN1am50ajJqYTdjNWs0azU1aWo2cGFrcHFpcjQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDgwMTczNzA5ODQ2NDQ2NDkyODgiLCJlbWFpbCI6Imlsb3ZlZ2FkZEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6ImFlRGE3b0xlTDg3dlZJOFY5SmdfTkEiLCJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiaWF0IjoxNTAxNTQ4NDQwLCJleHAiOjE1MDE1NTIwNDAsIm5hbWUiOiJUZXRzdSBZYW1hemFraSIsInBpY3R1cmUiOiJodHRwczovL2xoNi5nb29nbGV1c2VyY29udGVudC5jb20vLVRpM29LMmwxNmJzL0FBQUFBQUFBQUFJL0FBQUFBQUFBNjNNL01Dc0JlWWNpWnpJL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJUZXRzdSIsImZhbWlseV9uYW1lIjoiWWFtYXpha2kiLCJsb2NhbGUiOiJlbiJ9.xm1QwEQ0BRXYSyoVzKWE90Smhcnc5Y1nSX_SNDODf6l0hqcbp7FDfJWwxvgQXAJpOL0wD2idggY4smWrwgeaW_R6mwxkYt20dLdHz_ZOzDBeHg9C3LEc_e5P9w_X5wOMT2j4S6u4WLE9IGJ9utUoW5PsFonhYnmisdRxOxymth-SXkuBK84uDBmtysK19oidD-ZdFmwnHvi1AP8qHrAzg-rG9GdbovcI9XyW1OkweVLIDfQLk_Fn7IP7X5b_1m41M-Evjahn9RCsYwbhqsiLtka1UdTO2leIJLntCb6EhU6iAB1GePk5l4UO6YwX9KCo8w_CruG2f7bwBtWMD2-Pxg'
     );
+
+    // プロフィールを取得
+    const profile = await sskts.service.person.getMyProfile({
+        auth: auth
+    });
+    debug('プロフィールは', profile);
+
+    // 新規会員であればプロフィール登録(登録されていないと注文取引確定できない)
+    if (profile.telephone === '') {
+        debug('プロフィールを更新します...');
+        await sskts.service.person.updateMyProfile({
+            auth: auth,
+            profile: {
+                familyName: 'せい',
+                givenName: 'めい',
+                email: 'ilovegadd@gmail.com',
+                telephone: '09012345678'
+            }
+        });
+        debug('プロフィールを更新しました');
+    }
 
     // 上映イベント検索
     const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({
@@ -179,9 +201,31 @@ async function main() {
     debug('座席を仮予約しました', seatReservationAuthorization);
 
     // クレジットカード検索
-    const creditCards = await sskts.service.person.findMyCreditCards({
+    let creditCards = await sskts.service.person.findMyCreditCards({
         auth: auth
     });
+    debug('使用できるクレジットカードは', creditCards);
+
+    // なければクレジットカード追加
+    if (creditCards.length === 0) {
+        debug('クレジットカードを登録します...');
+        const addCreditCardResult = await sskts.service.person.addMyCreditCard({
+            auth: auth,
+            creditCard: {
+                cardNo: '4111111111111111',
+                cardPass: '',
+                expire: '2012',
+                holderName: 'AA BB'
+            }
+        });
+        debug('クレジットカードを登録しました', addCreditCardResult);
+
+        // 再度クレジットカード検索
+        creditCards = await sskts.service.person.findMyCreditCards({
+            auth: auth
+        });
+        debug('使用できるクレジットカードは', creditCards);
+    }
 
     const amount = seatReservationAuthorization.price;
 

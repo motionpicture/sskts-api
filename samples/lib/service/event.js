@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const httpStatus = require("http-status");
+const http_status_1 = require("http-status");
 const apiRequest_1 = require("../apiRequest");
 /**
  * 上映イベント検索
@@ -25,7 +25,7 @@ function searchIndividualScreeningEvent(args) {
             qs: args.searchConditions,
             auth: { bearer: yield args.auth.getAccessToken() },
             method: 'GET',
-            expectedStatusCodes: [httpStatus.OK]
+            expectedStatusCodes: [http_status_1.OK]
         });
     });
 }
@@ -40,7 +40,7 @@ function findIndividualScreeningEvent(args) {
             uri: `/events/individualScreeningEvent/${args.identifier}`,
             auth: { bearer: yield args.auth.getAccessToken() },
             method: 'GET',
-            expectedStatusCodes: [httpStatus.OK, httpStatus.NOT_FOUND]
+            expectedStatusCodes: [http_status_1.OK, http_status_1.NOT_FOUND]
         });
     });
 }

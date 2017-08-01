@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const httpStatus = require("http-status");
+const http_status_1 = require("http-status");
 const apiRequest_1 = require("../apiRequest");
 /**
  * 照会キーで注文情報を取得する
@@ -24,7 +24,7 @@ function findByOrderInquiryKey(args) {
         return yield apiRequest_1.default({
             uri: '/orders/findByOrderInquiryKey',
             method: 'POST',
-            expectedStatusCodes: [httpStatus.NOT_FOUND, httpStatus.OK],
+            expectedStatusCodes: [http_status_1.NOT_FOUND, http_status_1.OK],
             auth: { bearer: yield args.auth.getAccessToken() },
             body: args.orderInquiryKey
         });

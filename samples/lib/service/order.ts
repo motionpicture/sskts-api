@@ -5,7 +5,7 @@
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
-import * as httpStatus from 'http-status';
+import { NOT_FOUND, OK } from 'http-status';
 import apiRequest from '../apiRequest';
 
 import OAuth2client from '../auth/oAuth2client';
@@ -24,7 +24,7 @@ export async function findByOrderInquiryKey(args: {
     return await apiRequest({
         uri: '/orders/findByOrderInquiryKey',
         method: 'POST',
-        expectedStatusCodes: [httpStatus.NOT_FOUND, httpStatus.OK],
+        expectedStatusCodes: [NOT_FOUND, OK],
         auth: { bearer: await args.auth.getAccessToken() },
         body: args.orderInquiryKey
     });
