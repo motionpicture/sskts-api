@@ -1,8 +1,8 @@
 "use strict";
 /**
- * 注文サービス
+ * 枝番号で劇場組織取得サンプル
  *
- * @namespace service.order
+ * @ignore
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,21 +13,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const httpStatus = require("http-status");
-const apiRequest_1 = require("../apiRequest");
-/**
- * 照会キーで注文情報を取得する
- * 存在しなければnullを返します。
- */
-function findByOrderInquiryKey(args) {
+const createDebug = require("debug");
+const sskts = require("./lib/sskts-api");
+const debug = createDebug('sskts-api:samples');
+function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield apiRequest_1.default({
-            uri: '/orders/findByOrderInquiryKey',
-            method: 'POST',
-            expectedStatusCodes: [httpStatus.NOT_FOUND, httpStatus.OK],
-            auth: { bearer: yield args.auth.getAccessToken() },
-            body: args.orderInquiryKey
+        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['organizations.read-only']);
+        // 劇場情報取得
+        const movieTheater = yield sskts.service.organization.findMovieTheaterByBranchCode({
+            auth: auth,
+            branchCode: '118'
         });
+        debug('movieTheater is', movieTheater);
     });
 }
-exports.findByOrderInquiryKey = findByOrderInquiryKey;
+main().then(() => {
+    debug('main processed.');
+}).catch((err) => {
+    console.error(err.message);
+});

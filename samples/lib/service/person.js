@@ -22,7 +22,6 @@ function getMyProfile(args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield apiRequest_1.default({
             uri: '/people/me/profile',
-            // qs: args.searchConditions,
             auth: { bearer: yield args.auth.getAccessToken() },
             method: 'GET',
             expectedStatusCodes: [httpStatus.OK]
@@ -52,7 +51,6 @@ function findMyCreditCards(args) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield apiRequest_1.default({
             uri: '/people/me/creditCards',
-            // qs: args.searchConditions,
             auth: { bearer: yield args.auth.getAccessToken() },
             method: 'GET',
             expectedStatusCodes: [httpStatus.OK]

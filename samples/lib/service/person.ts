@@ -18,7 +18,6 @@ export async function getMyProfile(args: {
 }): Promise<sskts.factory.person.IProfile> {
     return await apiRequest({
         uri: '/people/me/profile',
-        // qs: args.searchConditions,
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'GET',
         expectedStatusCodes: [httpStatus.OK]
@@ -30,6 +29,9 @@ export async function getMyProfile(args: {
  */
 export async function updateMyProfile(args: {
     auth: OAuth2client;
+    /**
+     * プロフィール
+     */
     profile: sskts.factory.person.IProfile
 }): Promise<void> {
     return await apiRequest({
@@ -49,7 +51,6 @@ export async function findMyCreditCards(args: {
 }): Promise<any> {
     return await apiRequest({
         uri: '/people/me/creditCards',
-        // qs: args.searchConditions,
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'GET',
         expectedStatusCodes: [httpStatus.OK]
@@ -61,6 +62,9 @@ export async function findMyCreditCards(args: {
  */
 export async function addMyCreditCard(args: {
     auth: OAuth2client;
+    /**
+     * クレジットカード情報
+     */
     creditCard: {
         cardNo?: string;
         cardPass?: string;

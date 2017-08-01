@@ -39,11 +39,18 @@ async function main() {
         auth: auth,
         identifier: individualScreeningEvents[0].identifier
     });
+    if (individualScreeningEvent === null) {
+        throw new Error('指定された上映イベントが見つかりません');
+    }
 
     // 劇場ショップ検索
-    const movieTheaters = await sskts.service.organization.searchMovieTheaters({
-        auth: auth
+    const movieTheaterOrganization = await sskts.service.organization.findMovieTheaterByBranchCode({
+        auth: auth,
+        branchCode: individualScreeningEvent.coaInfo.theaterCode
     });
+    if (movieTheaterOrganization === null) {
+        throw new Error('劇場ショップがオープンしていません');
+    }
 
     const theaterCode = individualScreeningEvent.coaInfo.theaterCode;
     const dateJouei = individualScreeningEvent.coaInfo.dateJouei;
@@ -52,13 +59,6 @@ async function main() {
     const timeBegin = individualScreeningEvent.coaInfo.timeBegin;
     const screenCode = individualScreeningEvent.coaInfo.screenCode;
 
-    // 劇場のショップを検索
-    const seller = movieTheaters.find((movieTheater) => movieTheater.location.branchCode === theaterCode);
-    debug('seller is', seller);
-    if (seller === undefined) {
-        throw new Error('劇場ショップはまだオープンしていません');
-    }
-
     // 取引開始
     // 1分後のunix timestampを送信する場合
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
@@ -66,7 +66,7 @@ async function main() {
     const transaction = await sskts.service.transaction.placeOrder.start({
         auth: auth,
         expires: moment().add(1, 'minutes').toDate(),
-        sellerId: seller.id
+        sellerId: movieTheaterOrganization.id
     });
 
     // 販売可能チケット検索

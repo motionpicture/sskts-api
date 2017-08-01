@@ -32,6 +32,7 @@ function searchIndividualScreeningEvent(args) {
 exports.searchIndividualScreeningEvent = searchIndividualScreeningEvent;
 /**
  * 上映イベント情報取得
+ * 存在しなければnullを返します。
  */
 function findIndividualScreeningEvent(args) {
     return __awaiter(this, void 0, void 0, function* () {

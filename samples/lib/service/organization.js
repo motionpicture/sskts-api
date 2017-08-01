@@ -24,9 +24,23 @@ function searchMovieTheaters(args) {
             uri: '/organizations/movieTheater',
             method: 'GET',
             expectedStatusCodes: [httpStatus.OK],
-            qs: args.searchConditions,
-            auth: { bearer: yield args.auth.getAccessToken() }
+            auth: { bearer: yield args.auth.getAccessToken() },
+            qs: args.searchConditions
         });
     });
 }
 exports.searchMovieTheaters = searchMovieTheaters;
+/**
+ * 枝番号で劇場組織検索
+ */
+function findMovieTheaterByBranchCode(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield apiRequest_1.default({
+            uri: `/organizations/movieTheater/${args.branchCode}`,
+            method: 'GET',
+            expectedStatusCodes: [httpStatus.NOT_FOUND, httpStatus.OK],
+            auth: { bearer: yield args.auth.getAccessToken() }
+        });
+    });
+}
+exports.findMovieTheaterByBranchCode = findMovieTheaterByBranchCode;

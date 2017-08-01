@@ -10,8 +10,15 @@ import apiRequest from '../apiRequest';
 
 import OAuth2client from '../auth/oAuth2client';
 
+/**
+ * 照会キーで注文情報を取得する
+ * 存在しなければnullを返します。
+ */
 export async function findByOrderInquiryKey(args: {
     auth: OAuth2client;
+    /**
+     * 注文照会キー
+     */
     orderInquiryKey: sskts.factory.orderInquiryKey.IOrderInquiryKey;
 }): Promise<sskts.factory.order.IOrder | null> {
     return await apiRequest({
