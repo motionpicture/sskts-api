@@ -17,6 +17,8 @@ async function main() {
         'teststate',
         ['organizations.read-only']
     );
+    const credentials = await auth.getToken();
+    auth.setCredentials(credentials);
 
     // 劇場情報取得
     const movieTheater = await sskts.service.organization.findMovieTheaterByBranchCode({

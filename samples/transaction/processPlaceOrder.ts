@@ -25,6 +25,8 @@ async function main() {
             'organizations.read-only'
         ]
     );
+    const credentials = await auth.getToken();
+    auth.setCredentials(credentials);
 
     // 上映イベント検索
     const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({

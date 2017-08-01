@@ -87,7 +87,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 /**
  * 購入者情報を変更する
  */
-placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['transactions']), (req, _, next) => {
+placeOrderTransactionsRouter.put('/:transactionId/agent/profile', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('familyName').notEmpty().withMessage('required');
     req.checkBody('givenName').notEmpty().withMessage('required');
     req.checkBody('telephone').notEmpty().withMessage('required');
@@ -97,7 +97,7 @@ placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['
     try {
         // 会員フローの場合は使用できない
         // todo レスポンスはどんなのが適切か
-        if (req.getUser().person !== undefined) {
+        if (req.user.person !== undefined) {
             res.status(http_status_1.FORBIDDEN).end('Forbidden');
             return;
         }
@@ -107,7 +107,7 @@ placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['
             email: req.body.email,
             telephone: req.body.telephone
         };
-        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.id, profile)(sskts.adapter.person(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, profile)(sskts.adapter.person(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -117,7 +117,7 @@ placeOrderTransactionsRouter.put('/:id/agent/profile', permitScopes_1.default(['
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:id/seatReservationAuthorization', permitScopes_1.default(['transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.post('/:transactionId/seatReservationAuthorization', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -128,7 +128,7 @@ placeOrderTransactionsRouter.post('/:id/seatReservationAuthorization', permitSco
             });
         }
         else {
-            const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.id, findIndividualScreeningEventOption.get(), req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));
+            const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.transactionId, findIndividualScreeningEventOption.get(), req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));
             res.status(http_status_1.CREATED).json({
                 data: authorization
             });
@@ -150,7 +150,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/seatReservationAuthorizatio
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:id/paymentInfos/creditCard', permitScopes_1.default(['transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/creditCard', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     // req.checkBody('data.orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
     // req.checkBody('data.amount', 'invalid amount').notEmpty().withMessage('amount is required');
     // req.checkBody('data.method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
@@ -169,7 +169,7 @@ placeOrderTransactionsRouter.post('/:id/paymentInfos/creditCard', permitScopes_1
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const authorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(req.params.id, req.body.orderId, req.body.amount, req.body.method, creditCard)(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection));
+        const authorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
             data: authorization
         });
@@ -193,7 +193,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/paymentInfos/creditCard/:au
 /**
  * ムビチケ追加
  */
-placeOrderTransactionsRouter.post('/:id/paymentInfos/mvtk', permitScopes_1.default(['transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/mvtk', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -215,7 +215,7 @@ placeOrderTransactionsRouter.post('/:id/paymentInfos/mvtk', permitScopes_1.defau
             },
             object: {}
         });
-        yield sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.id, authorization)(sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.transactionId, authorization)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
             data: authorization
         });
@@ -236,9 +236,9 @@ placeOrderTransactionsRouter.delete('/:transactionId/paymentInfos/mvtk/:authoriz
         next(error);
     }
 }));
-placeOrderTransactionsRouter.delete('/:id/seatReservationAuthorization/:authorizationId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/seatReservationAuthorization/:authorizationId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(req.params.id, req.params.authorization_id)(sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(req.params.transactionId, req.params.authorization_id)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -246,16 +246,9 @@ placeOrderTransactionsRouter.delete('/:id/seatReservationAuthorization/:authoriz
     }
 }));
 // placeOrderTransactionsRouter.post(
-//     '/:id/notifications/email',
+//     '/:transactionId/notifications/email',
 //     permitScopes(['transactions.notifications']),
 //     (req, _, next) => {
-//         // 互換性維持のための対応
-//         if (req.body.data === undefined) {
-//             req.body.data = {
-//                 type: 'notifications',
-//                 attributes: req.body
-//             };
-//         }
 //         req.checkBody('data').notEmpty().withMessage('required');
 //         req.checkBody('data.type').equals('notifications').withMessage('must be \'notifications\'');
 //         req.checkBody('data.attributes').notEmpty().withMessage('required');
@@ -274,7 +267,7 @@ placeOrderTransactionsRouter.delete('/:id/seatReservationAuthorization/:authoriz
 //                 subject: req.body.subject,
 //                 content: req.body.content
 //             });
-//             await sskts.service.transactionWithId.addEmail(req.params.id, notification)(
+//             await sskts.service.transactionWithId.addEmail(req.params.transactionId, notification)(
 //                 sskts.adapter.transaction(sskts.mongoose.connection)
 //             );
 //             res.status(OK).json({
@@ -288,28 +281,9 @@ placeOrderTransactionsRouter.delete('/:id/seatReservationAuthorization/:authoriz
 //         }
 //     }
 // );
-// placeOrderTransactionsRouter.delete(
-//     '/:id/notifications/:notification_id',
-//     permitScopes(['transactions.notifications']),
-//     (_1, _2, next) => {
-//         // todo validations
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             await sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(
-//                 sskts.adapter.transaction(sskts.mongoose.connection)
-//             );
-//             res.status(NO_CONTENT).end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-placeOrderTransactionsRouter.post('/:id/confirm', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const order = yield sskts.service.transaction.placeOrder.confirm(req.params.id)(sskts.adapter.transaction(sskts.mongoose.connection));
+        const order = yield sskts.service.transaction.placeOrder.confirm(req.params.transactionId)(sskts.adapter.transaction(sskts.mongoose.connection));
         debug('transaction confirmed', order);
         res.status(http_status_1.CREATED).json({
             data: order
@@ -319,7 +293,7 @@ placeOrderTransactionsRouter.post('/:id/confirm', permitScopes_1.default(['trans
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:id/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 取引が適切かどうかチェック
         // todo その場で送信ではなくDBに登録するようにする

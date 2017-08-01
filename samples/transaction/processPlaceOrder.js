@@ -27,6 +27,8 @@ function main() {
             'events.read-only',
             'organizations.read-only'
         ]);
+        const credentials = yield auth.getToken();
+        auth.setCredentials(credentials);
         // 上映イベント検索
         const individualScreeningEvents = yield sskts.service.event.searchIndividualScreeningEvent({
             auth: auth,

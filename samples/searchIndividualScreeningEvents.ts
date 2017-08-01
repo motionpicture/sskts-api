@@ -18,6 +18,8 @@ async function main() {
         'teststate',
         ['events.read-only']
     );
+    const credentials = await auth.getToken();
+    auth.setCredentials(credentials);
 
     const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({
         auth: auth,

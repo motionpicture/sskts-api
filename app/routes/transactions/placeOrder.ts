@@ -101,7 +101,7 @@ placeOrderTransactionsRouter.post(
  * 購入者情報を変更する
  */
 placeOrderTransactionsRouter.put(
-    '/:id/agent/profile',
+    '/:transactionId/agent/profile',
     permitScopes(['transactions']),
     (req, _, next) => {
         req.checkBody('familyName').notEmpty().withMessage('required');
@@ -116,7 +116,7 @@ placeOrderTransactionsRouter.put(
         try {
             // 会員フローの場合は使用できない
             // todo レスポンスはどんなのが適切か
-            if (req.getUser().person !== undefined) {
+            if (req.user.person !== undefined) {
                 res.status(FORBIDDEN).end('Forbidden');
 
                 return;
@@ -128,7 +128,7 @@ placeOrderTransactionsRouter.put(
                 email: req.body.email,
                 telephone: req.body.telephone
             };
-            await sskts.service.transaction.placeOrder.setAgentProfile(req.params.id, profile)(
+            await sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, profile)(
                 sskts.adapter.person(sskts.mongoose.connection),
                 sskts.adapter.transaction(sskts.mongoose.connection)
             );
@@ -144,7 +144,7 @@ placeOrderTransactionsRouter.put(
  * 座席仮予約
  */
 placeOrderTransactionsRouter.post(
-    '/:id/seatReservationAuthorization',
+    '/:transactionId/seatReservationAuthorization',
     permitScopes(['transactions']),
     (__1, __2, next) => {
         next();
@@ -162,7 +162,7 @@ placeOrderTransactionsRouter.post(
                 });
             } else {
                 const authorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization(
-                    req.params.id,
+                    req.params.transactionId,
                     findIndividualScreeningEventOption.get(),
                     req.body.offers
                 )(sskts.adapter.transaction(sskts.mongoose.connection));
@@ -199,7 +199,7 @@ placeOrderTransactionsRouter.delete(
 );
 
 placeOrderTransactionsRouter.post(
-    '/:id/paymentInfos/creditCard',
+    '/:transactionId/paymentInfos/creditCard',
     permitScopes(['transactions']),
     (__1, __2, next) => {
         // req.checkBody('data.orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
@@ -227,7 +227,7 @@ placeOrderTransactionsRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const authorization = await sskts.service.transaction.placeOrder.createCreditCardAuthorization(
-                req.params.id,
+                req.params.transactionId,
                 req.body.orderId,
                 req.body.amount,
                 req.body.method,
@@ -271,7 +271,7 @@ placeOrderTransactionsRouter.delete(
  * ムビチケ追加
  */
 placeOrderTransactionsRouter.post(
-    '/:id/paymentInfos/mvtk',
+    '/:transactionId/paymentInfos/mvtk',
     permitScopes(['transactions']),
     (__1, __2, next) => {
         next();
@@ -297,7 +297,7 @@ placeOrderTransactionsRouter.post(
                 },
                 object: {}
             });
-            await sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.id, authorization)(
+            await sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.transactionId, authorization)(
                 sskts.adapter.transaction(sskts.mongoose.connection)
             );
 
@@ -332,14 +332,14 @@ placeOrderTransactionsRouter.delete(
 );
 
 placeOrderTransactionsRouter.delete(
-    '/:id/seatReservationAuthorization/:authorizationId',
+    '/:transactionId/seatReservationAuthorization/:authorizationId',
     permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(req.params.id, req.params.authorization_id)(
-                sskts.adapter.transaction(sskts.mongoose.connection)
-            );
+            await sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(
+                req.params.transactionId, req.params.authorization_id
+            )(sskts.adapter.transaction(sskts.mongoose.connection));
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -349,17 +349,9 @@ placeOrderTransactionsRouter.delete(
 );
 
 // placeOrderTransactionsRouter.post(
-//     '/:id/notifications/email',
+//     '/:transactionId/notifications/email',
 //     permitScopes(['transactions.notifications']),
 //     (req, _, next) => {
-//         // 互換性維持のための対応
-//         if (req.body.data === undefined) {
-//             req.body.data = {
-//                 type: 'notifications',
-//                 attributes: req.body
-//             };
-//         }
-
 //         req.checkBody('data').notEmpty().withMessage('required');
 //         req.checkBody('data.type').equals('notifications').withMessage('must be \'notifications\'');
 //         req.checkBody('data.attributes').notEmpty().withMessage('required');
@@ -379,7 +371,7 @@ placeOrderTransactionsRouter.delete(
 //                 subject: req.body.subject,
 //                 content: req.body.content
 //             });
-//             await sskts.service.transactionWithId.addEmail(req.params.id, notification)(
+//             await sskts.service.transactionWithId.addEmail(req.params.transactionId, notification)(
 //                 sskts.adapter.transaction(sskts.mongoose.connection)
 //             );
 
@@ -395,35 +387,13 @@ placeOrderTransactionsRouter.delete(
 //     }
 // );
 
-// placeOrderTransactionsRouter.delete(
-//     '/:id/notifications/:notification_id',
-//     permitScopes(['transactions.notifications']),
-//     (_1, _2, next) => {
-//         // todo validations
-
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             await sskts.service.transactionWithId.removeEmail(req.params.id, req.params.notification_id)(
-//                 sskts.adapter.transaction(sskts.mongoose.connection)
-//             );
-
-//             res.status(NO_CONTENT).end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-
 placeOrderTransactionsRouter.post(
-    '/:id/confirm',
+    '/:transactionId/confirm',
     permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         try {
-            const order = await sskts.service.transaction.placeOrder.confirm(req.params.id)(
+            const order = await sskts.service.transaction.placeOrder.confirm(req.params.transactionId)(
                 sskts.adapter.transaction(sskts.mongoose.connection)
             );
             debug('transaction confirmed', order);
@@ -438,7 +408,7 @@ placeOrderTransactionsRouter.post(
 );
 
 placeOrderTransactionsRouter.post(
-    '/:id/tasks/sendEmailNotification',
+    '/:transactionId/tasks/sendEmailNotification',
     permitScopes(['transactions']),
     validator,
     async (req, res, next) => {

@@ -19,6 +19,8 @@ const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['orders.read-only']);
+        const credentials = yield auth.getToken();
+        auth.setCredentials(credentials);
         const order = yield sskts.service.order.findByOrderInquiryKey({
             auth: auth,
             orderInquiryKey: {

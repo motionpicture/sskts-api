@@ -17,6 +17,8 @@ async function main() {
         'teststate',
         ['organizations.read-only']
     );
+    const credentials = await auth.getToken();
+    auth.setCredentials(credentials);
 
     const movieTheaters = await sskts.service.organization.searchMovieTheaters({
         auth: auth

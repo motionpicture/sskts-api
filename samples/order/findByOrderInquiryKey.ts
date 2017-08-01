@@ -17,6 +17,8 @@ async function main() {
         'teststate',
         ['orders.read-only']
     );
+    const credentials = await auth.getToken();
+    auth.setCredentials(credentials);
 
     const order = await sskts.service.order.findByOrderInquiryKey({
         auth: auth,
