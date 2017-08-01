@@ -247,7 +247,8 @@ async function main() {
         method: GMO.utils.util.Method.Lump,
         creditCard: {
             memberId: 'me',
-            cardSeq: creditCards[0].cardSeq
+            // tslint:disable-next-line:no-magic-numbers
+            cardSeq: parseInt(creditCards[0].cardSeq, 10)
             // cardPass: undefined
         }
     });
@@ -279,7 +280,8 @@ async function main() {
         method: GMO.utils.util.Method.Lump,
         creditCard: {
             memberId: 'me',
-            cardSeq: creditCards[0].cardSeq
+            // tslint:disable-next-line:no-magic-numbers
+            cardSeq: parseInt(creditCards[0].cardSeq, 10)
             // cardPass: undefined
         }
     });

@@ -168,14 +168,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
             throw new Error(error.errors[0].content);
         }
         res.status(httpStatus.CREATED).json({
-            data: {
-                typeOf: 'CreditCard',
-                cardSeq: creditCard.cardSeq,
-                cardName: creditCard.cardName,
-                cardNo: creditCard.cardNo,
-                expire: creditCard.expire,
-                holderName: creditCard.holderName
-            }
+            data: creditCard
         });
     }
     catch (error) {

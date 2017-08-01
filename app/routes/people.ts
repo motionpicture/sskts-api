@@ -206,14 +206,7 @@ peopleRouter.post(
             }
 
             res.status(httpStatus.CREATED).json({
-                data: {
-                    typeOf: 'CreditCard',
-                    cardSeq: creditCard.cardSeq,
-                    cardName: creditCard.cardName,
-                    cardNo: creditCard.cardNo,
-                    expire: creditCard.expire,
-                    holderName: creditCard.holderName
-                }
+                data: creditCard
             });
         } catch (error) {
             next(error);

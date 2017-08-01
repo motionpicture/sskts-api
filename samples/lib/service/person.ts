@@ -48,13 +48,23 @@ export async function updateMyProfile(args: {
  */
 export async function findMyCreditCards(args: {
     auth: OAuth2client;
-}): Promise<any> {
+}): Promise<sskts.GMO.services.card.ISearchCardResult[]> {
     return await apiRequest({
         uri: '/people/me/creditCards',
         auth: { bearer: await args.auth.getAccessToken() },
         method: 'GET',
         expectedStatusCodes: [OK]
     });
+}
+
+export interface IPresavedCreditCardRaw {
+    cardNo: string;
+    cardPass?: string;
+    expire: string;
+    holderName: string;
+}
+export interface IPresavedCreditCardTokenized {
+    token: string;
 }
 
 /**
@@ -65,14 +75,8 @@ export async function addMyCreditCard(args: {
     /**
      * クレジットカード情報
      */
-    creditCard: {
-        cardNo?: string;
-        cardPass?: string;
-        expire?: string;
-        holderName?: string;
-        token?: string;
-    }
-}): Promise<any> {
+    creditCard: IPresavedCreditCardRaw | IPresavedCreditCardTokenized
+}): Promise<sskts.GMO.services.card.ISearchCardResult> {
     return await apiRequest({
         uri: '/people/me/creditCards',
         body: args.creditCard,

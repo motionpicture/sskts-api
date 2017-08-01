@@ -225,7 +225,8 @@ function main() {
             method: sskts_domain_1.GMO.utils.util.Method.Lump,
             creditCard: {
                 memberId: 'me',
-                cardSeq: creditCards[0].cardSeq
+                // tslint:disable-next-line:no-magic-numbers
+                cardSeq: parseInt(creditCards[0].cardSeq, 10)
                 // cardPass: undefined
             }
         });
@@ -250,7 +251,8 @@ function main() {
             method: sskts_domain_1.GMO.utils.util.Method.Lump,
             creditCard: {
                 memberId: 'me',
-                cardSeq: creditCards[0].cardSeq
+                // tslint:disable-next-line:no-magic-numbers
+                cardSeq: parseInt(creditCards[0].cardSeq, 10)
                 // cardPass: undefined
             }
         });

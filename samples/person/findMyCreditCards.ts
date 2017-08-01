@@ -1,5 +1,5 @@
 /**
- * クレジットカード追加サンプル
+ * クレジットカード検索サンプル
  *
  * @ignore
  */
@@ -28,17 +28,6 @@ async function main() {
         auth: auth
     });
     debug('creditCards are', creditCards);
-
-    const newCreditCard = await sskts.service.person.addMyCreditCard({
-        auth: auth,
-        creditCard: {
-            cardNo: '4111111111111111',
-            // cardPass: '111',
-            expire: '2018',
-            holderName: 'AA BB'
-        }
-    });
-    debug('creditCard added', newCreditCard);
 }
 
 main().then(() => {
