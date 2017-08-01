@@ -35,16 +35,18 @@ async function main() {
     );
 
     // プロフィールを取得
-    const profile = await sskts.service.person.getMyProfile({
-        auth: auth
+    const profile = await sskts.service.person.getProfile({
+        auth: auth,
+        personId: 'me'
     });
     debug('プロフィールは', profile);
 
     // 新規会員であればプロフィール登録(登録されていないと注文取引確定できない)
     if (profile.telephone === '') {
         debug('プロフィールを更新します...');
-        await sskts.service.person.updateMyProfile({
+        await sskts.service.person.updateProfile({
             auth: auth,
+            personId: 'me',
             profile: {
                 familyName: 'せい',
                 givenName: 'めい',
@@ -201,16 +203,18 @@ async function main() {
     debug('座席を仮予約しました', seatReservationAuthorization);
 
     // クレジットカード検索
-    let creditCards = await sskts.service.person.findMyCreditCards({
-        auth: auth
+    let creditCards = await sskts.service.person.findCreditCards({
+        auth: auth,
+        personId: 'me'
     });
     debug('使用できるクレジットカードは', creditCards);
 
     // なければクレジットカード追加
     if (creditCards.length === 0) {
         debug('クレジットカードを登録します...');
-        const addCreditCardResult = await sskts.service.person.addMyCreditCard({
+        const addCreditCardResult = await sskts.service.person.addCreditCard({
             auth: auth,
+            personId: 'me',
             creditCard: {
                 cardNo: '4111111111111111',
                 cardPass: '',
@@ -221,8 +225,9 @@ async function main() {
         debug('クレジットカードを登録しました', addCreditCardResult);
 
         // 再度クレジットカード検索
-        creditCards = await sskts.service.person.findMyCreditCards({
-            auth: auth
+        creditCards = await sskts.service.person.findCreditCards({
+            auth: auth,
+            personId: 'me'
         });
         debug('使用できるクレジットカードは', creditCards);
     }

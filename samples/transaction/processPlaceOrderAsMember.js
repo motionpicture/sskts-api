@@ -34,15 +34,17 @@ function main() {
         // tslint:disable-next-line:max-line-length
         'eyJhbGciOiJSUzI1NiIsImtpZCI6IjU2NjE5YWRiMjJkMWE1NDU2MjAzNmJmNTEwODBmZjZjZjdjZTNjZjIifQ.eyJhenAiOiI5MzI5MzQzMjQ2NzEtNjZrYXN1am50ajJqYTdjNWs0azU1aWo2cGFrcHFpcjQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI5MzI5MzQzMjQ2NzEtNjZrYXN1am50ajJqYTdjNWs0azU1aWo2cGFrcHFpcjQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDgwMTczNzA5ODQ2NDQ2NDkyODgiLCJlbWFpbCI6Imlsb3ZlZ2FkZEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6ImFlRGE3b0xlTDg3dlZJOFY5SmdfTkEiLCJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiaWF0IjoxNTAxNTQ4NDQwLCJleHAiOjE1MDE1NTIwNDAsIm5hbWUiOiJUZXRzdSBZYW1hemFraSIsInBpY3R1cmUiOiJodHRwczovL2xoNi5nb29nbGV1c2VyY29udGVudC5jb20vLVRpM29LMmwxNmJzL0FBQUFBQUFBQUFJL0FBQUFBQUFBNjNNL01Dc0JlWWNpWnpJL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJUZXRzdSIsImZhbWlseV9uYW1lIjoiWWFtYXpha2kiLCJsb2NhbGUiOiJlbiJ9.xm1QwEQ0BRXYSyoVzKWE90Smhcnc5Y1nSX_SNDODf6l0hqcbp7FDfJWwxvgQXAJpOL0wD2idggY4smWrwgeaW_R6mwxkYt20dLdHz_ZOzDBeHg9C3LEc_e5P9w_X5wOMT2j4S6u4WLE9IGJ9utUoW5PsFonhYnmisdRxOxymth-SXkuBK84uDBmtysK19oidD-ZdFmwnHvi1AP8qHrAzg-rG9GdbovcI9XyW1OkweVLIDfQLk_Fn7IP7X5b_1m41M-Evjahn9RCsYwbhqsiLtka1UdTO2leIJLntCb6EhU6iAB1GePk5l4UO6YwX9KCo8w_CruG2f7bwBtWMD2-Pxg');
         // プロフィールを取得
-        const profile = yield sskts.service.person.getMyProfile({
-            auth: auth
+        const profile = yield sskts.service.person.getProfile({
+            auth: auth,
+            personId: 'me'
         });
         debug('プロフィールは', profile);
         // 新規会員であればプロフィール登録(登録されていないと注文取引確定できない)
         if (profile.telephone === '') {
             debug('プロフィールを更新します...');
-            yield sskts.service.person.updateMyProfile({
+            yield sskts.service.person.updateProfile({
                 auth: auth,
+                personId: 'me',
                 profile: {
                     familyName: 'せい',
                     givenName: 'めい',
@@ -188,15 +190,17 @@ function main() {
         });
         debug('座席を仮予約しました', seatReservationAuthorization);
         // クレジットカード検索
-        let creditCards = yield sskts.service.person.findMyCreditCards({
-            auth: auth
+        let creditCards = yield sskts.service.person.findCreditCards({
+            auth: auth,
+            personId: 'me'
         });
         debug('使用できるクレジットカードは', creditCards);
         // なければクレジットカード追加
         if (creditCards.length === 0) {
             debug('クレジットカードを登録します...');
-            const addCreditCardResult = yield sskts.service.person.addMyCreditCard({
+            const addCreditCardResult = yield sskts.service.person.addCreditCard({
                 auth: auth,
+                personId: 'me',
                 creditCard: {
                     cardNo: '4111111111111111',
                     cardPass: '',
@@ -206,8 +210,9 @@ function main() {
             });
             debug('クレジットカードを登録しました', addCreditCardResult);
             // 再度クレジットカード検索
-            creditCards = yield sskts.service.person.findMyCreditCards({
-                auth: auth
+            creditCards = yield sskts.service.person.findCreditCards({
+                auth: auth,
+                personId: 'me'
             });
             debug('使用できるクレジットカードは', creditCards);
         }
