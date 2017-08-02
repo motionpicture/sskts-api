@@ -4,7 +4,7 @@
  * @ignore
  */
 
-// import * as createDebug from 'debug';
+import * as createDebug from 'debug';
 import * as express from 'express';
 // import * as querystring from 'querystring';
 
@@ -13,7 +13,7 @@ const oauthRouter = express.Router();
 import * as oauthController from '../controllers/oauth';
 import validator from '../middlewares/validator';
 
-// const debug = createDebug('sskts-api:routes:oauth');
+const debug = createDebug('sskts-api:routes:oauth');
 
 // oauthRouter.get(
 //     '/authorize',
@@ -131,12 +131,14 @@ oauthRouter.post(
 oauthRouter.post(
     '/token/signInWithGoogle',
     validator,
-    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             // 資格情報を発行する
+            debug(typeof req.body);
+            debug('issueing credentials by google token...', req.body);
+            const scopes = (<string>req.body.scope).split(' ');
             const credentials = await oauthController.issueCredentialsByGoogleToken(
-                req.body.idToken, req.body.client_id, req.body.state, req.body.scopes
+                req.body.id_token, req.body.client_id, req.body.state, scopes
             );
             res.json(credentials);
         } catch (error) {

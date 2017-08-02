@@ -64,47 +64,6 @@ class OAuth2client {
             }
         });
     }
-    signInWithGoogle(idToken) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // request for new token
-            debug('requesting access token...');
-            return yield request.post({
-                url: `${API_ENDPOINT}/oauth/token/signInWithGoogle`,
-                body: {
-                    idToken: idToken,
-                    client_id: this.clientId,
-                    client_secret: this.clientSecret,
-                    scopes: this.scopes,
-                    state: this.state
-                },
-                json: true,
-                simple: false,
-                resolveWithFullResponse: true,
-                useQuerystring: true
-            }).then((response) => {
-                if (response.statusCode !== httpStatus.OK) {
-                    if (typeof response.body === 'string') {
-                        throw new Error(response.body);
-                    }
-                    if (typeof response.body === 'object' && response.body.errors !== undefined) {
-                        const message = response.body.errors.map((error) => {
-                            return `[${error.title}]${error.detail}`;
-                        }).join(', ');
-                        throw new Error(message);
-                    }
-                    throw new Error('An unexpected error occurred');
-                }
-                const tokens = response.body;
-                if (tokens && tokens.expires_in) {
-                    // tslint:disable-next-line:no-magic-numbers
-                    tokens.expiry_date = ((new Date()).getTime() + (tokens.expires_in * 1000));
-                    delete tokens.expires_in;
-                }
-                this.credentials = tokens;
-                return tokens;
-            });
-        });
-    }
     signInWithLINE(idToken) {
         return __awaiter(this, void 0, void 0, function* () {
             // request for new token
@@ -189,8 +148,6 @@ class OAuth2client {
         });
     }
 }
-/**
- * The base endpoint for token retrieval.
- */
 OAuth2client.SSKTS_OAUTH2_TOKEN_URL = `${API_ENDPOINT}/oauth/token`;
+OAuth2client.SSKTS_OAUTH2_TOKEN_GOOGLE_URL = `${API_ENDPOINT}/oauth/token/signInWithGoogle`;
 exports.default = OAuth2client;

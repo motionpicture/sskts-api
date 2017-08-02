@@ -13,13 +13,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import * as createDebug from 'debug';
+const createDebug = require("debug");
 const express = require("express");
 // import * as querystring from 'querystring';
 const oauthRouter = express.Router();
 const oauthController = require("../controllers/oauth");
 const validator_1 = require("../middlewares/validator");
-// const debug = createDebug('sskts-api:routes:oauth');
+const debug = createDebug('sskts-api:routes:oauth');
 // oauthRouter.get(
 //     '/authorize',
 //     (req, __, next) => {
@@ -112,12 +112,13 @@ oauthRouter.post('/token', (req, _, next) => {
         next(error);
     }
 }));
-oauthRouter.post('/token/signInWithGoogle', validator_1.default, 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(this, void 0, void 0, function* () {
+oauthRouter.post('/token/signInWithGoogle', validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 資格情報を発行する
-        const credentials = yield oauthController.issueCredentialsByGoogleToken(req.body.idToken, req.body.client_id, req.body.state, req.body.scopes);
+        debug(typeof req.body);
+        debug('issueing credentials by google token...', req.body);
+        const scopes = req.body.scope.split(' ');
+        const credentials = yield oauthController.issueCredentialsByGoogleToken(req.body.id_token, req.body.client_id, req.body.state, scopes);
         res.json(credentials);
     }
     catch (error) {

@@ -30,16 +30,15 @@
     function signInWithGoogle(idToken) {
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'http://localhost:8081/oauth/token/signInWithGoogle');
-        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function () {
             console.log('Signed in as: ' + xhr.responseText);
         };
-        xhr.send(JSON.stringify({
-            client_id: 'motionpicture',
-            state: '',
-            scopes: [],
-            idToken: idToken
-        }));
+        var data = 'client_id=motionpicture' +
+            '&state=teststate' +
+            '&scope=people.profile' +
+            '&id_token=' + idToken;
+        xhr.send(data);
     }
 
 </script>
