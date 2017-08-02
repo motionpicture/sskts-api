@@ -282,18 +282,18 @@ placeOrderTransactionsRouter.post(
             const authorization = sskts.factory.authorization.mvtk.create({
                 price: parseInt(req.body.price, 10), // tslint:disable-line:no-magic-numbers
                 result: {
-                    kgygish_cd: req.body.kgygish_cd,
-                    yyk_dvc_typ: req.body.yyk_dvc_typ,
-                    trksh_flg: req.body.trksh_flg,
-                    kgygish_sstm_zskyyk_no: req.body.kgygish_sstm_zskyyk_no,
-                    kgygish_usr_zskyyk_no: req.body.kgygish_usr_zskyyk_no,
-                    jei_dt: req.body.jei_dt,
-                    kij_ymd: req.body.kij_ymd,
-                    st_cd: req.body.st_cd,
-                    scren_cd: req.body.scren_cd,
-                    knyknr_no_info: req.body.knyknr_no_info,
-                    zsk_info: req.body.zsk_info,
-                    skhn_cd: req.body.skhn_cd
+                    kgygishCd: req.body.kgygishCd,
+                    yykDvcTyp: req.body.yykDvcTyp,
+                    trkshFlg: req.body.trkshFlg,
+                    kgygishSstmZskyykNo: req.body.kgygishSstmZskyykNo,
+                    kgygishUsrZskyykNo: req.body.kgygishUsrZskyykNo,
+                    jeiDt: req.body.jeiDt,
+                    kijYmd: req.body.kijYmd,
+                    stCd: req.body.stCd,
+                    screnCd: req.body.screnCd,
+                    knyknrNoInfo: req.body.knyknrNoInfo,
+                    zskInfo: req.body.zskInfo,
+                    skhnCd: req.body.skhnCd
                 },
                 object: {}
             });

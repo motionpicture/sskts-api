@@ -135,28 +135,28 @@ function main() {
             transactionId: transaction.id,
             mvtk: {
                 price: totalPrice,
-                kgygish_cd: 'SSK000',
-                yyk_dvc_typ: '00',
-                trksh_flg: '0',
-                kgygish_sstm_zskyyk_no: '118124',
-                kgygish_usr_zskyyk_no: '124',
-                jei_dt: '2017/03/0210: 00: 00',
-                kij_ymd: '2017/03/02',
-                st_cd: '15',
-                scren_cd: '1',
-                knyknr_no_info: [
+                kgygishCd: 'SSK000',
+                yykDvcTyp: '00',
+                trkshFlg: '0',
+                kgygishSstmZskyykNo: '118124',
+                kgygishUsrZskyykNo: '124',
+                jeiDt: '2017/03/0210: 00: 00',
+                kijYmd: '2017/03/02',
+                stCd: '15',
+                screnCd: '1',
+                knyknrNoInfo: [
                     {
-                        knyknr_no: '4450899842',
-                        pin_cd: '7648',
-                        knsh_info: [
-                            { knsh_typ: '01', mi_num: '2' }
+                        knyknrNo: '4450899842',
+                        pinCd: '7648',
+                        knshInfo: [
+                            { knshTyp: '01', miNum: '2' }
                         ]
                     }
                 ],
-                zsk_info: seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => {
-                    return { zsk_cd: tmpReserve.seatNum };
+                zskInfo: seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => {
+                    return { zskCd: tmpReserve.seatNum };
                 }),
-                skhn_cd: '1622700'
+                skhnCd: '1622700'
             }
         });
         debug('addMvtkAuthorization is', mvtkAuthorization);
@@ -173,28 +173,28 @@ function main() {
             transactionId: transaction.id,
             mvtk: {
                 price: totalPrice,
-                kgygish_cd: 'SSK000',
-                yyk_dvc_typ: '00',
-                trksh_flg: '0',
-                kgygish_sstm_zskyyk_no: '118124',
-                kgygish_usr_zskyyk_no: '124',
-                jei_dt: '2017/03/0210: 00: 00',
-                kij_ymd: '2017/03/02',
-                st_cd: '15',
-                scren_cd: '1',
-                knyknr_no_info: [
+                kgygishCd: 'SSK000',
+                yykDvcTyp: '00',
+                trkshFlg: '0',
+                kgygishSstmZskyykNo: '118124',
+                kgygishUsrZskyykNo: '124',
+                jeiDt: '2017/03/0210: 00: 00',
+                kijYmd: '2017/03/02',
+                stCd: '15',
+                screnCd: '1',
+                knyknrNoInfo: [
                     {
-                        knyknr_no: '4450899842',
-                        pin_cd: '7648',
-                        knsh_info: [
-                            { knsh_typ: '01', mi_num: '2' }
+                        knyknrNo: '4450899842',
+                        pinCd: '7648',
+                        knshInfo: [
+                            { knshTyp: '01', miNum: '2' }
                         ]
                     }
                 ],
-                zsk_info: seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => {
-                    return { zsk_cd: tmpReserve.seatNum };
+                zskInfo: seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => {
+                    return { zskCd: tmpReserve.seatNum };
                 }),
-                skhn_cd: '1622700'
+                skhnCd: '1622700'
             }
         });
         debug('addMvtkAuthorization is', mvtkAuthorization);

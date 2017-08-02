@@ -154,8 +154,9 @@ oauthRouter.post(
     async (req, res, next) => {
         try {
             // 資格情報を発行する
+            const scopes = (<string>req.body.scope).split(' ');
             const credentials = await oauthController.issueCredentialsByLINEAuthorizationCode(
-                req.body.code, req.body.redirectUri, req.body.client_id, req.body.state, req.body.scopes
+                req.body.code, req.body.redirect_uri, req.body.client_id, req.body.state, scopes
             );
             res.json(credentials);
         } catch (error) {

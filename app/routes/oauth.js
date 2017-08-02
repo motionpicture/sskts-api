@@ -130,7 +130,8 @@ oauthRouter.post('/token/signInWithLINE', validator_1.default,
 (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 資格情報を発行する
-        const credentials = yield oauthController.issueCredentialsByLINEAuthorizationCode(req.body.code, req.body.redirectUri, req.body.client_id, req.body.state, req.body.scopes);
+        const scopes = req.body.scope.split(' ');
+        const credentials = yield oauthController.issueCredentialsByLINEAuthorizationCode(req.body.code, req.body.redirect_uri, req.body.client_id, req.body.state, scopes);
         res.json(credentials);
     }
     catch (error) {
