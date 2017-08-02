@@ -12,14 +12,16 @@ import * as sskts from './lib/sskts-api';
 const debug = createDebug('sskts-api:samples');
 
 async function main() {
-    const auth = new sskts.auth.OAuth2(
+    const auth = new sskts.auth.ClientCredentials(
         'motionpicture',
         'motionpicture',
         'teststate',
-        ['events.read-only']
+        [
+            'events.read-only'
+        ]
     );
-    const credentials = await auth.getToken();
-    auth.setCredentials(credentials);
+    const credentials = await auth.refreshAccessToken();
+    debug('credentials:', credentials);
 
     // 上映イベント検索
     const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({
@@ -35,7 +37,11 @@ async function main() {
         auth: auth,
         identifier: individualScreeningEvents[0].identifier
     });
-    debug('individualScreeningEvent is', individualScreeningEvent);
+    if (individualScreeningEvent === null) {
+        debug('event not found');
+    } else {
+        debug('individualScreeningEvent is', individualScreeningEvent);
+    }
 }
 
 main().then(() => {

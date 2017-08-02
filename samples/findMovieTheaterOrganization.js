@@ -18,9 +18,11 @@ const sskts = require("./lib/sskts-api");
 const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['organizations.read-only']);
-        const credentials = yield auth.getToken();
-        auth.setCredentials(credentials);
+        const auth = new sskts.auth.ClientCredentials('motionpicture', 'motionpicture', 'teststate', [
+            'organizations.read-only'
+        ]);
+        const credentials = yield auth.refreshAccessToken();
+        debug('credentials:', credentials);
         // 劇場情報取得
         const movieTheater = yield sskts.service.organization.findMovieTheaterByBranchCode({
             auth: auth,

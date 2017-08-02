@@ -12,14 +12,16 @@ import * as sskts from './lib/sskts-api';
 const debug = createDebug('sskts-api:samples');
 
 async function main() {
-    const auth = new sskts.auth.OAuth2(
+    const auth = new sskts.auth.ClientCredentials(
         'motionpicture',
         'motionpicture',
         'teststate',
-        ['events.read-only']
+        [
+            'events.read-only'
+        ]
     );
-    const credentials = await auth.getToken();
-    auth.setCredentials(credentials);
+    const credentials = await auth.refreshAccessToken();
+    debug('credentials:', credentials);
 
     const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({
         auth: auth,

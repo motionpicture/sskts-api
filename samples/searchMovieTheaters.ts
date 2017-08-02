@@ -11,14 +11,16 @@ import * as sskts from './lib/sskts-api';
 const debug = createDebug('sskts-api:samples');
 
 async function main() {
-    const auth = new sskts.auth.OAuth2(
+    const auth = new sskts.auth.ClientCredentials(
         'motionpicture',
         'motionpicture',
         'teststate',
-        ['organizations.read-only']
+        [
+            'organizations.read-only'
+        ]
     );
-    const credentials = await auth.getToken();
-    auth.setCredentials(credentials);
+    const credentials = await auth.refreshAccessToken();
+    debug('credentials:', credentials);
 
     const movieTheaters = await sskts.service.organization.searchMovieTheaters({
         auth: auth

@@ -11,6 +11,7 @@
   "dependencies": {
     "@motionpicture/sskts-domain": "git+https://tetsu:M0P!Xmopix@m-p.backlog.jp/git/SSKTS/domain.git#feature/SSKTS-533",
     "basic-auth": "^1.1.0",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.17.2",
     "cors": "^2.8.4",
     "debug": "^2.6.8",
@@ -28,6 +29,7 @@
   "description": "This is a repogitory for sskts api.",
   "devDependencies": {
     "@types/basic-auth": "0.0.31",
+    "@types/bcryptjs": "^2.4.0",
     "@types/body-parser": "0.0.34",
     "@types/cors": "^2.8.1",
     "@types/debug": "0.0.29",

@@ -14,6 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
+const bcrypt = require("bcryptjs");
 const createDebug = require("debug");
 const jwt = require("jsonwebtoken");
 const request = require("request-promise-native");
@@ -26,6 +27,7 @@ exports.MESSAGE_UNIMPLEMENTED_GRANT_TYPE = 'grant_type not implemented';
 exports.MESSAGE_CLIENT_NOT_FOUND = 'client not found';
 exports.MESSAGE_INVALID_USERNAME_OR_PASSWORD = 'invalid username or password';
 exports.MESSAGE_INVALID_ASSERTION = 'client not foundinvalid assertion';
+exports.MESSAGE_INVALID_CLIENT_CREDENTIALS = 'invalid client credentials';
 /**
  * 資格情報を発行する
  *
@@ -38,7 +40,8 @@ function issueCredentials(req) {
             case 'urn:ietf:params:oauth:grant-type:jwt-bearer':
                 return yield issueCredentialsByAssertion(req.body.assertion, req.body.scopes);
             case 'client_credentials':
-                return yield issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
+                const scopes = req.body.scope.split(' ');
+                return yield issueCredentialsByClient(req.body.client_id, req.body.client_secret, req.body.state, scopes);
             // case 'password':
             //     return await issueCredentialsByPassword(
             //         req.body.client_id, req.body.state, req.body.username, req.body.password, req.body.scopes
@@ -79,13 +82,18 @@ exports.issueCredentialsByAssertion = issueCredentialsByAssertion;
  * @param {string[]} scopes スコープリスト
  * @returns {Promise<ICredentials>} 資格情報
  */
-function issueCredentialsByClient(clientId, state, scopes) {
+function issueCredentialsByClient(clientId, clientSecret, state, scopes) {
     return __awaiter(this, void 0, void 0, function* () {
         // クライアントの存在確認
         const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
-        const clientDoc = yield clientAdapter.clientModel.findById(clientId, '_id').exec();
+        const clientDoc = yield clientAdapter.clientModel.findById(clientId).exec();
         if (clientDoc === null) {
             throw new Error(exports.MESSAGE_CLIENT_NOT_FOUND);
+        }
+        // クライアントシークレット`検証
+        debug('validating client secret...', clientSecret);
+        if (!(yield bcrypt.compare(clientSecret, clientDoc.get('secret_hash')))) {
+            throw new Error(exports.MESSAGE_INVALID_CLIENT_CREDENTIALS);
         }
         const payload = sskts.factory.clientUser.create({
             client: clientId,

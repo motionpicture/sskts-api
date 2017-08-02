@@ -3,7 +3,7 @@
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 
 <body onload="checkAuthorizationCode();">
-    <a href="#" onclick="signIn();">Log in with LINE</a>
+    <a href="javascript:void(0)" onclick="signIn();">Log in with LINE</a>
 </body>
 
 <script>
@@ -35,18 +35,13 @@
     }
 
     function getQueries() {
-        var vars = {}, max = 0, hash = "", array = "";
-        var url = window.location.search;
+        var queries = {};
+        var params = window.location.search.slice(1).split('&');
+        params.forEach(function (param) {
+            queries[param.split('=')[0]] = param.split('=')[1];
+        });
 
-        hash = url.slice(1).split('&');
-        max = hash.length;
-        for (var i = 0; i < max; i++) {
-            array = hash[i].split('=');
-            // vars.push(array[0]);
-            vars[array[0]] = array[1];
-        }
-
-        return vars;
+        return queries;
     }
 
     function signOut() {

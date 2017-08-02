@@ -5,6 +5,7 @@
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
+import * as bcrypt from 'bcryptjs';
 import * as createDebug from 'debug';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
@@ -21,6 +22,7 @@ export const MESSAGE_UNIMPLEMENTED_GRANT_TYPE = 'grant_type not implemented';
 export const MESSAGE_CLIENT_NOT_FOUND = 'client not found';
 export const MESSAGE_INVALID_USERNAME_OR_PASSWORD = 'invalid username or password';
 export const MESSAGE_INVALID_ASSERTION = 'client not foundinvalid assertion';
+export const MESSAGE_INVALID_CLIENT_CREDENTIALS = 'invalid client credentials';
 
 /**
  * 資格情報インターフェース
@@ -45,7 +47,9 @@ export async function issueCredentials(req: Request): Promise<ICredentials> {
             return await issueCredentialsByAssertion(req.body.assertion, req.body.scopes);
 
         case 'client_credentials':
-            return await issueCredentialsByClient(req.body.client_id, req.body.state, req.body.scopes);
+            const scopes = (<string>req.body.scope).split(' ');
+
+            return await issueCredentialsByClient(req.body.client_id, req.body.client_secret, req.body.state, scopes);
 
         // case 'password':
         //     return await issueCredentialsByPassword(
@@ -87,12 +91,20 @@ export async function issueCredentialsByAssertion(assertion: string, scopes: str
  * @param {string[]} scopes スコープリスト
  * @returns {Promise<ICredentials>} 資格情報
  */
-export async function issueCredentialsByClient(clientId: string, state: string, scopes: string[]): Promise<ICredentials> {
+export async function issueCredentialsByClient(
+    clientId: string, clientSecret: string, state: string, scopes: string[]
+): Promise<ICredentials> {
     // クライアントの存在確認
     const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
-    const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
+    const clientDoc = await clientAdapter.clientModel.findById(clientId).exec();
     if (clientDoc === null) {
         throw new Error(MESSAGE_CLIENT_NOT_FOUND);
+    }
+
+    // クライアントシークレット`検証
+    debug('validating client secret...', clientSecret);
+    if (!await bcrypt.compare(clientSecret, clientDoc.get('secret_hash'))) {
+        throw new Error(MESSAGE_INVALID_CLIENT_CREDENTIALS);
     }
 
     const payload = sskts.factory.clientUser.create({

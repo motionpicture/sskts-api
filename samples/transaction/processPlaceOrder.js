@@ -22,13 +22,13 @@ const debug = createDebug('sskts-api:samples');
 // tslint:disable-next-line:max-func-body-length
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', [
+        const auth = new sskts.auth.ClientCredentials('motionpicture', 'motionpicture', 'teststate', [
             'transactions',
             'events.read-only',
             'organizations.read-only'
         ]);
-        const credentials = yield auth.getToken();
-        auth.setCredentials(credentials);
+        const credentials = yield auth.refreshAccessToken();
+        debug('credentials:', credentials);
         // 上映イベント検索
         const individualScreeningEvents = yield sskts.service.event.searchIndividualScreeningEvent({
             auth: auth,

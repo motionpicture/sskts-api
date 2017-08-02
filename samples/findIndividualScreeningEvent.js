@@ -19,9 +19,11 @@ const sskts = require("./lib/sskts-api");
 const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = new sskts.auth.OAuth2('motionpicture', 'motionpicture', 'teststate', ['events.read-only']);
-        const credentials = yield auth.getToken();
-        auth.setCredentials(credentials);
+        const auth = new sskts.auth.ClientCredentials('motionpicture', 'motionpicture', 'teststate', [
+            'events.read-only'
+        ]);
+        const credentials = yield auth.refreshAccessToken();
+        debug('credentials:', credentials);
         // 上映イベント検索
         const individualScreeningEvents = yield sskts.service.event.searchIndividualScreeningEvent({
             auth: auth,
@@ -35,7 +37,12 @@ function main() {
             auth: auth,
             identifier: individualScreeningEvents[0].identifier
         });
-        debug('individualScreeningEvent is', individualScreeningEvent);
+        if (individualScreeningEvent === null) {
+            debug('event not found');
+        }
+        else {
+            debug('individualScreeningEvent is', individualScreeningEvent);
+        }
     });
 }
 main().then(() => {

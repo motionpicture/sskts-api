@@ -14,7 +14,7 @@ const debug = createDebug('sskts-api:samples');
 
 // tslint:disable-next-line:max-func-body-length
 async function main() {
-    const auth = new sskts.auth.OAuth2(
+    const auth = new sskts.auth.ClientCredentials(
         'motionpicture',
         'motionpicture',
         'teststate',
@@ -24,6 +24,8 @@ async function main() {
             'organizations.read-only'
         ]
     );
+    const credentials = await auth.refreshAccessToken();
+    debug('credentials:', credentials);
 
     // 上映イベント検索
     const individualScreeningEvents = await sskts.service.event.searchIndividualScreeningEvent({
