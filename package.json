@@ -49,6 +49,7 @@
     "mocha": "^3.5.0",
     "nsp": "^2.7.0",
     "nyc": "^11.1.0",
+    "open": "0.0.5",
     "request-promise-native": "^1.0.4",
     "rimraf": "^2.6.1",
     "snyk": "^1.38.0",
