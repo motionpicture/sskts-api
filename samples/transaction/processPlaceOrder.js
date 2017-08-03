@@ -107,6 +107,9 @@ function main() {
                     seatNumber: freeSeatCodes[0],
                     ticket: {
                         ticketCode: salesTicketResult[0].ticketCode,
+                        ticketName: salesTicketResult[0].ticketName,
+                        ticketNameEng: salesTicketResult[0].ticketNameEng,
+                        ticketNameKana: salesTicketResult[0].ticketNameKana,
                         stdPrice: salesTicketResult[0].stdPrice,
                         addPrice: salesTicketResult[0].addPrice,
                         disPrice: 0,
@@ -145,6 +148,9 @@ function main() {
                     seatNumber: freeSeatCodes[0],
                     ticket: {
                         ticketCode: salesTicketResult[1].ticketCode,
+                        ticketName: salesTicketResult[1].ticketName,
+                        ticketNameEng: salesTicketResult[1].ticketNameEng,
+                        ticketNameKana: salesTicketResult[1].ticketNameKana,
                         stdPrice: salesTicketResult[1].stdPrice,
                         addPrice: salesTicketResult[1].addPrice,
                         disPrice: 0,
