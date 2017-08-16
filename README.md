@@ -57,6 +57,7 @@ set REDIS_PORT=**********在庫状況保管用Redis Cacheポート番号********
 set REDIS_KEY=**********在庫状況保管用Redis Cache接続キー**********
 set TRANSACTIONS_COUNT_UNIT_IN_SECONDS=**********取引数制限ユニット(秒)**********
 set NUMBER_OF_TRANSACTIONS_PER_UNIT=**********ユニットあたりの最大取引数**********
+set RESOURECE_SERVER_IDENTIFIER=**********リソースサーバーとしての固有識別子**********
 ```
 
 テスト実行時

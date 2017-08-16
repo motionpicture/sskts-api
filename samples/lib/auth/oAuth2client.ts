@@ -12,7 +12,8 @@ const debug = createDebug('sskts-api:auth:oAuth2client');
 const API_ENDPOINT = <string>process.env.TEST_API_ENDPOINT;
 
 export default class OAuth2client {
-    protected static readonly SSKTS_OAUTH2_TOKEN_URL: string = `${API_ENDPOINT}/oauth/token`;
+    // protected static readonly SSKTS_OAUTH2_TOKEN_URL: string = `${API_ENDPOINT}/oauth/token`;
+    protected static readonly SSKTS_OAUTH2_TOKEN_URL: string = 'https://sskts-development.auth.ap-northeast-1.amazoncognito.com/token';
     protected static readonly SSKTS_OAUTH2_TOKEN_GOOGLE_URL: string = `${API_ENDPOINT}/oauth/token/signInWithGoogle`;
 
     public credentials: ICredentials;
@@ -54,6 +55,8 @@ export default class OAuth2client {
      * 必要であれば更新してから取得します。
      */
     public async getAccessToken(): Promise<string> {
+        // tslint:disable-next-line:max-line-length
+        // return 'eyJraWQiOiJ0U3dFVmJTa0IzZzlVY01YajBpOWpISGRXRk9FamsxQUNKOHZrZ3VhV0lzPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJhOTZhNzZhZi04YmZhLTQwMmUtYmEzMC1kYmYxNDk0NmU0M2QiLCJ0b2tlbl91c2UiOiJhY2Nlc3MiLCJzY29wZSI6ImF3cy5jb2duaXRvLnNpZ25pbi51c2VyLmFkbWluIHBob25lIG9wZW5pZCBwcm9maWxlIGh0dHBzOlwvXC9zc2t0cy1hcGktZGV2ZWxvcG1lbnQuYXp1cmV3ZWJzaXRlcy5uZXRcL3BsYWNlcy5yZWFkLW9ubHkgZW1haWwiLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAuYXAtbm9ydGhlYXN0LTEuYW1hem9uYXdzLmNvbVwvYXAtbm9ydGhlYXN0LTFfelRoaTBqMWZlIiwiZXhwIjoxNTAyODQ2MzMwLCJpYXQiOjE1MDI4NDI3MzAsInZlcnNpb24iOjIsImp0aSI6ImJlMTgyMWQ1LTZkZDktNDQ5Ny04NjczLWQ2Y2E1N2RiZDFlMSIsImNsaWVudF9pZCI6IjZmaWd1bjEyZ2NkdGxqOWU1M3AydTNvcXZsIiwidXNlcm5hbWUiOiJpbG92ZWdhZGRAZ21haWwuY29tIn0.PmlJaBrrgt8s7LM9y38LeY7PBHLqGYXESfAG3MpvXQWyH6lmFuiOxDGgpRrbue9Zuk_Hw0mfBuIh7-cIhVVZaUSlGIL7J7Pk-vlWi2OT8pJDwyJWJNk6sQ8LH3pTD93H4jxo6V9FArk7ovX0ytE4bO4WlDa5FOCtamh0ryRrgw9q8bI3KP-qvfSVoqQK1RqvnGDTH91Apnrhur_-mT0PYcNgCiWCg6wWb-LZSReyHtuHnmN16MRSx43KPu4pl2F8TPvQVW13MVfhfNFRSYWcKAV1JVDVPjqjiLE4FyDJj93DAaZzYvwDTA6TJcRZ18teRPL4kLB_OamdFT6RD1XbcA';
         const expiryDate = this.credentials.expiry_date;
 
         // if no expiry time, assume it's not expired

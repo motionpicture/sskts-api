@@ -10,7 +10,17 @@ const http_status_1 = require("http-status");
 const debug = createDebug('sskts-api:middlewares:permitScopes');
 exports.default = (permittedScopes) => {
     return (req, res, next) => {
+        if (process.env.RESOURECE_SERVER_IDENTIFIER === undefined) {
+            next(new Error('RESOURECE_SERVER_IDENTIFIER undefined'));
+            return;
+        }
         debug('req.user.scopes:', req.user.scopes);
+        // ドメインつきのスコープリストも許容するように変更
+        permittedScopes = [
+            ...permittedScopes,
+            ...permittedScopes.map((permittedScope) => `${process.env.RESOURECE_SERVER_IDENTIFIER}/${permittedScope}`)
+        ];
+        debug('permittedScopes:', permittedScopes);
         // スコープチェック
         try {
             debug('checking scope requirements...', permittedScopes);

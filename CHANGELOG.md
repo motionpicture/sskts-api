@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - LINE Loginとの連携を追加。
 
 ### Changed
+- 認可サーバーをcognito user poolへ移行。
 
 ### Deprecated
 

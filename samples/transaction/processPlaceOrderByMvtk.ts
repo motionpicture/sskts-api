@@ -15,13 +15,13 @@ const debug = createDebug('sskts-api:samples');
 // tslint:disable-next-line:max-func-body-length
 async function main() {
     const auth = new sskts.auth.ClientCredentials(
-        'motionpicture',
-        'motionpicture',
+        <string>process.env.TEST_CLIENT_ID,
+        <string>process.env.TEST_CLIENT_SECRET,
         'teststate',
         [
-            'transactions',
-            'events.read-only',
-            'organizations.read-only'
+            'https://sskts-api-development.azurewebsites.net/transactions',
+            'https://sskts-api-development.azurewebsites.net/events.read-only',
+            'https://sskts-api-development.azurewebsites.net/organizations.read-only'
         ]
     );
     const credentials = await auth.refreshAccessToken();

@@ -18,7 +18,7 @@ async function main() {
         idToken,
         'motionpicture',
         'teststate',
-        ['people.profile']
+        ['https://sskts-api-development.azurewebsites.net/people.profile']
     );
     const credentials = await auth.refreshAccessToken();
     debug('credentials:', credentials);

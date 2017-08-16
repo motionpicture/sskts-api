@@ -28,13 +28,17 @@ class ClientCredentialsClient extends oAuth2client_1.default {
         return __awaiter(this, void 0, void 0, function* () {
             debug('requesting an access token...');
             return yield request.post({
-                url: oAuth2client_1.default.SSKTS_OAUTH2_TOKEN_URL,
+                uri: oAuth2client_1.default.SSKTS_OAUTH2_TOKEN_URL,
                 form: {
                     scope: this.scopes.join(' '),
-                    client_id: this.clientId,
-                    client_secret: this.clientSecret,
+                    // client_id: this.clientId,
+                    // client_secret: this.clientSecret,
                     state: this.state,
                     grant_type: 'client_credentials'
+                },
+                auth: {
+                    user: this.clientId,
+                    pass: this.clientSecret
                 },
                 json: true,
                 simple: false,
@@ -45,11 +49,9 @@ class ClientCredentialsClient extends oAuth2client_1.default {
                     if (typeof response.body === 'string') {
                         throw new Error(response.body);
                     }
-                    if (typeof response.body === 'object' && response.body.errors !== undefined) {
-                        const message = response.body.errors.map((error) => {
-                            return `${error.title}:${error.detail}`;
-                        }).join(', ');
-                        throw new Error(message);
+                    debug(response.body);
+                    if (typeof response.body === 'object' && response.body.error !== undefined) {
+                        throw new Error(response.body.error);
                     }
                     throw new Error('An unexpected error occurred');
                 }

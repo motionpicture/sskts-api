@@ -13,11 +13,11 @@ const debug = createDebug('sskts-api:samples');
 
 async function main() {
     const auth = new sskts.auth.ClientCredentials(
-        'motionpicture',
-        'motionpicture',
+        <string>process.env.TEST_CLIENT_ID,
+        <string>process.env.TEST_CLIENT_SECRET,
         'teststate',
         [
-            'events.read-only'
+            'https://sskts-api-development.azurewebsites.net/events.read-only'
         ]
     );
     const credentials = await auth.refreshAccessToken();

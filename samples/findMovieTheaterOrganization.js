@@ -18,8 +18,8 @@ const sskts = require("./lib/sskts-api");
 const debug = createDebug('sskts-api:samples');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = new sskts.auth.ClientCredentials('motionpicture', 'motionpicture', 'teststate', [
-            'organizations.read-only'
+        const auth = new sskts.auth.ClientCredentials(process.env.TEST_CLIENT_ID, process.env.TEST_CLIENT_SECRET, 'teststate', [
+            'https://sskts-api-development.azurewebsites.net/organizations.read-only'
         ]);
         const credentials = yield auth.refreshAccessToken();
         debug('credentials:', credentials);
