@@ -59,7 +59,8 @@ placeOrderTransactionsRouter.post(
             debug('starting a transaction...scope:', scope);
 
             // 会員としてログインしている場合は所有者IDを指定して開始する
-            const agentId = (req.user.person !== undefined) ? <string>req.user.person.id : undefined;
+            // const agentId = (req.user.person !== undefined) ? <string>req.user.person.id : undefined;
+            const agentId = (req.user.username !== undefined) ? <string>req.user.sub : undefined;
             const transactionOption = await sskts.service.transaction.placeOrder.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
@@ -70,7 +71,6 @@ placeOrderTransactionsRouter.post(
                 agentId: agentId,
                 sellerId: req.body.sellerId
             })(
-                sskts.adapter.person(sskts.mongoose.connection),
                 sskts.adapter.organization(sskts.mongoose.connection),
                 sskts.adapter.transaction(sskts.mongoose.connection),
                 sskts.adapter.transactionCount(redis.getClient())
@@ -129,7 +129,6 @@ placeOrderTransactionsRouter.put(
                 telephone: req.body.telephone
             };
             await sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, profile)(
-                sskts.adapter.person(sskts.mongoose.connection),
                 sskts.adapter.transaction(sskts.mongoose.connection)
             );
 

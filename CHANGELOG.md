@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 - 認可サーバーをcognito user poolへ移行。
+- Amazon Cognitoでの会員管理に対応。
 
 ### Deprecated
 

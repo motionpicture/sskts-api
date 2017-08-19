@@ -19,7 +19,6 @@ const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const dev_1 = require("./routes/dev");
 const events_1 = require("./routes/events");
 const health_1 = require("./routes/health");
-const oauth_1 = require("./routes/oauth");
 const orders_1 = require("./routes/orders");
 const organizations_1 = require("./routes/organizations");
 const people_1 = require("./routes/people");
@@ -85,7 +84,6 @@ app.use(i18n.init);
 sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 // routers
 app.use('/health', health_1.default);
-app.use('/oauth', oauth_1.default);
 app.use('/organizations', organizations_1.default);
 app.use('/orders', orders_1.default);
 app.use('/people', people_1.default);

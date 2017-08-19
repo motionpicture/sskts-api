@@ -2,6 +2,7 @@
  * oauthミドルウェア
  *
  * @module middlewares/authentication
+ * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 
 import * as createDebug from 'debug';
@@ -49,6 +50,19 @@ export interface IOpenIdConfiguration {
     x509_url: string;
 }
 
+export interface IPayload {
+    sub: string;
+    token_use: string;
+    scope: string;
+    iss: string;
+    exp: number;
+    iat: number;
+    version: number;
+    jti: string;
+    client_id: string;
+    username?: string;
+}
+
 export interface IPems {
     [key: string]: string;
 }
@@ -61,8 +75,6 @@ export interface IJwk {
     n: string;
     e: string;
 }
-
-export type IPayload = any;
 
 // tslint:disable-next-line:max-line-length
 // const ISSUER = 'https://cognito-identity.amazonaws.com';
@@ -142,6 +154,11 @@ export async function validateToken(pems: IPems, token: string): Promise<IPayloa
     //     throw new Error('invalid audience');
     // }
 
+    // Reject the jwt if it's not an 'Access Token'
+    if (decodedJwt.payload.token_use !== 'access') {
+        throw new Error('not an access token');
+    }
+
     // Get the kid from the token and retrieve corresponding PEM
     const pem = pems[decodedJwt.header.kid];
     if (!pem) {
@@ -161,8 +178,9 @@ export async function validateToken(pems: IPems, token: string): Promise<IPayloa
                 if (err !== null) {
                     reject(err);
                 } else {
-                    // sub is UUID for a user which is never reassigned to another user.
-                    resolve(payload);
+                    // Always generate the policy on value of 'sub' claim and not for 'username' because username is reassignable
+                    // sub is UUID for a user which is never reassigned to another user
+                    resolve(<IPayload>payload);
                 }
             });
     });

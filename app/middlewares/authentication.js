@@ -3,6 +3,7 @@
  * oauthミドルウェア
  *
  * @module middlewares/authentication
+ * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -85,6 +86,10 @@ function validateToken(pems, token) {
         // if (decodedJwt.payload.aud !== AUDIENCE) {
         //     throw new Error('invalid audience');
         // }
+        // Reject the jwt if it's not an 'Access Token'
+        if (decodedJwt.payload.token_use !== 'access') {
+            throw new Error('not an access token');
+        }
         // Get the kid from the token and retrieve corresponding PEM
         const pem = pems[decodedJwt.header.kid];
         if (!pem) {
@@ -100,7 +105,8 @@ function validateToken(pems, token) {
                     reject(err);
                 }
                 else {
-                    // sub is UUID for a user which is never reassigned to another user.
+                    // Always generate the policy on value of 'sub' claim and not for 'username' because username is reassignable
+                    // sub is UUID for a user which is never reassigned to another user
                     resolve(payload);
                 }
             });

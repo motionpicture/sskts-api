@@ -21,7 +21,6 @@ import notFoundHandler from './middlewares/notFoundHandler';
 import devRouter from './routes/dev';
 import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
-import oauthRouter from './routes/oauth';
 import ordersRouter from './routes/orders';
 import organizationsRouter from './routes/organizations';
 import peopleRouter from './routes/people';
@@ -99,7 +98,6 @@ sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, <any>mongooseConnection
 
 // routers
 app.use('/health', healthRouter);
-app.use('/oauth', oauthRouter);
 app.use('/organizations', organizationsRouter);
 app.use('/orders', ordersRouter);
 app.use('/people', peopleRouter);

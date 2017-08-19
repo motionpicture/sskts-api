@@ -53,7 +53,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         });
         debug('starting a transaction...scope:', scope);
         // 会員としてログインしている場合は所有者IDを指定して開始する
-        const agentId = (req.user.person !== undefined) ? req.user.person.id : undefined;
+        // const agentId = (req.user.person !== undefined) ? <string>req.user.person.id : undefined;
+        const agentId = (req.user.username !== undefined) ? req.user.sub : undefined;
         const transactionOption = yield sskts.service.transaction.placeOrder.start({
             // tslint:disable-next-line:no-magic-numbers
             expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
@@ -63,7 +64,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             scope: scope,
             agentId: agentId,
             sellerId: req.body.sellerId
-        })(sskts.adapter.person(sskts.mongoose.connection), sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
+        })(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
         transactionOption.match({
             Some: (transaction) => {
                 // tslint:disable-next-line:no-string-literal
@@ -107,7 +108,7 @@ placeOrderTransactionsRouter.put('/:transactionId/agent/profile', permitScopes_1
             email: req.body.email,
             telephone: req.body.telephone
         };
-        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, profile)(sskts.adapter.person(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, profile)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
