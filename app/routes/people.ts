@@ -1,51 +1,59 @@
 /**
- * `人物ルーター
+ * people router
  *
  * @ignore
  */
 
-import { Router } from 'express';
-const peopleRouter = Router();
-
 import * as sskts from '@motionpicture/sskts-domain';
+import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
+import { Router } from 'express';
 import * as httpStatus from 'http-status';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
-// import requireMember from '../middlewares/requireMember';
+import requireMember from '../middlewares/requireMember';
 import validator from '../middlewares/validator';
+
+const peopleRouter = Router();
 
 const debug = createDebug('sskts-api:routes:people');
 
 peopleRouter.use(authentication);
-// peopleRouter.use(requireMember);
+peopleRouter.use(requireMember);
 
 /**
- * 会員プロフィール取得
+ * retrieve contacts from Amazon Cognito
  */
 peopleRouter.get(
-    '/me/profile',
-    permitScopes(['people.profile', 'people.profile.read-only']),
+    '/me/contacts',
+    permitScopes(['people.contacts', 'people.contacts.read-only']),
     async (req, res, next) => {
         try {
-            const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
-            const personDoc = await personAdapter.personModel.findById(
-                req.user.person.id,
-                'typeOf givenName familyName email telephone'
-            ).exec();
-            debug('profile found', personDoc);
+            const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+                apiVersion: 'latest',
+                region: 'ap-northeast-1'
+            });
 
-            if (personDoc === null) {
-                res.status(httpStatus.NOT_FOUND).json({
-                    data: null
-                });
-            } else {
-                res.json({
-                    data: personDoc.toObject()
-                });
+            cognitoIdentityServiceProvider.getUser(
+                {
+                    AccessToken: req.accessToken
+                },
+                (err, data) => {
+                    if (err instanceof Error) {
+                        next(err);
+                    } else {
+                        const contacts = {
+                            givenName: data.UserAttributes.find((attribute) => attribute.Name === 'given_name'),
+                            familyName: data.UserAttributes.find((attribute) => attribute.Name === 'family_name'),
+                            telephone: data.UserAttributes.find((attribute) => attribute.Name === 'phone_number')
+                        };
 
-            }
+                        res.json({
+                            data: contacts
+                        });
+                    }
+                });
         } catch (error) {
             next(error);
         }
@@ -56,26 +64,44 @@ peopleRouter.get(
  * 会員プロフィール更新
  */
 peopleRouter.put(
-    '/me/profile',
-    permitScopes(['people.profile']),
+    '/me/contacts',
+    permitScopes(['people.contacts']),
     (__1, __2, next) => {
-
         next();
     },
     validator,
     async (req, res, next) => {
         try {
-            const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
-            await personAdapter.personModel.findByIdAndUpdate(
-                req.user.person.id,
-                {
-                    givenName: req.body.givenName,
-                    familyName: req.body.familyName,
-                    telephone: req.body.telephone
-                }
-            ).exec();
+            const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+                apiVersion: 'latest',
+                region: 'ap-northeast-1'
+            });
 
-            res.status(httpStatus.NO_CONTENT).end();
+            cognitoIdentityServiceProvider.updateUserAttributes(
+                {
+                    AccessToken: req.accessToken,
+                    UserAttributes: [
+                        {
+                            Name: 'given_name',
+                            Value: req.body.givenName
+                        },
+                        {
+                            Name: 'family_name',
+                            Value: req.body.familyName
+                        },
+                        {
+                            Name: 'phone_number',
+                            Value: req.body.telephone
+                        }
+                    ]
+                },
+                (err) => {
+                    if (err instanceof Error) {
+                        next(err);
+                    } else {
+                        res.status(httpStatus.NO_CONTENT).end();
+                    }
+                });
         } catch (error) {
             next(error);
         }

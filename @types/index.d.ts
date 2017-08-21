@@ -6,6 +6,7 @@ declare global {
         export type IUser = sskts.factory.clientUser.IClientUser
         export interface Request {
             getUser: () => IUser;
+            accessToken: string
         }
     }
 }

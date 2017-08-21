@@ -10,6 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/sskts-domain": "git+https://tetsu:M0P!Xmopix@m-p.backlog.jp/git/SSKTS/domain.git#feature/SSKTS-533",
+    "aws-sdk": "^2.100.0",
     "basic-auth": "^1.1.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.17.2",
@@ -83,6 +84,7 @@
     "clean": "rimraf app/**/*.js server.js mongooseConnectionOptions.js redisClient.js samples/**/*.js test/**/*.js docs/**/* npm-debug.log*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "http-server": "http-server",
+    "mocha": "mocha",
     "nyc": "nyc mocha",
     "samples": "http-server ./samples",
     "snyk": "snyk auth && snyk test --ignore-policy",

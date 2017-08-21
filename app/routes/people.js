@@ -1,6 +1,6 @@
 "use strict";
 /**
- * `人物ルーター
+ * people router
  *
  * @ignore
  */
@@ -13,36 +13,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const peopleRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
+const AWS = require("aws-sdk");
 const createDebug = require("debug");
+const express_1 = require("express");
 const httpStatus = require("http-status");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
-// import requireMember from '../middlewares/requireMember';
+const requireMember_1 = require("../middlewares/requireMember");
 const validator_1 = require("../middlewares/validator");
+const peopleRouter = express_1.Router();
 const debug = createDebug('sskts-api:routes:people');
 peopleRouter.use(authentication_1.default);
-// peopleRouter.use(requireMember);
+peopleRouter.use(requireMember_1.default);
 /**
- * 会員プロフィール取得
+ * retrieve contacts from Amazon Cognito
  */
-peopleRouter.get('/me/profile', permitScopes_1.default(['people.profile', 'people.profile.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('/me/contacts', permitScopes_1.default(['people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personAdapter = yield sskts.adapter.person(sskts.mongoose.connection);
-        const personDoc = yield personAdapter.personModel.findById(req.user.person.id, 'typeOf givenName familyName email telephone').exec();
-        debug('profile found', personDoc);
-        if (personDoc === null) {
-            res.status(httpStatus.NOT_FOUND).json({
-                data: null
-            });
-        }
-        else {
-            res.json({
-                data: personDoc.toObject()
-            });
-        }
+        const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+            apiVersion: 'latest',
+            region: 'ap-northeast-1'
+        });
+        cognitoIdentityServiceProvider.getUser({
+            AccessToken: req.accessToken
+        }, (err, data) => {
+            if (err instanceof Error) {
+                next(err);
+            }
+            else {
+                const contacts = {
+                    givenName: data.UserAttributes.find((attribute) => attribute.Name === 'given_name'),
+                    familyName: data.UserAttributes.find((attribute) => attribute.Name === 'family_name'),
+                    telephone: data.UserAttributes.find((attribute) => attribute.Name === 'phone_number')
+                };
+                res.json({
+                    data: contacts
+                });
+            }
+        });
     }
     catch (error) {
         next(error);
@@ -51,17 +60,38 @@ peopleRouter.get('/me/profile', permitScopes_1.default(['people.profile', 'peopl
 /**
  * 会員プロフィール更新
  */
-peopleRouter.put('/me/profile', permitScopes_1.default(['people.profile']), (__1, __2, next) => {
+peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personAdapter = yield sskts.adapter.person(sskts.mongoose.connection);
-        yield personAdapter.personModel.findByIdAndUpdate(req.user.person.id, {
-            givenName: req.body.givenName,
-            familyName: req.body.familyName,
-            telephone: req.body.telephone
-        }).exec();
-        res.status(httpStatus.NO_CONTENT).end();
+        const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+            apiVersion: 'latest',
+            region: 'ap-northeast-1'
+        });
+        cognitoIdentityServiceProvider.updateUserAttributes({
+            AccessToken: req.accessToken,
+            UserAttributes: [
+                {
+                    Name: 'given_name',
+                    Value: req.body.givenName
+                },
+                {
+                    Name: 'family_name',
+                    Value: req.body.familyName
+                },
+                {
+                    Name: 'phone_number',
+                    Value: req.body.telephone
+                }
+            ]
+        }, (err) => {
+            if (err instanceof Error) {
+                next(err);
+            }
+            else {
+                res.status(httpStatus.NO_CONTENT).end();
+            }
+        });
     }
     catch (error) {
         next(error);

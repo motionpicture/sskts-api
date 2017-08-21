@@ -76,9 +76,8 @@ export interface IJwk {
     e: string;
 }
 
-// tslint:disable-next-line:max-line-length
 // const ISSUER = 'https://cognito-identity.amazonaws.com';
-const ISSUER = 'https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_zThi0j1fe';
+const ISSUER = process.env.TOKEN_ISSUER;
 // const permittedAudiences = [
 //     '4flh35hcir4jl73s3puf7prljq',
 //     '6figun12gcdtlj9e53p2u3oqvl'
@@ -101,6 +100,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         const payload = await validateToken(pemsFromJson, token);
         debug('verified! payload:', payload);
         req.user = payload;
+        req.accessToken = token;
 
         // アクセストークンにはscopeとして定義されているので、scopesに変換
         if (req.user.scopes === undefined) {
