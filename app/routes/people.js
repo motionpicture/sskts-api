@@ -226,34 +226,25 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
 //     }
 // );
 /**
- * 会員座席予約資産取得
+ * find user's reservation ownerships
  */
-// peopleRouter.get(
-//     '/me/assets/seatReservation',
-//     permitScopes(['people.assets', 'people.assets.read-only']),
-//     (_1, _2, next) => {
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const ownerId = <string>req.getUser().owner;
-//             const data = await sskts.service.member.findSeatReservationAssets(ownerId)(sskts.adapter.asset(sskts.mongoose.connection))
-//                 .then((assets) => {
-//                     return assets.map((asset) => {
-//                         return {
-//                             type: 'assets',
-//                             id: asset.id,
-//                             attributes: asset
-//                         };
-//                     });
-//                 });
-//             res.json({
-//                 data: data
-//             });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
+peopleRouter.get('/me/ownerships/reservation', permitScopes_1.default(['people.ownerships', 'people.ownerships.read-only']), (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const personId = req.getUser().sub;
+        const ownershipInfoAdapter = sskts.adapter.ownershipInfo(sskts.mongoose.connection);
+        const data = yield ownershipInfoAdapter.ownershipInfoModel.find({
+            'ownedBy.id': personId
+        }).sort({ ownedFrom: 1 })
+            .exec()
+            .then((docs) => docs.map((doc) => doc.toObject()));
+        res.json({
+            data: data
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = peopleRouter;
