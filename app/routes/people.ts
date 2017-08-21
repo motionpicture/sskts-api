@@ -43,11 +43,21 @@ peopleRouter.get(
                     if (err instanceof Error) {
                         next(err);
                     } else {
-                        const contacts = {
-                            givenName: data.UserAttributes.find((attribute) => attribute.Name === 'given_name'),
-                            familyName: data.UserAttributes.find((attribute) => attribute.Name === 'family_name'),
-                            telephone: data.UserAttributes.find((attribute) => attribute.Name === 'phone_number')
+                        const keysTable: any = {
+                            given_name: 'givenName',
+                            family_name: 'familyName',
+                            phone_number: 'telephone'
                         };
+                        const contacts: any = data.UserAttributes.reduce(
+                            (obj, item) => {
+                                if (keysTable[item.Name] !== undefined) {
+                                    obj[keysTable[item.Name]] = item.Value;
+                                }
+
+                                return obj;
+                            },
+                            <any>{}
+                        );
 
                         res.json({
                             data: contacts
