@@ -108,32 +108,29 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
  */
 peopleRouter.get('/me/creditCards', permitScopes_1.default(['people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personAdapter = yield sskts.adapter.person(sskts.mongoose.connection);
-        const personDoc = yield personAdapter.personModel.findById(req.user.person.id, 'givenName familyName').exec();
-        if (personDoc === null) {
-            throw new Error('person not found');
-        }
         let searchCardResults;
         try {
             // まずGMO会員登録
+            const memberId = req.getUser().sub;
+            const memberName = req.getUser().username;
             const gmoMember = yield sskts.GMO.services.card.searchMember({
                 siteId: process.env.GMO_SITE_ID,
                 sitePass: process.env.GMO_SITE_PASS,
-                memberId: req.user.person.id
+                memberId: memberId
             });
             if (gmoMember === null) {
                 const saveMemberResult = yield sskts.GMO.services.card.saveMember({
                     siteId: process.env.GMO_SITE_ID,
                     sitePass: process.env.GMO_SITE_PASS,
-                    memberId: req.user.person.id,
-                    memberName: `${personDoc.get('familyName')} ${personDoc.get('givenName')}`
+                    memberId: memberId,
+                    memberName: memberName
                 });
                 debug('GMO saveMember processed', saveMemberResult);
             }
             searchCardResults = yield sskts.GMO.services.card.searchCard({
                 siteId: process.env.GMO_SITE_ID,
                 sitePass: process.env.GMO_SITE_PASS,
-                memberId: req.user.person.id,
+                memberId: memberId,
                 seqMode: sskts.GMO.utils.util.SeqMode.Physics
             });
         }
@@ -155,26 +152,23 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personAdapter = yield sskts.adapter.person(sskts.mongoose.connection);
-        const personDoc = yield personAdapter.personModel.findById(req.user.person.id, 'givenName familyName').exec();
-        if (personDoc === null) {
-            throw new Error('person not found');
-        }
         // GMOカード登録
         let creditCard;
         try {
             // まずGMO会員登録
+            const memberId = req.getUser().sub;
+            const memberName = req.getUser().username;
             const gmoMember = yield sskts.GMO.services.card.searchMember({
                 siteId: process.env.GMO_SITE_ID,
                 sitePass: process.env.GMO_SITE_PASS,
-                memberId: req.user.person.id
+                memberId: memberId
             });
             if (gmoMember === null) {
                 const saveMemberResult = yield sskts.GMO.services.card.saveMember({
                     siteId: process.env.GMO_SITE_ID,
                     sitePass: process.env.GMO_SITE_PASS,
-                    memberId: req.user.person.id,
-                    memberName: `${personDoc.get('familyName')} ${personDoc.get('givenName')}`
+                    memberId: memberId,
+                    memberName: memberName
                 });
                 debug('GMO saveMember processed', saveMemberResult);
             }

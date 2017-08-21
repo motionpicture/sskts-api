@@ -18,7 +18,8 @@ exports.default = (permittedScopes) => {
         // ドメインつきのスコープリストも許容するように変更
         permittedScopes = [
             ...permittedScopes,
-            ...permittedScopes.map((permittedScope) => `${process.env.RESOURECE_SERVER_IDENTIFIER}/${permittedScope}`)
+            ...permittedScopes.map((permittedScope) => `${process.env.RESOURECE_SERVER_IDENTIFIER}/${permittedScope}`),
+            ...permittedScopes.map((permittedScope) => `${process.env.RESOURECE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
         ];
         debug('permittedScopes:', permittedScopes);
         // スコープチェック

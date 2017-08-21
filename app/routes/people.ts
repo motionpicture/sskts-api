@@ -126,30 +126,22 @@ peopleRouter.get(
     permitScopes(['people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
-            const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
-            const personDoc = await personAdapter.personModel.findById(
-                req.user.person.id,
-                'givenName familyName'
-            ).exec();
-
-            if (personDoc === null) {
-                throw new Error('person not found');
-            }
-
             let searchCardResults: sskts.GMO.services.card.ISearchCardResult[];
             try {
                 // まずGMO会員登録
+                const memberId = req.getUser().sub;
+                const memberName = req.getUser().username;
                 const gmoMember = await sskts.GMO.services.card.searchMember({
                     siteId: <string>process.env.GMO_SITE_ID,
                     sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: req.user.person.id
+                    memberId: memberId
                 });
                 if (gmoMember === null) {
                     const saveMemberResult = await sskts.GMO.services.card.saveMember({
                         siteId: <string>process.env.GMO_SITE_ID,
                         sitePass: <string>process.env.GMO_SITE_PASS,
-                        memberId: req.user.person.id,
-                        memberName: `${personDoc.get('familyName')} ${personDoc.get('givenName')}`
+                        memberId: memberId,
+                        memberName: memberName
                     });
                     debug('GMO saveMember processed', saveMemberResult);
                 }
@@ -157,7 +149,7 @@ peopleRouter.get(
                 searchCardResults = await sskts.GMO.services.card.searchCard({
                     siteId: <string>process.env.GMO_SITE_ID,
                     sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: req.user.person.id,
+                    memberId: memberId,
                     seqMode: sskts.GMO.utils.util.SeqMode.Physics
                 });
             } catch (error) {
@@ -185,31 +177,23 @@ peopleRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
-            const personDoc = await personAdapter.personModel.findById(
-                req.user.person.id,
-                'givenName familyName'
-            ).exec();
-
-            if (personDoc === null) {
-                throw new Error('person not found');
-            }
-
             // GMOカード登録
             let creditCard: sskts.GMO.services.card.ISearchCardResult;
             try {
                 // まずGMO会員登録
+                const memberId = req.getUser().sub;
+                const memberName = req.getUser().username;
                 const gmoMember = await sskts.GMO.services.card.searchMember({
                     siteId: <string>process.env.GMO_SITE_ID,
                     sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: req.user.person.id
+                    memberId: memberId
                 });
                 if (gmoMember === null) {
                     const saveMemberResult = await sskts.GMO.services.card.saveMember({
                         siteId: <string>process.env.GMO_SITE_ID,
                         sitePass: <string>process.env.GMO_SITE_PASS,
-                        memberId: req.user.person.id,
-                        memberName: `${personDoc.get('familyName')} ${personDoc.get('givenName')}`
+                        memberId: memberId,
+                        memberName: memberName
                     });
                     debug('GMO saveMember processed', saveMemberResult);
                 }
