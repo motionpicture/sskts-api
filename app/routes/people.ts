@@ -202,7 +202,7 @@ peopleRouter.post(
                 const saveCardResult = await sskts.GMO.services.card.saveCard({
                     siteId: <string>process.env.GMO_SITE_ID,
                     sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: req.user.person.id,
+                    memberId: memberId,
                     seqMode: sskts.GMO.utils.util.SeqMode.Physics,
                     cardNo: req.body.cardNo,
                     cardPass: req.body.cardPass,
@@ -215,7 +215,7 @@ peopleRouter.post(
                 const searchCardResults = await sskts.GMO.services.card.searchCard({
                     siteId: <string>process.env.GMO_SITE_ID,
                     sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: req.user.person.id,
+                    memberId: memberId,
                     seqMode: sskts.GMO.utils.util.SeqMode.Physics,
                     cardSeq: saveCardResult.cardSeq
                 });

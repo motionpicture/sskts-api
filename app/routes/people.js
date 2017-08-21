@@ -176,7 +176,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
             const saveCardResult = yield sskts.GMO.services.card.saveCard({
                 siteId: process.env.GMO_SITE_ID,
                 sitePass: process.env.GMO_SITE_PASS,
-                memberId: req.user.person.id,
+                memberId: memberId,
                 seqMode: sskts.GMO.utils.util.SeqMode.Physics,
                 cardNo: req.body.cardNo,
                 cardPass: req.body.cardPass,
@@ -188,7 +188,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
             const searchCardResults = yield sskts.GMO.services.card.searchCard({
                 siteId: process.env.GMO_SITE_ID,
                 sitePass: process.env.GMO_SITE_PASS,
-                memberId: req.user.person.id,
+                memberId: memberId,
                 seqMode: sskts.GMO.utils.util.SeqMode.Physics,
                 cardSeq: saveCardResult.cardSeq
             });
