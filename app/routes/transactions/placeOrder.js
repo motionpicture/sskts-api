@@ -88,7 +88,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 /**
  * 購入者情報を変更する
  */
-placeOrderTransactionsRouter.put('/:transactionId/agent/profile', permitScopes_1.default(['transactions']), (req, _, next) => {
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['transactions']), (req, _, next) => {
     req.checkBody('familyName').notEmpty().withMessage('required');
     req.checkBody('givenName').notEmpty().withMessage('required');
     req.checkBody('telephone').notEmpty().withMessage('required');
@@ -102,13 +102,13 @@ placeOrderTransactionsRouter.put('/:transactionId/agent/profile', permitScopes_1
             res.status(http_status_1.FORBIDDEN).end('Forbidden');
             return;
         }
-        const profile = {
+        const contact = {
             familyName: req.body.familyName,
             givenName: req.body.givenName,
             email: req.body.email,
             telephone: req.body.telephone
         };
-        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, profile)(sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contact)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {

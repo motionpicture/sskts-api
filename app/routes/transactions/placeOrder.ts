@@ -101,7 +101,7 @@ placeOrderTransactionsRouter.post(
  * 購入者情報を変更する
  */
 placeOrderTransactionsRouter.put(
-    '/:transactionId/agent/profile',
+    '/:transactionId/customerContact',
     permitScopes(['transactions']),
     (req, _, next) => {
         req.checkBody('familyName').notEmpty().withMessage('required');
@@ -122,13 +122,13 @@ placeOrderTransactionsRouter.put(
                 return;
             }
 
-            const profile = {
+            const contact = {
                 familyName: req.body.familyName,
                 givenName: req.body.givenName,
                 email: req.body.email,
                 telephone: req.body.telephone
             };
-            await sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, profile)(
+            await sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contact)(
                 sskts.adapter.transaction(sskts.mongoose.connection)
             );
 
