@@ -32,11 +32,11 @@ ordersRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const key = sskts.factory.orderInquiryKey.create({
+            const key = {
                 theaterCode: req.body.theaterCode,
                 orderNumber: req.body.orderNumber,
                 telephone: req.body.telephone
-            });
+            };
 
             await sskts.service.order.findByOrderInquiryKey(key)(sskts.adapter.order(sskts.mongoose.connection))
                 .then((option) => {

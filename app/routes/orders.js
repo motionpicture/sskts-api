@@ -31,11 +31,11 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const key = sskts.factory.orderInquiryKey.create({
+        const key = {
             theaterCode: req.body.theaterCode,
             orderNumber: req.body.orderNumber,
             telephone: req.body.telephone
-        });
+        };
         yield sskts.service.order.findByOrderInquiryKey(key)(sskts.adapter.order(sskts.mongoose.connection))
             .then((option) => {
             option.match({
