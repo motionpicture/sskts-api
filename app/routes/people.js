@@ -226,9 +226,9 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
 //     }
 // );
 /**
- * find user's reservation ownerships
+ * find user's reservation ownershipInfos
  */
-peopleRouter.get('/me/ownerships/reservation', permitScopes_1.default(['people.ownerships', 'people.ownerships.read-only']), (_1, _2, next) => {
+peopleRouter.get('/me/ownershipInfos/reservation', permitScopes_1.default(['people.ownershipInfos', 'people.ownershipInfos.read-only']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

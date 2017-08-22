@@ -257,11 +257,11 @@ peopleRouter.post(
 // );
 
 /**
- * find user's reservation ownerships
+ * find user's reservation ownershipInfos
  */
 peopleRouter.get(
-    '/me/ownerships/reservation',
-    permitScopes(['people.ownerships', 'people.ownerships.read-only']),
+    '/me/ownershipInfos/reservation',
+    permitScopes(['people.ownershipInfos', 'people.ownershipInfos.read-only']),
     (_1, _2, next) => {
         next();
     },
