@@ -32,7 +32,7 @@ const pemsFromJson = require('./pems.json');
 exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         let token = null;
-        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+        if (typeof req.headers.authorization === 'string' && req.headers.authorization.split(' ')[0] === 'Bearer') {
             token = req.headers.authorization.split(' ')[1];
         }
         if (token === null) {
@@ -92,7 +92,7 @@ function validateToken(pems, token) {
         }
         // Get the kid from the token and retrieve corresponding PEM
         const pem = pems[decodedJwt.header.kid];
-        if (!pem) {
+        if (pem === undefined) {
             throw new Error(`corresponding pem undefined. kid:${decodedJwt.header.kid}`);
         }
         return new Promise((resolve, reject) => {

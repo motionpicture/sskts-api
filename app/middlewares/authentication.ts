@@ -89,7 +89,7 @@ const pemsFromJson: IPems = require('./pems.json');
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
         let token: string | null = null;
-        if (req.headers.authorization && (<string>req.headers.authorization).split(' ')[0] === 'Bearer') {
+        if (typeof req.headers.authorization === 'string' && (<string>req.headers.authorization).split(' ')[0] === 'Bearer') {
             token = (<string>req.headers.authorization).split(' ')[1];
         }
 
@@ -161,7 +161,7 @@ export async function validateToken(pems: IPems, token: string): Promise<IPayloa
 
     // Get the kid from the token and retrieve corresponding PEM
     const pem = pems[decodedJwt.header.kid];
-    if (!pem) {
+    if (pem === undefined) {
         throw new Error(`corresponding pem undefined. kid:${decodedJwt.header.kid}`);
     }
 

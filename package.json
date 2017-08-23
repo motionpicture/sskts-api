@@ -90,7 +90,7 @@
     "snyk": "snyk auth && snyk test --ignore-policy",
     "start": "node server.js",
     "test": "npm run check && npm run nyc",
-    "tslint": "tslint --type-check --project tsconfig.json -c tslint.json app/**/*.ts server.ts test/**/*.ts",
+    "tslint": "tslint --type-check --project tsconfig.json -c tslint.json ./app/**/*.ts ./*.ts",
     "preversion": "npm run clean && npm run build && npm test",
     "version": "git add -A",
     "postversion": "git push origin --tags"
