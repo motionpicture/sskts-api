@@ -10,7 +10,7 @@ const eventsRouter = Router();
 import * as sskts from '@motionpicture/sskts-domain';
 import { NOT_FOUND } from 'http-status';
 
-// import * as redis from '../../redis';
+import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
@@ -24,7 +24,8 @@ eventsRouter.get(
     async (req, res, next) => {
         try {
             await sskts.service.event.findIndividualScreeningEventByIdentifier(req.params.identifier)(
-                sskts.adapter.event(sskts.mongoose.connection)
+                sskts.adapter.event(sskts.mongoose.connection),
+                sskts.adapter.itemAvailability.individualScreeningEvent(redis.getClient())
             ).then((option) => {
                 option.match({
                     Some: (event) => {
@@ -60,7 +61,10 @@ eventsRouter.get(
             const events = await sskts.service.event.searchIndividualScreeningEvents({
                 day: req.query.day,
                 theater: req.query.theater
-            })(sskts.adapter.event(sskts.mongoose.connection));
+            })(
+                sskts.adapter.event(sskts.mongoose.connection),
+                sskts.adapter.itemAvailability.individualScreeningEvent(redis.getClient())
+                );
 
             res.json({
                 data: events
