@@ -278,27 +278,25 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const authorization = sskts.factory.authorization.mvtk.create({
-                price: parseInt(req.body.price, 10), // tslint:disable-line:no-magic-numbers
-                result: {
-                    kgygishCd: req.body.kgygishCd,
-                    yykDvcTyp: req.body.yykDvcTyp,
-                    trkshFlg: req.body.trkshFlg,
-                    kgygishSstmZskyykNo: req.body.kgygishSstmZskyykNo,
-                    kgygishUsrZskyykNo: req.body.kgygishUsrZskyykNo,
-                    jeiDt: req.body.jeiDt,
-                    kijYmd: req.body.kijYmd,
-                    stCd: req.body.stCd,
-                    screnCd: req.body.screnCd,
-                    knyknrNoInfo: req.body.knyknrNoInfo,
-                    zskInfo: req.body.zskInfo,
-                    skhnCd: req.body.skhnCd
-                },
-                object: {}
-            });
-            await sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.transactionId, authorization)(
-                sskts.adapter.transaction(sskts.mongoose.connection)
-            );
+            const authorizationResult = {
+                // tslint:disable-next-line:no-magic-numbers
+                price: parseInt(req.body.price, 10),
+                kgygishCd: req.body.kgygishCd,
+                yykDvcTyp: req.body.yykDvcTyp,
+                trkshFlg: req.body.trkshFlg,
+                kgygishSstmZskyykNo: req.body.kgygishSstmZskyykNo,
+                kgygishUsrZskyykNo: req.body.kgygishUsrZskyykNo,
+                jeiDt: req.body.jeiDt,
+                kijYmd: req.body.kijYmd,
+                stCd: req.body.stCd,
+                screnCd: req.body.screnCd,
+                knyknrNoInfo: req.body.knyknrNoInfo,
+                zskInfo: req.body.zskInfo,
+                skhnCd: req.body.skhnCd
+            };
+            const authorization = await sskts.service.transaction.placeOrder.createMvtkAuthorization(
+                req.params.transactionId, authorizationResult
+            )(sskts.adapter.transaction(sskts.mongoose.connection));
 
             res.status(CREATED).json({
                 data: authorization

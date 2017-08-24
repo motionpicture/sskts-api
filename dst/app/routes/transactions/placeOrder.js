@@ -198,25 +198,23 @@ placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/mvtk', permitSco
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const authorization = sskts.factory.authorization.mvtk.create({
+        const authorizationResult = {
+            // tslint:disable-next-line:no-magic-numbers
             price: parseInt(req.body.price, 10),
-            result: {
-                kgygishCd: req.body.kgygishCd,
-                yykDvcTyp: req.body.yykDvcTyp,
-                trkshFlg: req.body.trkshFlg,
-                kgygishSstmZskyykNo: req.body.kgygishSstmZskyykNo,
-                kgygishUsrZskyykNo: req.body.kgygishUsrZskyykNo,
-                jeiDt: req.body.jeiDt,
-                kijYmd: req.body.kijYmd,
-                stCd: req.body.stCd,
-                screnCd: req.body.screnCd,
-                knyknrNoInfo: req.body.knyknrNoInfo,
-                zskInfo: req.body.zskInfo,
-                skhnCd: req.body.skhnCd
-            },
-            object: {}
-        });
-        yield sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.transactionId, authorization)(sskts.adapter.transaction(sskts.mongoose.connection));
+            kgygishCd: req.body.kgygishCd,
+            yykDvcTyp: req.body.yykDvcTyp,
+            trkshFlg: req.body.trkshFlg,
+            kgygishSstmZskyykNo: req.body.kgygishSstmZskyykNo,
+            kgygishUsrZskyykNo: req.body.kgygishUsrZskyykNo,
+            jeiDt: req.body.jeiDt,
+            kijYmd: req.body.kijYmd,
+            stCd: req.body.stCd,
+            screnCd: req.body.screnCd,
+            knyknrNoInfo: req.body.knyknrNoInfo,
+            zskInfo: req.body.zskInfo,
+            skhnCd: req.body.skhnCd
+        };
+        const authorization = yield sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.transactionId, authorizationResult)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
             data: authorization
         });
