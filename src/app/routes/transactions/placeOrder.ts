@@ -1,6 +1,5 @@
 /**
- * 注文取引ルーター
- *
+ * placeOrder transaction router
  * @ignore
  */
 
@@ -26,7 +25,7 @@ placeOrderTransactionsRouter.post(
     '/start',
     permitScopes(['transactions']),
     (req, _, next) => {
-        // expiresはsecondsのUNIXタイムスタンプで
+        // expires is unix timestamp (in seconds)
         req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isInt();
         req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
 
@@ -51,16 +50,14 @@ placeOrderTransactionsRouter.post(
             const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % transactionsCountUnitInSeconds);
             const readyThrough = moment(readyFrom).add(transactionsCountUnitInSeconds, 'seconds');
 
-            // todo 取引スコープを分ける仕様に従って変更する
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 取引スコープを分ける仕様に従って変更する
             const scope = sskts.factory.transactionScope.create({
                 readyFrom: readyFrom.toDate(),
                 readyThrough: readyThrough.toDate()
             });
             debug('starting a transaction...scope:', scope);
 
-            // 会員としてログインしている場合は所有者IDを指定して開始する
-            // const agentId = (req.user.person !== undefined) ? <string>req.user.person.id : undefined;
-            const agentId = (req.user.username !== undefined) ? <string>req.user.sub : undefined;
             const transactionOption = await sskts.service.transaction.placeOrder.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
@@ -68,7 +65,7 @@ placeOrderTransactionsRouter.post(
                 maxCountPerUnit: parseInt(<string>process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
                 clientUser: req.user,
                 scope: scope,
-                agentId: agentId,
+                agentId: req.getUser().sub,
                 sellerId: req.body.sellerId
             })(
                 sskts.adapter.organization(sskts.mongoose.connection),
@@ -200,14 +197,11 @@ placeOrderTransactionsRouter.delete(
 placeOrderTransactionsRouter.post(
     '/:transactionId/paymentInfos/creditCard',
     permitScopes(['transactions']),
-    (__1, __2, next) => {
-        // req.checkBody('data.orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
-        // req.checkBody('data.amount', 'invalid amount').notEmpty().withMessage('amount is required');
-        // req.checkBody('data.method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
-        // req.checkBody('data.cardNo', 'invalid cardNo').notEmpty().withMessage('gmo_amount is required');
-        // req.checkBody('data.expire', 'invalid expire').notEmpty().withMessage('gmo_access_id is required');
-        // req.checkBody('data.securityCode', 'invalid securityCode').notEmpty().withMessage('gmo_access_pass is required');
-        // req.checkBody('data.token', 'invalid token').notEmpty().withMessage('gmo_job_cd is required');
+    (req, __2, next) => {
+        req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
+        req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
+        req.checkBody('method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
+        req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('gmo_amount is required');
 
         next();
     },
@@ -219,7 +213,7 @@ placeOrderTransactionsRouter.post(
             const creditCard: sskts.service.transaction.placeOrder.ICreditCard4authorization = {
                 ...req.body.creditCard,
                 ...{
-                    memberId: (req.user.person !== undefined) ? req.user.person.id : undefined
+                    memberId: (req.getUser().username !== undefined) ? req.getUser().sub : undefined
                 }
             };
             debug('authorizing credit card...', creditCard);
@@ -270,7 +264,7 @@ placeOrderTransactionsRouter.delete(
  * ムビチケ追加
  */
 placeOrderTransactionsRouter.post(
-    '/:transactionId/paymentInfos/mvtk',
+    '/:transactionId/discountInfos/mvtk',
     permitScopes(['transactions']),
     (__1, __2, next) => {
         next();
@@ -311,7 +305,7 @@ placeOrderTransactionsRouter.post(
  * ムビチケ取消
  */
 placeOrderTransactionsRouter.delete(
-    '/:transactionId/paymentInfos/mvtk/:authorizationId',
+    '/:transactionId/discountInfos/mvtk/:authorizationId',
     permitScopes(['transactions']),
     validator,
     async (req, res, next) => {

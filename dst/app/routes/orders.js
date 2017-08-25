@@ -26,14 +26,14 @@ ordersRouter.use(authentication_1.default);
  */
 ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'orders.read-only']), (req, _, next) => {
     req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
-    req.checkBody('orderNumber', 'invalid orderNumber').notEmpty().withMessage('orderNumber is required');
+    req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
     req.checkBody('telephone', 'invalid telephone').notEmpty().withMessage('telephone is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const key = {
             theaterCode: req.body.theaterCode,
-            orderNumber: req.body.orderNumber,
+            confirmationNumber: req.body.confirmationNumber,
             telephone: req.body.telephone
         };
         yield sskts.service.order.findByOrderInquiryKey(key)(sskts.adapter.order(sskts.mongoose.connection))

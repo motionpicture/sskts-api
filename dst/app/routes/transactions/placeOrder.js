@@ -1,7 +1,6 @@
 "use strict";
 /**
- * 注文取引ルーター
- *
+ * placeOrder transaction router
  * @ignore
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -26,7 +25,7 @@ const validator_1 = require("../../middlewares/validator");
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
-    // expiresはsecondsのUNIXタイムスタンプで
+    // expires is unix timestamp (in seconds)
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isInt();
     req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
     next();
@@ -46,15 +45,13 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         const dateNow = moment();
         const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % transactionsCountUnitInSeconds);
         const readyThrough = moment(readyFrom).add(transactionsCountUnitInSeconds, 'seconds');
-        // todo 取引スコープを分ける仕様に従って変更する
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 取引スコープを分ける仕様に従って変更する
         const scope = sskts.factory.transactionScope.create({
             readyFrom: readyFrom.toDate(),
             readyThrough: readyThrough.toDate()
         });
         debug('starting a transaction...scope:', scope);
-        // 会員としてログインしている場合は所有者IDを指定して開始する
-        // const agentId = (req.user.person !== undefined) ? <string>req.user.person.id : undefined;
-        const agentId = (req.user.username !== undefined) ? req.user.sub : undefined;
         const transactionOption = yield sskts.service.transaction.placeOrder.start({
             // tslint:disable-next-line:no-magic-numbers
             expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
@@ -62,7 +59,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
             clientUser: req.user,
             scope: scope,
-            agentId: agentId,
+            agentId: req.getUser().sub,
             sellerId: req.body.sellerId
         })(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
         transactionOption.match({
@@ -151,14 +148,11 @@ placeOrderTransactionsRouter.delete('/:transactionId/seatReservationAuthorizatio
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/creditCard', permitScopes_1.default(['transactions']), (__1, __2, next) => {
-    // req.checkBody('data.orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
-    // req.checkBody('data.amount', 'invalid amount').notEmpty().withMessage('amount is required');
-    // req.checkBody('data.method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
-    // req.checkBody('data.cardNo', 'invalid cardNo').notEmpty().withMessage('gmo_amount is required');
-    // req.checkBody('data.expire', 'invalid expire').notEmpty().withMessage('gmo_access_id is required');
-    // req.checkBody('data.securityCode', 'invalid securityCode').notEmpty().withMessage('gmo_access_pass is required');
-    // req.checkBody('data.token', 'invalid token').notEmpty().withMessage('gmo_job_cd is required');
+placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/creditCard', permitScopes_1.default(['transactions']), (req, __2, next) => {
+    req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
+    req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
+    req.checkBody('method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
+    req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('gmo_amount is required');
     next();
 }, validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
@@ -166,7 +160,7 @@ placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/creditCard', per
     try {
         // 会員IDを強制的にログイン中の人物IDに変更
         const creditCard = Object.assign({}, req.body.creditCard, {
-            memberId: (req.user.person !== undefined) ? req.user.person.id : undefined
+            memberId: (req.getUser().username !== undefined) ? req.getUser().sub : undefined
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
@@ -194,7 +188,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/paymentInfos/creditCard/:au
 /**
  * ムビチケ追加
  */
-placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/mvtk', permitScopes_1.default(['transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.post('/:transactionId/discountInfos/mvtk', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -226,7 +220,7 @@ placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/mvtk', permitSco
 /**
  * ムビチケ取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/paymentInfos/mvtk/:authorizationId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/discountInfos/mvtk/:authorizationId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.placeOrder.cancelMvtkAuthorization(req.params.transactionId, req.params.authorizationId)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();

@@ -24,7 +24,7 @@ ordersRouter.post(
     permitScopes(['orders', 'orders.read-only']),
     (req, _, next) => {
         req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
-        req.checkBody('orderNumber', 'invalid orderNumber').notEmpty().withMessage('orderNumber is required');
+        req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
         req.checkBody('telephone', 'invalid telephone').notEmpty().withMessage('telephone is required');
 
         next();
@@ -34,7 +34,7 @@ ordersRouter.post(
         try {
             const key = {
                 theaterCode: req.body.theaterCode,
-                orderNumber: req.body.orderNumber,
+                confirmationNumber: req.body.confirmationNumber,
                 telephone: req.body.telephone
             };
 
