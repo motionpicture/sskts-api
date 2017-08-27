@@ -8,6 +8,7 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import { Router } from 'express';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as httpStatus from 'http-status';
 
 import authentication from '../middlewares/authentication';
@@ -82,6 +83,15 @@ peopleRouter.put(
     validator,
     async (req, res, next) => {
         try {
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+            debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
+            if (!phoneUtil.isValidNumber(phoneNumber)) {
+                next(new Error('invalid phone number format'));
+
+                return;
+            }
+
             const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
                 apiVersion: 'latest',
                 region: 'ap-northeast-1'
@@ -101,7 +111,7 @@ peopleRouter.put(
                         },
                         {
                             Name: 'phone_number',
-                            Value: req.body.telephone
+                            Value: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
                         }
                     ]
                 },

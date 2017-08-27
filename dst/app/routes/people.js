@@ -17,6 +17,7 @@ const sskts = require("@motionpicture/sskts-domain");
 const AWS = require("aws-sdk");
 const createDebug = require("debug");
 const express_1 = require("express");
+const google_libphonenumber_1 = require("google-libphonenumber");
 const httpStatus = require("http-status");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -70,6 +71,13 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
+        const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+        debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
+        if (!phoneUtil.isValidNumber(phoneNumber)) {
+            next(new Error('invalid phone number format'));
+            return;
+        }
         const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
             apiVersion: 'latest',
             region: 'ap-northeast-1'
@@ -87,7 +95,7 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
                 },
                 {
                     Name: 'phone_number',
-                    Value: req.body.telephone
+                    Value: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
                 }
             ]
         }, (err) => {
