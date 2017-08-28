@@ -1,23 +1,22 @@
 /**
- * 注文ルーター
- *
+ * orders router
  * @module ordersRouter
  */
 
-import { Router } from 'express';
-const ordersRouter = Router();
-
 import * as sskts from '@motionpicture/sskts-domain';
+import { Router } from 'express';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as httpStatus from 'http-status';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
+const ordersRouter = Router();
 ordersRouter.use(authentication);
 
 /**
- * 注文照会
+ * make inquiry of an order
  */
 ordersRouter.post(
     '/findByOrderInquiryKey',
@@ -32,10 +31,18 @@ ordersRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+            if (!phoneUtil.isValidNumber(phoneNumber)) {
+                next(new Error('invalid phone number format'));
+
+                return;
+            }
+
             const key = {
                 theaterCode: req.body.theaterCode,
                 confirmationNumber: req.body.confirmationNumber,
-                telephone: req.body.telephone
+                telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
 
             await sskts.service.order.findByOrderInquiryKey(key)(sskts.adapter.order(sskts.mongoose.connection))

@@ -1,6 +1,6 @@
 "use strict";
 /**
- * placeOrder transaction router
+ * placeOrder transactions router
  * @ignore
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -12,12 +12,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const placeOrderTransactionsRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
+const express_1 = require("express");
+const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const placeOrderTransactionsRouter = express_1.Router();
 const redis = require("../../../redis");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -99,13 +100,19 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             res.status(http_status_1.FORBIDDEN).end('Forbidden');
             return;
         }
-        const contact = {
+        const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
+        const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+        if (!phoneUtil.isValidNumber(phoneNumber)) {
+            next(new Error('invalid phone number format'));
+            return;
+        }
+        const contacts = {
             familyName: req.body.familyName,
             givenName: req.body.givenName,
             email: req.body.email,
-            telephone: req.body.telephone
+            telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
-        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contact)(sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contacts)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {

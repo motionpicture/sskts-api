@@ -54,6 +54,12 @@ peopleRouter.get('/me/contacts', permitScopes_1.default(['people.contacts', 'peo
                     }
                     return obj;
                 }, {});
+                // format a phone number to a Japanese style
+                if (contacts.telephone !== undefined) {
+                    const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
+                    const phoneNumber = phoneUtil.parse(contacts.telephone, 'JP');
+                    contacts.telephone = phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.NATIONAL);
+                }
                 res.json({
                     data: contacts
                 });

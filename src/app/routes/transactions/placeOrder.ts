@@ -1,16 +1,16 @@
 /**
- * placeOrder transaction router
+ * placeOrder transactions router
  * @ignore
  */
 
-import { Router } from 'express';
-const placeOrderTransactionsRouter = Router();
-
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
+import { Router } from 'express';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND } from 'http-status';
 import * as moment from 'moment';
 
+const placeOrderTransactionsRouter = Router();
 import * as redis from '../../../redis';
 
 import authentication from '../../middlewares/authentication';
@@ -119,13 +119,21 @@ placeOrderTransactionsRouter.put(
                 return;
             }
 
-            const contact = {
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+            if (!phoneUtil.isValidNumber(phoneNumber)) {
+                next(new Error('invalid phone number format'));
+
+                return;
+            }
+
+            const contacts = {
                 familyName: req.body.familyName,
                 givenName: req.body.givenName,
                 email: req.body.email,
-                telephone: req.body.telephone
+                telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
-            await sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contact)(
+            await sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contacts)(
                 sskts.adapter.transaction(sskts.mongoose.connection)
             );
 

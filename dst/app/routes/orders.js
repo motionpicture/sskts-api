@@ -1,7 +1,6 @@
 "use strict";
 /**
- * 注文ルーター
- *
+ * orders router
  * @module ordersRouter
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -13,16 +12,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const ordersRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
+const express_1 = require("express");
+const google_libphonenumber_1 = require("google-libphonenumber");
 const httpStatus = require("http-status");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
- * 注文照会
+ * make inquiry of an order
  */
 ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'orders.read-only']), (req, _, next) => {
     req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
@@ -31,10 +31,16 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
+        const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+        if (!phoneUtil.isValidNumber(phoneNumber)) {
+            next(new Error('invalid phone number format'));
+            return;
+        }
         const key = {
             theaterCode: req.body.theaterCode,
             confirmationNumber: req.body.confirmationNumber,
-            telephone: req.body.telephone
+            telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
         yield sskts.service.order.findByOrderInquiryKey(key)(sskts.adapter.order(sskts.mongoose.connection))
             .then((option) => {

@@ -83,7 +83,7 @@
   "scripts": {
     "build": "tsc",
     "check": "npm run tslint && nsp check && npm run snyk",
-    "clean": "rimraf dst src/**/*.js example/**/*.js test/**/*.js docs/**/* npm-debug.log*",
+    "clean": "rimraf dst src/**/*.js test/**/*.js docs/**/* npm-debug.log*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "http-server": "http-server",
     "mocha": "mocha",

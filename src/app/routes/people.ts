@@ -60,6 +60,13 @@ peopleRouter.get(
                             <any>{}
                         );
 
+                        // format a phone number to a Japanese style
+                        if (contacts.telephone !== undefined) {
+                            const phoneUtil = PhoneNumberUtil.getInstance();
+                            const phoneNumber = phoneUtil.parse(contacts.telephone, 'JP');
+                            contacts.telephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+                        }
+
                         res.json({
                             data: contacts
                         });
