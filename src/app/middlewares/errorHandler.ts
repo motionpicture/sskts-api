@@ -7,7 +7,7 @@
  */
 
 import { NextFunction, Request, Response } from 'express';
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED } from 'http-status';
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED } from 'http-status';
 import logger from '../logger';
 
 export default (err: any, __: Request, res: Response, next: NextFunction) => {
@@ -19,7 +19,7 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
         return;
     }
 
-    let statusCode = res.statusCode;
+    let statusCode = (res.statusCode !== OK) ? res.statusCode : undefined;
     const errors: any[] = [];
     let message: string = '';
 

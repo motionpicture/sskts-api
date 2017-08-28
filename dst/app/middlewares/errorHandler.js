@@ -15,7 +15,7 @@ exports.default = (err, __, res, next) => {
         next(err);
         return;
     }
-    let statusCode = res.statusCode;
+    let statusCode = (res.statusCode !== http_status_1.OK) ? res.statusCode : undefined;
     const errors = [];
     let message = '';
     // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
