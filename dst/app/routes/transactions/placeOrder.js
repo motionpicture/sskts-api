@@ -173,7 +173,10 @@ placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/creditCard', per
         debug('authorizing credit card...', req.body.creditCard);
         const authorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
-            data: authorization
+            data: {
+                id: authorization.id,
+                price: authorization.price
+            }
         });
     }
     catch (error) {
@@ -217,7 +220,10 @@ placeOrderTransactionsRouter.post('/:transactionId/discountInfos/mvtk', permitSc
         };
         const authorization = yield sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.transactionId, authorizationResult)(sskts.adapter.transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
-            data: authorization
+            data: {
+                id: authorization.id,
+                price: authorization.price
+            }
         });
     }
     catch (error) {

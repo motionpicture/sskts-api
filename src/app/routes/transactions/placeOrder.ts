@@ -239,7 +239,10 @@ placeOrderTransactionsRouter.post(
                 );
 
             res.status(CREATED).json({
-                data: authorization
+                data: {
+                    id: authorization.id,
+                    price: authorization.price
+                }
             });
         } catch (error) {
             next(error);
@@ -301,7 +304,10 @@ placeOrderTransactionsRouter.post(
             )(sskts.adapter.transaction(sskts.mongoose.connection));
 
             res.status(CREATED).json({
-                data: authorization
+                data: {
+                    id: authorization.id,
+                    price: authorization.price
+                }
             });
         } catch (error) {
             next(error);
