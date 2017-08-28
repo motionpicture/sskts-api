@@ -4,17 +4,10 @@
  * @module middlewares/notFoundHandler
  */
 
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { NOT_FOUND } from 'http-status';
 
-export default (req: Request, res: Response) => {
+export default (req: Request, res: Response, next: NextFunction) => {
     res.status(NOT_FOUND);
-    res.json({
-        errors: [
-            {
-                title: 'not found',
-                detail: `router for [${req.originalUrl}] not found.`
-            }
-        ]
-    });
+    next(new Error(`router for [${req.originalUrl}] not found.`));
 };

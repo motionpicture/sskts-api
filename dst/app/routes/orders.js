@@ -51,9 +51,8 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
                     });
                 },
                 None: () => {
-                    res.status(httpStatus.NOT_FOUND).json({
-                        data: null
-                    });
+                    res.status(httpStatus.NOT_FOUND);
+                    next(new Error('order not found'));
                 }
             });
         });

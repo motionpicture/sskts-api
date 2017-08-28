@@ -31,9 +31,8 @@ placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['places', 
                     });
                 },
                 None: () => {
-                    res.status(http_status_1.NOT_FOUND).json({
-                        data: null
-                    });
+                    res.status(http_status_1.NOT_FOUND);
+                    next(new Error('movieTheater not found'));
                 }
             });
         });

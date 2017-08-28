@@ -19,29 +19,48 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
         return;
     }
 
+    let statusCode = res.statusCode;
+    const errors: any[] = [];
+    let message: string = '';
+
     // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
     if (err instanceof Error) {
         // oauth認証失敗
         if (err.name === 'UnauthorizedError') {
-            res.status(UNAUTHORIZED).end('Unauthorized');
+            statusCode = UNAUTHORIZED;
+            errors.push(
+                {
+                    title: err.name,
+                    detail: err.message
+                }
+            );
+            message = err.message;
         } else {
-            res.status(BAD_REQUEST).json({
-                errors: [
-                    {
-                        title: err.name,
-                        detail: err.message
-                    }
-                ]
-            });
+            statusCode = (statusCode === undefined) ? BAD_REQUEST : statusCode;
+            errors.push(
+                {
+                    title: err.name,
+                    detail: err.message
+                }
+            );
+            message = err.message;
         }
     } else {
-        res.status(INTERNAL_SERVER_ERROR).json({
-            errors: [
-                {
-                    title: 'internal server error',
-                    detail: 'an unexpected error occurred.'
-                }
-            ]
-        });
+        statusCode = (statusCode === undefined) ? INTERNAL_SERVER_ERROR : statusCode;
+        errors.push(
+            {
+                title: 'Internal Server Error',
+                detail: 'Internal Server Error'
+            }
+        );
+        message = 'Internal Server Error';
     }
+
+    res.status(statusCode).json({
+        error: {
+            errors: errors,
+            code: statusCode,
+            message: message
+        }
+    });
 };

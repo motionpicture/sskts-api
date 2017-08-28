@@ -83,9 +83,8 @@ placeOrderTransactionsRouter.post(
                     });
                 },
                 None: () => {
-                    res.status(NOT_FOUND).json({
-                        data: null
-                    });
+                    res.status(NOT_FOUND);
+                    next(new Error('available transaction not found'));
                 }
             });
         } catch (error) {
@@ -161,9 +160,8 @@ placeOrderTransactionsRouter.post(
             )(sskts.adapter.event(sskts.mongoose.connection));
 
             if (findIndividualScreeningEventOption.isEmpty) {
-                res.status(NOT_FOUND).json({
-                    data: null
-                });
+                res.status(NOT_FOUND);
+                next(new Error('individualScreeningEvent not found'));
             } else {
                 const authorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization(
                     req.params.transactionId,

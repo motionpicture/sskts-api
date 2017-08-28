@@ -73,9 +73,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 });
             },
             None: () => {
-                res.status(http_status_1.NOT_FOUND).json({
-                    data: null
-                });
+                res.status(http_status_1.NOT_FOUND);
+                next(new Error('available transaction not found'));
             }
         });
     }
@@ -128,9 +127,8 @@ placeOrderTransactionsRouter.post('/:transactionId/seatReservationAuthorization'
     try {
         const findIndividualScreeningEventOption = yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(sskts.adapter.event(sskts.mongoose.connection));
         if (findIndividualScreeningEventOption.isEmpty) {
-            res.status(http_status_1.NOT_FOUND).json({
-                data: null
-            });
+            res.status(http_status_1.NOT_FOUND);
+            next(new Error('individualScreeningEvent not found'));
         }
         else {
             const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.transactionId, findIndividualScreeningEventOption.get(), req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));

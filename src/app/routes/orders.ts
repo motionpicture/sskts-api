@@ -54,9 +54,8 @@ ordersRouter.post(
                             });
                         },
                         None: () => {
-                            res.status(httpStatus.NOT_FOUND).json({
-                                data: null
-                            });
+                            res.status(httpStatus.NOT_FOUND);
+                            next(new Error('order not found'));
                         }
                     });
                 });

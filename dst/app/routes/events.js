@@ -32,9 +32,8 @@ eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default
                     });
                 },
                 None: () => {
-                    res.status(http_status_1.NOT_FOUND).json({
-                        data: null
-                    });
+                    res.status(http_status_1.NOT_FOUND);
+                    next(new Error('event not found'));
                 }
             });
         });

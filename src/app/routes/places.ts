@@ -32,9 +32,8 @@ placesRouter.get(
                         });
                     },
                     None: () => {
-                        res.status(NOT_FOUND).json({
-                            data: null
-                        });
+                        res.status(NOT_FOUND);
+                        next(new Error('movieTheater not found'));
                     }
                 });
             });
