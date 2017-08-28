@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/sskts-domain": "git+https://tetsu:M0P!Xmopix@m-p.backlog.jp/git/SSKTS/domain.git#feature/SSKTS-533",
-    "aws-sdk": "^2.103.0",
+    "aws-sdk": "^2.104.0",
     "basic-auth": "^1.1.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.17.2",
@@ -57,7 +57,7 @@
     "rimraf": "^2.6.1",
     "snyk": "^1.40.1",
     "supertest": "^3.0.0",
-    "tslint": "^5.6.0",
+    "tslint": "^5.7.0",
     "tslint-microsoft-contrib": "^5.0.1",
     "typescript": "^2.5.1"
   },
