@@ -19,16 +19,17 @@ const createDebug = require("debug");
 // import * as fs from 'fs';
 const http_status_1 = require("http-status");
 const jwt = require("jsonwebtoken");
-// const jwkToPem = require('jwk-to-pem');
+// tslint:disable-next-line:no-require-imports no-var-requires
+const jwkToPem = require('jwk-to-pem');
+const request = require("request-promise-native");
 const debug = createDebug('sskts-api:middlewares:authentication');
-// const ISSUER = 'https://cognito-identity.amazonaws.com';
 const ISSUER = process.env.TOKEN_ISSUER;
 // const permittedAudiences = [
 //     '4flh35hcir4jl73s3puf7prljq',
 //     '6figun12gcdtlj9e53p2u3oqvl'
 // ];
 // tslint:disable-next-line:no-require-imports no-var-requires
-const pemsFromJson = require('../../../certificate/pems.json');
+// const pemsFromJson: IPems = require('../../../certificate/pems.json');
 exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         let token = null;
@@ -38,7 +39,8 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
         if (token === null) {
             throw new Error('authorization required');
         }
-        const payload = yield validateToken(pemsFromJson, token);
+        const pems = yield createPems();
+        const payload = yield validateToken(pems, token);
         debug('verified! payload:', payload);
         req.user = payload;
         req.accessToken = token;
@@ -56,25 +58,27 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
         res.status(http_status_1.UNAUTHORIZED).end('Unauthorized');
     }
 });
-// export async function createPems() {
-//     const openidConfiguration: IOpenIdConfiguration = await request({
-//         url: `${ISSUER}/.well-known/openid-configuration`,
-//         json: true
-//     }).then((body) => body);
-//     const pems = await request({
-//         url: openidConfiguration.jwks_uri,
-//         json: true
-//     }).then((body) => {
-//         console.log('got jwks_uri', body);
-//         const pemsByKid: IPems = {};
-//         (<any[]>body['keys']).forEach((key) => {
-//             pemsByKid[key.kid] = jwkToPem(key);
-//         });
-//         return pemsByKid;
-//     });
-//     await fs.writeFile(`${__dirname}/pems.json`, JSON.stringify(pems));
-//     return pems;
-// };
+function createPems() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const openidConfiguration = yield request({
+            url: `${ISSUER}/.well-known/openid-configuration`,
+            json: true
+        }).then((body) => body);
+        return yield request({
+            url: openidConfiguration.jwks_uri,
+            json: true
+        }).then((body) => {
+            debug('got jwks_uri', body);
+            const pemsByKid = {};
+            body.keys.forEach((key) => {
+                pemsByKid[key.kid] = jwkToPem(key);
+            });
+            return pemsByKid;
+        });
+        // await fs.writeFile(`${__dirname}/pems.json`, JSON.stringify(pems));
+    });
+}
+exports.createPems = createPems;
 function validateToken(pems, token) {
     return __awaiter(this, void 0, void 0, function* () {
         debug('validating token...');

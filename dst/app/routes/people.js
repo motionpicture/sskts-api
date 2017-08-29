@@ -1,8 +1,7 @@
 "use strict";
 /**
  * people router
- *
- * @ignore
+ * @module peopleRouter
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -43,9 +42,11 @@ peopleRouter.get('/me/contacts', permitScopes_1.default(['people.contacts', 'peo
                 next(err);
             }
             else {
+                debug('cognito getUserResponse:', data);
                 const keysTable = {
                     given_name: 'givenName',
                     family_name: 'familyName',
+                    email: 'email',
                     phone_number: 'telephone'
                 };
                 const contacts = data.UserAttributes.reduce((obj, item) => {
@@ -102,6 +103,10 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
                 {
                     Name: 'phone_number',
                     Value: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
+                },
+                {
+                    Name: 'email',
+                    Value: req.body.email
                 }
             ]
         }, (err) => {

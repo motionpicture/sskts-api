@@ -1,7 +1,6 @@
 /**
  * people router
- *
- * @ignore
+ * @module peopleRouter
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
@@ -44,9 +43,11 @@ peopleRouter.get(
                     if (err instanceof Error) {
                         next(err);
                     } else {
+                        debug('cognito getUserResponse:', data);
                         const keysTable: any = {
                             given_name: 'givenName',
                             family_name: 'familyName',
+                            email: 'email',
                             phone_number: 'telephone'
                         };
                         const contacts: any = data.UserAttributes.reduce(
@@ -119,6 +120,10 @@ peopleRouter.put(
                         {
                             Name: 'phone_number',
                             Value: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
+                        },
+                        {
+                            Name: 'email',
+                            Value: req.body.email
                         }
                     ]
                 },

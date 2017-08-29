@@ -10,9 +10,10 @@ import { NextFunction, Request, Response } from 'express';
 // import * as jwt from 'express-jwt';
 // import * as fs from 'fs';
 import { UNAUTHORIZED } from 'http-status';
-
 import * as jwt from 'jsonwebtoken';
-// const jwkToPem = require('jwk-to-pem');
+// tslint:disable-next-line:no-require-imports no-var-requires
+const jwkToPem = require('jwk-to-pem');
+import * as request from 'request-promise-native';
 
 const debug = createDebug('sskts-api:middlewares:authentication');
 
@@ -76,7 +77,6 @@ export interface IJwk {
     e: string;
 }
 
-// const ISSUER = 'https://cognito-identity.amazonaws.com';
 const ISSUER = process.env.TOKEN_ISSUER;
 // const permittedAudiences = [
 //     '4flh35hcir4jl73s3puf7prljq',
@@ -84,7 +84,7 @@ const ISSUER = process.env.TOKEN_ISSUER;
 // ];
 
 // tslint:disable-next-line:no-require-imports no-var-requires
-const pemsFromJson: IPems = require('../../../certificate/pems.json');
+// const pemsFromJson: IPems = require('../../../certificate/pems.json');
 
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -97,7 +97,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
             throw new Error('authorization required');
         }
 
-        const payload = await validateToken(pemsFromJson, token);
+        const pems: IPems = await createPems();
+        const payload = await validateToken(pems, token);
         debug('verified! payload:', payload);
         req.user = payload;
         req.accessToken = token;
@@ -118,29 +119,27 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-// export async function createPems() {
-//     const openidConfiguration: IOpenIdConfiguration = await request({
-//         url: `${ISSUER}/.well-known/openid-configuration`,
-//         json: true
-//     }).then((body) => body);
+export async function createPems() {
+    const openidConfiguration: IOpenIdConfiguration = await request({
+        url: `${ISSUER}/.well-known/openid-configuration`,
+        json: true
+    }).then((body) => body);
 
-//     const pems = await request({
-//         url: openidConfiguration.jwks_uri,
-//         json: true
-//     }).then((body) => {
-//         console.log('got jwks_uri', body);
-//         const pemsByKid: IPems = {};
-//         (<any[]>body['keys']).forEach((key) => {
-//             pemsByKid[key.kid] = jwkToPem(key);
-//         });
+    return await request({
+        url: openidConfiguration.jwks_uri,
+        json: true
+    }).then((body) => {
+        debug('got jwks_uri', body);
+        const pemsByKid: IPems = {};
+        (<any[]>body.keys).forEach((key) => {
+            pemsByKid[key.kid] = jwkToPem(key);
+        });
 
-//         return pemsByKid;
-//     });
+        return pemsByKid;
+    });
 
-//     await fs.writeFile(`${__dirname}/pems.json`, JSON.stringify(pems));
-
-//     return pems;
-// };
+    // await fs.writeFile(`${__dirname}/pems.json`, JSON.stringify(pems));
+}
 
 export async function validateToken(pems: IPems, token: string): Promise<IPayload> {
     debug('validating token...');

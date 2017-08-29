@@ -25,6 +25,7 @@
     "http-status": "^1.0.1",
     "i18n": "^0.8.3",
     "jsonwebtoken": "^7.4.3",
+    "jwk-to-pem": "^1.2.6",
     "moment": "^2.18.1",
     "winston": "^2.3.1"
   },
@@ -91,6 +92,7 @@
     "samples": "http-server ./samples",
     "snyk": "snyk auth && snyk test --ignore-policy",
     "start": "node dst/server.js",
+    "start:development": "node dst/ssl.js",
     "test": "npm run check && npm run nyc",
     "tslint": "tslint --type-check --project tsconfig.json -c tslint.json ./src/**/*.ts",
     "preversion": "npm run clean && npm run build && npm test",
