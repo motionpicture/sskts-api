@@ -7,7 +7,9 @@
  */
 
 import { NextFunction, Request, Response } from 'express';
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED } from 'http-status';
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
+
+import { APIError } from '../error/api';
 import logger from '../logger';
 
 export default (err: any, __: Request, res: Response, next: NextFunction) => {
@@ -19,48 +21,28 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
         return;
     }
 
-    let statusCode = (res.statusCode !== OK) ? res.statusCode : undefined;
-    const errors: any[] = [];
-    let message: string = '';
-
-    // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
-    if (err instanceof Error) {
-        // oauth認証失敗
-        if (err.name === 'UnauthorizedError') {
-            statusCode = UNAUTHORIZED;
-            errors.push(
-                {
-                    title: err.name,
-                    detail: err.message
-                }
-            );
-            message = err.message;
-        } else {
-            statusCode = (statusCode === undefined) ? BAD_REQUEST : statusCode;
-            errors.push(
-                {
-                    title: err.name,
-                    detail: err.message
-                }
-            );
-            message = err.message;
-        }
+    let apiError: APIError;
+    if (err instanceof APIError) {
+        apiError = err;
     } else {
-        statusCode = (statusCode === undefined) ? INTERNAL_SERVER_ERROR : statusCode;
-        errors.push(
-            {
+        if (err instanceof Error && err.name === 'SSKTSError') {
+            apiError = new APIError(BAD_REQUEST, [{
+                title: (<any>err).code,
+                detail: err.message
+            }]);
+        } else {
+            apiError = new APIError(INTERNAL_SERVER_ERROR, [{
                 title: 'Internal Server Error',
-                detail: 'Internal Server Error'
-            }
-        );
-        message = 'Internal Server Error';
+                detail: err.message
+            }]);
+        }
     }
 
-    res.status(statusCode).json({
+    res.status(apiError.code).json({
         error: {
-            errors: errors,
-            code: statusCode,
-            message: message
+            errors: apiError.errors,
+            code: apiError.code,
+            message: apiError.message
         }
     });
 };

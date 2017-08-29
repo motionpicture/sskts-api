@@ -8,12 +8,14 @@ import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import * as httpStatus from 'http-status';
+import { BAD_REQUEST, CREATED, NO_CONTENT } from 'http-status';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import requireMember from '../middlewares/requireMember';
 import validator from '../middlewares/validator';
+
+import { APIError } from '../error/api';
 
 const peopleRouter = Router();
 
@@ -95,7 +97,10 @@ peopleRouter.put(
             const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
             debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
             if (!phoneUtil.isValidNumber(phoneNumber)) {
-                next(new Error('invalid phone number format'));
+                next(new APIError(BAD_REQUEST, [{
+                    title: 'BadRequest',
+                    detail: 'invalid phone number format'
+                }]));
 
                 return;
             }
@@ -129,9 +134,12 @@ peopleRouter.put(
                 },
                 (err) => {
                     if (err instanceof Error) {
-                        next(err);
+                        next(new APIError(BAD_REQUEST, [{
+                            title: 'BadRequest',
+                            detail: err.message
+                        }]));
                     } else {
-                        res.status(httpStatus.NO_CONTENT).end();
+                        res.status(NO_CONTENT).end();
                     }
                 });
         } catch (error) {
@@ -247,7 +255,7 @@ peopleRouter.post(
                 throw new Error(error.errors[0].content);
             }
 
-            res.status(httpStatus.CREATED).json({
+            res.status(CREATED).json({
                 data: creditCard
             });
         } catch (error) {

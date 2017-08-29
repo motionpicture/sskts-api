@@ -15,6 +15,8 @@ import * as jwt from 'jsonwebtoken';
 const jwkToPem = require('jwk-to-pem');
 import * as request from 'request-promise-native';
 
+import { APIError } from '../error/api';
+
 const debug = createDebug('sskts-api:middlewares:authentication');
 
 // export default [
@@ -86,7 +88,7 @@ const ISSUER = process.env.TOKEN_ISSUER;
 // tslint:disable-next-line:no-require-imports no-var-requires
 // const pemsFromJson: IPems = require('../../../certificate/pems.json');
 
-export default async (req: Request, res: Response, next: NextFunction) => {
+export default async (req: Request, __: Response, next: NextFunction) => {
     try {
         let token: string | null = null;
         if (typeof req.headers.authorization === 'string' && (<string>req.headers.authorization).split(' ')[0] === 'Bearer') {
@@ -114,8 +116,10 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
         next();
     } catch (error) {
-        console.error(error);
-        res.status(UNAUTHORIZED).end('Unauthorized');
+        next(new APIError(UNAUTHORIZED, [{
+            title: 'Unauthorized',
+            detail: error.message
+        }]));
     }
 };
 

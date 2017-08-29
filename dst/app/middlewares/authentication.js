@@ -22,6 +22,7 @@ const jwt = require("jsonwebtoken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const jwkToPem = require('jwk-to-pem');
 const request = require("request-promise-native");
+const api_1 = require("../error/api");
 const debug = createDebug('sskts-api:middlewares:authentication');
 const ISSUER = process.env.TOKEN_ISSUER;
 // const permittedAudiences = [
@@ -30,7 +31,7 @@ const ISSUER = process.env.TOKEN_ISSUER;
 // ];
 // tslint:disable-next-line:no-require-imports no-var-requires
 // const pemsFromJson: IPems = require('../../../certificate/pems.json');
-exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         let token = null;
         if (typeof req.headers.authorization === 'string' && req.headers.authorization.split(' ')[0] === 'Bearer') {
@@ -54,8 +55,10 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
         next();
     }
     catch (error) {
-        console.error(error);
-        res.status(http_status_1.UNAUTHORIZED).end('Unauthorized');
+        next(new api_1.APIError(http_status_1.UNAUTHORIZED, [{
+                title: 'Unauthorized',
+                detail: error.message
+            }]));
     }
 });
 function createPems() {

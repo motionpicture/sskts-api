@@ -8,6 +8,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_status_1 = require("http-status");
+const api_1 = require("../error/api");
 const logger_1 = require("../logger");
 exports.default = (err, __, res, next) => {
     logger_1.default.error('sskts-api:middleware:errorHandler', err);
@@ -15,42 +16,29 @@ exports.default = (err, __, res, next) => {
         next(err);
         return;
     }
-    let statusCode = (res.statusCode !== http_status_1.OK) ? res.statusCode : undefined;
-    const errors = [];
-    let message = '';
-    // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
-    if (err instanceof Error) {
-        // oauth認証失敗
-        if (err.name === 'UnauthorizedError') {
-            statusCode = http_status_1.UNAUTHORIZED;
-            errors.push({
-                title: err.name,
-                detail: err.message
-            });
-            message = err.message;
-        }
-        else {
-            statusCode = (statusCode === undefined) ? http_status_1.BAD_REQUEST : statusCode;
-            errors.push({
-                title: err.name,
-                detail: err.message
-            });
-            message = err.message;
-        }
+    let apiError;
+    if (err instanceof api_1.APIError) {
+        apiError = err;
     }
     else {
-        statusCode = (statusCode === undefined) ? http_status_1.INTERNAL_SERVER_ERROR : statusCode;
-        errors.push({
-            title: 'Internal Server Error',
-            detail: 'Internal Server Error'
-        });
-        message = 'Internal Server Error';
+        if (err instanceof Error && err.name === 'SSKTSError') {
+            apiError = new api_1.APIError(http_status_1.BAD_REQUEST, [{
+                    title: err.code,
+                    detail: err.message
+                }]);
+        }
+        else {
+            apiError = new api_1.APIError(http_status_1.INTERNAL_SERVER_ERROR, [{
+                    title: 'Internal Server Error',
+                    detail: err.message
+                }]);
+        }
     }
-    res.status(statusCode).json({
+    res.status(apiError.code).json({
         error: {
-            errors: errors,
-            code: statusCode,
-            message: message
+            errors: apiError.errors,
+            code: apiError.code,
+            message: apiError.message
         }
     });
 };

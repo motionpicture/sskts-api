@@ -17,6 +17,8 @@ import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
+import { APIError } from '../../error/api';
+
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 
 placeOrderTransactionsRouter.use(authentication);
@@ -83,8 +85,10 @@ placeOrderTransactionsRouter.post(
                     });
                 },
                 None: () => {
-                    res.status(NOT_FOUND);
-                    next(new Error('available transaction not found'));
+                    next(new APIError(NOT_FOUND, [{
+                        title: 'NotFound',
+                        detail: 'available transaction not found'
+                    }]));
                 }
             });
         } catch (error) {
@@ -160,8 +164,10 @@ placeOrderTransactionsRouter.post(
             )(sskts.adapter.event(sskts.mongoose.connection));
 
             if (findIndividualScreeningEventOption.isEmpty) {
-                res.status(NOT_FOUND);
-                next(new Error('individualScreeningEvent not found'));
+                next(new APIError(NOT_FOUND, [{
+                    title: 'NotFound',
+                    detail: 'individualScreeningEvent not found'
+                }]));
             } else {
                 const authorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization(
                     req.params.transactionId,

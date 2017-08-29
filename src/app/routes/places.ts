@@ -14,6 +14,8 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
+import { APIError } from '../error/api';
+
 placesRouter.use(authentication);
 
 placesRouter.get(
@@ -32,8 +34,10 @@ placesRouter.get(
                         });
                     },
                     None: () => {
-                        res.status(NOT_FOUND);
-                        next(new Error('movieTheater not found'));
+                        next(new APIError(NOT_FOUND, [{
+                            title: 'NotFound',
+                            detail: 'movieTheater not found'
+                        }]));
                     }
                 });
             });

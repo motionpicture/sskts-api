@@ -23,6 +23,7 @@ const redis = require("../../../redis");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
+const api_1 = require("../../error/api");
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
@@ -73,8 +74,10 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 });
             },
             None: () => {
-                res.status(http_status_1.NOT_FOUND);
-                next(new Error('available transaction not found'));
+                next(new api_1.APIError(http_status_1.NOT_FOUND, [{
+                        title: 'NotFound',
+                        detail: 'available transaction not found'
+                    }]));
             }
         });
     }
@@ -127,8 +130,10 @@ placeOrderTransactionsRouter.post('/:transactionId/seatReservationAuthorization'
     try {
         const findIndividualScreeningEventOption = yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(sskts.adapter.event(sskts.mongoose.connection));
         if (findIndividualScreeningEventOption.isEmpty) {
-            res.status(http_status_1.NOT_FOUND);
-            next(new Error('individualScreeningEvent not found'));
+            next(new api_1.APIError(http_status_1.NOT_FOUND, [{
+                    title: 'NotFound',
+                    detail: 'individualScreeningEvent not found'
+                }]));
         }
         else {
             const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.transactionId, findIndividualScreeningEventOption.get(), req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));

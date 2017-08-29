@@ -17,11 +17,12 @@ const AWS = require("aws-sdk");
 const createDebug = require("debug");
 const express_1 = require("express");
 const google_libphonenumber_1 = require("google-libphonenumber");
-const httpStatus = require("http-status");
+const http_status_1 = require("http-status");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const requireMember_1 = require("../middlewares/requireMember");
 const validator_1 = require("../middlewares/validator");
+const api_1 = require("../error/api");
 const peopleRouter = express_1.Router();
 const debug = createDebug('sskts-api:routes:people');
 peopleRouter.use(authentication_1.default);
@@ -82,7 +83,10 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
         const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
         debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
         if (!phoneUtil.isValidNumber(phoneNumber)) {
-            next(new Error('invalid phone number format'));
+            next(new api_1.APIError(http_status_1.BAD_REQUEST, [{
+                    title: 'BadRequest',
+                    detail: 'invalid phone number format'
+                }]));
             return;
         }
         const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
@@ -111,10 +115,13 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
             ]
         }, (err) => {
             if (err instanceof Error) {
-                next(err);
+                next(new api_1.APIError(http_status_1.BAD_REQUEST, [{
+                        title: 'BadRequest',
+                        detail: err.message
+                    }]));
             }
             else {
-                res.status(httpStatus.NO_CONTENT).end();
+                res.status(http_status_1.NO_CONTENT).end();
             }
         });
     }
@@ -216,7 +223,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
         catch (error) {
             throw new Error(error.errors[0].content);
         }
-        res.status(httpStatus.CREATED).json({
+        res.status(http_status_1.CREATED).json({
             data: creditCard
         });
     }

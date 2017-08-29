@@ -20,6 +20,7 @@ const http_status_1 = require("http-status");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const api_1 = require("../error/api");
 placesRouter.use(authentication_1.default);
 placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['places', 'places.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -31,8 +32,10 @@ placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['places', 
                     });
                 },
                 None: () => {
-                    res.status(http_status_1.NOT_FOUND);
-                    next(new Error('movieTheater not found'));
+                    next(new api_1.APIError(http_status_1.NOT_FOUND, [{
+                            title: 'NotFound',
+                            detail: 'movieTheater not found'
+                        }]));
                 }
             });
         });

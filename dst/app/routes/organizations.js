@@ -20,6 +20,7 @@ const sskts = require("@motionpicture/sskts-domain");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const api_1 = require("../error/api");
 organizationsRouter.use(authentication_1.default);
 organizationsRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -31,8 +32,10 @@ organizationsRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['or
                     });
                 },
                 None: () => {
-                    res.status(http_status_1.NOT_FOUND);
-                    next(new Error('movieTheater not found'));
+                    next(new api_1.APIError(http_status_1.NOT_FOUND, [{
+                            title: 'NotFound',
+                            detail: 'movieTheater not found'
+                        }]));
                 }
             });
         });

@@ -8,6 +8,8 @@ import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import { FORBIDDEN } from 'http-status';
 
+import { APIError } from '../error/api';
+
 const debug = createDebug('sskts-api:middlewares:permitScopes');
 
 /**
@@ -16,7 +18,7 @@ const debug = createDebug('sskts-api:middlewares:permitScopes');
 type IScope = string;
 
 export default (permittedScopes: IScope[]) => {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: Request, __: Response, next: NextFunction) => {
         if (process.env.RESOURECE_SERVER_IDENTIFIER === undefined) {
             next(new Error('RESOURECE_SERVER_IDENTIFIER undefined'));
 
@@ -36,7 +38,10 @@ export default (permittedScopes: IScope[]) => {
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
             if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
-                res.status(FORBIDDEN).end('Forbidden');
+                next(new APIError(FORBIDDEN, [{
+                    title: 'Forbidden',
+                    detail: 'scope requirements not satisfied'
+                }]));
             } else {
                 next();
             }

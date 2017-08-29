@@ -7,9 +7,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
+const api_1 = require("../error/api");
 const debug = createDebug('sskts-api:middlewares:permitScopes');
 exports.default = (permittedScopes) => {
-    return (req, res, next) => {
+    return (req, __, next) => {
         if (process.env.RESOURECE_SERVER_IDENTIFIER === undefined) {
             next(new Error('RESOURECE_SERVER_IDENTIFIER undefined'));
             return;
@@ -25,7 +26,10 @@ exports.default = (permittedScopes) => {
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
             if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
-                res.status(http_status_1.FORBIDDEN).end('Forbidden');
+                next(new api_1.APIError(http_status_1.FORBIDDEN, [{
+                        title: 'Forbidden',
+                        detail: 'scope requirements not satisfied'
+                    }]));
             }
             else {
                 next();

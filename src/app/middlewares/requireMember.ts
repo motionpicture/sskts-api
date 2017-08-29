@@ -8,9 +8,11 @@ import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import { FORBIDDEN } from 'http-status';
 
+import { APIError } from '../error/api';
+
 const debug = createDebug('sskts-api:middlewares:requireMember');
 
-export default (req: Request, res: Response, next: NextFunction) => {
+export default (req: Request, __: Response, next: NextFunction) => {
     // 会員としてログイン済みであればOK
     if (isMember(req.getUser())) {
         debug('logged in as', req.getUser().sub);
@@ -19,7 +21,10 @@ export default (req: Request, res: Response, next: NextFunction) => {
         return;
     }
 
-    res.status(FORBIDDEN).end('Forbidden');
+    next(new APIError(FORBIDDEN, [{
+        title: 'Forbidden',
+        detail: 'login required'
+    }]));
 };
 
 export function isMember(user: Express.IUser) {

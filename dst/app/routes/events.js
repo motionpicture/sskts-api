@@ -21,6 +21,7 @@ const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const api_1 = require("../error/api");
 eventsRouter.use(authentication_1.default);
 eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -32,8 +33,10 @@ eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default
                     });
                 },
                 None: () => {
-                    res.status(http_status_1.NOT_FOUND);
-                    next(new Error('event not found'));
+                    next(new api_1.APIError(http_status_1.NOT_FOUND, [{
+                            title: 'NotFound',
+                            detail: 'event not found'
+                        }]));
                 }
             });
         });

@@ -9,9 +9,11 @@ import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import { BAD_REQUEST } from 'http-status';
 
+import { APIError } from '../error/api';
+
 const debug = createDebug('sskts-api:middlewares:validator');
 
-export default async (req: Request, res: Response, next: NextFunction) => {
+export default async (req: Request, __: Response, next: NextFunction) => {
     const validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         const errors = validatorResult.array().map((mappedRrror) => {
@@ -23,10 +25,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         });
         debug('responding...', errors);
 
-        res.status(BAD_REQUEST);
-        res.json({
-            errors: errors
-        });
+        next(new APIError(BAD_REQUEST, errors));
 
         return;
     }

@@ -15,6 +15,8 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
+import { APIError } from '../error/api';
+
 eventsRouter.use(authentication);
 
 eventsRouter.get(
@@ -34,8 +36,10 @@ eventsRouter.get(
                         });
                     },
                     None: () => {
-                        res.status(NOT_FOUND);
-                        next(new Error('event not found'));
+                        next(new APIError(NOT_FOUND, [{
+                            title: 'NotFound',
+                            detail: 'event not found'
+                        }]));
                     }
                 });
 
