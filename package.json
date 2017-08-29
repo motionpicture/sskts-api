@@ -56,7 +56,7 @@
     "open": "0.0.5",
     "request-promise-native": "^1.0.4",
     "rimraf": "^2.6.1",
-    "snyk": "^1.40.1",
+    "snyk": "^1.40.2",
     "supertest": "^3.0.0",
     "tslint": "^5.7.0",
     "tslint-microsoft-contrib": "^5.0.1",

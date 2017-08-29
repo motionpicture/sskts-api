@@ -7,6 +7,7 @@
  * @module middlewares/errorHandler
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const http_status_1 = require("http-status");
 const api_1 = require("../error/api");
 const logger_1 = require("../logger");
@@ -22,10 +23,18 @@ exports.default = (err, __, res, next) => {
     }
     else {
         if (err instanceof Error && err.name === 'SSKTSError') {
-            apiError = new api_1.APIError(http_status_1.BAD_REQUEST, [{
-                    title: err.code,
-                    detail: err.message
-                }]);
+            if (err.code === sskts.errorCode.ServiceUnavailable) {
+                apiError = new api_1.APIError(http_status_1.SERVICE_UNAVAILABLE, [{
+                        title: 'Service Unavailable',
+                        detail: err.message
+                    }]);
+            }
+            else {
+                apiError = new api_1.APIError(http_status_1.BAD_REQUEST, [{
+                        title: err.code,
+                        detail: err.message
+                    }]);
+            }
         }
         else {
             apiError = new api_1.APIError(http_status_1.INTERNAL_SERVER_ERROR, [{

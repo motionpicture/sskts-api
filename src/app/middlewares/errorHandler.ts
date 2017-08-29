@@ -6,8 +6,9 @@
  * @module middlewares/errorHandler
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import { NextFunction, Request, Response } from 'express';
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE } from 'http-status';
 
 import { APIError } from '../error/api';
 import logger from '../logger';
@@ -26,10 +27,17 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
         apiError = err;
     } else {
         if (err instanceof Error && err.name === 'SSKTSError') {
-            apiError = new APIError(BAD_REQUEST, [{
-                title: (<any>err).code,
-                detail: err.message
-            }]);
+            if ((<any>err).code === sskts.errorCode.ServiceUnavailable) {
+                apiError = new APIError(SERVICE_UNAVAILABLE, [{
+                    title: 'Service Unavailable',
+                    detail: err.message
+                }]);
+            } else {
+                apiError = new APIError(BAD_REQUEST, [{
+                    title: (<any>err).code,
+                    detail: err.message
+                }]);
+            }
         } else {
             apiError = new APIError(INTERNAL_SERVER_ERROR, [{
                 title: 'Internal Server Error',
