@@ -426,10 +426,12 @@ placeOrderTransactionsRouter.post(
 
             // todo その場で送信ではなくDBに登録するようにする
             const sendEmailNotification = sskts.factory.notification.email.create({
-                from: req.body.from,
-                to: req.body.to,
-                subject: req.body.subject,
-                content: req.body.content
+                data: {
+                    from: req.body.from,
+                    to: req.body.to,
+                    subject: req.body.subject,
+                    content: req.body.content
+                }
             });
             await sskts.service.notification.sendEmail(sendEmailNotification)();
 

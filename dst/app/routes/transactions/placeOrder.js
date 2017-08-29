@@ -307,10 +307,12 @@ placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification',
         // 取引が適切かどうかチェック
         // todo その場で送信ではなくDBに登録するようにする
         const sendEmailNotification = sskts.factory.notification.email.create({
-            from: req.body.from,
-            to: req.body.to,
-            subject: req.body.subject,
-            content: req.body.content
+            data: {
+                from: req.body.from,
+                to: req.body.to,
+                subject: req.body.subject,
+                content: req.body.content
+            }
         });
         yield sskts.service.notification.sendEmail(sendEmailNotification)();
         res.status(http_status_1.NO_CONTENT).end();
