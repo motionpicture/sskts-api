@@ -1,10 +1,7 @@
 "use strict";
-// tslint:disable-next-line:no-suspicious-comment
 /**
+ * error handler
  * エラーハンドラーミドルウェア
- *
- * TODO errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
- * 現時点では、雑にコントロールしてある
  * @module middlewares/errorHandler
  */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -25,20 +22,32 @@ exports.default = (err, __, res, next) => {
     else {
         if (err instanceof sskts.factory.error.SSKTS) {
             switch (true) {
-                case (err instanceof sskts.factory.error.ServiceUnavailable):
-                    apiError = new api_1.APIError(http_status_1.SERVICE_UNAVAILABLE, [err]);
+                // 401
+                case (err instanceof sskts.factory.error.Unauthorized):
+                    apiError = new api_1.APIError(http_status_1.UNAUTHORIZED, [err]);
                     break;
+                // 403
+                case (err instanceof sskts.factory.error.Forbidden):
+                    apiError = new api_1.APIError(http_status_1.FORBIDDEN, [err]);
+                    break;
+                // 404
                 case (err instanceof sskts.factory.error.NotFound):
                     apiError = new api_1.APIError(http_status_1.NOT_FOUND, [err]);
                     break;
+                // 503
+                case (err instanceof sskts.factory.error.ServiceUnavailable):
+                    apiError = new api_1.APIError(http_status_1.SERVICE_UNAVAILABLE, [err]);
+                    break;
+                // 400
                 default:
                     apiError = new api_1.APIError(http_status_1.BAD_REQUEST, [err]);
                     break;
             }
         }
         else {
+            // 500
             apiError = new api_1.APIError(http_status_1.INTERNAL_SERVER_ERROR, [{
-                    reason: 'internalServerError',
+                    reason: 'InternalServerError',
                     message: err.message
                 }]);
         }

@@ -85,12 +85,6 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // 会員フローの場合は使用できない
-        // todo レスポンスはどんなのが適切か
-        if (req.user.person !== undefined) {
-            res.status(http_status_1.FORBIDDEN).end('Forbidden');
-            return;
-        }
         const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
         const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
         if (!phoneUtil.isValidNumber(phoneNumber)) {

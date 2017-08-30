@@ -5,9 +5,8 @@
  * @module middlewares/permitScopes
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
-const http_status_1 = require("http-status");
-const api_1 = require("../error/api");
 const debug = createDebug('sskts-api:middlewares:permitScopes');
 exports.default = (permittedScopes) => {
     return (req, __, next) => {
@@ -26,10 +25,7 @@ exports.default = (permittedScopes) => {
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
             if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
-                next(new api_1.APIError(http_status_1.FORBIDDEN, [{
-                        reason: 'Forbidden',
-                        message: 'scope requirements not satisfied'
-                    }]));
+                next(new sskts.factory.error.Forbidden('scope requirements not satisfied'));
             }
             else {
                 next();

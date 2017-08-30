@@ -4,11 +4,9 @@
  * @module middlewares/requireMember
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
-import { FORBIDDEN } from 'http-status';
-
-import { APIError } from '../error/api';
 
 const debug = createDebug('sskts-api:middlewares:requireMember');
 
@@ -21,10 +19,7 @@ export default (req: Request, __: Response, next: NextFunction) => {
         return;
     }
 
-    next(new APIError(FORBIDDEN, [{
-        reason: <any>'Forbidden',
-        message: 'login required'
-    }]));
+    next(new sskts.factory.error.Forbidden('login required'));
 };
 
 export function isMember(user: Express.IUser) {

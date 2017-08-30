@@ -5,9 +5,8 @@
  * @module middlewares/requireMember
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
-const http_status_1 = require("http-status");
-const api_1 = require("../error/api");
 const debug = createDebug('sskts-api:middlewares:requireMember');
 exports.default = (req, __, next) => {
     // 会員としてログイン済みであればOK
@@ -16,10 +15,7 @@ exports.default = (req, __, next) => {
         next();
         return;
     }
-    next(new api_1.APIError(http_status_1.FORBIDDEN, [{
-            reason: 'Forbidden',
-            message: 'login required'
-        }]));
+    next(new sskts.factory.error.Forbidden('login required'));
 };
 function isMember(user) {
     return (user.username !== undefined);

@@ -14,15 +14,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 // import * as jwt from 'express-jwt';
 // import * as fs from 'fs';
-const http_status_1 = require("http-status");
 const jwt = require("jsonwebtoken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const jwkToPem = require('jwk-to-pem');
 const request = require("request-promise-native");
-const api_1 = require("../error/api");
 const debug = createDebug('sskts-api:middlewares:authentication');
 const ISSUER = process.env.TOKEN_ISSUER;
 // const permittedAudiences = [
@@ -55,10 +54,7 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
         next();
     }
     catch (error) {
-        next(new api_1.APIError(http_status_1.UNAUTHORIZED, [{
-                reason: 'Unauthorized',
-                message: error.message
-            }]));
+        next(new sskts.factory.error.Unauthorized(error.message));
     }
 });
 function createPems() {

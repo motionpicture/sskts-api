@@ -4,11 +4,9 @@
  * @module middlewares/permitScopes
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
-import { FORBIDDEN } from 'http-status';
-
-import { APIError } from '../error/api';
 
 const debug = createDebug('sskts-api:middlewares:permitScopes');
 
@@ -38,10 +36,7 @@ export default (permittedScopes: IScope[]) => {
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
             if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
-                next(new APIError(FORBIDDEN, [{
-                    reason: <any>'Forbidden',
-                    message: 'scope requirements not satisfied'
-                }]));
+                next(new sskts.factory.error.Forbidden('scope requirements not satisfied'));
             } else {
                 next();
             }

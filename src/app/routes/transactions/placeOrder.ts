@@ -7,7 +7,7 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import { CREATED, FORBIDDEN, NO_CONTENT } from 'http-status';
+import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
 const placeOrderTransactionsRouter = Router();
@@ -102,14 +102,6 @@ placeOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            // 会員フローの場合は使用できない
-            // todo レスポンスはどんなのが適切か
-            if (req.user.person !== undefined) {
-                res.status(FORBIDDEN).end('Forbidden');
-
-                return;
-            }
-
             const phoneUtil = PhoneNumberUtil.getInstance();
             const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
             if (!phoneUtil.isValidNumber(phoneNumber)) {

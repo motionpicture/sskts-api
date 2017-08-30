@@ -5,17 +5,15 @@
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 // import * as jwt from 'express-jwt';
 // import * as fs from 'fs';
-import { UNAUTHORIZED } from 'http-status';
 import * as jwt from 'jsonwebtoken';
 // tslint:disable-next-line:no-require-imports no-var-requires
 const jwkToPem = require('jwk-to-pem');
 import * as request from 'request-promise-native';
-
-import { APIError } from '../error/api';
 
 const debug = createDebug('sskts-api:middlewares:authentication');
 
@@ -116,10 +114,7 @@ export default async (req: Request, __: Response, next: NextFunction) => {
 
         next();
     } catch (error) {
-        next(new APIError(UNAUTHORIZED, [{
-            reason: <any>'Unauthorized',
-            message: error.message
-        }]));
+        next(new sskts.factory.error.Unauthorized(error.message));
     }
 };
 
