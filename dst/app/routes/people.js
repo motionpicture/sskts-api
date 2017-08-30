@@ -22,7 +22,6 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const requireMember_1 = require("../middlewares/requireMember");
 const validator_1 = require("../middlewares/validator");
-const api_1 = require("../error/api");
 const peopleRouter = express_1.Router();
 const debug = createDebug('sskts-api:routes:people');
 peopleRouter.use(authentication_1.default);
@@ -83,10 +82,7 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
         const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
         debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
         if (!phoneUtil.isValidNumber(phoneNumber)) {
-            next(new api_1.APIError(http_status_1.BAD_REQUEST, [{
-                    title: 'BadRequest',
-                    detail: 'invalid phone number format'
-                }]));
+            next(new sskts.factory.error.Argument('telephone', 'invalid phone number format'));
             return;
         }
         const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
@@ -115,10 +111,7 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
             ]
         }, (err) => {
             if (err instanceof Error) {
-                next(new api_1.APIError(http_status_1.BAD_REQUEST, [{
-                        title: 'BadRequest',
-                        detail: err.message
-                    }]));
+                next(new sskts.factory.error.Argument('contact', err.message));
             }
             else {
                 res.status(http_status_1.NO_CONTENT).end();

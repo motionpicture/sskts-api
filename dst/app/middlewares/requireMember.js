@@ -17,8 +17,8 @@ exports.default = (req, __, next) => {
         return;
     }
     next(new api_1.APIError(http_status_1.FORBIDDEN, [{
-            title: 'Forbidden',
-            detail: 'login required'
+            reason: 'Forbidden',
+            message: 'login required'
         }]));
 };
 function isMember(user) {

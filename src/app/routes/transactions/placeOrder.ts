@@ -7,7 +7,7 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import { CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND } from 'http-status';
+import { CREATED, FORBIDDEN, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
 const placeOrderTransactionsRouter = Router();
@@ -16,8 +16,6 @@ import * as redis from '../../../redis';
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
-
-import { APIError } from '../../error/api';
 
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 
@@ -60,7 +58,7 @@ placeOrderTransactionsRouter.post(
             });
             debug('starting a transaction...scope:', scope);
 
-            const transactionOption = await sskts.service.transaction.placeOrder.start({
+            const transaction = await sskts.service.transaction.placeOrder.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
                 // tslint:disable-next-line:no-magic-numbers
@@ -75,21 +73,11 @@ placeOrderTransactionsRouter.post(
                 sskts.adapter.transactionCount(redis.getClient())
                 );
 
-            transactionOption.match({
-                Some: (transaction) => {
-                    // tslint:disable-next-line:no-string-literal
-                    // const host = req.headers['host'];
-                    // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
-                    res.json({
-                        data: transaction
-                    });
-                },
-                None: () => {
-                    next(new APIError(NOT_FOUND, [{
-                        title: 'NotFound',
-                        detail: 'available transaction not found'
-                    }]));
-                }
+            // tslint:disable-next-line:no-string-literal
+            // const host = req.headers['host'];
+            // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
+            res.json({
+                data: transaction
             });
         } catch (error) {
             next(error);
@@ -159,26 +147,19 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const findIndividualScreeningEventOption = await sskts.service.event.findIndividualScreeningEventByIdentifier(
+            const findIndividualScreeningEvent = await sskts.service.event.findIndividualScreeningEventByIdentifier(
                 req.body.eventIdentifier
             )(sskts.adapter.event(sskts.mongoose.connection));
 
-            if (findIndividualScreeningEventOption.isEmpty) {
-                next(new APIError(NOT_FOUND, [{
-                    title: 'NotFound',
-                    detail: 'individualScreeningEvent not found'
-                }]));
-            } else {
-                const authorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization(
-                    req.params.transactionId,
-                    findIndividualScreeningEventOption.get(),
-                    req.body.offers
-                )(sskts.adapter.transaction(sskts.mongoose.connection));
+            const authorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization(
+                req.params.transactionId,
+                findIndividualScreeningEvent,
+                req.body.offers
+            )(sskts.adapter.transaction(sskts.mongoose.connection));
 
-                res.status(CREATED).json({
-                    data: authorization
-                });
-            }
+            res.status(CREATED).json({
+                data: authorization
+            });
         } catch (error) {
             next(error);
         }

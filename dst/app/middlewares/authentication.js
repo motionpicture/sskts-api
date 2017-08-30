@@ -56,8 +56,8 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
     }
     catch (error) {
         next(new api_1.APIError(http_status_1.UNAUTHORIZED, [{
-                title: 'Unauthorized',
-                detail: error.message
+                reason: 'Unauthorized',
+                message: error.message
             }]));
     }
 });

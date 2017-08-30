@@ -6,13 +6,10 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import { NOT_FOUND } from 'http-status';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
-
-import { APIError } from '../error/api';
 
 const ordersRouter = Router();
 ordersRouter.use(authentication);
@@ -48,19 +45,9 @@ ordersRouter.post(
             };
 
             await sskts.service.order.findByOrderInquiryKey(key)(sskts.adapter.order(sskts.mongoose.connection))
-                .then((option) => {
-                    option.match({
-                        Some: (order) => {
-                            res.json({
-                                data: order
-                            });
-                        },
-                        None: () => {
-                            next(new APIError(NOT_FOUND, [{
-                                title: 'NotFound',
-                                detail: 'order not found'
-                            }]));
-                        }
+                .then((order) => {
+                    res.json({
+                        data: order
                     });
                 });
         } catch (error) {

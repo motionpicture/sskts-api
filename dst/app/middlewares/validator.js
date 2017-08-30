@@ -14,6 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const api_1 = require("../error/api");
@@ -24,13 +25,14 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
         const errors = validatorResult.array().map((mappedRrror) => {
             return {
                 source: { parameter: mappedRrror.param },
-                title: 'invalid parameter',
-                detail: mappedRrror.msg
+                reason: sskts.factory.errorCode.Argument,
+                message: mappedRrror.msg
             };
         });
         debug('responding...', errors);
         next(new api_1.APIError(http_status_1.BAD_REQUEST, errors));
-        return;
     }
-    next();
+    else {
+        next();
+    }
 });

@@ -1,22 +1,18 @@
 /**
+ * event router
  * イベントルーター
- *
- * @ignore
+ * @module eventsRouter
  */
 
-import { Router } from 'express';
-const eventsRouter = Router();
-
 import * as sskts from '@motionpicture/sskts-domain';
-import { NOT_FOUND } from 'http-status';
+import { Router } from 'express';
 
 import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
-import { APIError } from '../error/api';
-
+const eventsRouter = Router();
 eventsRouter.use(authentication);
 
 eventsRouter.get(
@@ -28,21 +24,10 @@ eventsRouter.get(
             await sskts.service.event.findIndividualScreeningEventByIdentifier(req.params.identifier)(
                 sskts.adapter.event(sskts.mongoose.connection),
                 sskts.adapter.itemAvailability.individualScreeningEvent(redis.getClient())
-            ).then((option) => {
-                option.match({
-                    Some: (event) => {
-                        res.json({
-                            data: event
-                        });
-                    },
-                    None: () => {
-                        next(new APIError(NOT_FOUND, [{
-                            title: 'NotFound',
-                            detail: 'event not found'
-                        }]));
-                    }
+            ).then((event) => {
+                res.json({
+                    data: event
                 });
-
             });
         } catch (error) {
             next(error);

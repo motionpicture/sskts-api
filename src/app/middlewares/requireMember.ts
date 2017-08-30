@@ -22,8 +22,8 @@ export default (req: Request, __: Response, next: NextFunction) => {
     }
 
     next(new APIError(FORBIDDEN, [{
-        title: 'Forbidden',
-        detail: 'login required'
+        reason: <any>'Forbidden',
+        message: 'login required'
     }]));
 };
 

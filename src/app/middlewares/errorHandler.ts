@@ -1,14 +1,15 @@
+// tslint:disable-next-line:no-suspicious-comment
 /**
  * エラーハンドラーミドルウェア
  *
- * todo errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
+ * TODO errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
  * 現時点では、雑にコントロールしてある
  * @module middlewares/errorHandler
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
 import { NextFunction, Request, Response } from 'express';
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE } from 'http-status';
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE } from 'http-status';
 
 import { APIError } from '../error/api';
 import logger from '../logger';
@@ -26,22 +27,24 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
     if (err instanceof APIError) {
         apiError = err;
     } else {
-        if (err instanceof Error && err.name === 'SSKTSError') {
-            if ((<any>err).code === sskts.errorCode.ServiceUnavailable) {
-                apiError = new APIError(SERVICE_UNAVAILABLE, [{
-                    title: 'Service Unavailable',
-                    detail: err.message
-                }]);
-            } else {
-                apiError = new APIError(BAD_REQUEST, [{
-                    title: (<any>err).code,
-                    detail: err.message
-                }]);
+        if (err instanceof sskts.factory.error.SSKTS) {
+            switch (true) {
+                case (err instanceof sskts.factory.error.ServiceUnavailable):
+                    apiError = new APIError(SERVICE_UNAVAILABLE, [err]);
+                    break;
+
+                case (err instanceof sskts.factory.error.NotFound):
+                    apiError = new APIError(NOT_FOUND, [err]);
+                    break;
+
+                default:
+                    apiError = new APIError(BAD_REQUEST, [err]);
+                    break;
             }
         } else {
             apiError = new APIError(INTERNAL_SERVER_ERROR, [{
-                title: 'Internal Server Error',
-                detail: err.message
+                reason: <any>'internalServerError',
+                message: err.message
             }]);
         }
     }

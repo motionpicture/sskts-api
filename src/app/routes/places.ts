@@ -8,13 +8,10 @@ import { Router } from 'express';
 const placesRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
-import { NOT_FOUND } from 'http-status';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
-
-import { APIError } from '../error/api';
 
 placesRouter.use(authentication);
 
@@ -26,19 +23,9 @@ placesRouter.get(
         try {
             await sskts.service.place.findMovieTheaterByBranchCode(req.params.branchCode)(
                 sskts.adapter.place(sskts.mongoose.connection)
-            ).then((option) => {
-                option.match({
-                    Some: (theater) => {
-                        res.json({
-                            data: theater
-                        });
-                    },
-                    None: () => {
-                        next(new APIError(NOT_FOUND, [{
-                            title: 'NotFound',
-                            detail: 'movieTheater not found'
-                        }]));
-                    }
+            ).then((theater) => {
+                res.json({
+                    data: theater
                 });
             });
         } catch (error) {

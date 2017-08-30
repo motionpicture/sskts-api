@@ -1,8 +1,9 @@
 "use strict";
+// tslint:disable-next-line:no-suspicious-comment
 /**
  * エラーハンドラーミドルウェア
  *
- * todo errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
+ * TODO errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
  * 現時点では、雑にコントロールしてある
  * @module middlewares/errorHandler
  */
@@ -22,24 +23,23 @@ exports.default = (err, __, res, next) => {
         apiError = err;
     }
     else {
-        if (err instanceof Error && err.name === 'SSKTSError') {
-            if (err.code === sskts.errorCode.ServiceUnavailable) {
-                apiError = new api_1.APIError(http_status_1.SERVICE_UNAVAILABLE, [{
-                        title: 'Service Unavailable',
-                        detail: err.message
-                    }]);
-            }
-            else {
-                apiError = new api_1.APIError(http_status_1.BAD_REQUEST, [{
-                        title: err.code,
-                        detail: err.message
-                    }]);
+        if (err instanceof sskts.factory.error.SSKTS) {
+            switch (true) {
+                case (err instanceof sskts.factory.error.ServiceUnavailable):
+                    apiError = new api_1.APIError(http_status_1.SERVICE_UNAVAILABLE, [err]);
+                    break;
+                case (err instanceof sskts.factory.error.NotFound):
+                    apiError = new api_1.APIError(http_status_1.NOT_FOUND, [err]);
+                    break;
+                default:
+                    apiError = new api_1.APIError(http_status_1.BAD_REQUEST, [err]);
+                    break;
             }
         }
         else {
             apiError = new api_1.APIError(http_status_1.INTERNAL_SERVER_ERROR, [{
-                    title: 'Internal Server Error',
-                    detail: err.message
+                    reason: 'internalServerError',
+                    message: err.message
                 }]);
         }
     }

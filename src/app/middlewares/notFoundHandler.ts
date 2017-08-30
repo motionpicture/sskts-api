@@ -4,14 +4,9 @@
  * @module middlewares/notFoundHandler
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import { NextFunction, Request, Response } from 'express';
-import { NOT_FOUND } from 'http-status';
-
-import { APIError } from '../error/api';
 
 export default (req: Request, __: Response, next: NextFunction) => {
-    next(new APIError(NOT_FOUND, [{
-        title: 'NotFound',
-        detail: `router for [${req.originalUrl}] not found.`
-    }]));
+    next(new sskts.factory.error.NotFound(`router for [${req.originalUrl}]`));
 };

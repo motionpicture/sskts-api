@@ -5,6 +5,7 @@
  * @module middlewares/validator
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import { BAD_REQUEST } from 'http-status';
@@ -19,16 +20,14 @@ export default async (req: Request, __: Response, next: NextFunction) => {
         const errors = validatorResult.array().map((mappedRrror) => {
             return {
                 source: { parameter: mappedRrror.param },
-                title: 'invalid parameter',
-                detail: mappedRrror.msg
+                reason: sskts.factory.errorCode.Argument,
+                message: mappedRrror.msg
             };
         });
         debug('responding...', errors);
 
         next(new APIError(BAD_REQUEST, errors));
-
-        return;
+    } else {
+        next();
     }
-
-    next();
 };

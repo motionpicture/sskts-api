@@ -15,11 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const express_1 = require("express");
 const google_libphonenumber_1 = require("google-libphonenumber");
-const http_status_1 = require("http-status");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
-const api_1 = require("../error/api");
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
@@ -44,19 +42,9 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
             telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
         yield sskts.service.order.findByOrderInquiryKey(key)(sskts.adapter.order(sskts.mongoose.connection))
-            .then((option) => {
-            option.match({
-                Some: (order) => {
-                    res.json({
-                        data: order
-                    });
-                },
-                None: () => {
-                    next(new api_1.APIError(http_status_1.NOT_FOUND, [{
-                            title: 'NotFound',
-                            detail: 'order not found'
-                        }]));
-                }
+            .then((order) => {
+            res.json({
+                data: order
             });
         });
     }

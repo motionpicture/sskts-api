@@ -1,7 +1,9 @@
+import { factory } from '@motionpicture/sskts-domain';
+
 export interface IChildError {
     source?: { parameter: string; };
-    title: string;
-    detail: string;
+    reason: factory.errorCode;
+    message: string;
 }
 /**
  * APIError
@@ -14,7 +16,7 @@ export class APIError extends Error {
     public readonly errors: IChildError[];
 
     constructor(code: number, errors: IChildError[]) {
-        const message = errors.map((error) => error.detail).join('\n');
+        const message = errors.map((error) => error.message).join('\n');
         super(message);
 
         this.name = 'APIError';

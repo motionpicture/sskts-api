@@ -117,8 +117,8 @@ export default async (req: Request, __: Response, next: NextFunction) => {
         next();
     } catch (error) {
         next(new APIError(UNAUTHORIZED, [{
-            title: 'Unauthorized',
-            detail: error.message
+            reason: <any>'Unauthorized',
+            message: error.message
         }]));
     }
 };

@@ -23,7 +23,6 @@ const redis = require("../../../redis");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
-const api_1 = require("../../error/api");
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
@@ -54,7 +53,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             readyThrough: readyThrough.toDate()
         });
         debug('starting a transaction...scope:', scope);
-        const transactionOption = yield sskts.service.transaction.placeOrder.start({
+        const transaction = yield sskts.service.transaction.placeOrder.start({
             // tslint:disable-next-line:no-magic-numbers
             expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
             // tslint:disable-next-line:no-magic-numbers
@@ -64,21 +63,11 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             agentId: req.getUser().sub,
             sellerId: req.body.sellerId
         })(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
-        transactionOption.match({
-            Some: (transaction) => {
-                // tslint:disable-next-line:no-string-literal
-                // const host = req.headers['host'];
-                // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
-                res.json({
-                    data: transaction
-                });
-            },
-            None: () => {
-                next(new api_1.APIError(http_status_1.NOT_FOUND, [{
-                        title: 'NotFound',
-                        detail: 'available transaction not found'
-                    }]));
-            }
+        // tslint:disable-next-line:no-string-literal
+        // const host = req.headers['host'];
+        // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
+        res.json({
+            data: transaction
         });
     }
     catch (error) {
@@ -128,19 +117,11 @@ placeOrderTransactionsRouter.post('/:transactionId/seatReservationAuthorization'
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const findIndividualScreeningEventOption = yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(sskts.adapter.event(sskts.mongoose.connection));
-        if (findIndividualScreeningEventOption.isEmpty) {
-            next(new api_1.APIError(http_status_1.NOT_FOUND, [{
-                    title: 'NotFound',
-                    detail: 'individualScreeningEvent not found'
-                }]));
-        }
-        else {
-            const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.transactionId, findIndividualScreeningEventOption.get(), req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));
-            res.status(http_status_1.CREATED).json({
-                data: authorization
-            });
-        }
+        const findIndividualScreeningEvent = yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(sskts.adapter.event(sskts.mongoose.connection));
+        const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.transactionId, findIndividualScreeningEvent, req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));
+        res.status(http_status_1.CREATED).json({
+            data: authorization
+        });
     }
     catch (error) {
         next(error);

@@ -1,8 +1,8 @@
 "use strict";
 /**
+ * event router
  * イベントルーター
- *
- * @ignore
+ * @module eventsRouter
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,31 +13,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const eventsRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
-const http_status_1 = require("http-status");
+const express_1 = require("express");
 const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
-const api_1 = require("../error/api");
+const eventsRouter = express_1.Router();
 eventsRouter.use(authentication_1.default);
 eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.params.identifier)(sskts.adapter.event(sskts.mongoose.connection), sskts.adapter.itemAvailability.individualScreeningEvent(redis.getClient())).then((option) => {
-            option.match({
-                Some: (event) => {
-                    res.json({
-                        data: event
-                    });
-                },
-                None: () => {
-                    next(new api_1.APIError(http_status_1.NOT_FOUND, [{
-                            title: 'NotFound',
-                            detail: 'event not found'
-                        }]));
-                }
+        yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.params.identifier)(sskts.adapter.event(sskts.mongoose.connection), sskts.adapter.itemAvailability.individualScreeningEvent(redis.getClient())).then((event) => {
+            res.json({
+                data: event
             });
         });
     }

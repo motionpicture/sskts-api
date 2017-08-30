@@ -27,8 +27,8 @@ exports.default = (permittedScopes) => {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
             if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
                 next(new api_1.APIError(http_status_1.FORBIDDEN, [{
-                        title: 'Forbidden',
-                        detail: 'scope requirements not satisfied'
+                        reason: 'Forbidden',
+                        message: 'scope requirements not satisfied'
                     }]));
             }
             else {

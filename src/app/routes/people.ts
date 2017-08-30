@@ -8,14 +8,12 @@ import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import { BAD_REQUEST, CREATED, NO_CONTENT } from 'http-status';
+import { CREATED, NO_CONTENT } from 'http-status';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import requireMember from '../middlewares/requireMember';
 import validator from '../middlewares/validator';
-
-import { APIError } from '../error/api';
 
 const peopleRouter = Router();
 
@@ -97,10 +95,7 @@ peopleRouter.put(
             const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
             debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
             if (!phoneUtil.isValidNumber(phoneNumber)) {
-                next(new APIError(BAD_REQUEST, [{
-                    title: 'BadRequest',
-                    detail: 'invalid phone number format'
-                }]));
+                next(new sskts.factory.error.Argument('telephone', 'invalid phone number format'));
 
                 return;
             }
@@ -134,10 +129,7 @@ peopleRouter.put(
                 },
                 (err) => {
                     if (err instanceof Error) {
-                        next(new APIError(BAD_REQUEST, [{
-                            title: 'BadRequest',
-                            detail: err.message
-                        }]));
+                        next(new sskts.factory.error.Argument('contact', err.message));
                     } else {
                         res.status(NO_CONTENT).end();
                     }

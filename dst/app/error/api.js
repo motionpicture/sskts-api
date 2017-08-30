@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 class APIError extends Error {
     constructor(code, errors) {
-        const message = errors.map((error) => error.detail).join('\n');
+        const message = errors.map((error) => error.message).join('\n');
         super(message);
         this.name = 'APIError';
         this.code = code;
