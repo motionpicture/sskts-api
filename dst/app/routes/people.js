@@ -214,7 +214,12 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
             creditCard = searchCardResults[0];
         }
         catch (error) {
-            throw new Error(error.errors[0].content);
+            if (error.name === 'GMOServiceBadRequestError') {
+                throw new sskts.factory.errors.Argument('creditCard', error.errors[0].content);
+            }
+            else {
+                throw error;
+            }
         }
         res.status(http_status_1.CREATED).json({
             data: creditCard
@@ -227,23 +232,34 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
 /**
  * 会員カード削除
  */
-// peopleRouter.delete(
-//     '/me/cards/:id',
-//     permitScopes(['people.cards']),
-//     (_1, _2, next) => {
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const ownerId = <string>req.getUser().owner;
-//             await sskts.service.member.removeCard(ownerId, req.params.id)();
-//             res.status(NO_CONTENT).end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
+peopleRouter.delete('/me/creditCards/:cardSeq', permitScopes_1.default(['people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        try {
+            // GMOからカード削除
+            const memberId = req.getUser().sub;
+            const deleteCardResult = yield sskts.GMO.services.card.deleteCard({
+                siteId: process.env.GMO_SITE_ID,
+                sitePass: process.env.GMO_SITE_PASS,
+                memberId: memberId,
+                seqMode: sskts.GMO.utils.util.SeqMode.Physics,
+                cardSeq: req.params.cardSeq
+            });
+            debug('credit card deleted', deleteCardResult);
+        }
+        catch (error) {
+            if (error.name === 'GMOServiceBadRequestError') {
+                throw new sskts.factory.errors.Argument('cardSeq', error.errors[0].content);
+            }
+            else {
+                throw error;
+            }
+        }
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * find user's reservation ownershipInfos
  */
