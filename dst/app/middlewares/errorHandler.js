@@ -20,22 +20,22 @@ exports.default = (err, __, res, next) => {
         apiError = err;
     }
     else {
-        if (err instanceof sskts.factory.error.SSKTS) {
+        if (err instanceof sskts.factory.errors.SSKTS) {
             switch (true) {
                 // 401
-                case (err instanceof sskts.factory.error.Unauthorized):
+                case (err instanceof sskts.factory.errors.Unauthorized):
                     apiError = new api_1.APIError(http_status_1.UNAUTHORIZED, [err]);
                     break;
                 // 403
-                case (err instanceof sskts.factory.error.Forbidden):
+                case (err instanceof sskts.factory.errors.Forbidden):
                     apiError = new api_1.APIError(http_status_1.FORBIDDEN, [err]);
                     break;
                 // 404
-                case (err instanceof sskts.factory.error.NotFound):
+                case (err instanceof sskts.factory.errors.NotFound):
                     apiError = new api_1.APIError(http_status_1.NOT_FOUND, [err]);
                     break;
                 // 503
-                case (err instanceof sskts.factory.error.ServiceUnavailable):
+                case (err instanceof sskts.factory.errors.ServiceUnavailable):
                     apiError = new api_1.APIError(http_status_1.SERVICE_UNAVAILABLE, [err]);
                     break;
                 // 400
@@ -46,17 +46,10 @@ exports.default = (err, __, res, next) => {
         }
         else {
             // 500
-            apiError = new api_1.APIError(http_status_1.INTERNAL_SERVER_ERROR, [{
-                    reason: 'InternalServerError',
-                    message: err.message
-                }]);
+            apiError = new api_1.APIError(http_status_1.INTERNAL_SERVER_ERROR, [new sskts.factory.errors.SSKTS('InternalServerError', err.message)]);
         }
     }
     res.status(apiError.code).json({
-        error: {
-            errors: apiError.errors,
-            code: apiError.code,
-            message: apiError.message
-        }
+        error: apiError.toObject()
     });
 };

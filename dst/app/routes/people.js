@@ -82,7 +82,7 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
         const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
         debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
         if (!phoneUtil.isValidNumber(phoneNumber)) {
-            next(new sskts.factory.error.Argument('telephone', 'invalid phone number format'));
+            next(new sskts.factory.errors.Argument('telephone', 'invalid phone number format'));
             return;
         }
         const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
@@ -111,7 +111,7 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
             ]
         }, (err) => {
             if (err instanceof Error) {
-                next(new sskts.factory.error.Argument('contact', err.message));
+                next(new sskts.factory.errors.Argument('contact', err.message));
             }
             else {
                 res.status(http_status_1.NO_CONTENT).end();

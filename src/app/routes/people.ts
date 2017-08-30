@@ -95,7 +95,7 @@ peopleRouter.put(
             const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
             debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
             if (!phoneUtil.isValidNumber(phoneNumber)) {
-                next(new sskts.factory.error.Argument('telephone', 'invalid phone number format'));
+                next(new sskts.factory.errors.Argument('telephone', 'invalid phone number format'));
 
                 return;
             }
@@ -129,7 +129,7 @@ peopleRouter.put(
                 },
                 (err) => {
                     if (err instanceof Error) {
-                        next(new sskts.factory.error.Argument('contact', err.message));
+                        next(new sskts.factory.errors.Argument('contact', err.message));
                     } else {
                         res.status(NO_CONTENT).end();
                     }

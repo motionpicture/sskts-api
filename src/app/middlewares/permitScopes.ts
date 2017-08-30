@@ -36,7 +36,7 @@ export default (permittedScopes: IScope[]) => {
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
             if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
-                next(new sskts.factory.error.Forbidden('scope requirements not satisfied'));
+                next(new sskts.factory.errors.Forbidden('scope requirements not satisfied'));
             } else {
                 next();
             }

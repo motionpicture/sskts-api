@@ -18,11 +18,7 @@ export default async (req: Request, __: Response, next: NextFunction) => {
     const validatorResult = await req.getValidationResult();
     if (!validatorResult.isEmpty()) {
         const errors = validatorResult.array().map((mappedRrror) => {
-            return {
-                source: { parameter: mappedRrror.param },
-                reason: sskts.factory.errorCode.Argument,
-                message: mappedRrror.msg
-            };
+            return new sskts.factory.errors.Argument(mappedRrror.param, mappedRrror.msg);
         });
         debug('responding...', errors);
 

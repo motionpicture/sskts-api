@@ -114,7 +114,7 @@ export default async (req: Request, __: Response, next: NextFunction) => {
 
         next();
     } catch (error) {
-        next(new sskts.factory.error.Unauthorized(error.message));
+        next(new sskts.factory.errors.Unauthorized(error.message));
     }
 };
 

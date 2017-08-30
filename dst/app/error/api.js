@@ -16,5 +16,14 @@ class APIError extends Error {
         // Set the prototype explicitly.
         Object.setPrototypeOf(this, APIError.prototype);
     }
+    toObject() {
+        return {
+            errors: this.errors.map((error) => {
+                return Object.assign({}, error, { message: error.message });
+            }),
+            code: this.code,
+            message: this.message
+        };
+    }
 }
 exports.APIError = APIError;

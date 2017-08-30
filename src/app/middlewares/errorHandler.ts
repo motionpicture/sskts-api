@@ -24,25 +24,25 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
     if (err instanceof APIError) {
         apiError = err;
     } else {
-        if (err instanceof sskts.factory.error.SSKTS) {
+        if (err instanceof sskts.factory.errors.SSKTS) {
             switch (true) {
                 // 401
-                case (err instanceof sskts.factory.error.Unauthorized):
+                case (err instanceof sskts.factory.errors.Unauthorized):
                     apiError = new APIError(UNAUTHORIZED, [err]);
                     break;
 
                 // 403
-                case (err instanceof sskts.factory.error.Forbidden):
+                case (err instanceof sskts.factory.errors.Forbidden):
                     apiError = new APIError(FORBIDDEN, [err]);
                     break;
 
                 // 404
-                case (err instanceof sskts.factory.error.NotFound):
+                case (err instanceof sskts.factory.errors.NotFound):
                     apiError = new APIError(NOT_FOUND, [err]);
                     break;
 
                 // 503
-                case (err instanceof sskts.factory.error.ServiceUnavailable):
+                case (err instanceof sskts.factory.errors.ServiceUnavailable):
                     apiError = new APIError(SERVICE_UNAVAILABLE, [err]);
                     break;
 
@@ -53,18 +53,11 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
             }
         } else {
             // 500
-            apiError = new APIError(INTERNAL_SERVER_ERROR, [{
-                reason: <any>'InternalServerError',
-                message: err.message
-            }]);
+            apiError = new APIError(INTERNAL_SERVER_ERROR, [new sskts.factory.errors.SSKTS(<any>'InternalServerError', err.message)]);
         }
     }
 
     res.status(apiError.code).json({
-        error: {
-            errors: apiError.errors,
-            code: apiError.code,
-            message: apiError.message
-        }
+        error: apiError.toObject()
     });
 };

@@ -1,10 +1,5 @@
 import { factory } from '@motionpicture/sskts-domain';
 
-export interface IChildError {
-    source?: { parameter: string; };
-    reason: factory.errorCode;
-    message: string;
-}
 /**
  * APIError
  *
@@ -13,9 +8,9 @@ export interface IChildError {
  */
 export class APIError extends Error {
     public readonly code: number;
-    public readonly errors: IChildError[];
+    public readonly errors: factory.errors.SSKTS[];
 
-    constructor(code: number, errors: IChildError[]) {
+    constructor(code: number, errors: factory.errors.SSKTS[]) {
         const message = errors.map((error) => error.message).join('\n');
         super(message);
 
@@ -25,5 +20,18 @@ export class APIError extends Error {
 
         // Set the prototype explicitly.
         Object.setPrototypeOf(this, APIError.prototype);
+    }
+
+    public toObject() {
+        return {
+            errors: this.errors.map((error) => {
+                return {
+                    ...error,
+                    ...{ message: error.message }
+                };
+            }),
+            code: this.code,
+            message: this.message
+        };
     }
 }

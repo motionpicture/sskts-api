@@ -15,7 +15,7 @@ exports.default = (req, __, next) => {
         next();
         return;
     }
-    next(new sskts.factory.error.Forbidden('login required'));
+    next(new sskts.factory.errors.Forbidden('login required'));
 };
 function isMember(user) {
     return (user.username !== undefined);

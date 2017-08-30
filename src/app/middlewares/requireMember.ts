@@ -19,7 +19,7 @@ export default (req: Request, __: Response, next: NextFunction) => {
         return;
     }
 
-    next(new sskts.factory.error.Forbidden('login required'));
+    next(new sskts.factory.errors.Forbidden('login required'));
 };
 
 export function isMember(user: Express.IUser) {
