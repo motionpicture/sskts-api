@@ -22,7 +22,7 @@ organizationsRouter.get(
     async (req, res, next) => {
         try {
             await sskts.service.organization.findMovieTheaterByBranchCode(req.params.branchCode)(
-                sskts.adapter.organization(sskts.mongoose.connection)
+                sskts.repository.organization(sskts.mongoose.connection)
             ).then((movieTheater) => {
                 res.json({
                     data: movieTheater
@@ -40,7 +40,7 @@ organizationsRouter.get(
     async (__, res, next) => {
         try {
             const movieTheaters = await sskts.service.organization.searchMovieTheaters({
-            })(sskts.adapter.organization(sskts.mongoose.connection));
+            })(sskts.repository.organization(sskts.mongoose.connection));
 
             res.json({
                 data: movieTheaters

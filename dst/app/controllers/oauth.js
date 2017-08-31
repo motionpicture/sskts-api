@@ -81,7 +81,7 @@ exports.MESSAGE_INVALID_CLIENT_CREDENTIALS = 'invalid client credentials';
 //     clientId: string, clientSecret: string, state: string, scopes: string[]
 // ): Promise<ICredentials> {
 //     // クライアントの存在確認
-//     const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+//     const clientAdapter = sskts.repository.client(sskts.mongoose.connection);
 //     const clientDoc = await clientAdapter.clientModel.findById(clientId).exec();
 //     if (clientDoc === null) {
 //         throw new Error(MESSAGE_CLIENT_NOT_FOUND);
@@ -105,14 +105,14 @@ exports.MESSAGE_INVALID_CLIENT_CREDENTIALS = 'invalid client credentials';
 //     idToken: string, clientId: string, state: string, scopes: string[]
 // ): Promise<ICredentials> {
 //     // クライアントの存在確認
-//     const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+//     const clientAdapter = sskts.repository.client(sskts.mongoose.connection);
 //     const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
 //     if (clientDoc === null) {
 //         throw new Error(MESSAGE_CLIENT_NOT_FOUND);
 //     }
 //     const userInfo = await verifyGoogleIdToken(idToken);
 //     // 会員検索(なければ登録)
-//     const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
+//     const personAdapter = await sskts.repository.person(sskts.mongoose.connection);
 //     const person = {
 //         typeOf: 'Person',
 //         email: userInfo.email,
@@ -183,7 +183,7 @@ exports.MESSAGE_INVALID_CLIENT_CREDENTIALS = 'invalid client credentials';
 //     code: string, redirectUri: string, clientId: string, state: string, scopes: string[]
 // ): Promise<ICredentials> {
 //     // クライアントの存在確認
-//     const clientAdapter = sskts.adapter.client(sskts.mongoose.connection);
+//     const clientAdapter = sskts.repository.client(sskts.mongoose.connection);
 //     const clientDoc = await clientAdapter.clientModel.findById(clientId, '_id').exec();
 //     if (clientDoc === null) {
 //         throw new Error(MESSAGE_CLIENT_NOT_FOUND);
@@ -223,7 +223,7 @@ exports.MESSAGE_INVALID_CLIENT_CREDENTIALS = 'invalid client credentials';
 //     });
 //     debug('profile is', profile);
 //     // 会員検索(なければ登録)
-//     const personAdapter = await sskts.adapter.person(sskts.mongoose.connection);
+//     const personAdapter = await sskts.repository.person(sskts.mongoose.connection);
 //     const person = {
 //         typeOf: 'Person',
 //         email: '',

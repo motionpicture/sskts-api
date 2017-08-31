@@ -41,7 +41,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
             confirmationNumber: req.body.confirmationNumber,
             telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
-        yield sskts.service.order.findByOrderInquiryKey(key)(sskts.adapter.order(sskts.mongoose.connection))
+        yield sskts.service.order.findByOrderInquiryKey(key)(sskts.repository.order(sskts.mongoose.connection))
             .then((order) => {
             res.json({
                 data: order

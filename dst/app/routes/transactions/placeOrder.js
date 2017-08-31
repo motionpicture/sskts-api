@@ -62,7 +62,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             scope: scope,
             agentId: req.getUser().sub,
             sellerId: req.body.sellerId
-        })(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection), sskts.adapter.transactionCount(redis.getClient()));
+        })(sskts.repository.organization(sskts.mongoose.connection), sskts.repository.transaction(sskts.mongoose.connection), sskts.repository.transactionCount(redis.getClient()));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -97,7 +97,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             email: req.body.email,
             telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
-        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contacts)(sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contacts)(sskts.repository.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -111,8 +111,8 @@ placeOrderTransactionsRouter.post('/:transactionId/seatReservationAuthorization'
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const findIndividualScreeningEvent = yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(sskts.adapter.event(sskts.mongoose.connection));
-        const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.transactionId, findIndividualScreeningEvent, req.body.offers)(sskts.adapter.transaction(sskts.mongoose.connection));
+        const findIndividualScreeningEvent = yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(sskts.repository.event(sskts.mongoose.connection));
+        const authorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(req.params.transactionId, findIndividualScreeningEvent, req.body.offers)(sskts.repository.transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
             data: authorization
         });
@@ -126,7 +126,7 @@ placeOrderTransactionsRouter.post('/:transactionId/seatReservationAuthorization'
  */
 placeOrderTransactionsRouter.delete('/:transactionId/seatReservationAuthorization/:authorizationId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(req.params.transactionId, req.params.authorizationId)(sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(req.params.transactionId, req.params.authorizationId)(sskts.repository.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -149,7 +149,7 @@ placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/creditCard', per
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const authorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(sskts.adapter.organization(sskts.mongoose.connection), sskts.adapter.transaction(sskts.mongoose.connection));
+        const authorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(sskts.repository.organization(sskts.mongoose.connection), sskts.repository.transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
             data: {
                 id: authorization.id,
@@ -166,7 +166,7 @@ placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/creditCard', per
  */
 placeOrderTransactionsRouter.delete('/:transactionId/paymentInfos/creditCard/:authorizationId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrder.cancelGMOAuthorization(req.params.transactionId, req.params.authorizationId)(sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.cancelGMOAuthorization(req.params.transactionId, req.params.authorizationId)(sskts.repository.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -196,7 +196,7 @@ placeOrderTransactionsRouter.post('/:transactionId/discountInfos/mvtk', permitSc
             zskInfo: req.body.zskInfo,
             skhnCd: req.body.skhnCd
         };
-        const authorization = yield sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.transactionId, authorizationResult)(sskts.adapter.transaction(sskts.mongoose.connection));
+        const authorization = yield sskts.service.transaction.placeOrder.createMvtkAuthorization(req.params.transactionId, authorizationResult)(sskts.repository.transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
             data: {
                 id: authorization.id,
@@ -213,7 +213,7 @@ placeOrderTransactionsRouter.post('/:transactionId/discountInfos/mvtk', permitSc
  */
 placeOrderTransactionsRouter.delete('/:transactionId/discountInfos/mvtk/:authorizationId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrder.cancelMvtkAuthorization(req.params.transactionId, req.params.authorizationId)(sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.cancelMvtkAuthorization(req.params.transactionId, req.params.authorizationId)(sskts.repository.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -222,7 +222,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/discountInfos/mvtk/:authori
 }));
 placeOrderTransactionsRouter.delete('/:transactionId/seatReservationAuthorization/:authorizationId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(req.params.transactionId, req.params.authorization_id)(sskts.adapter.transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(req.params.transactionId, req.params.authorization_id)(sskts.repository.transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -252,7 +252,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/seatReservationAuthorizatio
 //                 content: req.body.content
 //             });
 //             await sskts.service.transactionWithId.addEmail(req.params.transactionId, notification)(
-//                 sskts.adapter.transaction(sskts.mongoose.connection)
+//                 sskts.repository.transaction(sskts.mongoose.connection)
 //             );
 //             res.status(OK).json({
 //                 data: {
@@ -267,7 +267,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/seatReservationAuthorizatio
 // );
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const order = yield sskts.service.transaction.placeOrder.confirm(req.params.transactionId)(sskts.adapter.transaction(sskts.mongoose.connection));
+        const order = yield sskts.service.transaction.placeOrder.confirm(req.params.transactionId)(sskts.repository.transaction(sskts.mongoose.connection));
         debug('transaction confirmed', order);
         res.status(http_status_1.CREATED).json({
             data: order

@@ -308,7 +308,7 @@ peopleRouter.get(
     async (req, res, next) => {
         try {
             const personId = req.getUser().sub;
-            const ownershipInfoAdapter = sskts.adapter.ownershipInfo(sskts.mongoose.connection);
+            const ownershipInfoAdapter = sskts.repository.ownershipInfo(sskts.mongoose.connection);
             const data = await ownershipInfoAdapter.ownershipInfoModel.find({
                 'ownedBy.id': personId
             }).sort({ ownedFrom: 1 })

@@ -22,7 +22,7 @@ const validator_1 = require("../middlewares/validator");
 organizationsRouter.use(authentication_1.default);
 organizationsRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.organization.findMovieTheaterByBranchCode(req.params.branchCode)(sskts.adapter.organization(sskts.mongoose.connection)).then((movieTheater) => {
+        yield sskts.service.organization.findMovieTheaterByBranchCode(req.params.branchCode)(sskts.repository.organization(sskts.mongoose.connection)).then((movieTheater) => {
             res.json({
                 data: movieTheater
             });
@@ -34,7 +34,7 @@ organizationsRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['or
 }));
 organizationsRouter.get('/movieTheater', permitScopes_1.default(['organizations', 'organizations.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const movieTheaters = yield sskts.service.organization.searchMovieTheaters({})(sskts.adapter.organization(sskts.mongoose.connection));
+        const movieTheaters = yield sskts.service.organization.searchMovieTheaters({})(sskts.repository.organization(sskts.mongoose.connection));
         res.json({
             data: movieTheaters
         });
