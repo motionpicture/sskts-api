@@ -44,12 +44,12 @@ ordersRouter.post(
                 telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
 
-            await sskts.service.order.findByOrderInquiryKey(key)(sskts.repository.order(sskts.mongoose.connection))
-                .then((order) => {
-                    res.json({
-                        data: order
-                    });
+            const repository = sskts.repository.order(sskts.mongoose.connection);
+            await repository.findByOrderInquiryKey(key).then((order) => {
+                res.json({
+                    data: order
                 });
+            });
         } catch (error) {
             next(error);
         }

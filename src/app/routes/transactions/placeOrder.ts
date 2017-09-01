@@ -116,9 +116,9 @@ placeOrderTransactionsRouter.put(
                 email: req.body.email,
                 telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
-            await sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contacts)(
-                sskts.repository.transaction(sskts.mongoose.connection)
-            );
+
+            const repository = sskts.repository.transaction(sskts.mongoose.connection);
+            await repository.setCustomerContactsOnPlaceOrderInProgress(req.params.transactionId, contacts);
 
             res.status(NO_CONTENT).end();
         } catch (error) {

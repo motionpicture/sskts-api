@@ -21,9 +21,8 @@ organizationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.organization.findMovieTheaterByBranchCode(req.params.branchCode)(
-                sskts.repository.organization(sskts.mongoose.connection)
-            ).then((movieTheater) => {
+            const repository = sskts.repository.organization(sskts.mongoose.connection);
+            await repository.findMovieTheaterByBranchCode(req.params.branchCode).then((movieTheater) => {
                 res.json({
                     data: movieTheater
                 });
@@ -39,11 +38,12 @@ organizationsRouter.get(
     validator,
     async (__, res, next) => {
         try {
-            const movieTheaters = await sskts.service.organization.searchMovieTheaters({
-            })(sskts.repository.organization(sskts.mongoose.connection));
-
-            res.json({
-                data: movieTheaters
+            const repository = sskts.repository.organization(sskts.mongoose.connection);
+            await repository.searchMovieTheaters({
+            }).then((movieTheaters) => {
+                res.json({
+                    data: movieTheaters
+                });
             });
         } catch (error) {
             next(error);

@@ -97,7 +97,8 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             email: req.body.email,
             telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
-        yield sskts.service.transaction.placeOrder.setAgentProfile(req.params.transactionId, contacts)(sskts.repository.transaction(sskts.mongoose.connection));
+        const repository = sskts.repository.transaction(sskts.mongoose.connection);
+        yield repository.setCustomerContactsOnPlaceOrderInProgress(req.params.transactionId, contacts);
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {

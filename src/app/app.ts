@@ -11,7 +11,6 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import expressValidator = require('express-validator'); // tslint:disable-line:no-require-imports
 import * as helmet from 'helmet';
-import * as i18n from 'i18n';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
@@ -81,20 +80,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
 
-// i18n を利用する設定
-i18n.configure({
-    locales: ['en', 'ja'],
-    defaultLocale: 'en',
-    directory: `${__dirname}/../../locales`,
-    objectNotation: true,
-    updateFiles: false // ページのビューで自動的に言語ファイルを更新しない
-});
-// i18n の設定を有効化
-app.use(i18n.init);
-
-// @types/mongooseが古くて、新しいMongoDBクライアントの接続オプションに適合していない
-// 型定義の更新待ち
-sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, <any>mongooseConnectionOptions);
+sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
 
 // routers
 app.use('/health', healthRouter);

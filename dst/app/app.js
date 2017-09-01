@@ -11,7 +11,6 @@ const createDebug = require("debug");
 const express = require("express");
 const expressValidator = require("express-validator"); // tslint:disable-line:no-require-imports
 const helmet = require("helmet");
-const i18n = require("i18n");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const basicAuth_1 = require("./middlewares/basicAuth");
 const errorHandler_1 = require("./middlewares/errorHandler");
@@ -69,18 +68,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
-// i18n を利用する設定
-i18n.configure({
-    locales: ['en', 'ja'],
-    defaultLocale: 'en',
-    directory: `${__dirname}/../../locales`,
-    objectNotation: true,
-    updateFiles: false // ページのビューで自動的に言語ファイルを更新しない
-});
-// i18n の設定を有効化
-app.use(i18n.init);
-// @types/mongooseが古くて、新しいMongoDBクライアントの接続オプションに適合していない
-// 型定義の更新待ち
 sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 // routers
 app.use('/health', health_1.default);

@@ -21,9 +21,8 @@ placesRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.place.findMovieTheaterByBranchCode(req.params.branchCode)(
-                sskts.repository.place(sskts.mongoose.connection)
-            ).then((theater) => {
+            const repository = sskts.repository.place(sskts.mongoose.connection);
+            await repository.findMovieTheaterByBranchCode(req.params.branchCode).then((theater) => {
                 res.json({
                     data: theater
                 });
@@ -39,11 +38,11 @@ placesRouter.get(
     validator,
     async (__, res, next) => {
         try {
-            const places = await sskts.service.place.searchMovieTheaters({
-            })(sskts.repository.place(sskts.mongoose.connection));
-
-            res.json({
-                data: places
+            const repository = sskts.repository.place(sskts.mongoose.connection);
+            await repository.searchMovieTheaters({}).then((places) => {
+                res.json({
+                    data: places
+                });
             });
         } catch (error) {
             next(error);
