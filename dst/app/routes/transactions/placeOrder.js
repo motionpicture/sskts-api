@@ -283,6 +283,7 @@ placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification',
         // 取引が適切かどうかチェック
         // todo その場で送信ではなくDBに登録するようにする
         const sendEmailNotification = sskts.factory.notification.email.create({
+            id: sskts.mongoose.Types.ObjectId().toString(),
             data: {
                 from: req.body.from,
                 to: req.body.to,
