@@ -58,7 +58,7 @@ placeOrderTransactionsRouter.post(
             });
             debug('starting a transaction...scope:', scope);
 
-            const transaction = await sskts.service.transaction.placeOrder.start({
+            const transaction = await sskts.service.transaction.placeOrderInProgress.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
                 // tslint:disable-next-line:no-magic-numbers
@@ -117,8 +117,11 @@ placeOrderTransactionsRouter.put(
                 telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
 
-            const repository = sskts.repository.transaction(sskts.mongoose.connection);
-            await repository.setCustomerContactsOnPlaceOrderInProgress(req.params.transactionId, contacts);
+            await sskts.service.transaction.placeOrderInProgress.setCustomerContacts(
+                req.getUser().sub,
+                req.params.transactionId,
+                contacts
+            )(sskts.repository.transaction(sskts.mongoose.connection));
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -143,7 +146,8 @@ placeOrderTransactionsRouter.post(
                 req.body.eventIdentifier
             )(sskts.repository.event(sskts.mongoose.connection));
 
-            const authorization = await sskts.service.transaction.placeOrder.createSeatReservationAuthorization(
+            const authorization = await sskts.service.transaction.placeOrderInProgress.createSeatReservationAuthorization(
+                req.getUser().sub,
                 req.params.transactionId,
                 findIndividualScreeningEvent,
                 req.body.offers
@@ -167,7 +171,8 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(
+            await sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuthorization(
+                req.getUser().sub,
                 req.params.transactionId,
                 req.params.authorizationId
             )(sskts.repository.transaction(sskts.mongoose.connection));
@@ -195,7 +200,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
-            const creditCard: sskts.service.transaction.placeOrder.ICreditCard4authorization = {
+            const creditCard: sskts.service.transaction.placeOrderInProgress.ICreditCard4authorizeAction = {
                 ...req.body.creditCard,
                 ...{
                     memberId: (req.getUser().username !== undefined) ? req.getUser().sub : undefined
@@ -204,7 +209,8 @@ placeOrderTransactionsRouter.post(
             debug('authorizing credit card...', creditCard);
 
             debug('authorizing credit card...', req.body.creditCard);
-            const authorization = await sskts.service.transaction.placeOrder.createCreditCardAuthorization(
+            const authorization = await sskts.service.transaction.placeOrderInProgress.createCreditCardAuthorization(
+                req.getUser().sub,
                 req.params.transactionId,
                 req.body.orderId,
                 req.body.amount,
@@ -217,8 +223,7 @@ placeOrderTransactionsRouter.post(
 
             res.status(CREATED).json({
                 data: {
-                    id: authorization.id,
-                    price: authorization.price
+                    id: authorization.id
                 }
             });
         } catch (error) {
@@ -236,7 +241,8 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrder.cancelGMOAuthorization(
+            await sskts.service.transaction.placeOrderInProgress.cancelGMOAuthorization(
+                req.getUser().sub,
                 req.params.transactionId,
                 req.params.authorizationId
             )(sskts.repository.transaction(sskts.mongoose.connection));
@@ -260,30 +266,33 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const authorizationResult = {
+            const authorizeObject = {
                 // tslint:disable-next-line:no-magic-numbers
                 price: parseInt(req.body.price, 10),
-                kgygishCd: req.body.kgygishCd,
-                yykDvcTyp: req.body.yykDvcTyp,
-                trkshFlg: req.body.trkshFlg,
-                kgygishSstmZskyykNo: req.body.kgygishSstmZskyykNo,
-                kgygishUsrZskyykNo: req.body.kgygishUsrZskyykNo,
-                jeiDt: req.body.jeiDt,
-                kijYmd: req.body.kijYmd,
-                stCd: req.body.stCd,
-                screnCd: req.body.screnCd,
-                knyknrNoInfo: req.body.knyknrNoInfo,
-                zskInfo: req.body.zskInfo,
-                skhnCd: req.body.skhnCd
+                seatInfoSyncIn: {
+                    kgygishCd: req.body.seatSyncInfoIn.kgygishCd,
+                    yykDvcTyp: req.body.seatSyncInfoIn.yykDvcTyp,
+                    trkshFlg: req.body.seatSyncInfoIn.trkshFlg,
+                    kgygishSstmZskyykNo: req.body.seatSyncInfoIn.kgygishSstmZskyykNo,
+                    kgygishUsrZskyykNo: req.body.seatSyncInfoIn.kgygishUsrZskyykNo,
+                    jeiDt: req.body.seatSyncInfoIn.jeiDt,
+                    kijYmd: req.body.seatSyncInfoIn.kijYmd,
+                    stCd: req.body.seatSyncInfoIn.stCd,
+                    screnCd: req.body.seatSyncInfoIn.screnCd,
+                    knyknrNoInfo: req.body.seatSyncInfoIn.knyknrNoInfo,
+                    zskInfo: req.body.seatSyncInfoIn.zskInfo,
+                    skhnCd: req.body.seatSyncInfoIn.skhnCd
+                }
             };
-            const authorization = await sskts.service.transaction.placeOrder.createMvtkAuthorization(
-                req.params.transactionId, authorizationResult
+            const authorization = await sskts.service.transaction.placeOrderInProgress.createMvtkAuthorization(
+                req.getUser().sub,
+                req.params.transactionId,
+                authorizeObject
             )(sskts.repository.transaction(sskts.mongoose.connection));
 
             res.status(CREATED).json({
                 data: {
-                    id: authorization.id,
-                    price: authorization.price
+                    id: authorization.id
                 }
             });
         } catch (error) {
@@ -301,7 +310,8 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrder.cancelMvtkAuthorization(
+            await sskts.service.transaction.placeOrderInProgress.cancelMvtkAuthorization(
+                req.getUser().sub,
                 req.params.transactionId,
                 req.params.authorizationId
             )(sskts.repository.transaction(sskts.mongoose.connection));
@@ -319,7 +329,8 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(
+            await sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuthorization(
+                req.getUser().sub,
                 req.params.transactionId, req.params.authorization_id
             )(sskts.repository.transaction(sskts.mongoose.connection));
 
@@ -375,9 +386,10 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const order = await sskts.service.transaction.placeOrder.confirm(req.params.transactionId)(
-                sskts.repository.transaction(sskts.mongoose.connection)
-            );
+            const order = await sskts.service.transaction.placeOrderInProgress.confirm(
+                req.getUser().sub,
+                req.params.transactionId
+            )(sskts.repository.transaction(sskts.mongoose.connection));
             debug('transaction confirmed', order);
 
             res.status(CREATED).json({
