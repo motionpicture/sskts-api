@@ -268,7 +268,7 @@ peopleRouter.get('/me/ownershipInfos/reservation', permitScopes_1.default(['peop
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personId = req.getUser().sub;
-        const ownershipInfoAdapter = sskts.repository.ownershipInfo(sskts.mongoose.connection);
+        const ownershipInfoAdapter = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const data = yield ownershipInfoAdapter.ownershipInfoModel.find({
             'ownedBy.id': personId
         }).sort({ ownedFrom: 1 })

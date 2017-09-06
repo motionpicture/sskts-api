@@ -68,9 +68,9 @@ placeOrderTransactionsRouter.post(
                 agentId: req.getUser().sub,
                 sellerId: req.body.sellerId
             })(
-                sskts.repository.organization(sskts.mongoose.connection),
-                sskts.repository.transaction(sskts.mongoose.connection),
-                sskts.repository.transactionCount(redis.getClient())
+                new sskts.repository.Organization(sskts.mongoose.connection),
+                new sskts.repository.Transaction(sskts.mongoose.connection),
+                new sskts.repository.TransactionCount(redis.getClient())
                 );
 
             // tslint:disable-next-line:no-string-literal
@@ -121,7 +121,7 @@ placeOrderTransactionsRouter.put(
                 req.getUser().sub,
                 req.params.transactionId,
                 contacts
-            )(sskts.repository.transaction(sskts.mongoose.connection));
+            )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -144,14 +144,14 @@ placeOrderTransactionsRouter.post(
         try {
             const findIndividualScreeningEvent = await sskts.service.event.findIndividualScreeningEventByIdentifier(
                 req.body.eventIdentifier
-            )(sskts.repository.event(sskts.mongoose.connection));
+            )(new sskts.repository.Event(sskts.mongoose.connection));
 
             const authorization = await sskts.service.transaction.placeOrderInProgress.createSeatReservationAuthorization(
                 req.getUser().sub,
                 req.params.transactionId,
                 findIndividualScreeningEvent,
                 req.body.offers
-            )(sskts.repository.transaction(sskts.mongoose.connection));
+            )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
             res.status(CREATED).json({
                 data: authorization
@@ -175,7 +175,7 @@ placeOrderTransactionsRouter.delete(
                 req.getUser().sub,
                 req.params.transactionId,
                 req.params.authorizationId
-            )(sskts.repository.transaction(sskts.mongoose.connection));
+            )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -217,8 +217,8 @@ placeOrderTransactionsRouter.post(
                 req.body.method,
                 creditCard
             )(
-                sskts.repository.organization(sskts.mongoose.connection),
-                sskts.repository.transaction(sskts.mongoose.connection)
+                new sskts.repository.Organization(sskts.mongoose.connection),
+                new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
             res.status(CREATED).json({
@@ -245,7 +245,7 @@ placeOrderTransactionsRouter.delete(
                 req.getUser().sub,
                 req.params.transactionId,
                 req.params.authorizationId
-            )(sskts.repository.transaction(sskts.mongoose.connection));
+            )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -288,7 +288,7 @@ placeOrderTransactionsRouter.post(
                 req.getUser().sub,
                 req.params.transactionId,
                 authorizeObject
-            )(sskts.repository.transaction(sskts.mongoose.connection));
+            )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
             res.status(CREATED).json({
                 data: {
@@ -314,7 +314,7 @@ placeOrderTransactionsRouter.delete(
                 req.getUser().sub,
                 req.params.transactionId,
                 req.params.authorizationId
-            )(sskts.repository.transaction(sskts.mongoose.connection));
+            )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -332,7 +332,7 @@ placeOrderTransactionsRouter.delete(
             await sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuthorization(
                 req.getUser().sub,
                 req.params.transactionId, req.params.authorization_id
-            )(sskts.repository.transaction(sskts.mongoose.connection));
+            )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -389,7 +389,7 @@ placeOrderTransactionsRouter.post(
             const order = await sskts.service.transaction.placeOrderInProgress.confirm(
                 req.getUser().sub,
                 req.params.transactionId
-            )(sskts.repository.transaction(sskts.mongoose.connection));
+            )(new sskts.repository.Transaction(sskts.mongoose.connection));
             debug('transaction confirmed', order);
 
             res.status(CREATED).json({

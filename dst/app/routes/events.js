@@ -23,7 +23,7 @@ const eventsRouter = express_1.Router();
 eventsRouter.use(authentication_1.default);
 eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.params.identifier)(sskts.repository.event(sskts.mongoose.connection), sskts.repository.itemAvailability.individualScreeningEvent(redis.getClient())).then((event) => {
+        yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.params.identifier)(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())).then((event) => {
             res.json({
                 data: event
             });
@@ -42,7 +42,7 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['events', 
         const events = yield sskts.service.event.searchIndividualScreeningEvents({
             day: req.query.day,
             theater: req.query.theater
-        })(sskts.repository.event(sskts.mongoose.connection), sskts.repository.itemAvailability.individualScreeningEvent(redis.getClient()));
+        })(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient()));
         res.json({
             data: events
         });

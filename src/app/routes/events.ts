@@ -22,8 +22,8 @@ eventsRouter.get(
     async (req, res, next) => {
         try {
             await sskts.service.event.findIndividualScreeningEventByIdentifier(req.params.identifier)(
-                sskts.repository.event(sskts.mongoose.connection),
-                sskts.repository.itemAvailability.individualScreeningEvent(redis.getClient())
+                new sskts.repository.Event(sskts.mongoose.connection),
+                new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
             ).then((event) => {
                 res.json({
                     data: event
@@ -50,8 +50,8 @@ eventsRouter.get(
                 day: req.query.day,
                 theater: req.query.theater
             })(
-                sskts.repository.event(sskts.mongoose.connection),
-                sskts.repository.itemAvailability.individualScreeningEvent(redis.getClient())
+                new sskts.repository.Event(sskts.mongoose.connection),
+                new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
                 );
 
             res.json({
