@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/sskts-domain": "git+https://tetsu:M0P!Xmopix@m-p.backlog.jp/git/SSKTS/domain.git#feature/SSKTS-533",
-    "aws-sdk": "^2.108.0",
+    "aws-sdk": "^2.111.0",
     "basic-auth": "^1.1.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.17.2",
@@ -49,8 +49,8 @@
     "ink-docstrap": "^1.3.0",
     "jsdoc": "^3.5.4",
     "mocha": "^3.5.0",
-    "nsp": "^2.7.0",
-    "nyc": "^11.1.0",
+    "nsp": "^2.8.0",
+    "nyc": "^11.2.1",
     "open": "0.0.5",
     "request-promise-native": "^1.0.4",
     "rimraf": "^2.6.1",
@@ -67,22 +67,12 @@
   "keywords": [],
   "license": "UNLICENSED",
   "name": "sskts-api",
-  "nyc": {
-    "check-coverage": true,
-    "include": [
-      "dst/**/*.js"
-    ],
-    "reporter": [
-      "lcov",
-      "text-summary"
-    ]
-  },
   "private": true,
   "repository": {},
   "scripts": {
     "build": "tsc",
     "check": "npm run tslint && nsp check && npm run snyk",
-    "clean": "rimraf ./dst test/**/*.js ./doc npm-debug.log*",
+    "clean": "rimraf ./dst test/**/*.js ./doc ./coverage npm-debug.log*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "http-server": "http-server",
     "mocha": "mocha",
