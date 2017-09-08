@@ -23,9 +23,7 @@ organizationsRouter.get(
         try {
             const repository = new sskts.repository.Organization(sskts.mongoose.connection);
             await repository.findMovieTheaterByBranchCode(req.params.branchCode).then((movieTheater) => {
-                res.json({
-                    data: movieTheater
-                });
+                res.json(movieTheater);
             });
         } catch (error) {
             next(error);
@@ -41,9 +39,7 @@ organizationsRouter.get(
             const repository = new sskts.repository.Organization(sskts.mongoose.connection);
             await repository.searchMovieTheaters({
             }).then((movieTheaters) => {
-                res.json({
-                    data: movieTheaters
-                });
+                res.json(movieTheaters);
             });
         } catch (error) {
             next(error);

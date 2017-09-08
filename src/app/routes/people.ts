@@ -68,9 +68,7 @@ peopleRouter.get(
                             contacts.telephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
                         }
 
-                        res.json({
-                            data: contacts
-                        });
+                        res.json(contacts);
                     }
                 });
         } catch (error) {
@@ -178,9 +176,7 @@ peopleRouter.get(
                 throw new Error(error.errors[0].content);
             }
 
-            res.json({
-                data: searchCardResults
-            });
+            res.json(searchCardResults);
         } catch (error) {
             next(error);
         }
@@ -251,9 +247,7 @@ peopleRouter.post(
                 }
             }
 
-            res.status(CREATED).json({
-                data: creditCard
-            });
+            res.status(CREATED).json(creditCard);
         } catch (error) {
             next(error);
         }
@@ -309,15 +303,13 @@ peopleRouter.get(
         try {
             const personId = req.getUser().sub;
             const ownershipInfoAdapter = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const data = await ownershipInfoAdapter.ownershipInfoModel.find({
+            const ownershipInfos = await ownershipInfoAdapter.ownershipInfoModel.find({
                 'ownedBy.id': personId
             }).sort({ ownedFrom: 1 })
                 .exec()
                 .then((docs) => docs.map((doc) => doc.toObject()));
 
-            res.json({
-                data: data
-            });
+            res.json(ownershipInfos);
         } catch (error) {
             next(error);
         }

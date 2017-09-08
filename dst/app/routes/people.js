@@ -61,9 +61,7 @@ peopleRouter.get('/me/contacts', permitScopes_1.default(['people.contacts', 'peo
                     const phoneNumber = phoneUtil.parse(contacts.telephone, 'JP');
                     contacts.telephone = phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.NATIONAL);
                 }
-                res.json({
-                    data: contacts
-                });
+                res.json(contacts);
             }
         });
     }
@@ -156,9 +154,7 @@ peopleRouter.get('/me/creditCards', permitScopes_1.default(['people.creditCards'
         catch (error) {
             throw new Error(error.errors[0].content);
         }
-        res.json({
-            data: searchCardResults
-        });
+        res.json(searchCardResults);
     }
     catch (error) {
         next(error);
@@ -221,9 +217,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
                 throw error;
             }
         }
-        res.status(http_status_1.CREATED).json({
-            data: creditCard
-        });
+        res.status(http_status_1.CREATED).json(creditCard);
     }
     catch (error) {
         next(error);
@@ -269,14 +263,12 @@ peopleRouter.get('/me/ownershipInfos/reservation', permitScopes_1.default(['peop
     try {
         const personId = req.getUser().sub;
         const ownershipInfoAdapter = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const data = yield ownershipInfoAdapter.ownershipInfoModel.find({
+        const ownershipInfos = yield ownershipInfoAdapter.ownershipInfoModel.find({
             'ownedBy.id': personId
         }).sort({ ownedFrom: 1 })
             .exec()
             .then((docs) => docs.map((doc) => doc.toObject()));
-        res.json({
-            data: data
-        });
+        res.json(ownershipInfos);
     }
     catch (error) {
         next(error);

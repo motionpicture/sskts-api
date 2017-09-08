@@ -25,9 +25,7 @@ eventsRouter.get(
                 new sskts.repository.Event(sskts.mongoose.connection),
                 new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
             ).then((event) => {
-                res.json({
-                    data: event
-                });
+                res.json(event);
             });
         } catch (error) {
             next(error);
@@ -54,9 +52,7 @@ eventsRouter.get(
                 new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
                 );
 
-            res.json({
-                data: events
-            });
+            res.json(events);
         } catch (error) {
             next(error);
         }

@@ -76,9 +76,7 @@ placeOrderTransactionsRouter.post(
             // tslint:disable-next-line:no-string-literal
             // const host = req.headers['host'];
             // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
-            res.json({
-                data: transaction
-            });
+            res.json(transaction);
         } catch (error) {
             next(error);
         }
@@ -153,9 +151,7 @@ placeOrderTransactionsRouter.post(
                 req.body.offers
             )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
-            res.status(CREATED).json({
-                data: authorization
-            });
+            res.status(CREATED).json(authorization);
         } catch (error) {
             next(error);
         }
@@ -222,9 +218,7 @@ placeOrderTransactionsRouter.post(
                 );
 
             res.status(CREATED).json({
-                data: {
-                    id: authorization.id
-                }
+                id: authorization.id
             });
         } catch (error) {
             next(error);
@@ -291,9 +285,7 @@ placeOrderTransactionsRouter.post(
             )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
             res.status(CREATED).json({
-                data: {
-                    id: authorization.id
-                }
+                id: authorization.id
             });
         } catch (error) {
             next(error);
@@ -392,9 +384,7 @@ placeOrderTransactionsRouter.post(
             )(new sskts.repository.Transaction(sskts.mongoose.connection));
             debug('transaction confirmed', order);
 
-            res.status(CREATED).json({
-                data: order
-            });
+            res.status(CREATED).json(order);
         } catch (error) {
             next(error);
         }

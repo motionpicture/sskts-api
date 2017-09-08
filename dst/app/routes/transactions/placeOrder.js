@@ -66,9 +66,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
-        res.json({
-            data: transaction
-        });
+        res.json(transaction);
     }
     catch (error) {
         next(error);
@@ -113,9 +111,7 @@ placeOrderTransactionsRouter.post('/:transactionId/seatReservationAuthorization'
     try {
         const findIndividualScreeningEvent = yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(new sskts.repository.Event(sskts.mongoose.connection));
         const authorization = yield sskts.service.transaction.placeOrderInProgress.createSeatReservationAuthorization(req.getUser().sub, req.params.transactionId, findIndividualScreeningEvent, req.body.offers)(new sskts.repository.Transaction(sskts.mongoose.connection));
-        res.status(http_status_1.CREATED).json({
-            data: authorization
-        });
+        res.status(http_status_1.CREATED).json(authorization);
     }
     catch (error) {
         next(error);
@@ -151,9 +147,7 @@ placeOrderTransactionsRouter.post('/:transactionId/paymentInfos/creditCard', per
         debug('authorizing credit card...', req.body.creditCard);
         const authorization = yield sskts.service.transaction.placeOrderInProgress.createCreditCardAuthorization(req.getUser().sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new sskts.repository.Organization(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
-            data: {
-                id: authorization.id
-            }
+            id: authorization.id
         });
     }
     catch (error) {
@@ -199,9 +193,7 @@ placeOrderTransactionsRouter.post('/:transactionId/discountInfos/mvtk', permitSc
         };
         const authorization = yield sskts.service.transaction.placeOrderInProgress.createMvtkAuthorization(req.getUser().sub, req.params.transactionId, authorizeObject)(new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
-            data: {
-                id: authorization.id
-            }
+            id: authorization.id
         });
     }
     catch (error) {
@@ -269,9 +261,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
     try {
         const order = yield sskts.service.transaction.placeOrderInProgress.confirm(req.getUser().sub, req.params.transactionId)(new sskts.repository.Transaction(sskts.mongoose.connection));
         debug('transaction confirmed', order);
-        res.status(http_status_1.CREATED).json({
-            data: order
-        });
+        res.status(http_status_1.CREATED).json(order);
     }
     catch (error) {
         next(error);

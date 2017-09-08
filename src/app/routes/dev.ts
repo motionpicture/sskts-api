@@ -26,10 +26,8 @@ devRouter.get(
     '/environmentVariables',
     (__, res) => {
         res.json({
-            data: {
-                type: 'envs',
-                attributes: process.env
-            }
+            type: 'envs',
+            attributes: process.env
         });
     });
 

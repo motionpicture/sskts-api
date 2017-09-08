@@ -46,9 +46,7 @@ ordersRouter.post(
 
             const repository = new sskts.repository.Order(sskts.mongoose.connection);
             await repository.findByOrderInquiryKey(key).then((order) => {
-                res.json({
-                    data: order
-                });
+                res.json(order);
             });
         } catch (error) {
             next(error);

@@ -24,9 +24,7 @@ placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['places', 
     try {
         const repository = new sskts.repository.Place(sskts.mongoose.connection);
         yield repository.findMovieTheaterByBranchCode(req.params.branchCode).then((theater) => {
-            res.json({
-                data: theater
-            });
+            res.json(theater);
         });
     }
     catch (error) {
@@ -37,9 +35,7 @@ placesRouter.get('/movieTheater', permitScopes_1.default(['places', 'places.read
     try {
         const repository = new sskts.repository.Place(sskts.mongoose.connection);
         yield repository.searchMovieTheaters({}).then((places) => {
-            res.json({
-                data: places
-            });
+            res.json(places);
         });
     }
     catch (error) {

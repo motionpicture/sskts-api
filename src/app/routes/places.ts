@@ -23,9 +23,7 @@ placesRouter.get(
         try {
             const repository = new sskts.repository.Place(sskts.mongoose.connection);
             await repository.findMovieTheaterByBranchCode(req.params.branchCode).then((theater) => {
-                res.json({
-                    data: theater
-                });
+                res.json(theater);
             });
         } catch (error) {
             next(error);
@@ -40,9 +38,7 @@ placesRouter.get(
         try {
             const repository = new sskts.repository.Place(sskts.mongoose.connection);
             await repository.searchMovieTheaters({}).then((places) => {
-                res.json({
-                    data: places
-                });
+                res.json(places);
             });
         } catch (error) {
             next(error);
