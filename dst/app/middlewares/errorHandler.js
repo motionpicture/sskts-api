@@ -34,6 +34,10 @@ exports.default = (err, __, res, next) => {
                 case (err instanceof sskts.factory.errors.NotFound):
                     apiError = new api_1.APIError(http_status_1.NOT_FOUND, [err]);
                     break;
+                // 409
+                case (err instanceof sskts.factory.errors.AlreadyInUse):
+                    apiError = new api_1.APIError(http_status_1.CONFLICT, [err]);
+                    break;
                 // 503
                 case (err instanceof sskts.factory.errors.ServiceUnavailable):
                     apiError = new api_1.APIError(http_status_1.SERVICE_UNAVAILABLE, [err]);

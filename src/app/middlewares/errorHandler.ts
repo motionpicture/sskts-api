@@ -6,7 +6,7 @@
 
 import * as sskts from '@motionpicture/sskts-domain';
 import { NextFunction, Request, Response } from 'express';
-import { BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE, UNAUTHORIZED } from 'http-status';
+import { BAD_REQUEST, CONFLICT, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE, UNAUTHORIZED } from 'http-status';
 
 import { APIError } from '../error/api';
 import logger from '../logger';
@@ -39,6 +39,11 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
                 // 404
                 case (err instanceof sskts.factory.errors.NotFound):
                     apiError = new APIError(NOT_FOUND, [err]);
+                    break;
+
+                // 409
+                case (err instanceof sskts.factory.errors.AlreadyInUse):
+                    apiError = new APIError(CONFLICT, [err]);
                     break;
 
                 // 503
