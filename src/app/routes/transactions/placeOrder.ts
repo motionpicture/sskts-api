@@ -144,7 +144,7 @@ placeOrderTransactionsRouter.post(
                 req.body.eventIdentifier
             )(new sskts.repository.Event(sskts.mongoose.connection));
 
-            const authorization = await sskts.service.transaction.placeOrderInProgress.createSeatReservationAuthorization(
+            const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
                 req.getUser().sub,
                 req.params.transactionId,
                 findIndividualScreeningEvent,
@@ -170,7 +170,7 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuthorization(
+            await sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuth(
                 req.getUser().sub,
                 req.params.transactionId,
                 req.params.actionId
@@ -211,7 +211,7 @@ placeOrderTransactionsRouter.post(
             debug('authorizing credit card...', creditCard);
 
             debug('authorizing credit card...', req.body.creditCard);
-            const authorization = await sskts.service.transaction.placeOrderInProgress.createCreditCardAuthorization(
+            const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeCreditCard(
                 req.getUser().sub,
                 req.params.transactionId,
                 req.body.orderId,
@@ -242,7 +242,7 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrderInProgress.cancelGMOAuthorization(
+            await sskts.service.transaction.placeOrderInProgress.cancelCreditCardAuth(
                 req.getUser().sub,
                 req.params.transactionId,
                 req.params.actionId
@@ -289,7 +289,7 @@ placeOrderTransactionsRouter.post(
                     skhnCd: req.body.seatSyncInfoIn.skhnCd
                 }
             };
-            const authorization = await sskts.service.transaction.placeOrderInProgress.createMvtkAuthorization(
+            const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeMvtk(
                 req.getUser().sub,
                 req.params.transactionId,
                 authorizeObject
@@ -316,7 +316,7 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrderInProgress.cancelMvtkAuthorization(
+            await sskts.service.transaction.placeOrderInProgress.cancelMvtkAuth(
                 req.getUser().sub,
                 req.params.transactionId,
                 req.params.actionId
