@@ -17,6 +17,7 @@ import mongooseConnectionOptions from '../mongooseConnectionOptions';
 import basicAuth from './middlewares/basicAuth';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
+import actionsRouter from './routes/actions';
 import devRouter from './routes/dev';
 import eventsRouter from './routes/events';
 import healthRouter from './routes/health';
@@ -84,6 +85,7 @@ sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptio
 
 // routers
 app.use('/health', healthRouter);
+app.use('/actions', actionsRouter);
 app.use('/organizations', organizationsRouter);
 app.use('/orders', ordersRouter);
 app.use('/people', peopleRouter);

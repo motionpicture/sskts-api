@@ -15,6 +15,7 @@ const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const basicAuth_1 = require("./middlewares/basicAuth");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
+const actions_1 = require("./routes/actions");
 const dev_1 = require("./routes/dev");
 const events_1 = require("./routes/events");
 const health_1 = require("./routes/health");
@@ -71,6 +72,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 // routers
 app.use('/health', health_1.default);
+app.use('/actions', actions_1.default);
 app.use('/organizations', organizations_1.default);
 app.use('/orders', orders_1.default);
 app.use('/people', people_1.default);
