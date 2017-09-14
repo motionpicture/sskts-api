@@ -29,7 +29,7 @@ actionsRouter.post('/print/ticket', permitScopes_1.default(['actions']), validat
         const ticket = {
             ticketToken: req.body.ticketToken
         };
-        const action = yield new sskts.repository.Action(sskts.mongoose.connection).printTicket(req.getUser().sub, ticket);
+        const action = yield new sskts.repository.action.Print(sskts.mongoose.connection).printTicket(req.getUser().sub, ticket);
         res.status(http_status_1.CREATED).json(action);
     }
     catch (error) {
@@ -41,7 +41,7 @@ actionsRouter.post('/print/ticket', permitScopes_1.default(['actions']), validat
  */
 actionsRouter.get('/print/ticket', permitScopes_1.default(['actions', 'actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actions = yield new sskts.repository.Action(sskts.mongoose.connection).searchPrintTicket({
+        const actions = yield new sskts.repository.action.Print(sskts.mongoose.connection).searchPrintTicket({
             agentId: req.getUser().sub,
             ticketToken: req.query.ticketToken
         });
