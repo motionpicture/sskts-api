@@ -332,45 +332,6 @@ placeOrderTransactionsRouter.delete(
     }
 );
 
-// placeOrderTransactionsRouter.post(
-//     '/:transactionId/notifications/email',
-//     permitScopes(['transactions.notifications']),
-//     (req, _, next) => {
-//         req.checkBody('data').notEmpty().withMessage('required');
-//         req.checkBody('data.type').equals('notifications').withMessage('must be \'notifications\'');
-//         req.checkBody('data.attributes').notEmpty().withMessage('required');
-//         req.checkBody('from', 'invalid from').notEmpty().withMessage('from is required');
-//         req.checkBody('to', 'invalid to').notEmpty().withMessage('to is required').isEmail();
-//         req.checkBody('subject', 'invalid subject').notEmpty().withMessage('subject is required');
-//         req.checkBody('content', 'invalid content').notEmpty().withMessage('content is required');
-
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const notification = sskts.factory.notification.email.create({
-//                 from: req.body.from,
-//                 to: req.body.to,
-//                 subject: req.body.subject,
-//                 content: req.body.content
-//             });
-//             await sskts.service.transactionWithId.addEmail(req.params.transactionId, notification)(
-//                 sskts.repository.transaction(sskts.mongoose.connection)
-//             );
-
-//             res.status(OK).json({
-//                 data: {
-//                     type: 'notifications',
-//                     id: notification.id
-//                 }
-//             });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-
 placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
     permitScopes(['transactions']),
@@ -399,21 +360,26 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            // 取引が適切かどうかチェック
-
-            // todo その場で送信ではなくDBに登録するようにする
-            const sendEmailNotification = sskts.factory.notification.email.create({
-                id: sskts.mongoose.Types.ObjectId().toString(),
-                data: {
-                    from: req.body.from,
-                    to: req.body.to,
-                    subject: req.body.subject,
-                    content: req.body.content
+            const task = await sskts.service.transaction.placeOrder.sendEmail(
+                req.params.transactionId,
+                {
+                    sender: {
+                        name: req.body.sender.name,
+                        email: req.body.sender.email
+                    },
+                    toRecipient: {
+                        name: req.body.toRecipient.name,
+                        email: req.body.toRecipient.email
+                    },
+                    about: req.body.about,
+                    text: req.body.text
                 }
-            });
-            await sskts.service.notification.sendEmail(sendEmailNotification)();
+            )(
+                new sskts.repository.Task(sskts.mongoose.connection),
+                new sskts.repository.Transaction(sskts.mongoose.connection)
+                );
 
-            res.status(NO_CONTENT).end();
+            res.status(CREATED).json(task);
         } catch (error) {
             next(error);
         }
