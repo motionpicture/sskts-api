@@ -121,39 +121,12 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
     }
 }));
 /**
- * 会員カード取得
+ * 会員クレジットカード取得
  */
 peopleRouter.get('/me/creditCards', permitScopes_1.default(['people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        let searchCardResults;
-        try {
-            // まずGMO会員登録
-            const memberId = req.getUser().sub;
-            const memberName = req.getUser().username;
-            const gmoMember = yield sskts.GMO.services.card.searchMember({
-                siteId: process.env.GMO_SITE_ID,
-                sitePass: process.env.GMO_SITE_PASS,
-                memberId: memberId
-            });
-            if (gmoMember === null) {
-                const saveMemberResult = yield sskts.GMO.services.card.saveMember({
-                    siteId: process.env.GMO_SITE_ID,
-                    sitePass: process.env.GMO_SITE_PASS,
-                    memberId: memberId,
-                    memberName: memberName
-                });
-                debug('GMO saveMember processed', saveMemberResult);
-            }
-            searchCardResults = yield sskts.GMO.services.card.searchCard({
-                siteId: process.env.GMO_SITE_ID,
-                sitePass: process.env.GMO_SITE_PASS,
-                memberId: memberId,
-                seqMode: sskts.GMO.utils.util.SeqMode.Physics
-            });
-        }
-        catch (error) {
-            throw new Error(error.errors[0].content);
-        }
+        const searchCardResults = yield sskts.service.person.creditCard.find(req.getUser().sub, req.getUser().username)();
+        debug('searchCardResults:', searchCardResults);
         res.json(searchCardResults);
     }
     catch (error) {
@@ -161,62 +134,13 @@ peopleRouter.get('/me/creditCards', permitScopes_1.default(['people.creditCards'
     }
 }));
 /**
- * 会員カード追加
+ * 会員クレジットカード追加
  */
 peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // GMOカード登録
-        let creditCard;
-        try {
-            // まずGMO会員登録
-            const memberId = req.getUser().sub;
-            const memberName = req.getUser().username;
-            const gmoMember = yield sskts.GMO.services.card.searchMember({
-                siteId: process.env.GMO_SITE_ID,
-                sitePass: process.env.GMO_SITE_PASS,
-                memberId: memberId
-            });
-            if (gmoMember === null) {
-                const saveMemberResult = yield sskts.GMO.services.card.saveMember({
-                    siteId: process.env.GMO_SITE_ID,
-                    sitePass: process.env.GMO_SITE_PASS,
-                    memberId: memberId,
-                    memberName: memberName
-                });
-                debug('GMO saveMember processed', saveMemberResult);
-            }
-            debug('saving a card to GMO...');
-            const saveCardResult = yield sskts.GMO.services.card.saveCard({
-                siteId: process.env.GMO_SITE_ID,
-                sitePass: process.env.GMO_SITE_PASS,
-                memberId: memberId,
-                seqMode: sskts.GMO.utils.util.SeqMode.Physics,
-                cardNo: req.body.cardNo,
-                cardPass: req.body.cardPass,
-                expire: req.body.expire,
-                holderName: req.body.holderName,
-                token: req.body.token
-            });
-            debug('card saved', saveCardResult);
-            const searchCardResults = yield sskts.GMO.services.card.searchCard({
-                siteId: process.env.GMO_SITE_ID,
-                sitePass: process.env.GMO_SITE_PASS,
-                memberId: memberId,
-                seqMode: sskts.GMO.utils.util.SeqMode.Physics,
-                cardSeq: saveCardResult.cardSeq
-            });
-            creditCard = searchCardResults[0];
-        }
-        catch (error) {
-            if (error.name === 'GMOServiceBadRequestError') {
-                throw new sskts.factory.errors.Argument('creditCard', error.errors[0].content);
-            }
-            else {
-                throw error;
-            }
-        }
+        const creditCard = yield sskts.service.person.creditCard.save(req.getUser().sub, req.getUser().username, req.body)();
         res.status(http_status_1.CREATED).json(creditCard);
     }
     catch (error) {
@@ -224,30 +148,11 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
     }
 }));
 /**
- * 会員カード削除
+ * 会員クレジットカード削除
  */
 peopleRouter.delete('/me/creditCards/:cardSeq', permitScopes_1.default(['people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        try {
-            // GMOからカード削除
-            const memberId = req.getUser().sub;
-            const deleteCardResult = yield sskts.GMO.services.card.deleteCard({
-                siteId: process.env.GMO_SITE_ID,
-                sitePass: process.env.GMO_SITE_PASS,
-                memberId: memberId,
-                seqMode: sskts.GMO.utils.util.SeqMode.Physics,
-                cardSeq: req.params.cardSeq
-            });
-            debug('credit card deleted', deleteCardResult);
-        }
-        catch (error) {
-            if (error.name === 'GMOServiceBadRequestError') {
-                throw new sskts.factory.errors.Argument('cardSeq', error.errors[0].content);
-            }
-            else {
-                throw error;
-            }
-        }
+        yield sskts.service.person.creditCard.unsubscribe(req.getUser().sub, req.params.cardSeq)();
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -261,13 +166,11 @@ peopleRouter.get('/me/ownershipInfos/reservation', permitScopes_1.default(['peop
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personId = req.getUser().sub;
-        const ownershipInfoAdapter = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const ownershipInfos = yield ownershipInfoAdapter.ownershipInfoModel.find({
-            'ownedBy.id': personId
-        }).sort({ ownedFrom: 1 })
-            .exec()
-            .then((docs) => docs.map((doc) => doc.toObject()));
+        const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const ownershipInfos = yield repository.searchScreeningEventReservation({
+            ownedBy: req.getUser().sub,
+            ownedAt: new Date()
+        });
         res.json(ownershipInfos);
     }
     catch (error) {

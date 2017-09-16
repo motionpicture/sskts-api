@@ -139,42 +139,15 @@ peopleRouter.put(
 );
 
 /**
- * 会員カード取得
+ * 会員クレジットカード取得
  */
 peopleRouter.get(
     '/me/creditCards',
     permitScopes(['people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
-            let searchCardResults: sskts.GMO.services.card.ISearchCardResult[];
-            try {
-                // まずGMO会員登録
-                const memberId = req.getUser().sub;
-                const memberName = req.getUser().username;
-                const gmoMember = await sskts.GMO.services.card.searchMember({
-                    siteId: <string>process.env.GMO_SITE_ID,
-                    sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: memberId
-                });
-                if (gmoMember === null) {
-                    const saveMemberResult = await sskts.GMO.services.card.saveMember({
-                        siteId: <string>process.env.GMO_SITE_ID,
-                        sitePass: <string>process.env.GMO_SITE_PASS,
-                        memberId: memberId,
-                        memberName: memberName
-                    });
-                    debug('GMO saveMember processed', saveMemberResult);
-                }
-
-                searchCardResults = await sskts.GMO.services.card.searchCard({
-                    siteId: <string>process.env.GMO_SITE_ID,
-                    sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: memberId,
-                    seqMode: sskts.GMO.utils.util.SeqMode.Physics
-                });
-            } catch (error) {
-                throw new Error(error.errors[0].content);
-            }
+            const searchCardResults = await sskts.service.person.creditCard.find(req.getUser().sub, <string>req.getUser().username)();
+            debug('searchCardResults:', searchCardResults);
 
             res.json(searchCardResults);
         } catch (error) {
@@ -184,7 +157,7 @@ peopleRouter.get(
 );
 
 /**
- * 会員カード追加
+ * 会員クレジットカード追加
  */
 peopleRouter.post(
     '/me/creditCards',
@@ -195,57 +168,11 @@ peopleRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            // GMOカード登録
-            let creditCard: sskts.GMO.services.card.ISearchCardResult;
-            try {
-                // まずGMO会員登録
-                const memberId = req.getUser().sub;
-                const memberName = req.getUser().username;
-                const gmoMember = await sskts.GMO.services.card.searchMember({
-                    siteId: <string>process.env.GMO_SITE_ID,
-                    sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: memberId
-                });
-                if (gmoMember === null) {
-                    const saveMemberResult = await sskts.GMO.services.card.saveMember({
-                        siteId: <string>process.env.GMO_SITE_ID,
-                        sitePass: <string>process.env.GMO_SITE_PASS,
-                        memberId: memberId,
-                        memberName: memberName
-                    });
-                    debug('GMO saveMember processed', saveMemberResult);
-                }
-
-                debug('saving a card to GMO...');
-                const saveCardResult = await sskts.GMO.services.card.saveCard({
-                    siteId: <string>process.env.GMO_SITE_ID,
-                    sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: memberId,
-                    seqMode: sskts.GMO.utils.util.SeqMode.Physics,
-                    cardNo: req.body.cardNo,
-                    cardPass: req.body.cardPass,
-                    expire: req.body.expire,
-                    holderName: req.body.holderName,
-                    token: req.body.token
-                });
-                debug('card saved', saveCardResult);
-
-                const searchCardResults = await sskts.GMO.services.card.searchCard({
-                    siteId: <string>process.env.GMO_SITE_ID,
-                    sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: memberId,
-                    seqMode: sskts.GMO.utils.util.SeqMode.Physics,
-                    cardSeq: saveCardResult.cardSeq
-                });
-
-                creditCard = searchCardResults[0];
-            } catch (error) {
-                if (error.name === 'GMOServiceBadRequestError') {
-                    throw new sskts.factory.errors.Argument('creditCard', error.errors[0].content);
-                } else {
-                    throw error;
-                }
-            }
+            const creditCard = await sskts.service.person.creditCard.save(
+                req.getUser().sub,
+                <string>req.getUser().username,
+                req.body
+            )();
 
             res.status(CREATED).json(creditCard);
         } catch (error) {
@@ -255,7 +182,7 @@ peopleRouter.post(
 );
 
 /**
- * 会員カード削除
+ * 会員クレジットカード削除
  */
 peopleRouter.delete(
     '/me/creditCards/:cardSeq',
@@ -263,24 +190,7 @@ peopleRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            try {
-                // GMOからカード削除
-                const memberId = req.getUser().sub;
-                const deleteCardResult = await sskts.GMO.services.card.deleteCard({
-                    siteId: <string>process.env.GMO_SITE_ID,
-                    sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: memberId,
-                    seqMode: sskts.GMO.utils.util.SeqMode.Physics,
-                    cardSeq: req.params.cardSeq
-                });
-                debug('credit card deleted', deleteCardResult);
-            } catch (error) {
-                if (error.name === 'GMOServiceBadRequestError') {
-                    throw new sskts.factory.errors.Argument('cardSeq', error.errors[0].content);
-                } else {
-                    throw error;
-                }
-            }
+            await sskts.service.person.creditCard.unsubscribe(req.getUser().sub, req.params.cardSeq)();
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -301,13 +211,11 @@ peopleRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const personId = req.getUser().sub;
-            const ownershipInfoAdapter = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const ownershipInfos = await ownershipInfoAdapter.ownershipInfoModel.find({
-                'ownedBy.id': personId
-            }).sort({ ownedFrom: 1 })
-                .exec()
-                .then((docs) => docs.map((doc) => doc.toObject()));
+            const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+            const ownershipInfos = await repository.searchScreeningEventReservation({
+                ownedBy: req.getUser().sub,
+                ownedAt: new Date()
+            });
 
             res.json(ownershipInfos);
         } catch (error) {
