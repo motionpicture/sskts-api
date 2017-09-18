@@ -13,10 +13,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
-const AWS = require("aws-sdk");
 const createDebug = require("debug");
 const express_1 = require("express");
-const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -31,39 +29,8 @@ peopleRouter.use(requireMember_1.default);
  */
 peopleRouter.get('/me/contacts', permitScopes_1.default(['people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
-            apiVersion: 'latest',
-            region: 'ap-northeast-1'
-        });
-        cognitoIdentityServiceProvider.getUser({
-            AccessToken: req.accessToken
-        }, (err, data) => {
-            if (err instanceof Error) {
-                next(err);
-            }
-            else {
-                debug('cognito getUserResponse:', data);
-                const keysTable = {
-                    given_name: 'givenName',
-                    family_name: 'familyName',
-                    email: 'email',
-                    phone_number: 'telephone'
-                };
-                const contacts = data.UserAttributes.reduce((obj, item) => {
-                    if (keysTable[item.Name] !== undefined) {
-                        obj[keysTable[item.Name]] = item.Value;
-                    }
-                    return obj;
-                }, {});
-                // format a phone number to a Japanese style
-                if (contacts.telephone !== undefined) {
-                    const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
-                    const phoneNumber = phoneUtil.parse(contacts.telephone, 'JP');
-                    contacts.telephone = phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.NATIONAL);
-                }
-                res.json(contacts);
-            }
-        });
+        const contact = yield sskts.service.person.contact.getContact(req.accessToken)();
+        res.json(contact);
     }
     catch (error) {
         next(error);
@@ -76,45 +43,13 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
-        const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
-        debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
-        if (!phoneUtil.isValidNumber(phoneNumber)) {
-            next(new sskts.factory.errors.Argument('telephone', 'invalid phone number format'));
-            return;
-        }
-        const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
-            apiVersion: 'latest',
-            region: 'ap-northeast-1'
-        });
-        cognitoIdentityServiceProvider.updateUserAttributes({
-            AccessToken: req.accessToken,
-            UserAttributes: [
-                {
-                    Name: 'given_name',
-                    Value: req.body.givenName
-                },
-                {
-                    Name: 'family_name',
-                    Value: req.body.familyName
-                },
-                {
-                    Name: 'phone_number',
-                    Value: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
-                },
-                {
-                    Name: 'email',
-                    Value: req.body.email
-                }
-            ]
-        }, (err) => {
-            if (err instanceof Error) {
-                next(new sskts.factory.errors.Argument('contact', err.message));
-            }
-            else {
-                res.status(http_status_1.NO_CONTENT).end();
-            }
-        });
+        yield sskts.service.person.contact.updateContact(req.accessToken, {
+            givenName: req.body.givenName,
+            familyName: req.body.familyName,
+            email: req.body.email,
+            telephone: req.body.telephone
+        })();
+        res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
         next(error);
@@ -125,7 +60,7 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
  */
 peopleRouter.get('/me/creditCards', permitScopes_1.default(['people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const searchCardResults = yield sskts.service.person.creditCard.find(req.getUser().sub, req.getUser().username)();
+        const searchCardResults = yield sskts.service.person.creditCard.find(req.user.sub, req.user.username)();
         debug('searchCardResults:', searchCardResults);
         res.json(searchCardResults);
     }
@@ -140,7 +75,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const creditCard = yield sskts.service.person.creditCard.save(req.getUser().sub, req.getUser().username, req.body)();
+        const creditCard = yield sskts.service.person.creditCard.save(req.user.sub, req.user.username, req.body)();
         res.status(http_status_1.CREATED).json(creditCard);
     }
     catch (error) {
@@ -152,7 +87,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
  */
 peopleRouter.delete('/me/creditCards/:cardSeq', permitScopes_1.default(['people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.person.creditCard.unsubscribe(req.getUser().sub, req.params.cardSeq)();
+        yield sskts.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -168,7 +103,7 @@ peopleRouter.get('/me/ownershipInfos/reservation', permitScopes_1.default(['peop
     try {
         const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const ownershipInfos = yield repository.searchScreeningEventReservation({
-            ownedBy: req.getUser().sub,
+            ownedBy: req.user.sub,
             ownedAt: new Date()
         });
         res.json(ownershipInfos);

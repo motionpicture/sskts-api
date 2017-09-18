@@ -1,7 +1,6 @@
 "use strict";
 /**
  * oauthコントローラー
- *
  * @namespace controllers/oauth
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -14,11 +13,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // import * as sskts from '@motionpicture/sskts-domain';
-// import * as bcrypt from 'bcryptjs';
 const createDebug = require("debug");
-// import { Request } from 'express';
 const jwt = require("jsonwebtoken");
-// import * as request from 'request-promise-native';
 // tslint:disable-next-line:no-require-imports no-var-requires
 // const googleAuth = require('google-auth-library');
 const debug = createDebug('sskts-api:controllers:oauth');

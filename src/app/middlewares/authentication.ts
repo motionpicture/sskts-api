@@ -100,17 +100,14 @@ export default async (req: Request, __: Response, next: NextFunction) => {
         const pems: IPems = await createPems();
         const payload = await validateToken(pems, token);
         debug('verified! payload:', payload);
-        req.user = payload;
+        req.user = {
+            ...payload,
+            ...{
+                // アクセストークンにはscopeとして定義されているので、scopesに変換
+                scopes: (typeof payload.scope === 'string') ? (<string>payload.scope).split((' ')) : []
+            }
+        };
         req.accessToken = token;
-
-        // アクセストークンにはscopeとして定義されているので、scopesに変換
-        if (req.user.scopes === undefined) {
-            req.user.scopes = (typeof req.user.scope === 'string') ? (<string>req.user.scope).split((' ')) : [];
-        }
-
-        // todo getUserメソッドを宣言する場所はここでよい？
-        // oauthを通過した場合のみ{req.user}を使用するはずなので、これで問題ないはず。
-        req.getUser = () => req.user;
 
         next();
     } catch (error) {

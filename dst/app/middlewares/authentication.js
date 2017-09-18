@@ -42,15 +42,11 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
         const pems = yield createPems();
         const payload = yield validateToken(pems, token);
         debug('verified! payload:', payload);
-        req.user = payload;
+        req.user = Object.assign({}, payload, {
+            // アクセストークンにはscopeとして定義されているので、scopesに変換
+            scopes: (typeof payload.scope === 'string') ? payload.scope.split((' ')) : []
+        });
         req.accessToken = token;
-        // アクセストークンにはscopeとして定義されているので、scopesに変換
-        if (req.user.scopes === undefined) {
-            req.user.scopes = (typeof req.user.scope === 'string') ? req.user.scope.split((' ')) : [];
-        }
-        // todo getUserメソッドを宣言する場所はここでよい？
-        // oauthを通過した場合のみ{req.user}を使用するはずなので、これで問題ないはず。
-        req.getUser = () => req.user;
         next();
     }
     catch (error) {

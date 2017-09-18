@@ -1,15 +1,11 @@
 /**
  * oauthコントローラー
- *
  * @namespace controllers/oauth
  */
 
 // import * as sskts from '@motionpicture/sskts-domain';
-// import * as bcrypt from 'bcryptjs';
 import * as createDebug from 'debug';
-// import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
-// import * as request from 'request-promise-native';
 
 // tslint:disable-next-line:no-require-imports no-var-requires
 // const googleAuth = require('google-auth-library');

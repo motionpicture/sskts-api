@@ -12,8 +12,8 @@ const debug = createDebug('sskts-api:middlewares:requireMember');
 
 export default (req: Request, __: Response, next: NextFunction) => {
     // 会員としてログイン済みであればOK
-    if (isMember(req.getUser())) {
-        debug('logged in as', req.getUser().sub);
+    if (isMember(req.user)) {
+        debug('logged in as', req.user.sub);
         next();
 
         return;

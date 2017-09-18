@@ -5,7 +5,7 @@ declare global {
     namespace Express {
         export type IUser = sskts.factory.clientUser.IClientUser;
         export interface Request {
-            getUser: () => IUser;
+            user: IUser;
             accessToken: string;
         }
     }

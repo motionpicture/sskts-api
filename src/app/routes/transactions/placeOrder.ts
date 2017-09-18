@@ -65,7 +65,7 @@ placeOrderTransactionsRouter.post(
                 maxCountPerUnit: parseInt(<string>process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
                 clientUser: req.user,
                 scope: scope,
-                agentId: req.getUser().sub,
+                agentId: req.user.sub,
                 sellerId: req.body.sellerId
             })(
                 new sskts.repository.Organization(sskts.mongoose.connection),
@@ -116,7 +116,7 @@ placeOrderTransactionsRouter.put(
             };
 
             await sskts.service.transaction.placeOrderInProgress.setCustomerContacts(
-                req.getUser().sub,
+                req.user.sub,
                 req.params.transactionId,
                 contacts
             )(new sskts.repository.Transaction(sskts.mongoose.connection));
@@ -145,7 +145,7 @@ placeOrderTransactionsRouter.post(
             )(new sskts.repository.Event(sskts.mongoose.connection));
 
             const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
-                req.getUser().sub,
+                req.user.sub,
                 req.params.transactionId,
                 findIndividualScreeningEvent,
                 req.body.offers
@@ -171,7 +171,7 @@ placeOrderTransactionsRouter.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuth(
-                req.getUser().sub,
+                req.user.sub,
                 req.params.transactionId,
                 req.params.actionId
             )(
@@ -205,14 +205,14 @@ placeOrderTransactionsRouter.post(
             const creditCard: sskts.service.transaction.placeOrderInProgress.ICreditCard4authorizeAction = {
                 ...req.body.creditCard,
                 ...{
-                    memberId: (req.getUser().username !== undefined) ? req.getUser().sub : undefined
+                    memberId: (req.user.username !== undefined) ? req.user.sub : undefined
                 }
             };
             debug('authorizing credit card...', creditCard);
 
             debug('authorizing credit card...', req.body.creditCard);
             const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeCreditCard(
-                req.getUser().sub,
+                req.user.sub,
                 req.params.transactionId,
                 req.body.orderId,
                 req.body.amount,
@@ -243,7 +243,7 @@ placeOrderTransactionsRouter.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.cancelCreditCardAuth(
-                req.getUser().sub,
+                req.user.sub,
                 req.params.transactionId,
                 req.params.actionId
             )(
@@ -290,7 +290,7 @@ placeOrderTransactionsRouter.post(
                 }
             };
             const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeMvtk(
-                req.getUser().sub,
+                req.user.sub,
                 req.params.transactionId,
                 authorizeObject
             )(
@@ -317,7 +317,7 @@ placeOrderTransactionsRouter.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.cancelMvtkAuth(
-                req.getUser().sub,
+                req.user.sub,
                 req.params.transactionId,
                 req.params.actionId
             )(
@@ -339,7 +339,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const order = await sskts.service.transaction.placeOrderInProgress.confirm(
-                req.getUser().sub,
+                req.user.sub,
                 req.params.transactionId
             )(
                 new sskts.repository.action.Authorize(sskts.mongoose.connection),
