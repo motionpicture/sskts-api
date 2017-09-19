@@ -41,8 +41,6 @@
         "src"
     ],
     "exclude": [
-        "locales",
-        "node_modules",
-        "test"
+        "src/**/*.spec.ts"
     ]
 }

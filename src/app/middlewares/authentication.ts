@@ -138,7 +138,7 @@ export async function createPems() {
 }
 
 export async function validateToken(pems: IPems, token: string): Promise<IPayload> {
-    debug('validating token...');
+    debug('validating token...', pems, token);
     const decodedJwt = <any>jwt.decode(token, { complete: true });
     if (!decodedJwt) {
         throw new Error('invalid JWT token');

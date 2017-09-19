@@ -76,7 +76,7 @@ function createPems() {
 exports.createPems = createPems;
 function validateToken(pems, token) {
     return __awaiter(this, void 0, void 0, function* () {
-        debug('validating token...');
+        debug('validating token...', pems, token);
         const decodedJwt = jwt.decode(token, { complete: true });
         if (!decodedJwt) {
             throw new Error('invalid JWT token');

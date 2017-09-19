@@ -1,7 +1,17 @@
 {
     "check-coverage": true,
+    "lines": 40,
+    "statements": 40,
+    "functions": 40,
+    "branches": 40,
+    "extension": [
+        ".ts"
+    ],
+    "exclude": [
+        "**/*.spec.ts"
+    ],
     "include": [
-        "dst/**/*.js"
+        "src/**/*.ts"
     ],
     "reporter": [
         "lcov",

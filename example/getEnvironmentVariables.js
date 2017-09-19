@@ -1,21 +1,16 @@
 /**
  * 環境変数取得サンプル
- *
  * @ignore
  */
 
-import * as createDebug from 'debug';
-import * as httpStatus from 'http-status';
-import * as request from 'request-promise-native';
+const httpStatus = require('http-status');
+const request = require('request-promise-native');
 
-const debug = createDebug('sskts-api:samples');
 const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
 
 async function main() {
-    let response: any;
-
     // アクセストークン取得
-    response = await request.post({
+    const accessToken = await request.post({
         url: `${API_ENDPOINT}/oauth/token`,
         body: {
             assertion: process.env.SSKTS_API_REFRESH_TOKEN,
@@ -24,27 +19,30 @@ async function main() {
         json: true,
         simple: false,
         resolveWithFullResponse: true
-    });
-    debug('oauth token result:', response.statusCode, response.body);
-    const accessToken = response.body.access_token;
+    }).then((response) => {
+        console.log('oauth token result:', response.statusCode, response.body);
 
-    response = await request.get({
+        return response.body.access_token;
+    });
+
+    await request.get({
         url: `${API_ENDPOINT}/dev/environmentVariables`,
         auth: { bearer: accessToken },
         json: true,
         simple: false,
         resolveWithFullResponse: true
+    }).then((response) => {
+        console.log('/dev/environmentVariables result:', response.statusCode, response.body);
+        if (response.statusCode !== httpStatus.OK) {
+            throw new Error(response.body.message);
+        }
+        const variables = response.body.data.attributes;
+        console.log(variables);
     });
-    debug('/theaters/:id result:', response.statusCode, response.body);
-    if (response.statusCode !== httpStatus.OK) {
-        throw new Error(response.body.message);
-    }
-    const variables = response.body.data.attributes;
-    debug(variables);
 }
 
 main().then(() => {
-    debug('main processed.');
+    console.log('main processed.');
 }).catch((err) => {
     console.error(err.message);
 });

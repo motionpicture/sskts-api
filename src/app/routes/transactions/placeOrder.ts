@@ -121,7 +121,7 @@ placeOrderTransactionsRouter.put(
                 contacts
             )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
-            res.status(NO_CONTENT).end();
+            res.status(CREATED).json(contacts);
         } catch (error) {
             next(error);
         }

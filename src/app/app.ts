@@ -9,7 +9,7 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as createDebug from 'debug';
 import * as express from 'express';
-import expressValidator = require('express-validator'); // tslint:disable-line:no-require-imports
+import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
