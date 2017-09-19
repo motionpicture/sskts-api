@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "git+https://tetsu:M0P!Xmopix@m-p.backlog.jp/git/SSKTS/domain.git#feature/SSKTS-533",
+    "@motionpicture/sskts-domain": "^23.0.0-alpha.0",
     "basic-auth": "^1.1.0",
     "body-parser": "^1.18.1",
     "cors": "^2.8.4",
