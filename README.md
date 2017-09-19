@@ -45,6 +45,8 @@ set NODE_ENV=**********環境名**********
 set MONGOLAB_URI=**********mongodb接続URI**********
 set SENDGRID_API_KEY=**********sendgrid api key**********
 set GMO_ENDPOINT=**********gmo apiのエンドポイント**********
+set GMO_SITE_ID=**********GMOサイトID**********
+set GMO_SITE_PASS=**********GMOサイトパス**********
 set COA_ENDPOINT=**********coa apiのエンドポイント**********
 set COA_REFRESH_TOKEN=**********coa apiのリフレッシュトークン**********
 set SSKTS_API_SECRET=**********本apiでjsonwebtoken署名に使用するシークレット文字列**********
@@ -55,6 +57,8 @@ set REDIS_PORT=**********在庫状況保管用Redis Cacheポート番号********
 set REDIS_KEY=**********在庫状況保管用Redis Cache接続キー**********
 set TRANSACTIONS_COUNT_UNIT_IN_SECONDS=**********取引数制限ユニット(秒)**********
 set NUMBER_OF_TRANSACTIONS_PER_UNIT=**********ユニットあたりの最大取引数**********
+set RESOURECE_SERVER_IDENTIFIER=**********リソースサーバーとしての固有識別子**********
+set TOKEN_ISSUER=**********access token issuer(case sensitive URL using the https scheme)**********
 ```
 
 テスト実行時

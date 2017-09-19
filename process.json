@@ -1,12 +1,10 @@
 {
     "name": "worker",
-    "script": "./server.js",
+    "script": "./dst/server.js",
     "instances": 1,
     "merge_logs": true,
     "log_date_format": "YYYY-MM-DD HH:mm Z",
-    "watch": [
-        "*.js"
-    ],
+    "watch": true,
     "watch_options": {
         "followSymlinks": true,
         "usePolling": true,

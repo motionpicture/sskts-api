@@ -42,14 +42,14 @@ exports.default = (config) => __awaiter(this, void 0, void 0, function* () {
                 shopId: config.gmoShopId,
                 shopPass: config.gmoShopPass,
                 orderId: orderId,
-                jobCd: sskts.GMO.utils.util.JOB_CD_AUTH,
+                jobCd: sskts.GMO.utils.util.JobCd.Auth,
                 amount: config.amount
             });
             const execTranResult = yield sskts.GMO.services.credit.execTran({
                 accessId: entryTranResult.accessId,
                 accessPass: entryTranResult.accessPass,
                 orderId: orderId,
-                method: '1',
+                method: sskts.GMO.utils.util.Method.Lump,
                 cardNo: TEST_CARD_NO,
                 expire: TEST_EXPIRE,
                 securityCode: TEST_SECURITY_CODE

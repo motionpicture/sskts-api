@@ -5,12 +5,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- eventsルーターを追加。
+- placesルーターを追加。
+- peopleルーターを追加。
+- organizationsルーターを追加。
+- typescript向けのクライアントライブラリを追加。
+- Google Sign-Inとの連携を追加。
+- LINE Loginとの連携を追加。
 
 ### Changed
+- 認可サーバーをcognito user poolへ移行。
+- Amazon Cognitoでの会員管理に対応。
 
 ### Deprecated
 
 ### Removed
+- films,screens,theaters,performancesルーターを削除。
+- adminスコープを削除。
 
 ### Fixed
 

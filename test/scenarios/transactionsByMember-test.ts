@@ -21,7 +21,7 @@ let TEST_OWNER: sskts.factory.owner.member.IVariableFields;
 
 let connection: sskts.mongoose.Connection;
 before(async () => {
-    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
+    connection = sskts.mongoose.createConnection(<string>process.env.MONGOLAB_URI);
 
     const now = Date.now().toString();
     TEST_OWNER = {
@@ -450,7 +450,7 @@ async function processTransactionByPerformance(performanceId: string, client: Re
 
     // メール追加
     const content = `
-sskts-api:examples:transaction 様\n
+sskts-api:samples:transaction 様\n
 \n
 -------------------------------------------------------------------\n
 この度はご購入いただき誠にありがとうございます。\n

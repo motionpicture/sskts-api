@@ -1,0 +1,10 @@
+{
+    "check-coverage": true,
+    "include": [
+        "dst/**/*.js"
+    ],
+    "reporter": [
+        "lcov",
+        "text-summary"
+    ]
+}

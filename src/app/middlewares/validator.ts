@@ -1,0 +1,29 @@
+/**
+ * バリデータミドルウェア
+ *
+ * リクエストのパラメータ(query strings or body parameters)に対するバリデーション
+ * @module middlewares/validator
+ */
+
+import * as sskts from '@motionpicture/sskts-domain';
+import * as createDebug from 'debug';
+import { NextFunction, Request, Response } from 'express';
+import { BAD_REQUEST } from 'http-status';
+
+import { APIError } from '../error/api';
+
+const debug = createDebug('sskts-api:middlewares:validator');
+
+export default async (req: Request, __: Response, next: NextFunction) => {
+    const validatorResult = await req.getValidationResult();
+    if (!validatorResult.isEmpty()) {
+        const errors = validatorResult.array().map((mappedRrror) => {
+            return new sskts.factory.errors.Argument(mappedRrror.param, mappedRrror.msg);
+        });
+        debug('responding...', errors);
+
+        next(new APIError(BAD_REQUEST, errors));
+    } else {
+        next();
+    }
+};
