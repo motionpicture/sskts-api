@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "^23.0.0-alpha.2",
+    "@motionpicture/sskts-domain": "^23.0.0-alpha.3",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.1",
     "cors": "^2.8.4",
@@ -74,14 +74,14 @@
   "repository": {},
   "scripts": {
     "build": "tsc",
-    "check": "npm run tslint && nsp check && npm run snyk",
+    "check": "npm run tslint && nsp check && snyk test",
     "clean": "rimraf ./dst test/**/*.js ./doc ./coverage npm-debug.log*",
-    "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
+    "jsdoc": "jsdoc -c jsdoc.json",
     "http-server": "http-server",
     "mocha": "mocha",
     "coverage": "nyc mocha src/**/*.spec.ts",
     "samples": "http-server ./samples",
-    "snyk": "snyk auth && snyk test --ignore-policy",
+    "snyk": "snyk wizard",
     "start": "node dst/server.js",
     "start:development": "node dst/ssl.js",
     "test": "npm run check && npm run nyc",
