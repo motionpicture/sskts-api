@@ -13,11 +13,54 @@ import * as permitScopesMiddleware from '../../middlewares/permitScopes';
 
 let sandbox: sinon.SinonSandbox;
 
-before(() => {
-    sandbox = sinon.sandbox.create();
+describe('POST /transactions/placeOrder/:transactionId/discountInfos/mvtk', () => {
+    beforeEach(() => {
+        sandbox = sinon.sandbox.create();
+    });
+
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('トークンが正しければ追加できるはず', async () => {
+        const payload = { sub: 'sub' };
+        const transactionId = 'transactionId';
+        const body = {
+            price: 1234,
+            seatInfoSyncIn: {}
+        };
+        const authorizeAction = {
+            id: 'actionId'
+        };
+
+        sandbox.mock(authenticationMiddleware).expects('default').once().callsFake(async (req: any, __: any, next: any) => {
+            req.user = payload;
+            next();
+        });
+        sandbox.mock(permitScopesMiddleware).expects('default').atLeast(1).returns((__1: any, __2: any, next: any) => {
+            next();
+        });
+        sandbox.mock(sskts.service.transaction.placeOrderInProgress).expects('authorizeMvtk').once()
+            .returns(async () => Promise.resolve(authorizeAction));
+
+        // tslint:disable-next-line:no-require-imports
+        const result = await supertest(require('../../app'))
+            .post(`/transactions/placeOrder/${transactionId}/discountInfos/mvtk`)
+            .set('Accept', 'application/json')
+            .send(body)
+            .expect(CREATED)
+            .then((response) => response.body);
+
+        assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
 });
 
 describe('PUT /transactions/placeOrder/:transactionId/customerContact', () => {
+    beforeEach(() => {
+        sandbox = sinon.sandbox.create();
+    });
+
     afterEach(() => {
         sandbox.restore();
     });

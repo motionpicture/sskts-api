@@ -275,18 +275,18 @@ placeOrderTransactionsRouter.post(
                 price: parseInt(req.body.price, 10),
                 transactionId: req.params.transactionId,
                 seatInfoSyncIn: {
-                    kgygishCd: req.body.seatSyncInfoIn.kgygishCd,
-                    yykDvcTyp: req.body.seatSyncInfoIn.yykDvcTyp,
-                    trkshFlg: req.body.seatSyncInfoIn.trkshFlg,
-                    kgygishSstmZskyykNo: req.body.seatSyncInfoIn.kgygishSstmZskyykNo,
-                    kgygishUsrZskyykNo: req.body.seatSyncInfoIn.kgygishUsrZskyykNo,
-                    jeiDt: req.body.seatSyncInfoIn.jeiDt,
-                    kijYmd: req.body.seatSyncInfoIn.kijYmd,
-                    stCd: req.body.seatSyncInfoIn.stCd,
-                    screnCd: req.body.seatSyncInfoIn.screnCd,
-                    knyknrNoInfo: req.body.seatSyncInfoIn.knyknrNoInfo,
-                    zskInfo: req.body.seatSyncInfoIn.zskInfo,
-                    skhnCd: req.body.seatSyncInfoIn.skhnCd
+                    kgygishCd: req.body.seatInfoSyncIn.kgygishCd,
+                    yykDvcTyp: req.body.seatInfoSyncIn.yykDvcTyp,
+                    trkshFlg: req.body.seatInfoSyncIn.trkshFlg,
+                    kgygishSstmZskyykNo: req.body.seatInfoSyncIn.kgygishSstmZskyykNo,
+                    kgygishUsrZskyykNo: req.body.seatInfoSyncIn.kgygishUsrZskyykNo,
+                    jeiDt: req.body.seatInfoSyncIn.jeiDt,
+                    kijYmd: req.body.seatInfoSyncIn.kijYmd,
+                    stCd: req.body.seatInfoSyncIn.stCd,
+                    screnCd: req.body.seatInfoSyncIn.screnCd,
+                    knyknrNoInfo: req.body.seatInfoSyncIn.knyknrNoInfo,
+                    zskInfo: req.body.seatInfoSyncIn.zskInfo,
+                    skhnCd: req.body.seatInfoSyncIn.skhnCd
                 }
             };
             const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeMvtk(
