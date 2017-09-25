@@ -1,18 +1,19 @@
 /**
  * oauthコントローラー
  * @namespace controllers/oauth
+ * @ignore
  */
 
 // import * as sskts from '@motionpicture/sskts-domain';
-import * as createDebug from 'debug';
-import * as jwt from 'jsonwebtoken';
+// import * as createDebug from 'debug';
+// import * as jwt from 'jsonwebtoken';
 
 // tslint:disable-next-line:no-require-imports no-var-requires
 // const googleAuth = require('google-auth-library');
 
-const debug = createDebug('sskts-api:controllers:oauth');
+// const debug = createDebug('sskts-api:controllers:oauth');
 // todo どこで定義するか
-const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
+// const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 1800;
 
 export const MESSAGE_UNIMPLEMENTED_GRANT_TYPE = 'grant_type not implemented';
 export const MESSAGE_CLIENT_NOT_FOUND = 'client not found';
@@ -303,27 +304,27 @@ export interface ICredentials {
  * @param {object} payload 変換したいデータ
  * @returns {Promise<ICredentials>} 資格情報
  */
-export async function payload2credentials(payload: Express.IUser): Promise<ICredentials> {
-    return new Promise<ICredentials>((resolve, reject) => {
-        debug('signing...', payload);
-        jwt.sign(
-            payload,
-            <string>process.env.SSKTS_API_SECRET,
-            {
-                expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
-            },
-            (err, encoded) => {
-                debug('jwt signed', err, encoded);
-                if (err instanceof Error) {
-                    reject(err);
-                } else {
-                    resolve({
-                        access_token: encoded,
-                        token_type: 'Bearer',
-                        expires_in: ACCESS_TOKEN_EXPIRES_IN_SECONDS
-                    });
-                }
-            }
-        );
-    });
-}
+// export async function payload2credentials(payload: Express.IUser): Promise<ICredentials> {
+//     return new Promise<ICredentials>((resolve, reject) => {
+//         debug('signing...', payload);
+//         jwt.sign(
+//             payload,
+//             <string>process.env.SSKTS_API_SECRET,
+//             {
+//                 expiresIn: ACCESS_TOKEN_EXPIRES_IN_SECONDS
+//             },
+//             (err, encoded) => {
+//                 debug('jwt signed', err, encoded);
+//                 if (err instanceof Error) {
+//                     reject(err);
+//                 } else {
+//                     resolve({
+//                         access_token: encoded,
+//                         token_type: 'Bearer',
+//                         expires_in: ACCESS_TOKEN_EXPIRES_IN_SECONDS
+//                     });
+//                 }
+//             }
+//         );
+//     });
+// }

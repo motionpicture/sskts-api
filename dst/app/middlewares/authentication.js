@@ -1,7 +1,6 @@
 "use strict";
 /**
  * oauthミドルウェア
- *
  * @module middlewares/authentication
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */

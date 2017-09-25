@@ -1,3 +1,5 @@
+<img src="https://motionpicture.jp/images/common/logo_01.svg" alt="motionpicture" title="motionpicture" align="right" height="56" width="98"/>
+
 # 佐々木興行チケットシステムAPIウェブアプリケーション
 
 ## Features
@@ -11,7 +13,7 @@
 
 ### 言語
 実態としては、linuxあるいはwindows上でのnode.js。
-プログラミング言語としては、alternative javascriptのひとつであるTypeScript。
+プログラミング言語としては、TypeScript。
 
 * TypeScript(https://www.typescriptlang.org/)
 
@@ -36,8 +38,6 @@ npmでローカルサーバーを起動。
 npm start
 ```
 
-(http://localhost:8080)にアクセスすると、ローカルでウェブアプリを確認できます。
-
 
 ### Required environment variables
 ```shell
@@ -49,8 +49,6 @@ set GMO_SITE_ID=**********GMOサイトID**********
 set GMO_SITE_PASS=**********GMOサイトパス**********
 set COA_ENDPOINT=**********coa apiのエンドポイント**********
 set COA_REFRESH_TOKEN=**********coa apiのリフレッシュトークン**********
-set SSKTS_API_SECRET=**********本apiでjsonwebtoken署名に使用するシークレット文字列**********
-set SSKTS_API_REFRESH_TOKEN=**********本apiのリフレッシュトークン**********
 set SSKTS_DEVELOPER_EMAIL=**********本apiで使用される開発者メールアドレス**********
 set REDIS_HOST=**********在庫状況保管用Redis Cacheホスト名**********
 set REDIS_PORT=**********在庫状況保管用Redis Cacheポート番号**********
@@ -88,16 +86,21 @@ set SSKTS_API_BASIC_AUTH_PASS=**********認証パスワード**********
 * [tslint](https://github.com/palantir/tslint)
 * [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
 
-`npm run check`でチェック実行。改修の際には、必ずチェックすること。
+`npm run check`でチェック実行。
+
+
+## パッケージ脆弱性のチェック
+
+* [nsp](https://www.npmjs.com/package/nsp)
 
 
 ## clean
 `npm run clean`で不要なソース削除。
 
 
-## test
-`npm test`でチェック実行。
+## テスト
+`npm test`でテスト実行。
 
 
-## versioning
-`npm version patch -f -m "enter your commit comment..."`でチェック実行。
+## ドキュメント
+`npm run doc`でjsdocが作成されます。

@@ -132,7 +132,7 @@ placeOrderTransactionsRouter.put(
  * 座席仮予約
  */
 placeOrderTransactionsRouter.post(
-    '/:transactionId/seatReservationAuthorization',
+    '/:transactionId/actions/authorize/seatReservation',
     permitScopes(['transactions']),
     (__1, __2, next) => {
         next();
@@ -144,7 +144,7 @@ placeOrderTransactionsRouter.post(
                 req.body.eventIdentifier
             )(new sskts.repository.Event(sskts.mongoose.connection));
 
-            const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
+            const action = await sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
                 req.user.sub,
                 req.params.transactionId,
                 findIndividualScreeningEvent,
@@ -154,7 +154,7 @@ placeOrderTransactionsRouter.post(
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
-            res.status(CREATED).json(authorization);
+            res.status(CREATED).json(action);
         } catch (error) {
             next(error);
         }
@@ -165,7 +165,7 @@ placeOrderTransactionsRouter.post(
  * 座席仮予約削除
  */
 placeOrderTransactionsRouter.delete(
-    '/:transactionId/seatReservationAuthorization/:actionId',
+    '/:transactionId/actions/authorize/seatReservation/:actionId',
     permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
@@ -187,7 +187,7 @@ placeOrderTransactionsRouter.delete(
 );
 
 placeOrderTransactionsRouter.post(
-    '/:transactionId/paymentInfos/creditCard',
+    '/:transactionId/actions/authorize/creditCard',
     permitScopes(['transactions']),
     (req, __2, next) => {
         req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
@@ -198,7 +198,6 @@ placeOrderTransactionsRouter.post(
         next();
     },
     validator,
-    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
@@ -211,7 +210,7 @@ placeOrderTransactionsRouter.post(
             debug('authorizing credit card...', creditCard);
 
             debug('authorizing credit card...', req.body.creditCard);
-            const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeCreditCard(
+            const action = await sskts.service.transaction.placeOrderInProgress.authorizeCreditCard(
                 req.user.sub,
                 req.params.transactionId,
                 req.body.orderId,
@@ -225,7 +224,7 @@ placeOrderTransactionsRouter.post(
                 );
 
             res.status(CREATED).json({
-                id: authorization.id
+                id: action.id
             });
         } catch (error) {
             next(error);
@@ -237,7 +236,7 @@ placeOrderTransactionsRouter.post(
  * クレジットカードオーソリ取消
  */
 placeOrderTransactionsRouter.delete(
-    '/:transactionId/paymentInfos/creditCard/:actionId',
+    '/:transactionId/actions/authorize/creditCard/:actionId',
     permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
@@ -262,7 +261,7 @@ placeOrderTransactionsRouter.delete(
  * ムビチケ追加
  */
 placeOrderTransactionsRouter.post(
-    '/:transactionId/discountInfos/mvtk',
+    '/:transactionId/actions/authorize/mvtk',
     permitScopes(['transactions']),
     (__1, __2, next) => {
         next();
@@ -289,7 +288,7 @@ placeOrderTransactionsRouter.post(
                     skhnCd: req.body.seatInfoSyncIn.skhnCd
                 }
             };
-            const authorization = await sskts.service.transaction.placeOrderInProgress.authorizeMvtk(
+            const action = await sskts.service.transaction.placeOrderInProgress.authorizeMvtk(
                 req.user.sub,
                 req.params.transactionId,
                 authorizeObject
@@ -299,7 +298,7 @@ placeOrderTransactionsRouter.post(
                 );
 
             res.status(CREATED).json({
-                id: authorization.id
+                id: action.id
             });
         } catch (error) {
             next(error);
@@ -311,7 +310,7 @@ placeOrderTransactionsRouter.post(
  * ムビチケ取消
  */
 placeOrderTransactionsRouter.delete(
-    '/:transactionId/discountInfos/mvtk/:actionId',
+    '/:transactionId/actions/authorize/mvtk/:actionId',
     permitScopes(['transactions']),
     validator,
     async (req, res, next) => {

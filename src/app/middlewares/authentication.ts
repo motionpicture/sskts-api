@@ -1,6 +1,5 @@
 /**
  * oauthミドルウェア
- *
  * @module middlewares/authentication
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
@@ -16,28 +15,6 @@ const jwkToPem = require('jwk-to-pem');
 import * as request from 'request-promise-native';
 
 const debug = createDebug('sskts-api:middlewares:authentication');
-
-// export default [
-//     jwt(
-//         {
-//             secret: <string>process.env.SSKTS_API_SECRET
-//         }
-//     ),
-//     (req: Request, __: Response, next: NextFunction) => {
-//         debug('req.user:', req.user);
-
-//         // アクセストークンにはscopeとして定義されているので、scopesに変換
-//         if (req.user.scopes === undefined) {
-//             req.user.scopes = (typeof req.user.scope === 'string') ? (<string>req.user.scope).split((' ')) : [];
-//         }
-
-//         // todo getUserメソッドを宣言する場所はここでよい？
-//         // oauthを通過した場合のみ{req.user}を使用するはずなので、これで問題ないはず。
-//         req.getUser = () => req.user;
-
-//         next();
-//     }
-// ];
 
 export interface IOpenIdConfiguration {
     issuer: string;
