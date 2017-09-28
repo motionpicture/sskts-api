@@ -1,14 +1,17 @@
 {
     "check-coverage": true,
-    "lines": 40,
     "statements": 40,
-    "functions": 40,
-    "branches": 40,
+    "branches": 10,
+    "functions": 30,
+    "lines": 40,
     "extension": [
         ".ts"
     ],
     "exclude": [
-        "**/*.spec.ts"
+        "**/*.spec.ts",
+        "src/app/controllers/**/*.ts",
+        "src/app/error/**/*.ts",
+        "src/app/routes/**/*.ts"
     ],
     "include": [
         "src/**/*.ts"
