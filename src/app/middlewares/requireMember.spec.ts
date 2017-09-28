@@ -3,25 +3,53 @@
  * @ignore
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
+import * as nock from 'nock';
+import * as sinon from 'sinon';
 
 import * as requireMember from './requireMember';
 
-let TEST_USER: any;
-before(() => {
-    TEST_USER = {
-        sub: 'sub',
-        username: 'username'
-    };
-});
+let sandbox: sinon.SinonSandbox;
 
-describe('会員必須ミドルウェア 会員かどうか', () => {
-    it('ユーザーネームが定義されているので会員', async () => {
-        assert(requireMember.isMember(TEST_USER));
+describe('requireMember.default()', () => {
+    beforeEach(() => {
+        nock.cleanAll();
+        nock.disableNetConnect();
+        sandbox = sinon.sandbox.create();
     });
 
-    it('ユーザーネームが定義されていないので会員ではない', async () => {
-        const user = { ...TEST_USER, ...{ username: undefined } };
-        assert(!requireMember.isMember(user));
+    afterEach(() => {
+        nock.cleanAll();
+        nock.enableNetConnect();
+        sandbox.restore();
+    });
+
+    it('会員であればnextが呼ばれるはず', async () => {
+        const params = {
+            req: { user: { username: '' } },
+            res: {},
+            next: (__?: any) => undefined
+        };
+
+        sandbox.mock(params).expects('next').once().withExactArgs();
+
+        const result = await requireMember.default(<any>params.req, <any>params.res, params.next);
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('会員でなければforbiddenエラーと共にnextが呼ばれるはず', async () => {
+        const params = {
+            req: { user: {} },
+            res: {},
+            next: (__?: any) => undefined
+        };
+
+        sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.Forbidden));
+
+        const result = await requireMember.default(<any>params.req, <any>params.res, params.next);
+        assert.equal(result, undefined);
+        sandbox.verify();
     });
 });

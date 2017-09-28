@@ -1,7 +1,6 @@
 "use strict";
 /**
- * 健康チェックルーター
- *
+ * ヘルスチェックルーター
  * @ignore
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {

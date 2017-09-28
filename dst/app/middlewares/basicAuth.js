@@ -16,10 +16,10 @@ exports.default = (req, res, next) => {
         return;
     }
     const user = basicAuth(req);
+    debug('basic auth user:', user);
     if (user !== undefined
         && user.name === process.env.SSKTS_API_BASIC_AUTH_NAME
         && user.pass === process.env.SSKTS_API_BASIC_AUTH_PASS) {
-        debug('authenticated!');
         // 認証情報が正しければOK
         next();
         return;

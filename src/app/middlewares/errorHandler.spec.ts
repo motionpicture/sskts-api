@@ -3,6 +3,7 @@
  * @ignore
  */
 
+import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 import * as nock from 'nock';
@@ -56,10 +57,43 @@ describe('errorHandler.default()', () => {
 
         sandbox.mock(params).expects('next').never();
         sandbox.mock(params.res).expects('status').once().returns(params.res);
-        sandbox.mock(params.res).expects('json').once().returns(params.res);
+        sandbox.mock(params.res).expects('json').once().withExactArgs({ error: params.err.toObject() }).returns(params.res);
 
         const result = await errorHandler.default(params.err, <any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
         sandbox.verify();
+    });
+
+    // tslint:disable-next-line:mocha-no-side-effect-code
+    [
+        new sskts.factory.errors.Argument(''),
+        new sskts.factory.errors.Unauthorized(),
+        new sskts.factory.errors.Forbidden(),
+        new sskts.factory.errors.NotFound(''),
+        new sskts.factory.errors.AlreadyInUse('', []),
+        new sskts.factory.errors.ServiceUnavailable()
+    ].forEach((err) => {
+        it(`SSKTSErrorと共に呼ばれればAPIErrorが生成されてjson出力されるはず ${err.reason}`, async () => {
+            const params = {
+                err: err,
+                req: {},
+                res: {
+                    headersSent: false,
+                    status: () => undefined,
+                    json: () => undefined
+                },
+                next: (__?: any) => undefined
+            };
+            const body = {};
+
+            sandbox.mock(params).expects('next').never();
+            sandbox.mock(APIError.prototype).expects('toObject').once().returns(body);
+            sandbox.mock(params.res).expects('status').once().returns(params.res);
+            sandbox.mock(params.res).expects('json').once().withExactArgs({ error: body }).returns(params.res);
+
+            const result = await errorHandler.default(params.err, <any>params.req, <any>params.res, params.next);
+            assert.equal(result, undefined);
+            sandbox.verify();
+        });
     });
 });
