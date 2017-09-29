@@ -34,7 +34,7 @@ describe('validatorMiddleware.default()', () => {
                 getValidationResult: () => validatorResult
             },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         sandbox.mock(validatorResult).expects('isEmpty').once().returns(true);
@@ -55,7 +55,7 @@ describe('validatorMiddleware.default()', () => {
                 getValidationResult: () => validatorResult
             },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         sandbox.mock(validatorResult).expects('isEmpty').once().returns(false);

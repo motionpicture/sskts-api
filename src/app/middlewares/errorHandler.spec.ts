@@ -33,7 +33,7 @@ describe('errorHandler.default()', () => {
             err: new Error('test'),
             req: {},
             res: { headersSent: true },
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(Error));
@@ -52,7 +52,7 @@ describe('errorHandler.default()', () => {
                 status: () => undefined,
                 json: () => undefined
             },
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         sandbox.mock(params).expects('next').never();
@@ -82,7 +82,7 @@ describe('errorHandler.default()', () => {
                     status: () => undefined,
                     json: () => undefined
                 },
-                next: (__?: any) => undefined
+                next: () => undefined
             };
             const body = {};
 

@@ -29,7 +29,7 @@ describe('notFoundHandler.default()', () => {
         const params = {
             req: {},
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.NotFound));

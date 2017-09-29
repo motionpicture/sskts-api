@@ -1,7 +1,6 @@
 /**
  * 404ハンドラーミドルウェア
- *
- * @module middlewares/notFoundHandler
+ * @module middlewares.notFoundHandler
  */
 
 import * as sskts from '@motionpicture/sskts-domain';

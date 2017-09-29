@@ -1,7 +1,6 @@
 /**
  * スコープ許可ミドルウェア
- *
- * @module middlewares/permitScopes
+ * @module middlewares.permitScopes
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
@@ -53,7 +52,7 @@ export default (permittedScopes: IScope[]) => {
  * @param {string[]} permittedScopes 許可スコープリスト
  * @returns {boolean}
  */
-export function isScopesPermitted(ownedScopes: string[], permittedScopes: string[]) {
+function isScopesPermitted(ownedScopes: string[], permittedScopes: string[]) {
     debug('checking scope requirements...', permittedScopes);
     if (!Array.isArray(ownedScopes)) {
         throw new Error('ownedScopes should be array of string');

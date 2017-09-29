@@ -29,7 +29,7 @@ describe('requireMember.default()', () => {
         const params = {
             req: { user: { username: '' } },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         sandbox.mock(params).expects('next').once().withExactArgs();
@@ -43,7 +43,7 @@ describe('requireMember.default()', () => {
         const params = {
             req: { user: {} },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.Forbidden));

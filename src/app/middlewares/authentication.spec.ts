@@ -26,9 +26,16 @@ const jwks = {
         }
     ]
 };
-const openidConfiguration = {
-    jwks_uri: 'https://example.com/.well-known/jwks.json'
+const URI_JWKS = '/.well-known/jwks.json';
+let openidConfiguration = {
+    jwks_uri: ''
 };
+
+before(() => {
+    openidConfiguration = {
+        jwks_uri: `${process.env.TOKEN_ISSUER}${URI_JWKS}`
+    };
+});
 
 describe('authentication.default()', () => {
     let tokenIssuer: string;
@@ -51,7 +58,7 @@ describe('authentication.default()', () => {
         const params = {
             req: { headers: {} },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.Unauthorized));
@@ -65,12 +72,12 @@ describe('authentication.default()', () => {
         const params = {
             req: { headers: { authorization: 'Bearer JWT' } },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
-        scope = nock(`${process.env.TOKEN_ISSUER}`).get('/.well-known/openid-configuration')
-            .reply(OK, openidConfiguration);
-        const scope2 = nock('https://example.com').get('/.well-known/jwks.json')
-            .reply(OK, jwks);
+
+        scope = nock(`${process.env.TOKEN_ISSUER}`);
+        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
+        scope.get(URI_JWKS).once().reply(OK, jwks);
 
         sandbox.mock(jwt).expects('decode').once().returns(false);
         sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.Unauthorized));
@@ -78,53 +85,49 @@ describe('authentication.default()', () => {
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
         assert(scope.isDone);
-        assert(scope2.isDone);
         sandbox.verify();
     });
 
     it('authorizationヘッダーが正しければnextが呼ばれるはず', async () => {
         const decodedJWT = {
-            header: { kid: 'kid' },
+            header: { kid: jwks.keys[0].kid },
             payload: { token_use: 'access', scope: 'scope scope2' }
         };
-        scope = nock(`${process.env.TOKEN_ISSUER}`).get('/.well-known/openid-configuration')
-            .reply(OK, openidConfiguration);
-        const scope2 = nock('https://example.com').get('/.well-known/jwks.json')
-            .reply(OK, jwks);
-
         const params = {
             req: { headers: { authorization: 'Bearer JWT' } },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
+
+        scope = nock(`${process.env.TOKEN_ISSUER}`);
+        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
+        scope.get(URI_JWKS).once().reply(OK, jwks);
 
         sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
         // tslint:disable-next-line:no-magic-numbers
-        sandbox.mock(jwt).expects('verify').once().callsArgWith(3, null, decodedJWT);
+        sandbox.mock(jwt).expects('verify').once().callsArgWith(3, null, decodedJWT.payload);
         sandbox.mock(params).expects('next').once().withExactArgs();
 
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
         assert(scope.isDone);
-        assert(scope2.isDone);
         sandbox.verify();
     });
 
     it('token_useがaccessでなければSSKTSErrorと共にnextが呼ばれるはず', async () => {
         const decodedJWT = {
-            header: { kid: 'kid' },
-            payload: { token_use: 'invalid', scope: 'scope scope' }
+            header: { kid: jwks.keys[0].kid },
+            payload: { token_use: 'invalid', scope: '' }
         };
-        scope = nock(`${process.env.TOKEN_ISSUER}`).get('/.well-known/openid-configuration')
-            .reply(OK, openidConfiguration);
-        const scope2 = nock('https://example.com').get('/.well-known/jwks.json')
-            .reply(OK, jwks);
-
         const params = {
             req: { headers: { authorization: 'Bearer JWT' } },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
+
+        scope = nock(`${process.env.TOKEN_ISSUER}`);
+        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
+        scope.get(URI_JWKS).once().reply(OK, jwks);
 
         sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
         sandbox.mock(jwt).expects('verify').never();
@@ -133,25 +136,24 @@ describe('authentication.default()', () => {
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
         assert(scope.isDone);
-        assert(scope2.isDone);
         sandbox.verify();
     });
 
     it('公開鍵が存在しなければSSKTSErrorと共にnextが呼ばれるはず', async () => {
         const decodedJWT = {
             header: { kid: 'invalid' },
-            payload: { token_use: 'access', scope: 'scope scope' }
+            payload: { token_use: 'access', scope: '' }
         };
-        scope = nock(`${process.env.TOKEN_ISSUER}`).get('/.well-known/openid-configuration')
-            .reply(OK, openidConfiguration);
-        const scope2 = nock('https://example.com').get('/.well-known/jwks.json')
-            .reply(OK, jwks);
 
         const params = {
             req: { headers: { authorization: 'Bearer JWT' } },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
+
+        scope = nock(`${process.env.TOKEN_ISSUER}`);
+        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
+        scope.get(URI_JWKS).once().reply(OK, jwks);
 
         sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
         sandbox.mock(jwt).expects('verify').never();
@@ -160,7 +162,33 @@ describe('authentication.default()', () => {
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
         assert(scope.isDone);
-        assert(scope2.isDone);
+        sandbox.verify();
+    });
+
+    it('トークンのvefiryに失敗すればSSKTSErrorと共にnextが呼ばれるはず', async () => {
+        const decodedJWT = {
+            header: { kid: jwks.keys[0].kid },
+            payload: { token_use: 'access', scope: '' }
+        };
+
+        const params = {
+            req: { headers: { authorization: 'Bearer JWT' } },
+            res: {},
+            next: () => undefined
+        };
+
+        scope = nock(`${process.env.TOKEN_ISSUER}`);
+        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
+        scope.get(URI_JWKS).once().reply(OK, jwks);
+
+        sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
+        // tslint:disable-next-line:no-magic-numbers
+        sandbox.mock(jwt).expects('verify').once().callsArgWith(3, new Error('verify error'));
+        sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.Unauthorized));
+
+        const result = await authentication.default(<any>params.req, <any>params.res, params.next);
+        assert.equal(result, undefined);
+        assert(scope.isDone);
         sandbox.verify();
     });
 });

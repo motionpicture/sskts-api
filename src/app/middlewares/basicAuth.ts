@@ -1,7 +1,6 @@
 /**
  * ベーシック認証ミドルウェア
- *
- * @module middlewares/basicAuth
+ * @module middlewares.basicAuth
  */
 
 import * as basicAuth from 'basic-auth';

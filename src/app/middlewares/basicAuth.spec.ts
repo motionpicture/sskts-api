@@ -39,7 +39,7 @@ describe('basicAuthMiddleware.default()', () => {
         const params = {
             req: { headers: { authorization: authorization } },
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         process.env.SSKTS_API_BASIC_AUTH_NAME = username;
@@ -64,7 +64,7 @@ describe('basicAuthMiddleware.default()', () => {
                 status: () => undefined,
                 end: () => undefined
             },
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         process.env.SSKTS_API_BASIC_AUTH_NAME = username;
@@ -83,7 +83,7 @@ describe('basicAuthMiddleware.default()', () => {
         const params = {
             req: {},
             res: {},
-            next: (__?: any) => undefined
+            next: () => undefined
         };
 
         sandbox.mock(params).expects('next').once().withExactArgs();
