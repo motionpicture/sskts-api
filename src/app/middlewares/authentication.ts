@@ -1,6 +1,6 @@
 /**
  * oauthミドルウェア
- * @module middlewares/authentication
+ * @module middlewares.authentication
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 
@@ -92,9 +92,10 @@ export default async (req: Request, __: Response, next: NextFunction) => {
     }
 };
 
-export async function createPems() {
+export const URI_OPENID_CONFIGURATION = '/.well-known/openid-configuration';
+async function createPems() {
     const openidConfiguration: IOpenIdConfiguration = await request({
-        url: `${ISSUER}/.well-known/openid-configuration`,
+        url: `${ISSUER}${URI_OPENID_CONFIGURATION}`,
         json: true
     }).then((body) => body);
 
@@ -114,7 +115,7 @@ export async function createPems() {
     // await fs.writeFile(`${__dirname}/pems.json`, JSON.stringify(pems));
 }
 
-export async function validateToken(pems: IPems, token: string): Promise<IPayload> {
+async function validateToken(pems: IPems, token: string): Promise<IPayload> {
     debug('validating token...', pems, token);
     const decodedJwt = <any>jwt.decode(token, { complete: true });
     if (!decodedJwt) {

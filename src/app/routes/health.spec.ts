@@ -1,6 +1,5 @@
 /**
- * healthルーターテスト
- *
+ * ヘルスチェックルーターテスト
  * @ignore
  */
 
@@ -10,17 +9,21 @@ import * as httpStatus from 'http-status';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
+import mongooseConnectionOptions from '../../mongooseConnectionOptions';
 import * as redis from '../../redis';
 
 const MONGOOSE_CONNECTION_READY_STATE_CONNECTED = 1;
 const INTERVALS_CHECK_CONNECTION = 2000;
 
-let connection: sskts.mongoose.Connection;
-before(async () => {
-    connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
-});
-
 describe('ヘルスチェック', () => {
+    beforeEach(async () => {
+        sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
+    });
+
+    afterEach(async () => {
+        sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
+    });
+
     it('mongodbとredisに接続済みであれば健康', async () => {
         await new Promise((resolve, reject) => {
             const timer = setInterval(
@@ -73,11 +76,11 @@ describe('ヘルスチェック', () => {
                         await supertest(app)
                             .get('/health')
                             .set('Accept', 'application/json')
-                            .expect(httpStatus.BAD_REQUEST)
+                            .expect(httpStatus.INTERNAL_SERVER_ERROR)
                             .then();
 
                         // mongodb接続しなおす
-                        sskts.mongoose.connect(process.env.MONGOLAB_URI, (err: any) => {
+                        sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions, (err: any) => {
                             if (err instanceof Error) {
                                 reject(err);
                             } else {

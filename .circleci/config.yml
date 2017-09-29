@@ -35,6 +35,7 @@ jobs:
   test:
     docker:
       - image: circleci/node:latest
+      - image: circleci/mongo:3.2
     steps:
       - checkout
       - restore_cache:

@@ -1,7 +1,6 @@
 /**
  * ベーシック認証ミドルウェア
- *
- * @module middlewares/basicAuth
+ * @module middlewares.basicAuth
  */
 
 import * as basicAuth from 'basic-auth';
@@ -20,10 +19,10 @@ export default (req: Request, res: Response, next: NextFunction) => {
     }
 
     const user = basicAuth(req);
+    debug('basic auth user:', user);
     if (user !== undefined
         && user.name === process.env.SSKTS_API_BASIC_AUTH_NAME
         && user.pass === process.env.SSKTS_API_BASIC_AUTH_PASS) {
-        debug('authenticated!');
         // 認証情報が正しければOK
         next();
 

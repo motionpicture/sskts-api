@@ -1,7 +1,6 @@
 /**
  * 会員必須ミドルウェア
- *
- * @module middlewares/requireMember
+ * @module middlewares.requireMember
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
@@ -15,13 +14,11 @@ export default (req: Request, __: Response, next: NextFunction) => {
     if (isMember(req.user)) {
         debug('logged in as', req.user.sub);
         next();
-
-        return;
+    } else {
+        next(new sskts.factory.errors.Forbidden('login required'));
     }
-
-    next(new sskts.factory.errors.Forbidden('login required'));
 };
 
-export function isMember(user: Express.IUser) {
+function isMember(user: Express.IUser) {
     return (user.username !== undefined);
 }

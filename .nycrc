@@ -1,13 +1,11 @@
 {
     "check-coverage": true,
-    "statements": 40,
-    "branches": 10,
-    "functions": 30,
-    "lines": 40,
     "extension": [
         ".ts"
     ],
     "exclude": [
+        "src/mongooseConnectionOptions.ts",
+        "src/redis.ts",
         "**/*.spec.ts",
         "src/app/controllers/**/*.ts",
         "src/app/error/**/*.ts",

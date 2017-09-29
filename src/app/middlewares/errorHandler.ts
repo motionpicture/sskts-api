@@ -1,7 +1,7 @@
 /**
  * error handler
  * エラーハンドラーミドルウェア
- * @module middlewares/errorHandler
+ * @module middlewares.errorHandler
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
