@@ -1,8 +1,7 @@
 "use strict";
 /**
  * スコープ許可ミドルウェア
- *
- * @module middlewares/permitScopes
+ * @module middlewares.permitScopes
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
@@ -51,4 +50,3 @@ function isScopesPermitted(ownedScopes, permittedScopes) {
     const permittedOwnedScope = permittedScopes.find((permittedScope) => ownedScopes.indexOf(permittedScope) >= 0);
     return (permittedOwnedScope !== undefined);
 }
-exports.isScopesPermitted = isScopesPermitted;

@@ -9,12 +9,12 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "^23.0.0-alpha.11",
+    "@motionpicture/sskts-domain": "^23.0.0-alpha.12",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
-    "express": "^4.15.5",
+    "express": "^4.16.0",
     "express-validator": "^4.2.1",
     "google-auth-library": "^0.10.0",
     "google-libphonenumber": "^3.0.5",

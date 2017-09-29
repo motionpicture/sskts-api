@@ -1,7 +1,7 @@
 "use strict";
 /**
  * oauthミドルウェア
- * @module middlewares/authentication
+ * @module middlewares.authentication
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -52,10 +52,11 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
         next(new sskts.factory.errors.Unauthorized(error.message));
     }
 });
+exports.URI_OPENID_CONFIGURATION = '/.well-known/openid-configuration';
 function createPems() {
     return __awaiter(this, void 0, void 0, function* () {
         const openidConfiguration = yield request({
-            url: `${ISSUER}/.well-known/openid-configuration`,
+            url: `${ISSUER}${exports.URI_OPENID_CONFIGURATION}`,
             json: true
         }).then((body) => body);
         return yield request({
@@ -72,7 +73,6 @@ function createPems() {
         // await fs.writeFile(`${__dirname}/pems.json`, JSON.stringify(pems));
     });
 }
-exports.createPems = createPems;
 function validateToken(pems, token) {
     return __awaiter(this, void 0, void 0, function* () {
         debug('validating token...', pems, token);
@@ -111,4 +111,3 @@ function validateToken(pems, token) {
         });
     });
 }
-exports.validateToken = validateToken;

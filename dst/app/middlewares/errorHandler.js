@@ -2,7 +2,7 @@
 /**
  * error handler
  * エラーハンドラーミドルウェア
- * @module middlewares/errorHandler
+ * @module middlewares.errorHandler
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");

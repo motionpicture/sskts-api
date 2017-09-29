@@ -1,8 +1,7 @@
 "use strict";
 /**
  * 404ハンドラーミドルウェア
- *
- * @module middlewares/notFoundHandler
+ * @module middlewares.notFoundHandler
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");

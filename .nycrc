@@ -16,6 +16,7 @@
     ],
     "reporter": [
         "lcov",
+        "text-lcov",
         "text-summary"
     ]
 }

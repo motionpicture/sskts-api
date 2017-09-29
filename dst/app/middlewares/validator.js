@@ -1,9 +1,8 @@
 "use strict";
 /**
- * バリデータミドルウェア
- *
+ * バリデーターミドルウェア
  * リクエストのパラメータ(query strings or body parameters)に対するバリデーション
- * @module middlewares/validator
+ * @module middlewares.validator
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -25,7 +24,7 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
         const errors = validatorResult.array().map((mappedRrror) => {
             return new sskts.factory.errors.Argument(mappedRrror.param, mappedRrror.msg);
         });
-        debug('responding...', errors);
+        debug('validation result not empty...', errors);
         next(new api_1.APIError(http_status_1.BAD_REQUEST, errors));
     }
     else {

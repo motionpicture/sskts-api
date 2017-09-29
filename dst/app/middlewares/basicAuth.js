@@ -1,8 +1,7 @@
 "use strict";
 /**
  * ベーシック認証ミドルウェア
- *
- * @module middlewares/basicAuth
+ * @module middlewares.basicAuth
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const basicAuth = require("basic-auth");

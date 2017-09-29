@@ -1,8 +1,7 @@
 "use strict";
 /**
  * 会員必須ミドルウェア
- *
- * @module middlewares/requireMember
+ * @module middlewares.requireMember
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
@@ -13,11 +12,11 @@ exports.default = (req, __, next) => {
     if (isMember(req.user)) {
         debug('logged in as', req.user.sub);
         next();
-        return;
     }
-    next(new sskts.factory.errors.Forbidden('login required'));
+    else {
+        next(new sskts.factory.errors.Forbidden('login required'));
+    }
 };
 function isMember(user) {
     return (user.username !== undefined);
 }
-exports.isMember = isMember;
