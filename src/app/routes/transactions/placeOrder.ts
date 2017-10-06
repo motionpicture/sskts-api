@@ -6,7 +6,6 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
-import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
@@ -100,28 +99,18 @@ placeOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const phoneUtil = PhoneNumberUtil.getInstance();
-            const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
-            if (!phoneUtil.isValidNumber(phoneNumber)) {
-                next(new Error('invalid phone number format'));
-
-                return;
-            }
-
-            const contacts = {
-                familyName: req.body.familyName,
-                givenName: req.body.givenName,
-                email: req.body.email,
-                telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
-            };
-
-            await sskts.service.transaction.placeOrderInProgress.setCustomerContacts(
+            const contact = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
                 req.user.sub,
                 req.params.transactionId,
-                contacts
+                {
+                    familyName: req.body.familyName,
+                    givenName: req.body.givenName,
+                    email: req.body.email,
+                    telephone: req.body.telephone
+                }
             )(new sskts.repository.Transaction(sskts.mongoose.connection));
 
-            res.status(CREATED).json(contacts);
+            res.status(CREATED).json(contact);
         } catch (error) {
             next(error);
         }

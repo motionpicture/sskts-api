@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const express_1 = require("express");
-const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const placeOrderTransactionsRouter = express_1.Router();
@@ -83,20 +82,13 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
-        const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
-        if (!phoneUtil.isValidNumber(phoneNumber)) {
-            next(new Error('invalid phone number format'));
-            return;
-        }
-        const contacts = {
+        const contact = yield sskts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, {
             familyName: req.body.familyName,
             givenName: req.body.givenName,
             email: req.body.email,
-            telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
-        };
-        yield sskts.service.transaction.placeOrderInProgress.setCustomerContacts(req.user.sub, req.params.transactionId, contacts)(new sskts.repository.Transaction(sskts.mongoose.connection));
-        res.status(http_status_1.CREATED).json(contacts);
+            telephone: req.body.telephone
+        })(new sskts.repository.Transaction(sskts.mongoose.connection));
+        res.status(http_status_1.CREATED).json(contact);
     }
     catch (error) {
         next(error);
