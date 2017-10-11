@@ -4,8 +4,6 @@
         ".ts"
     ],
     "exclude": [
-        "src/mongooseConnectionOptions.ts",
-        "src/redis.ts",
         "**/*.spec.ts",
         "src/app/controllers/**/*.ts",
         "src/app/error/**/*.ts",

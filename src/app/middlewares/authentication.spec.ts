@@ -93,7 +93,7 @@ describe('authentication.default()', () => {
             header: { kid: jwks.keys[0].kid },
             payload: { token_use: 'access', scope: 'scope scope2' }
         };
-        const params = {
+        const params: any = {
             req: { headers: { authorization: 'Bearer JWT' } },
             res: {},
             next: () => undefined
@@ -110,6 +110,33 @@ describe('authentication.default()', () => {
 
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
+        assert(scope.isDone);
+        sandbox.verify();
+    });
+
+    it('もしscopeがpayloadに含まれなくてもスコープリストは初期化されるはず', async () => {
+        const decodedJWT = {
+            header: { kid: jwks.keys[0].kid },
+            payload: { token_use: 'access' }
+        };
+        const params: any = {
+            req: { headers: { authorization: 'Bearer JWT' } },
+            res: {},
+            next: () => undefined
+        };
+
+        scope = nock(`${process.env.TOKEN_ISSUER}`);
+        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
+        scope.get(URI_JWKS).once().reply(OK, jwks);
+
+        sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
+        // tslint:disable-next-line:no-magic-numbers
+        sandbox.mock(jwt).expects('verify').once().callsArgWith(3, null, decodedJWT.payload);
+        sandbox.mock(params).expects('next').once().withExactArgs();
+
+        const result = await authentication.default(<any>params.req, <any>params.res, params.next);
+        assert.equal(result, undefined);
+        assert(Array.isArray(params.req.user.scopes)); // scopesが配列として初期化されているはず
         assert(scope.isDone);
         sandbox.verify();
     });

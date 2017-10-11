@@ -11,6 +11,8 @@ const debug = createDebug('sskts-api:redis');
 const CONNECT_TIMEOUT_IN_MILLISECONDS = 3600000;
 const MAX_ATTEMPTS = 10;
 let client;
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 function createClient() {
     const c = sskts.redis.createClient({
         host: process.env.REDIS_HOST,
@@ -66,6 +68,8 @@ function createClient() {
  *
  * @see retry_strategy
  */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 function resetClient() {
     client = undefined;
 }

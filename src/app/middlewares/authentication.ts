@@ -54,7 +54,7 @@ export interface IJwk {
     e: string;
 }
 
-const ISSUER = process.env.TOKEN_ISSUER;
+const ISSUER = <string>process.env.TOKEN_ISSUER;
 // const permittedAudiences = [
 //     '4flh35hcir4jl73s3puf7prljq',
 //     '6figun12gcdtlj9e53p2u3oqvl'
@@ -65,6 +65,7 @@ const ISSUER = process.env.TOKEN_ISSUER;
 
 export default async (req: Request, __: Response, next: NextFunction) => {
     try {
+        // ヘッダーからBearerトークンを取り出す
         let token: string | null = null;
         if (typeof req.headers.authorization === 'string' && (<string>req.headers.authorization).split(' ')[0] === 'Bearer') {
             token = (<string>req.headers.authorization).split(' ')[1];
@@ -74,8 +75,10 @@ export default async (req: Request, __: Response, next: NextFunction) => {
             throw new Error('authorization required');
         }
 
-        const pems: IPems = await createPems();
-        const payload = await validateToken(pems, token);
+        const payload = await validateToken(token, {
+            issuer: ISSUER,
+            tokenUse: 'access'
+        });
         debug('verified! payload:', payload);
         req.user = {
             ...payload,
@@ -93,9 +96,9 @@ export default async (req: Request, __: Response, next: NextFunction) => {
 };
 
 export const URI_OPENID_CONFIGURATION = '/.well-known/openid-configuration';
-async function createPems() {
+async function createPems(issuer: string) {
     const openidConfiguration: IOpenIdConfiguration = await request({
-        url: `${ISSUER}${URI_OPENID_CONFIGURATION}`,
+        url: `${issuer}${URI_OPENID_CONFIGURATION}`,
         json: true
     }).then((body) => body);
 
@@ -111,28 +114,37 @@ async function createPems() {
 
         return pemsByKid;
     });
-
-    // await fs.writeFile(`${__dirname}/pems.json`, JSON.stringify(pems));
 }
 
-async function validateToken(pems: IPems, token: string): Promise<IPayload> {
-    debug('validating token...', pems, token);
+/**
+ * トークンを検証する
+ */
+async function validateToken(token: string, verifyOptions: {
+    issuer: string;
+    tokenUse?: string;
+}): Promise<IPayload> {
+    debug('validating token...', token);
     const decodedJwt = <any>jwt.decode(token, { complete: true });
     if (!decodedJwt) {
         throw new Error('invalid JWT token');
     }
     debug('decodedJwt:', decodedJwt);
 
+    // audienceをチェック
     // if (decodedJwt.payload.aud !== AUDIENCE) {
     //     throw new Error('invalid audience');
     // }
 
+    // access tokenのみ受け付ける
     // Reject the jwt if it's not an 'Access Token'
-    if (decodedJwt.payload.token_use !== 'access') {
-        throw new Error('not an access token');
+    if (verifyOptions.tokenUse !== undefined) {
+        if (decodedJwt.payload.token_use !== verifyOptions.tokenUse) {
+            throw new Error(`not an ${verifyOptions.tokenUse} token`);
+        }
     }
 
     // Get the kid from the token and retrieve corresponding PEM
+    const pems = await createPems(verifyOptions.issuer);
     const pem = pems[decodedJwt.header.kid];
     if (pem === undefined) {
         throw new Error(`corresponding pem undefined. kid:${decodedJwt.header.kid}`);
@@ -155,6 +167,7 @@ async function validateToken(pems: IPems, token: string): Promise<IPayload> {
                     // sub is UUID for a user which is never reassigned to another user
                     resolve(<IPayload>payload);
                 }
-            });
+            }
+        );
     });
 }

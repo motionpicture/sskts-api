@@ -55,6 +55,8 @@ app.use((__, res, next) => {
     next();
 });
 
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
     app.get('/dev/uncaughtexception', (req) => {
@@ -93,6 +95,8 @@ app.use('/places', placesRouter);
 app.use('/events', eventsRouter);
 app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', devRouter);
 }

@@ -31,6 +31,7 @@ const ISSUER = process.env.TOKEN_ISSUER;
 // const pemsFromJson: IPems = require('../../../certificate/pems.json');
 exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        // ヘッダーからBearerトークンを取り出す
         let token = null;
         if (typeof req.headers.authorization === 'string' && req.headers.authorization.split(' ')[0] === 'Bearer') {
             token = req.headers.authorization.split(' ')[1];
@@ -38,8 +39,10 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
         if (token === null) {
             throw new Error('authorization required');
         }
-        const pems = yield createPems();
-        const payload = yield validateToken(pems, token);
+        const payload = yield validateToken(token, {
+            issuer: ISSUER,
+            tokenUse: 'access'
+        });
         debug('verified! payload:', payload);
         req.user = Object.assign({}, payload, {
             // アクセストークンにはscopeとして定義されているので、scopesに変換
@@ -53,10 +56,10 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
     }
 });
 exports.URI_OPENID_CONFIGURATION = '/.well-known/openid-configuration';
-function createPems() {
+function createPems(issuer) {
     return __awaiter(this, void 0, void 0, function* () {
         const openidConfiguration = yield request({
-            url: `${ISSUER}${exports.URI_OPENID_CONFIGURATION}`,
+            url: `${issuer}${exports.URI_OPENID_CONFIGURATION}`,
             json: true
         }).then((body) => body);
         return yield request({
@@ -70,25 +73,32 @@ function createPems() {
             });
             return pemsByKid;
         });
-        // await fs.writeFile(`${__dirname}/pems.json`, JSON.stringify(pems));
     });
 }
-function validateToken(pems, token) {
+/**
+ * トークンを検証する
+ */
+function validateToken(token, verifyOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        debug('validating token...', pems, token);
+        debug('validating token...', token);
         const decodedJwt = jwt.decode(token, { complete: true });
         if (!decodedJwt) {
             throw new Error('invalid JWT token');
         }
         debug('decodedJwt:', decodedJwt);
+        // audienceをチェック
         // if (decodedJwt.payload.aud !== AUDIENCE) {
         //     throw new Error('invalid audience');
         // }
+        // access tokenのみ受け付ける
         // Reject the jwt if it's not an 'Access Token'
-        if (decodedJwt.payload.token_use !== 'access') {
-            throw new Error('not an access token');
+        if (verifyOptions.tokenUse !== undefined) {
+            if (decodedJwt.payload.token_use !== verifyOptions.tokenUse) {
+                throw new Error(`not an ${verifyOptions.tokenUse} token`);
+            }
         }
         // Get the kid from the token and retrieve corresponding PEM
+        const pems = yield createPems(verifyOptions.issuer);
         const pem = pems[decodedJwt.header.kid];
         if (pem === undefined) {
             throw new Error(`corresponding pem undefined. kid:${decodedJwt.header.kid}`);

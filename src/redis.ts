@@ -13,6 +13,8 @@ const MAX_ATTEMPTS = 10;
 
 let client: sskts.redis.RedisClient | undefined;
 
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 function createClient() {
     const c = sskts.redis.createClient({
         host: <string>process.env.REDIS_HOST,
@@ -81,6 +83,8 @@ function createClient() {
  *
  * @see retry_strategy
  */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 function resetClient() {
     client = undefined;
 }

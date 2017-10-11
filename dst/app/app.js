@@ -48,6 +48,8 @@ app.use((__, res, next) => {
     res.setHeader('x-api-verion', packageInfo.version);
     next();
 });
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 if (process.env.NODE_ENV !== 'production') {
     // サーバーエラーテスト
     app.get('/dev/uncaughtexception', (req) => {
@@ -79,6 +81,8 @@ app.use('/people', people_1.default);
 app.use('/places', places_1.default);
 app.use('/events', events_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 if (process.env.NODE_ENV !== 'production') {
     app.use('/dev', dev_1.default);
 }
