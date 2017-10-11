@@ -137,6 +137,8 @@ async function validateToken(token: string, verifyOptions: {
 
     // access tokenのみ受け付ける
     // Reject the jwt if it's not an 'Access Token'
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore else */
     if (verifyOptions.tokenUse !== undefined) {
         if (decodedJwt.payload.token_use !== verifyOptions.tokenUse) {
             throw new Error(`not an ${verifyOptions.tokenUse} token`);
