@@ -74,7 +74,7 @@ jobs:
       - run:
           name: deploy to azure webapps development
           command: |
-            git remote origin ${DEPLOY_TARGET_REPOSITORY_DEVELOPMENT}
+            git remote add origin ${DEPLOY_TARGET_REPOSITORY_DEVELOPMENT}
             # git config --global user.email "{email}"
             # git config --global user.name "{username}"
             # git add .
