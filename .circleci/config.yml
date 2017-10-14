@@ -74,12 +74,12 @@ jobs:
       - run:
           name: deploy to azure webapps development
           command: |
-            git remote add origin ${DEPLOY_TARGET_REPOSITORY_DEVELOPMENT}
+            git remote add development-staging ${DEPLOY_TARGET_REPOSITORY_DEVELOPMENT}
             # git config --global user.email "{email}"
             # git config --global user.name "{username}"
             # git add .
             # git commit -am "Circle CI #$CIRCLE_BUILD_NUM"
-            git push origin master 
+            git push development-staging master 
 # Used for orchestrating all jobs.
 workflows:
   version: 2
