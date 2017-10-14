@@ -64,6 +64,22 @@ jobs:
           command: |
             npm run build
             npm run doc
+  deploy2development:
+    docker:
+      - image: circleci/node:8.4
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: deploy to azure webapps development
+          command: |
+            git remote origin ${DEPLOY_TARGET_REPOSITORY_DEVELOPMENT}
+            # git config --global user.email "{email}"
+            # git config --global user.name "{username}"
+            # git add .
+            # git commit -am "Circle CI #$CIRCLE_BUILD_NUM"
+            git push origin master 
 # Used for orchestrating all jobs.
 workflows:
   version: 2
@@ -77,3 +93,16 @@ workflows:
       - doc:
           requires:
             - test
+      - deploy2development:
+          requires:
+            - doc
+          filters:
+            branches:
+              only: develop
+      # - deploy:
+      #     requires:
+      #       - doc
+      #     filters:
+      #       branches:
+      #         only: master
+
