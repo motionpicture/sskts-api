@@ -8,7 +8,9 @@ jobs:
       - checkout
       - run:
           name: node version
-          command: node -v
+          command: |
+            echo $CIRCLE_BRANCH
+            node -v
       - run:
           name: npm version
           command: npm -v
