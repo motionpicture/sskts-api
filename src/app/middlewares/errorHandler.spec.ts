@@ -96,4 +96,37 @@ describe('errorHandler.default()', () => {
             sandbox.verify();
         });
     });
+
+    // tslint:disable-next-line:mocha-no-side-effect-code
+    [
+        new sskts.factory.errors.Argument(''),
+        new sskts.factory.errors.Unauthorized(),
+        new sskts.factory.errors.Forbidden(),
+        new sskts.factory.errors.NotFound(''),
+        new sskts.factory.errors.AlreadyInUse('', []),
+        new sskts.factory.errors.ServiceUnavailable()
+    ].forEach((err) => {
+        it(`SSKTSError配列と共に呼ばれればAPIErrorが生成されてjson出力されるはず ${err.reason}`, async () => {
+            const params = {
+                err: [err],
+                req: {},
+                res: {
+                    headersSent: false,
+                    status: () => undefined,
+                    json: () => undefined
+                },
+                next: () => undefined
+            };
+            const body = {};
+
+            sandbox.mock(params).expects('next').never();
+            sandbox.mock(APIError.prototype).expects('toObject').once().returns(body);
+            sandbox.mock(params.res).expects('status').once().returns(params.res);
+            sandbox.mock(params.res).expects('json').once().withExactArgs({ error: body }).returns(params.res);
+
+            const result = await errorHandler.default(params.err, <any>params.req, <any>params.res, params.next);
+            assert.equal(result, undefined);
+            sandbox.verify();
+        });
+    });
 });

@@ -20,33 +20,12 @@ exports.default = (err, __, res, next) => {
         apiError = err;
     }
     else {
-        if (err instanceof sskts.factory.errors.SSKTS) {
-            switch (true) {
-                // 401
-                case (err instanceof sskts.factory.errors.Unauthorized):
-                    apiError = new api_1.APIError(http_status_1.UNAUTHORIZED, [err]);
-                    break;
-                // 403
-                case (err instanceof sskts.factory.errors.Forbidden):
-                    apiError = new api_1.APIError(http_status_1.FORBIDDEN, [err]);
-                    break;
-                // 404
-                case (err instanceof sskts.factory.errors.NotFound):
-                    apiError = new api_1.APIError(http_status_1.NOT_FOUND, [err]);
-                    break;
-                // 409
-                case (err instanceof sskts.factory.errors.AlreadyInUse):
-                    apiError = new api_1.APIError(http_status_1.CONFLICT, [err]);
-                    break;
-                // 503
-                case (err instanceof sskts.factory.errors.ServiceUnavailable):
-                    apiError = new api_1.APIError(http_status_1.SERVICE_UNAVAILABLE, [err]);
-                    break;
-                // 400
-                default:
-                    apiError = new api_1.APIError(http_status_1.BAD_REQUEST, [err]);
-                    break;
-            }
+        // エラー配列が入ってくることもある
+        if (Array.isArray(err)) {
+            apiError = new api_1.APIError(ssktsError2httpStatusCode(err[0]), err);
+        }
+        else if (err instanceof sskts.factory.errors.SSKTS) {
+            apiError = new api_1.APIError(ssktsError2httpStatusCode(err), [err]);
         }
         else {
             // 500
@@ -57,3 +36,38 @@ exports.default = (err, __, res, next) => {
         error: apiError.toObject()
     });
 };
+/**
+ * SSKTSエラーをHTTPステータスコードへ変換する
+ * @function
+ * @param {sskts.factory.errors.SSKTS} err SSKTSエラー
+ */
+function ssktsError2httpStatusCode(err) {
+    let statusCode = http_status_1.BAD_REQUEST;
+    switch (true) {
+        // 401
+        case (err instanceof sskts.factory.errors.Unauthorized):
+            statusCode = http_status_1.UNAUTHORIZED;
+            break;
+        // 403
+        case (err instanceof sskts.factory.errors.Forbidden):
+            statusCode = http_status_1.FORBIDDEN;
+            break;
+        // 404
+        case (err instanceof sskts.factory.errors.NotFound):
+            statusCode = http_status_1.NOT_FOUND;
+            break;
+        // 409
+        case (err instanceof sskts.factory.errors.AlreadyInUse):
+            statusCode = http_status_1.CONFLICT;
+            break;
+        // 503
+        case (err instanceof sskts.factory.errors.ServiceUnavailable):
+            statusCode = http_status_1.SERVICE_UNAVAILABLE;
+            break;
+        // 400
+        default:
+            statusCode = http_status_1.BAD_REQUEST;
+            break;
+    }
+    return statusCode;
+}

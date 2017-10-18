@@ -24,38 +24,11 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
     if (err instanceof APIError) {
         apiError = err;
     } else {
-        if (err instanceof sskts.factory.errors.SSKTS) {
-            switch (true) {
-                // 401
-                case (err instanceof sskts.factory.errors.Unauthorized):
-                    apiError = new APIError(UNAUTHORIZED, [err]);
-                    break;
-
-                // 403
-                case (err instanceof sskts.factory.errors.Forbidden):
-                    apiError = new APIError(FORBIDDEN, [err]);
-                    break;
-
-                // 404
-                case (err instanceof sskts.factory.errors.NotFound):
-                    apiError = new APIError(NOT_FOUND, [err]);
-                    break;
-
-                // 409
-                case (err instanceof sskts.factory.errors.AlreadyInUse):
-                    apiError = new APIError(CONFLICT, [err]);
-                    break;
-
-                // 503
-                case (err instanceof sskts.factory.errors.ServiceUnavailable):
-                    apiError = new APIError(SERVICE_UNAVAILABLE, [err]);
-                    break;
-
-                // 400
-                default:
-                    apiError = new APIError(BAD_REQUEST, [err]);
-                    break;
-            }
+        // エラー配列が入ってくることもある
+        if (Array.isArray(err)) {
+            apiError = new APIError(ssktsError2httpStatusCode(err[0]), err);
+        } else if (err instanceof sskts.factory.errors.SSKTS) {
+            apiError = new APIError(ssktsError2httpStatusCode(err), [err]);
         } else {
             // 500
             apiError = new APIError(INTERNAL_SERVER_ERROR, [new sskts.factory.errors.SSKTS(<any>'InternalServerError', err.message)]);
@@ -66,3 +39,46 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
         error: apiError.toObject()
     });
 };
+
+/**
+ * SSKTSエラーをHTTPステータスコードへ変換する
+ * @function
+ * @param {sskts.factory.errors.SSKTS} err SSKTSエラー
+ */
+function ssktsError2httpStatusCode(err: sskts.factory.errors.SSKTS) {
+    let statusCode = BAD_REQUEST;
+
+    switch (true) {
+        // 401
+        case (err instanceof sskts.factory.errors.Unauthorized):
+            statusCode = UNAUTHORIZED;
+            break;
+
+        // 403
+        case (err instanceof sskts.factory.errors.Forbidden):
+            statusCode = FORBIDDEN;
+            break;
+
+        // 404
+        case (err instanceof sskts.factory.errors.NotFound):
+            statusCode = NOT_FOUND;
+            break;
+
+        // 409
+        case (err instanceof sskts.factory.errors.AlreadyInUse):
+            statusCode = CONFLICT;
+            break;
+
+        // 503
+        case (err instanceof sskts.factory.errors.ServiceUnavailable):
+            statusCode = SERVICE_UNAVAILABLE;
+            break;
+
+        // 400
+        default:
+            statusCode = BAD_REQUEST;
+            break;
+    }
+
+    return statusCode;
+}
