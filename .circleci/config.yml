@@ -75,7 +75,7 @@ jobs:
           name: deploy to azure webapps development
           command: |
             git remote add development-staging ${DEPLOY_TARGET_REPOSITORY_DEVELOPMENT}
-            git push development-staging master 
+            git push development-staging $CIRCLE_BRANCH:master 
   prerelease:
     docker:
       - image: circleci/node:8.4
@@ -87,7 +87,7 @@ jobs:
           name: deploy to azure webapps development
           command: |
             git remote add prerelease ${DEPLOY_TARGET_REPOSITORY_PRERELEASE}
-            git push prerelease master 
+            git push prerelease $CIRCLE_BRANCH:master 
 # Used for orchestrating all jobs.
 workflows:
   version: 2
