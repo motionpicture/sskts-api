@@ -101,8 +101,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const findIndividualScreeningEvent = yield sskts.service.event.findIndividualScreeningEventByIdentifier(req.body.eventIdentifier)(new sskts.repository.Event(sskts.mongoose.connection));
-        const action = yield sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(req.user.sub, req.params.transactionId, findIndividualScreeningEvent, req.body.offers)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        const action = yield sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(req.user.sub, req.params.transactionId, req.body.eventIdentifier, req.body.offers)(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json(action);
     }
     catch (error) {

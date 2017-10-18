@@ -129,16 +129,13 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const findIndividualScreeningEvent = await sskts.service.event.findIndividualScreeningEventByIdentifier(
-                req.body.eventIdentifier
-            )(new sskts.repository.Event(sskts.mongoose.connection));
-
             const action = await sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
                 req.user.sub,
                 req.params.transactionId,
-                findIndividualScreeningEvent,
+                req.body.eventIdentifier,
                 req.body.offers
             )(
+                new sskts.repository.Event(sskts.mongoose.connection),
                 new sskts.repository.action.Authorize(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
