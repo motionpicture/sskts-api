@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "^23.0.0-alpha.20",
+    "@motionpicture/sskts-domain": "^23.0.0-alpha.21",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
@@ -39,7 +39,7 @@
     "@types/mocha": "^2.2.43",
     "@types/nock": "^8.2.1",
     "@types/power-assert": "^1.4.29",
-    "@types/request-promise-native": "^1.0.7",
+    "@types/request-promise-native": "^1.0.8",
     "@types/sinon": "^2.3.6",
     "@types/supertest": "^2.0.3",
     "@types/winston": "^2.3.6",

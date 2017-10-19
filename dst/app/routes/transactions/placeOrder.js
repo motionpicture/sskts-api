@@ -101,7 +101,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(req.user.sub, req.params.transactionId, req.body.eventIdentifier, req.body.offers)(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(req.user.sub, req.params.transactionId, req.body.eventIdentifier, req.body.offers)(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json(action);
     }
     catch (error) {
@@ -113,8 +113,22 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuth(req.user.sub, req.params.transactionId, req.params.actionId)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 座席仮予へ変更(券種変更)
+ */
+placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), (__1, __2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(req.user.sub, req.params.transactionId, req.params.actionId, req.body.eventIdentifier, req.body.offers)(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        res.json(action);
     }
     catch (error) {
         next(error);
@@ -134,7 +148,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const action = yield sskts.service.transaction.placeOrderInProgress.authorizeCreditCard(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Organization(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Organization(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
             id: action.id
         });
@@ -148,7 +162,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrderInProgress.cancelCreditCardAuth(req.user.sub, req.params.transactionId, req.params.actionId)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -181,7 +195,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
                 skhnCd: req.body.seatInfoSyncIn.skhnCd
             }
         };
-        const action = yield sskts.service.transaction.placeOrderInProgress.authorizeMvtk(req.user.sub, req.params.transactionId, authorizeObject)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(req.user.sub, req.params.transactionId, authorizeObject)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json({
             id: action.id
         });
@@ -195,7 +209,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrderInProgress.cancelMvtkAuth(req.user.sub, req.params.transactionId, req.params.actionId)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new sskts.repository.action.Authorize(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
