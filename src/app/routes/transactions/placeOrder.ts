@@ -136,7 +136,7 @@ placeOrderTransactionsRouter.post(
                 req.body.offers
             )(
                 new sskts.repository.Event(sskts.mongoose.connection),
-                new sskts.repository.action.Authorize(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -161,7 +161,7 @@ placeOrderTransactionsRouter.delete(
                 req.params.transactionId,
                 req.params.actionId
             )(
-                new sskts.repository.action.Authorize(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -192,7 +192,7 @@ placeOrderTransactionsRouter.patch(
                 req.body.offers
             )(
                 new sskts.repository.Event(sskts.mongoose.connection),
-                new sskts.repository.action.Authorize(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -235,7 +235,7 @@ placeOrderTransactionsRouter.post(
                 req.body.method,
                 creditCard
             )(
-                new sskts.repository.action.Authorize(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection),
                 new sskts.repository.Organization(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
@@ -263,7 +263,7 @@ placeOrderTransactionsRouter.delete(
                 req.params.transactionId,
                 req.params.actionId
             )(
-                new sskts.repository.action.Authorize(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -310,7 +310,8 @@ placeOrderTransactionsRouter.post(
                 req.params.transactionId,
                 authorizeObject
             )(
-                new sskts.repository.action.Authorize(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -337,7 +338,7 @@ placeOrderTransactionsRouter.delete(
                 req.params.transactionId,
                 req.params.actionId
             )(
-                new sskts.repository.action.Authorize(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -358,7 +359,9 @@ placeOrderTransactionsRouter.post(
                 req.user.sub,
                 req.params.transactionId
             )(
-                new sskts.repository.action.Authorize(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection),
+                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
             debug('transaction confirmed', order);

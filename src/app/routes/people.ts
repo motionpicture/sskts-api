@@ -28,7 +28,7 @@ peopleRouter.get(
     permitScopes(['people.contacts', 'people.contacts.read-only']),
     async (req, res, next) => {
         try {
-            const contact = await sskts.service.person.contact.getContact(req.accessToken)();
+            const contact = await sskts.service.person.contact.retrieve(req.accessToken)();
             res.json(contact);
         } catch (error) {
             next(error);
@@ -48,7 +48,7 @@ peopleRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.person.contact.updateContact(
+            await sskts.service.person.contact.update(
                 req.accessToken,
                 {
                     givenName: req.body.givenName,
