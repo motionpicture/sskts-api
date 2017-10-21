@@ -29,7 +29,7 @@ peopleRouter.use(requireMember_1.default);
  */
 peopleRouter.get('/me/contacts', permitScopes_1.default(['people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const contact = yield sskts.service.person.contact.getContact(req.accessToken)();
+        const contact = yield sskts.service.person.contact.retrieve(req.accessToken)();
         res.json(contact);
     }
     catch (error) {
@@ -43,7 +43,7 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.person.contact.updateContact(req.accessToken, {
+        yield sskts.service.person.contact.update(req.accessToken, {
             givenName: req.body.givenName,
             familyName: req.body.familyName,
             email: req.body.email,

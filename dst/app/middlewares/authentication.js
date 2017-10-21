@@ -62,7 +62,7 @@ function createPems(issuer) {
             url: `${issuer}${exports.URI_OPENID_CONFIGURATION}`,
             json: true
         }).then((body) => body);
-        return yield request({
+        return request({
             url: openidConfiguration.jwks_uri,
             json: true
         }).then((body) => {
