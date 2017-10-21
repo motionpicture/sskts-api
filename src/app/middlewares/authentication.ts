@@ -102,7 +102,7 @@ async function createPems(issuer: string) {
         json: true
     }).then((body) => body);
 
-    return await request({
+    return request({
         url: openidConfiguration.jwks_uri,
         json: true
     }).then((body) => {
