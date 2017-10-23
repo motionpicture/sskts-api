@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "^23.0.0-alpha.24",
+    "@motionpicture/sskts-domain": "^23.0.0-alpha.25",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
@@ -52,7 +52,7 @@
     "mocha": "^3.5.3",
     "nock": "^9.0.24",
     "nsp": "^2.8.1",
-    "nyc": "^11.2.1",
+    "nyc": "^11.3.0",
     "open": "0.0.5",
     "power-assert": "^1.4.4",
     "rimraf": "^2.6.2",
