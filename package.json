@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/sskts-domain": "^23.0.0-alpha.23",
+    "@motionpicture/sskts-domain": "^23.0.0-alpha.24",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
@@ -17,7 +17,7 @@
     "express": "^4.16.2",
     "express-validator": "^4.2.1",
     "google-auth-library": "^0.10.0",
-    "google-libphonenumber": "^3.0.6",
+    "google-libphonenumber": "^3.0.7",
     "helmet": "^3.9.0",
     "http-status": "^1.0.1",
     "jsonwebtoken": "^8.1.0",
