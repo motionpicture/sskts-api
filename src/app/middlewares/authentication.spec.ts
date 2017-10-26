@@ -12,7 +12,7 @@ import * as sinon from 'sinon';
 
 import * as authentication from './authentication';
 
-let scope: nock.Scope;
+// let scope: nock.Scope;
 let sandbox: sinon.SinonSandbox;
 const jwks = {
     keys: [
@@ -45,6 +45,11 @@ describe('authentication.default()', () => {
         nock.disableNetConnect();
         sandbox = sinon.sandbox.create();
         tokenIssuer = <string>process.env.TOKEN_ISSUER;
+
+        // cognitoからの公開鍵は取得できる前提で進める
+        const pemSScope = nock(`${process.env.TOKEN_ISSUER}`);
+        pemSScope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
+        pemSScope.get(URI_JWKS).once().reply(OK, jwks);
     });
 
     afterEach(() => {
@@ -75,16 +80,11 @@ describe('authentication.default()', () => {
             next: () => undefined
         };
 
-        scope = nock(`${process.env.TOKEN_ISSUER}`);
-        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
-        scope.get(URI_JWKS).once().reply(OK, jwks);
-
         sandbox.mock(jwt).expects('decode').once().returns(false);
         sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.Unauthorized));
 
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
-        assert(scope.isDone);
         sandbox.verify();
     });
 
@@ -99,10 +99,6 @@ describe('authentication.default()', () => {
             next: () => undefined
         };
 
-        scope = nock(`${process.env.TOKEN_ISSUER}`);
-        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
-        scope.get(URI_JWKS).once().reply(OK, jwks);
-
         sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(jwt).expects('verify').once().callsArgWith(3, null, decodedJWT.payload);
@@ -110,7 +106,6 @@ describe('authentication.default()', () => {
 
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
-        assert(scope.isDone);
         sandbox.verify();
     });
 
@@ -125,10 +120,6 @@ describe('authentication.default()', () => {
             next: () => undefined
         };
 
-        scope = nock(`${process.env.TOKEN_ISSUER}`);
-        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
-        scope.get(URI_JWKS).once().reply(OK, jwks);
-
         sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(jwt).expects('verify').once().callsArgWith(3, null, decodedJWT.payload);
@@ -137,7 +128,6 @@ describe('authentication.default()', () => {
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
         assert(Array.isArray(params.req.user.scopes)); // scopesが配列として初期化されているはず
-        assert(scope.isDone);
         sandbox.verify();
     });
 
@@ -152,17 +142,12 @@ describe('authentication.default()', () => {
             next: () => undefined
         };
 
-        scope = nock(`${process.env.TOKEN_ISSUER}`);
-        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
-        scope.get(URI_JWKS).once().reply(OK, jwks);
-
         sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
         sandbox.mock(jwt).expects('verify').never();
         sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.Unauthorized));
 
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
-        assert(scope.isDone);
         sandbox.verify();
     });
 
@@ -178,17 +163,12 @@ describe('authentication.default()', () => {
             next: () => undefined
         };
 
-        scope = nock(`${process.env.TOKEN_ISSUER}`);
-        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
-        scope.get(URI_JWKS).once().reply(OK, jwks);
-
         sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
         sandbox.mock(jwt).expects('verify').never();
         sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.Unauthorized));
 
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
-        assert(scope.isDone);
         sandbox.verify();
     });
 
@@ -204,10 +184,6 @@ describe('authentication.default()', () => {
             next: () => undefined
         };
 
-        scope = nock(`${process.env.TOKEN_ISSUER}`);
-        scope.get(authentication.URI_OPENID_CONFIGURATION).once().reply(OK, openidConfiguration);
-        scope.get(URI_JWKS).once().reply(OK, jwks);
-
         sandbox.mock(jwt).expects('decode').once().returns(decodedJWT);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(jwt).expects('verify').once().callsArgWith(3, new Error('verify error'));
@@ -215,7 +191,6 @@ describe('authentication.default()', () => {
 
         const result = await authentication.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
-        assert(scope.isDone);
         sandbox.verify();
     });
 });

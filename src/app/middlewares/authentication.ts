@@ -7,8 +7,6 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
-// import * as jwt from 'express-jwt';
-// import * as fs from 'fs';
 import * as jwt from 'jsonwebtoken';
 // tslint:disable-next-line:no-require-imports no-var-requires
 const jwkToPem = require('jwk-to-pem');
@@ -16,6 +14,11 @@ import * as request from 'request-promise-native';
 
 const debug = createDebug('sskts-api:middlewares:authentication');
 
+/**
+ * cognito認可サーバーのOPEN ID構成インターフェース
+ * @export
+ * @interface
+ */
 export interface IOpenIdConfiguration {
     issuer: string;
     authorization_endpoint: string;
@@ -28,6 +31,11 @@ export interface IOpenIdConfiguration {
     x509_url: string;
 }
 
+/**
+ * トークンに含まれる情報インターフェース
+ * @export
+ * @interface
+ */
 export interface IPayload {
     sub: string;
     token_use: string;
@@ -41,27 +49,21 @@ export interface IPayload {
     username?: string;
 }
 
+/**
+ * 公開鍵インターフェース
+ * @export
+ * @interface
+ */
 export interface IPems {
     [key: string]: string;
 }
 
-export interface IJwk {
-    kty: string;
-    alg: string;
-    use: string;
-    kid: string;
-    n: string;
-    e: string;
-}
-
 const ISSUER = <string>process.env.TOKEN_ISSUER;
+let pems: IPems;
 // const permittedAudiences = [
 //     '4flh35hcir4jl73s3puf7prljq',
 //     '6figun12gcdtlj9e53p2u3oqvl'
 // ];
-
-// tslint:disable-next-line:no-require-imports no-var-requires
-// const pemsFromJson: IPems = require('../../../certificate/pems.json');
 
 export default async (req: Request, __: Response, next: NextFunction) => {
     try {
@@ -77,7 +79,7 @@ export default async (req: Request, __: Response, next: NextFunction) => {
 
         const payload = await validateToken(token, {
             issuer: ISSUER,
-            tokenUse: 'access'
+            tokenUse: 'access' // access tokenのみ受け付ける
         });
         debug('verified! payload:', payload);
         req.user = {
@@ -126,7 +128,7 @@ async function validateToken(token: string, verifyOptions: {
     debug('validating token...', token);
     const decodedJwt = <any>jwt.decode(token, { complete: true });
     if (!decodedJwt) {
-        throw new Error('invalid JWT token');
+        throw new Error('Not a valid JWT token.');
     }
     debug('decodedJwt:', decodedJwt);
 
@@ -135,30 +137,33 @@ async function validateToken(token: string, verifyOptions: {
     //     throw new Error('invalid audience');
     // }
 
-    // access tokenのみ受け付ける
-    // Reject the jwt if it's not an 'Access Token'
+    // tokenUseが期待通りでなければ拒否
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore else */
     if (verifyOptions.tokenUse !== undefined) {
         if (decodedJwt.payload.token_use !== verifyOptions.tokenUse) {
-            throw new Error(`not an ${verifyOptions.tokenUse} token`);
+            throw new Error(`Not a ${verifyOptions.tokenUse}.`);
         }
     }
 
-    // Get the kid from the token and retrieve corresponding PEM
-    const pems = await createPems(verifyOptions.issuer);
-    const pem = pems[decodedJwt.header.kid];
-    if (pem === undefined) {
-        throw new Error(`corresponding pem undefined. kid:${decodedJwt.header.kid}`);
+    // 公開鍵未取得であればcognitoから取得
+    if (pems === undefined) {
+        pems = await createPems(verifyOptions.issuer);
     }
 
+    // トークンからkidを取り出して、対応するPEMを検索
+    const pem = pems[decodedJwt.header.kid];
+    if (pem === undefined) {
+        throw new Error('Invalid access token.');
+    }
+
+    // 対応PEMがあればトークンを検証
     return new Promise<IPayload>((resolve, reject) => {
-        // Verify the signature of the JWT token to ensure it's really coming from your User Pool
         jwt.verify(
             token,
             pem,
             {
-                issuer: ISSUER
+                issuer: ISSUER // 期待しているユーザープールで発行されたJWTトークンかどうか確認
                 // audience: pemittedAudiences
             },
             (err, payload) => {

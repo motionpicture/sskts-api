@@ -15,20 +15,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
-// import * as jwt from 'express-jwt';
-// import * as fs from 'fs';
 const jwt = require("jsonwebtoken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const jwkToPem = require('jwk-to-pem');
 const request = require("request-promise-native");
 const debug = createDebug('sskts-api:middlewares:authentication');
 const ISSUER = process.env.TOKEN_ISSUER;
+let pems;
 // const permittedAudiences = [
 //     '4flh35hcir4jl73s3puf7prljq',
 //     '6figun12gcdtlj9e53p2u3oqvl'
 // ];
-// tslint:disable-next-line:no-require-imports no-var-requires
-// const pemsFromJson: IPems = require('../../../certificate/pems.json');
 exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // ヘッダーからBearerトークンを取り出す
@@ -41,7 +38,7 @@ exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* (
         }
         const payload = yield validateToken(token, {
             issuer: ISSUER,
-            tokenUse: 'access'
+            tokenUse: 'access' // access tokenのみ受け付ける
         });
         debug('verified! payload:', payload);
         req.user = Object.assign({}, payload, {
@@ -83,32 +80,34 @@ function validateToken(token, verifyOptions) {
         debug('validating token...', token);
         const decodedJwt = jwt.decode(token, { complete: true });
         if (!decodedJwt) {
-            throw new Error('invalid JWT token');
+            throw new Error('Not a valid JWT token.');
         }
         debug('decodedJwt:', decodedJwt);
         // audienceをチェック
         // if (decodedJwt.payload.aud !== AUDIENCE) {
         //     throw new Error('invalid audience');
         // }
-        // access tokenのみ受け付ける
-        // Reject the jwt if it's not an 'Access Token'
+        // tokenUseが期待通りでなければ拒否
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (verifyOptions.tokenUse !== undefined) {
             if (decodedJwt.payload.token_use !== verifyOptions.tokenUse) {
-                throw new Error(`not an ${verifyOptions.tokenUse} token`);
+                throw new Error(`Not a ${verifyOptions.tokenUse}.`);
             }
         }
-        // Get the kid from the token and retrieve corresponding PEM
-        const pems = yield createPems(verifyOptions.issuer);
+        // 公開鍵未取得であればcognitoから取得
+        if (pems === undefined) {
+            pems = yield createPems(verifyOptions.issuer);
+        }
+        // トークンからkidを取り出して、対応するPEMを検索
         const pem = pems[decodedJwt.header.kid];
         if (pem === undefined) {
-            throw new Error(`corresponding pem undefined. kid:${decodedJwt.header.kid}`);
+            throw new Error('Invalid access token.');
         }
+        // 対応PEMがあればトークンを検証
         return new Promise((resolve, reject) => {
-            // Verify the signature of the JWT token to ensure it's really coming from your User Pool
             jwt.verify(token, pem, {
-                issuer: ISSUER
+                issuer: ISSUER // 期待しているユーザープールで発行されたJWTトークンかどうか確認
                 // audience: pemittedAudiences
             }, (err, payload) => {
                 if (err !== null) {
