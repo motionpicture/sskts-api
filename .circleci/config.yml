@@ -86,10 +86,22 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: deploy to azure webapps development
+          name: deploy to azure webapps prerelease
           command: |
             git remote add prerelease ${DEPLOY_TARGET_REPOSITORY_PRERELEASE}
             git push prerelease $CIRCLE_BRANCH:master -f -v
+  deploy:
+    docker:
+      - image: circleci/node:8.4
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: deploy to azure webapps production
+          command: |
+            git remote add production-staging ${DEPLOY_TARGET_REPOSITORY_PRODUCTION}
+            git push production-staging $CIRCLE_BRANCH:master -f -v
 # Used for orchestrating all jobs.
 workflows:
   version: 2
@@ -115,10 +127,9 @@ workflows:
           filters:
             branches:
               only: /feature\/.+-alpha.+/
-      # - deploy:
-      #     requires:
-      #       - doc
-      #     filters:
-      #       branches:
-      #         only: master
-
+      - deploy:
+          requires:
+            - doc
+          filters:
+            branches:
+              only: master
