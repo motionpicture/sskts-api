@@ -1,6 +1,8 @@
-# 佐々木興行チケットシステムAPIウェブアプリケーション
+<img src="https://motionpicture.jp/images/common/logo_01.svg" alt="motionpicture" title="motionpicture" align="right" height="56" width="98"/>
 
-## Features
+# SSKTS API web application
+
+[![CircleCI](https://circleci.com/gh/motionpicture/sskts-api.svg?style=svg&circle-token=9a0b1ea029ad57360986a0e17fdc74948e78575e)](https://circleci.com/gh/motionpicture/sskts-api)
 
 ## Getting Started
 
@@ -10,10 +12,9 @@
 全てで動くように開発していくことが望ましい。
 
 ### 言語
-実態としては、linuxあるいはwindows上でのnode.js。
-プログラミング言語としては、alternative javascriptのひとつであるTypeScript。
+実態としては、linuxあるいはwindows上でのnode.js。プログラミング言語としては、TypeScript。
 
-* TypeScript(https://www.typescriptlang.org/)
+* [TypeScript](https://www.typescriptlang.org/)
 
 ### 開発方法
 npmでパッケージをインストール。
@@ -21,8 +22,7 @@ npmでパッケージをインストール。
 ```shell
 npm install
 ```
-* npm(https://www.npmjs.com/)
-
+* [npm](https://www.npmjs.com/)
 
 typescriptをjavascriptにコンパイル。
 
@@ -36,46 +36,33 @@ npmでローカルサーバーを起動。
 npm start
 ```
 
-(http://localhost:8080)にアクセスすると、ローカルでウェブアプリを確認できます。
 
+### Environment variables
 
-### Required environment variables
-```shell
-set NODE_ENV=**********環境名**********
-set MONGOLAB_URI=**********mongodb接続URI**********
-set SENDGRID_API_KEY=**********sendgrid api key**********
-set GMO_ENDPOINT=**********gmo apiのエンドポイント**********
-set COA_ENDPOINT=**********coa apiのエンドポイント**********
-set COA_REFRESH_TOKEN=**********coa apiのリフレッシュトークン**********
-set SSKTS_API_SECRET=**********本apiでjsonwebtoken署名に使用するシークレット文字列**********
-set SSKTS_API_REFRESH_TOKEN=**********本apiのリフレッシュトークン**********
-set SSKTS_DEVELOPER_EMAIL=**********本apiで使用される開発者メールアドレス**********
-set REDIS_HOST=**********在庫状況保管用Redis Cacheホスト名**********
-set REDIS_PORT=**********在庫状況保管用Redis Cacheポート番号**********
-set REDIS_KEY=**********在庫状況保管用Redis Cache接続キー**********
-set TRANSACTIONS_COUNT_UNIT_IN_SECONDS=**********取引数制限ユニット(秒)**********
-set NUMBER_OF_TRANSACTIONS_PER_UNIT=**********ユニットあたりの最大取引数**********
-```
-
-テスト実行時
-
-```shell
-set TEST_API_ENDPOINT=**********テストに使用するAPIのエンドポイント**********
-```
-
-only on Aure WebApps
-
-```shell
-set WEBSITE_NODE_DEFAULT_VERSION=**********node.jsバージョン**********
-set WEBSITE_TIME_ZONE=Tokyo Standard Time
-```
-
-ベーシック認証をかけたい場合
-
-```shell
-set SSKTS_API_BASIC_AUTH_NAME=**********認証ユーザー名**********
-set SSKTS_API_BASIC_AUTH_PASS=**********認証パスワード**********
-```
+| Name                                      | Required              | Purpose                           | Value        |
+|-------------------------------------------|-----------------------|-----------------------------------|--------------|
+| `DEBUG`                                   | false                 | Debug                             | sskts-api:* |
+| `NPM_TOKEN`                               | true                  | NPM auth token                    ||
+| `NODE_ENV`                                | true                  | environment name                  ||
+| `MONGOLAB_URI`                            | true                  | MongoDB connection URI            ||
+| `SENDGRID_API_KEY`                        | true                  | SendGrid API Key                  ||
+| `GMO_ENDPOINT`                            | true                  | GMO API endpoint                  ||
+| `GMO_SITE_ID`                             | true                  | GMO SiteID                        ||
+| `GMO_SITE_PASS`                           | true                  | GMO SitePass                      ||
+| `COA_ENDPOINT`                            | true                  | COA API endpoint                  ||
+| `COA_REFRESH_TOKEN`                       | true                  | COA API refresh token             ||
+| `SSKTS_DEVELOPER_EMAIL`                   | true                  | 開発者通知用メールアドレス           ||
+| `REDIS_HOST`                              | true                  | 在庫状況保管用Redis Cache host      ||
+| `REDIS_PORT`                              | true                  | 在庫状況保管用Redis Cache port      ||
+| `REDIS_KEY`                               | true                  | 在庫状況保管用Redis Cache key       ||
+| `TRANSACTIONS_COUNT_UNIT_IN_SECONDS`      | true                  | 取引数制限ユニット(秒)              ||
+| `NUMBER_OF_TRANSACTIONS_PER_UNIT`         | true                  | ユニットあたりの最大取引数           ||
+| `RESOURECE_SERVER_IDENTIFIER`             | true                  | リソースサーバーとしての固有識別子    ||
+| `TOKEN_ISSUER`                            | true                  | Access token issuer(Cognito)       | https://cognito-idp.ap-northeast-1.amazonaws.com/***** |
+| `SSKTS_API_BASIC_AUTH_NAME`               | false                 | Basic authentication user name     ||
+| `SSKTS_API_BASIC_AUTH_PASS`               | false                 | Basic authentication user password ||
+| `WEBSITE_NODE_DEFAULT_VERSION`            | only on Azure WebApps | Node.js version                    ||
+| `WEBSITE_TIME_ZONE`                       | only on Azure WebApps |                                    | Tokyo Standard Time |
 
 
 ## tslint
@@ -84,16 +71,21 @@ set SSKTS_API_BASIC_AUTH_PASS=**********認証パスワード**********
 * [tslint](https://github.com/palantir/tslint)
 * [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
 
-`npm run check`でチェック実行。改修の際には、必ずチェックすること。
+`npm run check`でチェック実行。
+
+
+## パッケージ脆弱性のチェック
+
+* [nsp](https://www.npmjs.com/package/nsp)
 
 
 ## clean
 `npm run clean`で不要なソース削除。
 
 
-## test
-`npm test`でチェック実行。
+## テスト
+`npm test`でテスト実行。
 
 
-## versioning
-`npm version patch -f -m "enter your commit comment..."`でチェック実行。
+## ドキュメント
+`npm run doc`でjsdocが作成されます。

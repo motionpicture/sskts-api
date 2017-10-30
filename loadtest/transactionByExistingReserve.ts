@@ -34,7 +34,7 @@ const logger = new (winston.Logger)({
     ]
 });
 
-const API_ENDPOINT = process.env.TEST_API_ENDPOINT;
+const API_ENDPOINT = <string>process.env.TEST_API_ENDPOINT;
 const TEST_THEATER_ID = '118';
 // const TEST_GMO_SHOP_ID = 'tshop00026096';
 // const TEST_GMO_SHOP_PASS = 'xbxmkaa6';
@@ -47,7 +47,7 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
     const accessToken = await request.post({
         url: `${API_ENDPOINT}/oauth/token`,
         body: {
-            assertion: process.env.SSKTS_API_REFRESH_TOKEN,
+            assertion: <string>process.env.SSKTS_API_REFRESH_TOKEN,
             scope: 'admin'
         },
         json: true,
@@ -148,8 +148,8 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
             gmo_amount: totalPrice,
             gmo_access_id: gmoAuthResult.accessId,
             gmo_access_pass: gmoAuthResult.accessPass,
-            gmo_job_cd: sskts.GMO.utils.util.JOB_CD_AUTH,
-            gmo_pay_type: sskts.GMO.utils.util.PAY_TYPE_CREDIT
+            gmo_job_cd: sskts.GMO.utils.util.JobCd.Auth,
+            gmo_pay_type: sskts.GMO.utils.util.PayType.Credit
         },
         json: true,
         simple: false,
@@ -170,7 +170,7 @@ async function main(coaSeatAuthorization: any, makeInrquiryResult: any) {
             name_first: 'Tetsu',
             name_last: 'Yamazaki',
             tel: tel,
-            email: process.env.SSKTS_DEVELOPER_EMAIL
+            email: <string>process.env.SSKTS_DEVELOPER_EMAIL
         },
         json: true,
         resolveWithFullResponse: true
@@ -227,7 +227,7 @@ http://www.cinemasunshine.co.jp/\n
         auth: { bearer: accessToken },
         body: {
             from: 'noreply@example.com',
-            to: process.env.SSKTS_DEVELOPER_EMAIL,
+            to: <string>process.env.SSKTS_DEVELOPER_EMAIL,
             subject: '購入完了',
             content: content
         },

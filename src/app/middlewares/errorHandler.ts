@@ -1,0 +1,84 @@
+/**
+ * error handler
+ * エラーハンドラーミドルウェア
+ * @module middlewares.errorHandler
+ */
+
+import * as sskts from '@motionpicture/sskts-domain';
+import { NextFunction, Request, Response } from 'express';
+import { BAD_REQUEST, CONFLICT, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE, UNAUTHORIZED } from 'http-status';
+
+import { APIError } from '../error/api';
+import logger from '../logger';
+
+export default (err: any, __: Request, res: Response, next: NextFunction) => {
+    logger.error('sskts-api:middleware:errorHandler', err);
+
+    if (res.headersSent) {
+        next(err);
+
+        return;
+    }
+
+    let apiError: APIError;
+    if (err instanceof APIError) {
+        apiError = err;
+    } else {
+        // エラー配列が入ってくることもある
+        if (Array.isArray(err)) {
+            apiError = new APIError(ssktsError2httpStatusCode(err[0]), err);
+        } else if (err instanceof sskts.factory.errors.SSKTS) {
+            apiError = new APIError(ssktsError2httpStatusCode(err), [err]);
+        } else {
+            // 500
+            apiError = new APIError(INTERNAL_SERVER_ERROR, [new sskts.factory.errors.SSKTS(<any>'InternalServerError', err.message)]);
+        }
+    }
+
+    res.status(apiError.code).json({
+        error: apiError.toObject()
+    });
+};
+
+/**
+ * SSKTSエラーをHTTPステータスコードへ変換する
+ * @function
+ * @param {sskts.factory.errors.SSKTS} err SSKTSエラー
+ */
+function ssktsError2httpStatusCode(err: sskts.factory.errors.SSKTS) {
+    let statusCode = BAD_REQUEST;
+
+    switch (true) {
+        // 401
+        case (err instanceof sskts.factory.errors.Unauthorized):
+            statusCode = UNAUTHORIZED;
+            break;
+
+        // 403
+        case (err instanceof sskts.factory.errors.Forbidden):
+            statusCode = FORBIDDEN;
+            break;
+
+        // 404
+        case (err instanceof sskts.factory.errors.NotFound):
+            statusCode = NOT_FOUND;
+            break;
+
+        // 409
+        case (err instanceof sskts.factory.errors.AlreadyInUse):
+            statusCode = CONFLICT;
+            break;
+
+        // 503
+        case (err instanceof sskts.factory.errors.ServiceUnavailable):
+            statusCode = SERVICE_UNAVAILABLE;
+            break;
+
+        // 400
+        default:
+            statusCode = BAD_REQUEST;
+            break;
+    }
+
+    return statusCode;
+}

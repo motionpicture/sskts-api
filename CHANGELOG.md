@@ -16,7 +16,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v10.0.0 - 2017-10-31
+### Added
+- eventsルーターを追加。
+- placesルーターを追加。
+- peopleルーターを追加。
+- organizationsルーターを追加。
+
+### Changed
+- 認可サーバーをcognito user poolへ移行。
+- Amazon Cognitoでの会員管理に対応。
+
+### Removed
+- films,screens,theaters,performancesルーターを削除。
+- adminスコープを削除。
+
+
 ## v9.4.0 - 2017-07-07
+
 ### Added
 - パスワード認可タイプを追加。ユーザーネームとパスワードでアクセストークンを取得可能なように対応。
 - 会員ログイン必須ミドルウェアを追加。
