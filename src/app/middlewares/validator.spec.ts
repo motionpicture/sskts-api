@@ -27,7 +27,7 @@ describe('validatorMiddleware.default()', () => {
 
     it('バリエーションエラーがなければnextが呼ばれるはず', async () => {
         const validatorResult = {
-            isEmpty: () => undefined
+            isEmpty: () => true
         };
         const params = {
             req: {
@@ -47,7 +47,7 @@ describe('validatorMiddleware.default()', () => {
 
     it('バリエーションエラーがあればAPIErrorと共にnextが呼ばれるはず', async () => {
         const validatorResult = {
-            isEmpty: () => undefined,
+            isEmpty: () => false,
             array: () => [{ param: 'param', msg: 'msg' }]
         };
         const params = {
