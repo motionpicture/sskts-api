@@ -7,7 +7,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
-- COA仮予約時とGMOオーソリ取得時のエラーメッセージを承認アクション結果に追加するように調整。
 
 ### Deprecated
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v10.0.1 - 2017-11-01
+### Changed
+- COA仮予約時とGMOオーソリ取得時のエラーメッセージを承認アクション結果に追加するように調整。
 
 ## v10.0.0 - 2017-10-31
 ### Added
