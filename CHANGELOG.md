@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 個々の上映イベントの検索条件にプロパティを追加。
 
 ### Changed
 
