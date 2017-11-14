@@ -8,11 +8,11 @@ import * as nock from 'nock';
 import * as sinon from 'sinon';
 
 import { APIError } from '../error/api';
-import * as validatorMiddleware from './validator';
+import validator from './validator';
 
 let sandbox: sinon.SinonSandbox;
 
-describe('validatorMiddleware.default()', () => {
+describe('validator', () => {
     beforeEach(() => {
         nock.cleanAll();
         nock.disableNetConnect();
@@ -31,7 +31,7 @@ describe('validatorMiddleware.default()', () => {
         };
         const params = {
             req: {
-                getValidationResult: () => validatorResult
+                getValidationResult: async () => validatorResult
             },
             res: {},
             next: () => undefined
@@ -40,7 +40,7 @@ describe('validatorMiddleware.default()', () => {
         sandbox.mock(validatorResult).expects('isEmpty').once().returns(true);
         sandbox.mock(params).expects('next').once().withExactArgs();
 
-        const result = await validatorMiddleware.default(<any>params.req, <any>params.res, params.next);
+        const result = await validator(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
         sandbox.verify();
     });
@@ -52,7 +52,7 @@ describe('validatorMiddleware.default()', () => {
         };
         const params = {
             req: {
-                getValidationResult: () => validatorResult
+                getValidationResult: async () => validatorResult
             },
             res: {},
             next: () => undefined
@@ -61,7 +61,7 @@ describe('validatorMiddleware.default()', () => {
         sandbox.mock(validatorResult).expects('isEmpty').once().returns(false);
         sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(APIError));
 
-        const result = await validatorMiddleware.default(<any>params.req, <any>params.res, params.next);
+        const result = await validator(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
         sandbox.verify();
     });
