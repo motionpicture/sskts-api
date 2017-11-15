@@ -49,8 +49,7 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['events', 
             endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
             endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
             eventStatuses: (Array.isArray(req.query.eventStatuses)) ? req.query.eventStatuses : undefined,
-            locationBranchCodes: (Array.isArray(req.query.locationBranchCodes)) ? req.query.locationBranchCodes : undefined,
-            // tslint:disable-next-line:max-line-length
+            superEventLocationIdentifiers: (Array.isArray(req.query.superEventLocationIdentifiers)) ? req.query.superEventLocationIdentifiers : undefined,
             workPerformedIdentifiers: (Array.isArray(req.query.workPerformedIdentifiers)) ? req.query.workPerformedIdentifiers : undefined
         })(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient()));
         res.json(events);
