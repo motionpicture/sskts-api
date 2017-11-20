@@ -17,8 +17,8 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const request = require("request-promise-native");
 const placeOrderTransactionsRouter = express_1.Router();
-const redis = require("../../../redis");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
@@ -31,37 +31,39 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // tslint:disable-next-line:no-magic-numbers
-        if (!Number.isInteger(parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10))) {
-            throw new Error('TRANSACTIONS_COUNT_UNIT_IN_SECONDS not specified');
+        let passportToken = req.body.passportToken;
+        // 許可証トークンパラメーターがなければ、WAITERで許可証を取得
+        if (passportToken === undefined) {
+            try {
+                passportToken = yield request.post(`${process.env.WAITER_ENDPOINT}/passports`, {
+                    body: {
+                        scope: `placeOrderTransaction.${req.body.sellerId}`
+                    },
+                    json: true
+                }).then((body) => body.token);
+            }
+            catch (error) {
+                if (error.statusCode === http_status_1.NOT_FOUND) {
+                    throw new sskts.factory.errors.NotFound('sellerId', 'Seller does not exist.');
+                }
+                else if (error.statusCode === http_status_1.TOO_MANY_REQUESTS) {
+                    // tslint:disable-next-line:no-suspicious-comment
+                    // TODO RateLimitExceededErrorに変更
+                    throw new sskts.factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+                }
+                else {
+                    throw new sskts.factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+                }
+            }
         }
-        // tslint:disable-next-line:no-magic-numbers
-        if (!Number.isInteger(parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10))) {
-            throw new Error('NUMBER_OF_TRANSACTIONS_PER_UNIT not specified');
-        }
-        // 取引カウント単位{transactionsCountUnitInSeconds}秒から、スコープの開始終了日時を求める
-        // tslint:disable-next-line:no-magic-numbers
-        const transactionsCountUnitInSeconds = parseInt(process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10);
-        const dateNow = moment();
-        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % transactionsCountUnitInSeconds);
-        const readyThrough = moment(readyFrom).add(transactionsCountUnitInSeconds, 'seconds');
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 取引スコープを分ける仕様に従って変更する
-        const scope = sskts.factory.transactionScope.create({
-            readyFrom: readyFrom.toDate(),
-            readyThrough: readyThrough.toDate()
-        });
-        debug('starting a transaction...scope:', scope);
         const transaction = yield sskts.service.transaction.placeOrderInProgress.start({
             // tslint:disable-next-line:no-magic-numbers
             expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
-            // tslint:disable-next-line:no-magic-numbers
-            maxCountPerUnit: parseInt(process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
-            clientUser: req.user,
-            scope: scope,
             agentId: req.user.sub,
-            sellerId: req.body.sellerId
-        })(new sskts.repository.Organization(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection), new sskts.repository.TransactionCount(redis.getClient()));
+            sellerId: req.body.sellerId,
+            clientUser: req.user,
+            passportToken: passportToken
+        })(new sskts.repository.Organization(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);

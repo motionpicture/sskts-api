@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 個々の上映イベントの検索条件にプロパティを追加。
 
 ### Changed
+- 注文取引開始時の流入量コントロールを、WAITERで担保するように変更。
 
 ### Deprecated
 
