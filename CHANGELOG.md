@@ -5,7 +5,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- 個々の上映イベントの検索条件にプロパティを追加。
 
 ### Changed
 - 注文取引開始時の流入量コントロールを、WAITERで担保するように変更。
@@ -13,13 +12,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Deprecated
 
 ### Removed
+
+### Fixed
+
+### Security
+
+
+## v10.1.0 - 2017-11-21
+### Added
+- 個々の上映イベントの検索条件にプロパティを追加。
+
+### Removed
 - 不要なテストコードを削除。
 
 ### Fixed
 - COAの認証エラーが頻出するバグ対応として[sskts-domain](https://www.npmjs.com/package/@motionpicture/sskts-domain)をアップデート。
-
-### Security
-
 
 ## v10.0.1 - 2017-11-01
 ### Changed
