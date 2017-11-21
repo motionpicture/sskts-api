@@ -17,6 +17,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v10.1.0 - 2017-11-21
+### Added
+- 個々の上映イベントの検索条件にプロパティを追加。
+
+### Removed
+- 不要なテストコードを削除。
+
+### Fixed
+- COAの認証エラーが頻出するバグ対応として[sskts-domain](https://www.npmjs.com/package/@motionpicture/sskts-domain)をアップデート。
+
 ## v10.0.1 - 2017-11-01
 ### Changed
 - COA仮予約時とGMOオーソリ取得時のエラーメッセージを承認アクション結果に追加するように調整。
