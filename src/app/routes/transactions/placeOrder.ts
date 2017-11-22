@@ -6,11 +6,11 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
-import { CREATED, NO_CONTENT } from 'http-status';
+import { CREATED, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS } from 'http-status';
 import * as moment from 'moment';
+import * as request from 'request-promise-native';
 
 const placeOrderTransactionsRouter = Router();
-import * as redis from '../../../redis';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
@@ -33,43 +33,43 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            // tslint:disable-next-line:no-magic-numbers
-            if (!Number.isInteger(parseInt(<string>process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10))) {
-                throw new Error('TRANSACTIONS_COUNT_UNIT_IN_SECONDS not specified');
-            }
-            // tslint:disable-next-line:no-magic-numbers
-            if (!Number.isInteger(parseInt(<string>process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10))) {
-                throw new Error('NUMBER_OF_TRANSACTIONS_PER_UNIT not specified');
-            }
+            let passportToken = req.body.passportToken;
 
-            // 取引カウント単位{transactionsCountUnitInSeconds}秒から、スコープの開始終了日時を求める
-            // tslint:disable-next-line:no-magic-numbers
-            const transactionsCountUnitInSeconds = parseInt(<string>process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10);
-            const dateNow = moment();
-            const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % transactionsCountUnitInSeconds);
-            const readyThrough = moment(readyFrom).add(transactionsCountUnitInSeconds, 'seconds');
-
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 取引スコープを分ける仕様に従って変更する
-            const scope = sskts.factory.transactionScope.create({
-                readyFrom: readyFrom.toDate(),
-                readyThrough: readyThrough.toDate()
-            });
-            debug('starting a transaction...scope:', scope);
+            // 許可証トークンパラメーターがなければ、WAITERで許可証を取得
+            if (passportToken === undefined) {
+                try {
+                    passportToken = await request.post(
+                        `${process.env.WAITER_ENDPOINT}/passports`,
+                        {
+                            body: {
+                                scope: `placeOrderTransaction.${req.body.sellerId}`
+                            },
+                            json: true
+                        }
+                    ).then((body) => body.token);
+                } catch (error) {
+                    if (error.statusCode === NOT_FOUND) {
+                        throw new sskts.factory.errors.NotFound('sellerId', 'Seller does not exist.');
+                    } else if (error.statusCode === TOO_MANY_REQUESTS) {
+                        // tslint:disable-next-line:no-suspicious-comment
+                        // TODO RateLimitExceededErrorに変更
+                        throw new sskts.factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+                    } else {
+                        throw new sskts.factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+                    }
+                }
+            }
 
             const transaction = await sskts.service.transaction.placeOrderInProgress.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
-                // tslint:disable-next-line:no-magic-numbers
-                maxCountPerUnit: parseInt(<string>process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
-                clientUser: req.user,
-                scope: scope,
                 agentId: req.user.sub,
-                sellerId: req.body.sellerId
+                sellerId: req.body.sellerId,
+                clientUser: req.user,
+                passportToken: passportToken
             })(
                 new sskts.repository.Organization(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection),
-                new sskts.repository.TransactionCount(redis.getClient())
+                new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
             // tslint:disable-next-line:no-string-literal

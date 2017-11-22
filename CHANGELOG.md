@@ -7,10 +7,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 注文取引開始時の流入量コントロールを、WAITERで担保するように変更。
 
 ### Deprecated
 
 ### Removed
+- loadtestソースをリポジトリーから削除。
 
 ### Fixed
 
