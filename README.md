@@ -39,30 +39,35 @@ npm start
 
 ### Environment variables
 
-| Name                           | Required              | Value                                                  | Purpose                            |
-| ------------------------------ | --------------------- | ------------------------------------------------------ | ---------------------------------- |
-| `DEBUG`                        | false                 | sskts-api:*                                            | Debug                              |
-| `NPM_TOKEN`                    | true                  |                                                        | NPM auth token                     |
-| `NODE_ENV`                     | true                  |                                                        | environment name                   |
-| `MONGOLAB_URI`                 | true                  |                                                        | MongoDB connection URI             |
-| `SENDGRID_API_KEY`             | true                  |                                                        | SendGrid API Key                   |
-| `GMO_ENDPOINT`                 | true                  |                                                        | GMO API endpoint                   |
-| `GMO_SITE_ID`                  | true                  |                                                        | GMO SiteID                         |
-| `GMO_SITE_PASS`                | true                  |                                                        | GMO SitePass                       |
-| `COA_ENDPOINT`                 | true                  |                                                        | COA API endpoint                   |
-| `COA_REFRESH_TOKEN`            | true                  |                                                        | COA API refresh token              |
-| `SSKTS_DEVELOPER_EMAIL`        | true                  |                                                        | 開発者通知用メールアドレス                |
-| `REDIS_HOST`                   | true                  |                                                        | 在庫状況保管用Redis Cache host     |
-| `REDIS_PORT`                   | true                  |                                                        | 在庫状況保管用Redis Cache port     |
-| `REDIS_KEY`                    | true                  |                                                        | 在庫状況保管用Redis Cache key      |
-| `RESOURECE_SERVER_IDENTIFIER`  | true                  |                                                        | リソースサーバーとしての固有識別子             |
-| `TOKEN_ISSUER`                 | true                  | https://cognito-idp.ap-northeast-1.amazonaws.com/***** | Access token issuer(Cognito)       |
-| `WAITER_ENDPOINT`              | true                  |                                                        | WAITER endpoint                    |
-| `WAITER_SECRET`                | true                  |                                                        | WAITER許可証トークン秘密鍵             |
-| `SSKTS_API_BASIC_AUTH_NAME`    | false                 |                                                        | Basic authentication user name     |
-| `SSKTS_API_BASIC_AUTH_PASS`    | false                 |                                                        | Basic authentication user password |
-| `WEBSITE_NODE_DEFAULT_VERSION` | only on Azure WebApps |                                                        | Node.js version                    |
-| `WEBSITE_TIME_ZONE`            | only on Azure WebApps | Tokyo Standard Time                                    |
+| Name                                                 | Required              | Value                                                  | Purpose                            |
+| ---------------------------------------------------- | --------------------- | ------------------------------------------------------ | ---------------------------------- |
+| `DEBUG`                                              | false                 | sskts-api:*                                            | Debug                              |
+| `NPM_TOKEN`                                          | true                  |                                                        | NPM auth token                     |
+| `NODE_ENV`                                           | true                  |                                                        | environment name                   |
+| `MONGOLAB_URI`                                       | true                  |                                                        | MongoDB connection URI             |
+| `SENDGRID_API_KEY`                                   | true                  |                                                        | SendGrid API Key                   |
+| `GMO_ENDPOINT`                                       | true                  |                                                        | GMO API endpoint                   |
+| `GMO_SITE_ID`                                        | true                  |                                                        | GMO SiteID                         |
+| `GMO_SITE_PASS`                                      | true                  |                                                        | GMO SitePass                       |
+| `COA_ENDPOINT`                                       | true                  |                                                        | COA API endpoint                   |
+| `COA_REFRESH_TOKEN`                                  | true                  |                                                        | COA API refresh token              |
+| `SSKTS_DEVELOPER_EMAIL`                              | true                  |                                                        | 開発者通知用メールアドレス                |
+| `REDIS_HOST`                                         | true                  |                                                        | 在庫状況保管用Redis Cache host     |
+| `REDIS_PORT`                                         | true                  |                                                        | 在庫状況保管用Redis Cache port     |
+| `REDIS_KEY`                                          | true                  |                                                        | 在庫状況保管用Redis Cache key      |
+| `RATE_LIMIT_REDIS_HOST`                              | true                  |                                                        | レート制限用Redis Cache host          |
+| `RATE_LIMIT_REDIS_PORT`                              | true                  |                                                        | レート制限用Redis Cache port          |
+| `RATE_LIMIT_REDIS_KEY`                               | true                  |                                                        | レート制限用Redis Cache key           |
+| `TRANSACTION_RATE_LIMIT_AGGREGATION_UNIT_IN_SECONDS` | true                  |                                                        | 進行取引レート制限単位(秒)            |
+| `TRANSACTION_RATE_LIMIT_THRESHOLD`                   | true                  |                                                        | 進行取引レート制限閾値                |
+| `RESOURECE_SERVER_IDENTIFIER`                        | true                  |                                                        | リソースサーバーとしての固有識別子             |
+| `TOKEN_ISSUER`                                       | true                  | https://cognito-idp.ap-northeast-1.amazonaws.com/***** | Access token issuer(Cognito)       |
+| `WAITER_ENDPOINT`                                    | true                  |                                                        | WAITER endpoint                    |
+| `WAITER_SECRET`                                      | true                  |                                                        | WAITER許可証トークン秘密鍵             |
+| `BASIC_AUTH_NAME`                                    | false                 |                                                        | Basic authentication user name     |
+| `BASIC_AUTH_PASS`                                    | false                 |                                                        | Basic authentication user password |
+| `WEBSITE_NODE_DEFAULT_VERSION`                       | only on Azure WebApps |                                                        | Node.js version                    |
+| `WEBSITE_TIME_ZONE`                                  | only on Azure WebApps | Tokyo Standard Time                                    |
 
 
 ## tslint

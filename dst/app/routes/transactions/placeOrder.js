@@ -12,10 +12,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const middlewares = require("@motionpicture/express-middleware");
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
+const redis = require("ioredis");
 const moment = require("moment");
 const request = require("request-promise-native");
 const placeOrderTransactionsRouter = express_1.Router();
@@ -23,6 +25,34 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
+// tslint:disable-next-line:no-magic-numbers
+const AGGREGATION_UNIT_IN_SECONDS = parseInt(process.env.TRANSACTION_RATE_LIMIT_AGGREGATION_UNIT_IN_SECONDS, 10);
+// tslint:disable-next-line:no-magic-numbers
+const THRESHOLD = parseInt(process.env.TRANSACTION_RATE_LIMIT_THRESHOLD, 10);
+/**
+ * 進行中取引の接続回数制限ミドルウェア
+ * 取引IDを使用して動的にスコープを作成する
+ * @const
+ */
+const rateLimit4transactionInProgress = middlewares.rateLimit({
+    redisClient: new redis({
+        host: process.env.RATE_LIMIT_REDIS_HOST,
+        // tslint:disable-next-line:no-magic-numbers
+        port: parseInt(process.env.RATE_LIMIT_REDIS_PORT, 10),
+        password: process.env.RATE_LIMIT_REDIS_KEY,
+        tls: { servername: process.env.RATE_LIMIT_REDIS_HOST }
+    }),
+    aggregationUnitInSeconds: AGGREGATION_UNIT_IN_SECONDS,
+    threshold: THRESHOLD,
+    // 制限超過時の動作をカスタマイズ
+    limitExceededHandler: (__0, __1, res, next) => {
+        res.setHeader('Retry-After', AGGREGATION_UNIT_IN_SECONDS);
+        const message = `Retry after ${AGGREGATION_UNIT_IN_SECONDS} seconds for your transaction.`;
+        next(new sskts.factory.errors.RateLimitExceeded(message));
+    },
+    // スコープ生成ロジックをカスタマイズ
+    scopeGenerator: (req2) => `placeOrderTransaction.${req2.params.transactionId}`
+});
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     // expires is unix timestamp (in seconds)
@@ -82,7 +112,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     req.checkBody('telephone').notEmpty().withMessage('required');
     req.checkBody('email').notEmpty().withMessage('required');
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const contact = yield sskts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, {
             familyName: req.body.familyName,
@@ -101,7 +131,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(req.user.sub, req.params.transactionId, req.body.eventIdentifier, req.body.offers)(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.CREATED).json(action);
@@ -113,7 +143,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
 /**
  * 座席仮予約削除
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
@@ -127,7 +157,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
  */
 placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(req.user.sub, req.params.transactionId, req.params.actionId, req.body.eventIdentifier, req.body.offers)(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.json(action);
@@ -142,7 +172,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
     req.checkBody('method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
     req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('gmo_amount is required');
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 会員IDを強制的にログイン中の人物IDに変更
         const creditCard = Object.assign({}, req.body.creditCard, {
@@ -162,7 +192,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
 /**
  * クレジットカードオーソリ取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
@@ -176,7 +206,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCar
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['transactions']), (__1, __2, next) => {
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const authorizeObject = {
             // tslint:disable-next-line:no-magic-numbers
@@ -209,7 +239,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
 /**
  * ムビチケ取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(req.user.sub, req.params.transactionId, req.params.actionId)(new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         res.status(http_status_1.NO_CONTENT).end();
@@ -218,7 +248,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:act
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = yield sskts.service.transaction.placeOrderInProgress.confirm(req.user.sub, req.params.transactionId)(new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection), new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection), new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
         debug('transaction confirmed', order);
@@ -228,7 +258,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const task = yield sskts.service.transaction.placeOrder.sendEmail(req.params.transactionId, {
             sender: {

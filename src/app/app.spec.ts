@@ -1,25 +1,52 @@
-// tslint:disable:no-useless-files
+// tslint:disable:no-implicit-dependencies
+
 /**
- * exprerssアプリケーションテスト
+ * expressアプリケーションテスト
  * @ignore
  */
 
-// import * as assert from 'assert';
-// import * as supertest from 'supertest';
+import * as clearReuire from 'clear-require';
+import { NOT_FOUND, UNAUTHORIZED } from 'http-status';
+import * as assert from 'power-assert';
+import * as request from 'supertest';
 
-// import * as app from './app';
+describe('GET /', () => {
+    beforeEach(() => {
+        delete process.env.BASIC_AUTH_NAME;
+        delete process.env.BASIC_AUTH_PASS;
+        clearReuire('./app');
+    });
 
-// describe('/dev/uncaughtexception', () => {
-//     it('環境が本番でなければエラーになるはず', (done) => {
-//         process.prependOnceListener('uncaughtException', (err) => {
-//             assert(err instanceof Error);
-//             done();
-//         });
+    afterEach(() => {
+        delete process.env.BASIC_AUTH_NAME;
+        delete process.env.BASIC_AUTH_PASS;
+    });
 
-//         supertest(app)
-//             .get('/dev/uncaughtexception')
-//             .set('Accept', 'application/json')
-//             .send({})
-//             .then();
-//     });
-// });
+    it('ベーシック認証設定がなければ、NOT_FOUNDのはず', async () => {
+        // tslint:disable-next-line:no-require-imports
+        const app = require('./app');
+        await request(app)
+            .get('/')
+            .set('Accept', 'application/json')
+            .expect(NOT_FOUND)
+            .then((response) => {
+                assert.equal(typeof response.body.error, 'object');
+            });
+    });
+
+    it('ベーシック認証設定があれば、UNAUTHORIZEDのはず', async () => {
+        process.env.BASIC_AUTH_NAME = 'name';
+        process.env.BASIC_AUTH_PASS = 'pass';
+
+        // tslint:disable-next-line:no-require-imports
+        const app = require('./app');
+
+        await request(app)
+            .get('/')
+            .set('Accept', 'application/json')
+            .expect(UNAUTHORIZED)
+            .then((response) => {
+                assert.equal(typeof response.body.error, 'object');
+            });
+    });
+});

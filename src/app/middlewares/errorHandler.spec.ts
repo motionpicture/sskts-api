@@ -1,3 +1,5 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
  * エラーハンドラーミドルウェアテスト
  * @ignore
@@ -104,6 +106,8 @@ describe('errorHandler.default()', () => {
         new sskts.factory.errors.Forbidden(),
         new sskts.factory.errors.NotFound(''),
         new sskts.factory.errors.AlreadyInUse('', []),
+        new sskts.factory.errors.RateLimitExceeded(),
+        new sskts.factory.errors.NotImplemented(),
         new sskts.factory.errors.ServiceUnavailable()
     ].forEach((err) => {
         it(`SSKTSError配列と共に呼ばれればAPIErrorが生成されてjson出力されるはず ${err.reason}`, async () => {

@@ -3,10 +3,12 @@
  * @ignore
  */
 
+import * as middlewares from '@motionpicture/express-middleware';
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS } from 'http-status';
+import * as redis from 'ioredis';
 import * as moment from 'moment';
 import * as request from 'request-promise-native';
 
@@ -17,6 +19,36 @@ import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
+
+// tslint:disable-next-line:no-magic-numbers
+const AGGREGATION_UNIT_IN_SECONDS = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_AGGREGATION_UNIT_IN_SECONDS, 10);
+// tslint:disable-next-line:no-magic-numbers
+const THRESHOLD = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_THRESHOLD, 10);
+/**
+ * 進行中取引の接続回数制限ミドルウェア
+ * 取引IDを使用して動的にスコープを作成する
+ * @const
+ */
+const rateLimit4transactionInProgress =
+    middlewares.rateLimit({
+        redisClient: new redis({
+            host: <string>process.env.RATE_LIMIT_REDIS_HOST,
+            // tslint:disable-next-line:no-magic-numbers
+            port: parseInt(<string>process.env.RATE_LIMIT_REDIS_PORT, 10),
+            password: <string>process.env.RATE_LIMIT_REDIS_KEY,
+            tls: <any>{ servername: <string>process.env.RATE_LIMIT_REDIS_HOST }
+        }),
+        aggregationUnitInSeconds: AGGREGATION_UNIT_IN_SECONDS,
+        threshold: THRESHOLD,
+        // 制限超過時の動作をカスタマイズ
+        limitExceededHandler: (__0, __1, res, next) => {
+            res.setHeader('Retry-After', AGGREGATION_UNIT_IN_SECONDS);
+            const message = `Retry after ${AGGREGATION_UNIT_IN_SECONDS} seconds for your transaction.`;
+            next(new sskts.factory.errors.RateLimitExceeded(message));
+        },
+        // スコープ生成ロジックをカスタマイズ
+        scopeGenerator: (req2) => `placeOrderTransaction.${req2.params.transactionId}`
+    });
 
 placeOrderTransactionsRouter.use(authentication);
 
@@ -97,6 +129,7 @@ placeOrderTransactionsRouter.put(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const contact = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
@@ -127,6 +160,7 @@ placeOrderTransactionsRouter.post(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
@@ -154,6 +188,7 @@ placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
     permitScopes(['transactions']),
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(
@@ -182,6 +217,7 @@ placeOrderTransactionsRouter.patch(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
@@ -215,6 +251,7 @@ placeOrderTransactionsRouter.post(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
@@ -256,6 +293,7 @@ placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/creditCard/:actionId',
     permitScopes(['transactions']),
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(
@@ -284,6 +322,7 @@ placeOrderTransactionsRouter.post(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const authorizeObject = {
@@ -331,6 +370,7 @@ placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/mvtk/:actionId',
     permitScopes(['transactions']),
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(
@@ -353,6 +393,7 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
     permitScopes(['transactions']),
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const order = await sskts.service.transaction.placeOrderInProgress.confirm(
@@ -377,6 +418,7 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/tasks/sendEmailNotification',
     permitScopes(['transactions']),
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const task = await sskts.service.transaction.placeOrder.sendEmail(
