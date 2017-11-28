@@ -56,7 +56,7 @@ const rateLimit4transactionInProgress = middlewares.rateLimit({
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
     // expires is unix timestamp (in seconds)
-    req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isInt();
+    req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required');
     req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -86,9 +86,13 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 }
             }
         }
-        const transaction = yield sskts.service.transaction.placeOrderInProgress.start({
+        // パラメーターの形式をunix timestampからISO 8601フォーマットに変更したため、互換性を維持するように期限をセット
+        const expires = (/^\d+$/.test(req.body.expires))
             // tslint:disable-next-line:no-magic-numbers
-            expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
+            ? moment.unix(parseInt(req.body.expires, 10)).toDate()
+            : moment(req.body.expires).toDate();
+        const transaction = yield sskts.service.transaction.placeOrderInProgress.start({
+            expires: expires,
             agentId: req.user.sub,
             sellerId: req.body.sellerId,
             clientUser: req.user,

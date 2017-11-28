@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 - 注文取引開始時の流入量コントロールを、WAITERで担保するように変更。
+- 注文取引開始時の期限パラメーターをunix timestampとISO 8601形式の両方に対応させる。
 
 ### Deprecated
 
