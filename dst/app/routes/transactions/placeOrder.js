@@ -51,7 +51,7 @@ const rateLimit4transactionInProgress = middlewares.rateLimit({
         next(new sskts.factory.errors.RateLimitExceeded(message));
     },
     // スコープ生成ロジックをカスタマイズ
-    scopeGenerator: (req2) => `placeOrderTransaction.${req2.params.transactionId}`
+    scopeGenerator: (req) => `placeOrderTransaction.${req.params.transactionId}`
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
