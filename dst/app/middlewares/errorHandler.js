@@ -60,6 +60,14 @@ function ssktsError2httpStatusCode(err) {
         case (err instanceof sskts.factory.errors.AlreadyInUse):
             statusCode = http_status_1.CONFLICT;
             break;
+        // 429
+        case (err instanceof sskts.factory.errors.RateLimitExceeded):
+            statusCode = http_status_1.TOO_MANY_REQUESTS;
+            break;
+        // 502
+        case (err instanceof sskts.factory.errors.NotImplemented):
+            statusCode = http_status_1.NOT_IMPLEMENTED;
+            break;
         // 503
         case (err instanceof sskts.factory.errors.ServiceUnavailable):
             statusCode = http_status_1.SERVICE_UNAVAILABLE;
