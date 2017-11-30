@@ -64,10 +64,12 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         let passportToken = req.body.passportToken;
         // 許可証トークンパラメーターがなければ、WAITERで許可証を取得
         if (passportToken === undefined) {
+            const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+            const seller = yield organizationRepo.findMovieTheaterById(req.body.sellerId);
             try {
                 passportToken = yield request.post(`${process.env.WAITER_ENDPOINT}/passports`, {
                     body: {
-                        scope: `placeOrderTransaction.${req.body.sellerId}`
+                        scope: `placeOrderTransaction.${seller.identifier}`
                     },
                     json: true
                 }).then((body) => body.token);
