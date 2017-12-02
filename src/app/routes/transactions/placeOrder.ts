@@ -425,7 +425,6 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/tasks/sendEmailNotification',
     permitScopes(['transactions']),
     validator,
-    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const task = await sskts.service.transaction.placeOrder.sendEmail(
