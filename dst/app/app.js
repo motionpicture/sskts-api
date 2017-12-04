@@ -1,9 +1,9 @@
 "use strict";
 /**
  * Expressアプリケーション
- *
  * @ignore
  */
+const middlewares = require("@motionpicture/express-middleware");
 const sskts = require("@motionpicture/sskts-domain");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -12,7 +12,7 @@ const express = require("express");
 const expressValidator = require("express-validator");
 const helmet = require("helmet");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
-const basicAuth_1 = require("./middlewares/basicAuth");
+// import basicAuth from './middlewares/basicAuth';
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const actions_1 = require("./routes/actions");
@@ -26,7 +26,14 @@ const places_1 = require("./routes/places");
 const placeOrder_1 = require("./routes/transactions/placeOrder");
 const debug = createDebug('sskts-api:*');
 const app = express();
-app.use(basicAuth_1.default); // ベーシック認証
+app.use(middlewares.basicAuth({
+    name: process.env.BASIC_AUTH_NAME,
+    pass: process.env.BASIC_AUTH_PASS,
+    unauthorizedHandler: (__, res, next) => {
+        res.setHeader('WWW-Authenticate', 'Basic realm="sskts-api Authentication"');
+        next(new sskts.factory.errors.Unauthorized());
+    }
+}));
 app.use(cors()); // enable All CORS Requests
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({

@@ -5,12 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 進行中取引に対して、取引ごとにレート制限を追加。
 
 ### Changed
+- 注文取引開始時の流入量コントロールを、WAITERで担保するように変更。
+- 注文取引開始時の期限パラメーターをunix timestampとISO 8601形式の両方に対応させる。
 
 ### Deprecated
 
 ### Removed
+- loadtestソースをリポジトリーから削除。
 
 ### Fixed
 

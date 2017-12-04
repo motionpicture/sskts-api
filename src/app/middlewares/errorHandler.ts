@@ -6,7 +6,16 @@
 
 import * as sskts from '@motionpicture/sskts-domain';
 import { NextFunction, Request, Response } from 'express';
-import { BAD_REQUEST, CONFLICT, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE, UNAUTHORIZED } from 'http-status';
+import {
+    BAD_REQUEST,
+    CONFLICT, FORBIDDEN,
+    INTERNAL_SERVER_ERROR,
+    NOT_FOUND,
+    NOT_IMPLEMENTED,
+    SERVICE_UNAVAILABLE,
+    TOO_MANY_REQUESTS,
+    UNAUTHORIZED
+} from 'http-status';
 
 import { APIError } from '../error/api';
 import logger from '../logger';
@@ -67,6 +76,16 @@ function ssktsError2httpStatusCode(err: sskts.factory.errors.SSKTS) {
         // 409
         case (err instanceof sskts.factory.errors.AlreadyInUse):
             statusCode = CONFLICT;
+            break;
+
+        // 429
+        case (err instanceof sskts.factory.errors.RateLimitExceeded):
+            statusCode = TOO_MANY_REQUESTS;
+            break;
+
+        // 502
+        case (err instanceof sskts.factory.errors.NotImplemented):
+            statusCode = NOT_IMPLEMENTED;
             break;
 
         // 503

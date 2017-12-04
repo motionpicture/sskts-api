@@ -1,3 +1,5 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
  * スコープ許可ミドルウェアテスト
  * @ignore

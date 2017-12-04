@@ -3,20 +3,52 @@
  * @ignore
  */
 
+import * as middlewares from '@motionpicture/express-middleware';
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
-import { CREATED, NO_CONTENT } from 'http-status';
+import { CREATED, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS } from 'http-status';
+import * as redis from 'ioredis';
 import * as moment from 'moment';
+import * as request from 'request-promise-native';
 
 const placeOrderTransactionsRouter = Router();
-import * as redis from '../../../redis';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
+
+// tslint:disable-next-line:no-magic-numbers
+const AGGREGATION_UNIT_IN_SECONDS = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_AGGREGATION_UNIT_IN_SECONDS, 10);
+// tslint:disable-next-line:no-magic-numbers
+const THRESHOLD = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_THRESHOLD, 10);
+/**
+ * 進行中取引の接続回数制限ミドルウェア
+ * 取引IDを使用して動的にスコープを作成する
+ * @const
+ */
+const rateLimit4transactionInProgress =
+    middlewares.rateLimit({
+        redisClient: new redis({
+            host: <string>process.env.RATE_LIMIT_REDIS_HOST,
+            // tslint:disable-next-line:no-magic-numbers
+            port: parseInt(<string>process.env.RATE_LIMIT_REDIS_PORT, 10),
+            password: <string>process.env.RATE_LIMIT_REDIS_KEY,
+            tls: <any>{ servername: <string>process.env.RATE_LIMIT_REDIS_HOST }
+        }),
+        aggregationUnitInSeconds: AGGREGATION_UNIT_IN_SECONDS,
+        threshold: THRESHOLD,
+        // 制限超過時の動作をカスタマイズ
+        limitExceededHandler: (__0, __1, res, next) => {
+            res.setHeader('Retry-After', AGGREGATION_UNIT_IN_SECONDS);
+            const message = `Retry after ${AGGREGATION_UNIT_IN_SECONDS} seconds for your transaction.`;
+            next(new sskts.factory.errors.RateLimitExceeded(message));
+        },
+        // スコープ生成ロジックをカスタマイズ
+        scopeGenerator: (req) => `placeOrderTransaction.${req.params.transactionId}`
+    });
 
 placeOrderTransactionsRouter.use(authentication);
 
@@ -25,7 +57,7 @@ placeOrderTransactionsRouter.post(
     permitScopes(['transactions']),
     (req, _, next) => {
         // expires is unix timestamp (in seconds)
-        req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isInt();
+        req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required');
         req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
 
         next();
@@ -33,43 +65,50 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            // tslint:disable-next-line:no-magic-numbers
-            if (!Number.isInteger(parseInt(<string>process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10))) {
-                throw new Error('TRANSACTIONS_COUNT_UNIT_IN_SECONDS not specified');
+            let passportToken = req.body.passportToken;
+
+            // 許可証トークンパラメーターがなければ、WAITERで許可証を取得
+            if (passportToken === undefined) {
+                const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+                const seller = await organizationRepo.findMovieTheaterById(req.body.sellerId);
+
+                try {
+                    passportToken = await request.post(
+                        `${process.env.WAITER_ENDPOINT}/passports`,
+                        {
+                            body: {
+                                scope: `placeOrderTransaction.${seller.identifier}`
+                            },
+                            json: true
+                        }
+                    ).then((body) => body.token);
+                } catch (error) {
+                    if (error.statusCode === NOT_FOUND) {
+                        throw new sskts.factory.errors.NotFound('sellerId', 'Seller does not exist.');
+                    } else if (error.statusCode === TOO_MANY_REQUESTS) {
+                        // tslint:disable-next-line:no-suspicious-comment
+                        // TODO RateLimitExceededErrorに変更
+                        throw new sskts.factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+                    } else {
+                        throw new sskts.factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+                    }
+                }
             }
-            // tslint:disable-next-line:no-magic-numbers
-            if (!Number.isInteger(parseInt(<string>process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10))) {
-                throw new Error('NUMBER_OF_TRANSACTIONS_PER_UNIT not specified');
-            }
 
-            // 取引カウント単位{transactionsCountUnitInSeconds}秒から、スコープの開始終了日時を求める
-            // tslint:disable-next-line:no-magic-numbers
-            const transactionsCountUnitInSeconds = parseInt(<string>process.env.TRANSACTIONS_COUNT_UNIT_IN_SECONDS, 10);
-            const dateNow = moment();
-            const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % transactionsCountUnitInSeconds);
-            const readyThrough = moment(readyFrom).add(transactionsCountUnitInSeconds, 'seconds');
-
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 取引スコープを分ける仕様に従って変更する
-            const scope = sskts.factory.transactionScope.create({
-                readyFrom: readyFrom.toDate(),
-                readyThrough: readyThrough.toDate()
-            });
-            debug('starting a transaction...scope:', scope);
-
+            // パラメーターの形式をunix timestampからISO 8601フォーマットに変更したため、互換性を維持するように期限をセット
+            const expires = (/^\d+$/.test(req.body.expires))
+                // tslint:disable-next-line:no-magic-numbers
+                ? moment.unix(parseInt(req.body.expires, 10)).toDate()
+                : moment(req.body.expires).toDate();
             const transaction = await sskts.service.transaction.placeOrderInProgress.start({
-                // tslint:disable-next-line:no-magic-numbers
-                expires: moment.unix(parseInt(req.body.expires, 10)).toDate(),
-                // tslint:disable-next-line:no-magic-numbers
-                maxCountPerUnit: parseInt(<string>process.env.NUMBER_OF_TRANSACTIONS_PER_UNIT, 10),
-                clientUser: req.user,
-                scope: scope,
+                expires: expires,
                 agentId: req.user.sub,
-                sellerId: req.body.sellerId
+                sellerId: req.body.sellerId,
+                clientUser: req.user,
+                passportToken: passportToken
             })(
                 new sskts.repository.Organization(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection),
-                new sskts.repository.TransactionCount(redis.getClient())
+                new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
             // tslint:disable-next-line:no-string-literal
@@ -97,6 +136,7 @@ placeOrderTransactionsRouter.put(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const contact = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
@@ -127,6 +167,7 @@ placeOrderTransactionsRouter.post(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
@@ -154,6 +195,7 @@ placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
     permitScopes(['transactions']),
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(
@@ -182,6 +224,7 @@ placeOrderTransactionsRouter.patch(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
@@ -215,6 +258,7 @@ placeOrderTransactionsRouter.post(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
@@ -256,6 +300,7 @@ placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/creditCard/:actionId',
     permitScopes(['transactions']),
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(
@@ -284,6 +329,7 @@ placeOrderTransactionsRouter.post(
         next();
     },
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const authorizeObject = {
@@ -331,6 +377,7 @@ placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/mvtk/:actionId',
     permitScopes(['transactions']),
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(
@@ -353,6 +400,7 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
     permitScopes(['transactions']),
     validator,
+    rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const order = await sskts.service.transaction.placeOrderInProgress.confirm(

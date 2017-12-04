@@ -1,3 +1,5 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
  * 認証ミドルウェアテスト
  * @ignore
