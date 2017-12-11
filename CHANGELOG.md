@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - 注文取引レート制限超過時のステータスコードを429に変更。
 - クレジットカード取引レート制限超過時のステータスコードを429に変更。
+- ムビチケ着券INのサイトコードバリデーションを池袋の劇場コードに合わせて調整。
 
 ### Deprecated
 
