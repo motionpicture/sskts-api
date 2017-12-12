@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
+- 要メガネ上映イベントをムビチケで購入する際のメガネ代金連携バグ修正。
 
 ### Security
 
