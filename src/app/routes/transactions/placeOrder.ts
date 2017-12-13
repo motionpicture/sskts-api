@@ -86,11 +86,9 @@ placeOrderTransactionsRouter.post(
                     if (error.statusCode === NOT_FOUND) {
                         throw new sskts.factory.errors.NotFound('sellerId', 'Seller does not exist.');
                     } else if (error.statusCode === TOO_MANY_REQUESTS) {
-                        // tslint:disable-next-line:no-suspicious-comment
-                        // TODO RateLimitExceededErrorに変更
-                        throw new sskts.factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+                        throw new sskts.factory.errors.RateLimitExceeded('PlaceOrder transactions rate limit exceeded.');
                     } else {
-                        throw new sskts.factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+                        throw new sskts.factory.errors.ServiceUnavailable('Waiter service temporarily unavailable.');
                     }
                 }
             }

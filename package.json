@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/express-middleware": "0.0.0",
-    "@motionpicture/sskts-domain": "^23.4.3",
+    "@motionpicture/sskts-domain": "^23.4.7",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
@@ -23,7 +23,7 @@
     "ioredis": "^3.2.2",
     "jsonwebtoken": "^8.1.0",
     "jwk-to-pem": "^1.2.6",
-    "moment": "^2.19.3",
+    "moment": "^2.19.4",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
     "winston": "^2.4.0"
@@ -38,8 +38,8 @@
     "@types/google-libphonenumber": "^7.4.12",
     "@types/helmet": "0.0.36",
     "@types/http-status": "^0.2.30",
-    "@types/ioredis": "^3.2.1",
-    "@types/jsonwebtoken": "^7.2.3",
+    "@types/ioredis": "^3.2.3",
+    "@types/jsonwebtoken": "^7.2.4",
     "@types/mocha": "^2.2.44",
     "@types/nock": "^8.2.1",
     "@types/power-assert": "^1.4.29",
@@ -60,7 +60,7 @@
     "power-assert": "^1.4.4",
     "rimraf": "^2.6.2",
     "sinon": "^3.3.0",
-    "snyk": "^1.53.0",
+    "snyk": "^1.56.0",
     "supertest": "^3.0.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",
@@ -96,5 +96,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "10.1.0"
+  "version": "10.3.0"
 }
