@@ -6,11 +6,14 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
+const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const api_1 = require("../error/api");
-const logger_1 = require("../logger");
+// import logger from '../logger';
+const debug = createDebug('sskts-api:middlewares:errorHandler');
 exports.default = (err, __, res, next) => {
-    logger_1.default.error('sskts-api:middleware:errorHandler', err);
+    debug(err);
+    // logger.error('sskts-api:middleware:errorHandler', err);
     if (res.headersSent) {
         next(err);
         return;

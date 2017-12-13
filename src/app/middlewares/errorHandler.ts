@@ -5,6 +5,7 @@
  */
 
 import * as sskts from '@motionpicture/sskts-domain';
+import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import {
     BAD_REQUEST,
@@ -18,10 +19,13 @@ import {
 } from 'http-status';
 
 import { APIError } from '../error/api';
-import logger from '../logger';
+// import logger from '../logger';
+
+const debug = createDebug('sskts-api:middlewares:errorHandler');
 
 export default (err: any, __: Request, res: Response, next: NextFunction) => {
-    logger.error('sskts-api:middleware:errorHandler', err);
+    debug(err);
+    // logger.error('sskts-api:middleware:errorHandler', err);
 
     if (res.headersSent) {
         next(err);
