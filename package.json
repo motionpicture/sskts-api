@@ -96,5 +96,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "10.1.0"
+  "version": "10.3.0"
 }
