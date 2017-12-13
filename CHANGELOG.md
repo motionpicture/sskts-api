@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v10.3.1 - 2017-12-13
+### Changed
+- 承認アクション実行時の外部サービスエラーの標準出力をオフに変更。
+
 ## v10.3.0 - 2017-12-13
 ### Changed
 - 注文取引レート制限超過時のステータスコードを429に変更。
