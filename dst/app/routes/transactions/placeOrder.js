@@ -25,6 +25,9 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
+const pecorinoOAuth2client = new sskts.pecorinoapi.auth.OAuth2({
+    domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN
+});
 // tslint:disable-next-line:no-magic-numbers
 const AGGREGATION_UNIT_IN_SECONDS = parseInt(process.env.TRANSACTION_RATE_LIMIT_AGGREGATION_UNIT_IN_SECONDS, 10);
 // tslint:disable-next-line:no-magic-numbers
@@ -252,9 +255,32 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:act
         next(error);
     }
 }));
+/**
+ * Pecorino口座確保
+ */
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', permitScopes_1.default(['transactions']), (req, __, next) => {
+    req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
+    next();
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // pecorino支払取引サービスクライアントを生成
+        pecorinoOAuth2client.setCredentials({
+            access_token: req.accessToken
+        });
+        const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay({
+            endpoint: process.env.PECORINO_API_ENDPOINT,
+            auth: pecorinoOAuth2client
+        });
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create(req.user.sub, req.params.transactionId, req.body.price)(new sskts.repository.action.authorize.Pecorino(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection), payTransactionService);
+        res.status(http_status_1.CREATED).json(action);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const order = yield sskts.service.transaction.placeOrderInProgress.confirm(req.user.sub, req.params.transactionId)(new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection), new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection), new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        const order = yield sskts.service.transaction.placeOrderInProgress.confirm(req.user.sub, req.params.transactionId)(new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection), new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection), new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection), new sskts.repository.action.authorize.Pecorino(sskts.mongoose.connection));
         debug('transaction confirmed', order);
         res.status(http_status_1.CREATED).json(order);
     }

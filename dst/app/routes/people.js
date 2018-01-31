@@ -22,6 +22,9 @@ const requireMember_1 = require("../middlewares/requireMember");
 const validator_1 = require("../middlewares/validator");
 const peopleRouter = express_1.Router();
 const debug = createDebug('sskts-api:routes:people');
+const pecorinoOAuth2client = new sskts.pecorinoapi.auth.OAuth2({
+    domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN
+});
 peopleRouter.use(authentication_1.default);
 peopleRouter.use(requireMember_1.default);
 /**
@@ -89,6 +92,47 @@ peopleRouter.delete('/me/creditCards/:cardSeq', permitScopes_1.default(['people.
     try {
         yield sskts.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
         res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * Pecorino残高照会
+ */
+peopleRouter.get('/me/accounts', permitScopes_1.default(['people.accounts.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // pecorino支払取引サービスクライアントを生成
+        pecorinoOAuth2client.setCredentials({
+            access_token: req.accessToken
+        });
+        const accountService = new sskts.pecorinoapi.service.Account({
+            endpoint: process.env.PECORINO_API_ENDPOINT,
+            auth: pecorinoOAuth2client
+        });
+        const account = yield accountService.findById({ id: 'me' });
+        res.json(account);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * Pecorino取引履歴検索
+ */
+peopleRouter.get('/me/accounts/actions/trade', permitScopes_1.default(['people.accounts.actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // pecorino支払取引サービスクライアントを生成
+        pecorinoOAuth2client.setCredentials({
+            access_token: req.accessToken
+        });
+        const accountService = new sskts.pecorinoapi.service.Account({
+            endpoint: process.env.PECORINO_API_ENDPOINT,
+            auth: pecorinoOAuth2client
+        });
+        debug('finding account...', accountService);
+        const tradeActions = yield accountService.searchTradeActions({ acconutId: 'me' });
+        res.json(tradeActions);
     }
     catch (error) {
         next(error);

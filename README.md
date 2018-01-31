@@ -67,7 +67,9 @@ npm start
 | `BASIC_AUTH_NAME`                                    | false                 |                                                        | Basic authentication user name     |
 | `BASIC_AUTH_PASS`                                    | false                 |                                                        | Basic authentication user password |
 | `WEBSITE_NODE_DEFAULT_VERSION`                       | only on Azure WebApps |                                                        | Node.js version                    |
-| `WEBSITE_TIME_ZONE`                                  | only on Azure WebApps | Tokyo Standard Time                                    |
+| `WEBSITE_TIME_ZONE`                                  | only on Azure WebApps | Tokyo Standard Time                                    |                                    |
+| `PECORINO_API_ENDPOINT`                              | true                  |                                                        | PecorinoAPIエンドポイント                 |
+| `PECORINO_AUTHORIZE_SERVER_DOMAIN`                   | true                  |                                                        | Pecorino認可サーバードメイン               |
 
 
 ## tslint
