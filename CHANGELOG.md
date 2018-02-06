@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 返品取引ルーターを追加。
 
 ### Changed
+- マルチトークン発行者に対応。
 
 ### Deprecated
 
