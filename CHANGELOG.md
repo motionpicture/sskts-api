@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- マルチトークン発行者に対応。
 
 ### Deprecated
 

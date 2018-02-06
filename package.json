@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/express-middleware": "0.0.0",
+    "@motionpicture/express-middleware": "^0.1.0",
     "@motionpicture/sskts-domain": "^23.4.8",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
@@ -38,7 +38,7 @@
     "@types/google-libphonenumber": "^7.4.12",
     "@types/helmet": "0.0.36",
     "@types/http-status": "^0.2.30",
-    "@types/ioredis": "^3.2.3",
+    "@types/ioredis": "^3.2.5",
     "@types/jsonwebtoken": "^7.2.4",
     "@types/mocha": "^2.2.44",
     "@types/nock": "^8.2.1",
