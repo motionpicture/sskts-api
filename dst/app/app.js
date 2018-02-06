@@ -24,6 +24,7 @@ const organizations_1 = require("./routes/organizations");
 const people_1 = require("./routes/people");
 const places_1 = require("./routes/places");
 const placeOrder_1 = require("./routes/transactions/placeOrder");
+const returnOrder_1 = require("./routes/transactions/returnOrder");
 const debug = createDebug('sskts-api:*');
 const app = express();
 app.use(middlewares.basicAuth({
@@ -88,6 +89,7 @@ app.use('/people', people_1.default);
 app.use('/places', places_1.default);
 app.use('/events', events_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
+app.use('/transactions/returnOrder', returnOrder_1.default);
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 if (process.env.NODE_ENV !== 'production') {
