@@ -26,6 +26,7 @@ import organizationsRouter from './routes/organizations';
 import peopleRouter from './routes/people';
 import placesRouter from './routes/places';
 import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
+import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
 
 const debug = createDebug('sskts-api:*');
 
@@ -101,6 +102,7 @@ app.use('/people', peopleRouter);
 app.use('/places', placesRouter);
 app.use('/events', eventsRouter);
 app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
+app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
 
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */

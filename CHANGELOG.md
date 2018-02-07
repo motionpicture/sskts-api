@@ -5,9 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 返品取引ルーターを追加。
 
 ### Changed
 - マルチトークン発行者に対応。
+- 取引結果にポストアクションを定義。
 
 ### Deprecated
 
