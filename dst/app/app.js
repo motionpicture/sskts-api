@@ -35,7 +35,15 @@ app.use(middlewares.basicAuth({
         next(new sskts.factory.errors.Unauthorized());
     }
 }));
-app.use(cors()); // enable All CORS Requests
+const options = {
+    origin: '*',
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'Authorization'],
+    credentials: false,
+    methods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+};
+app.use(cors(options));
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
