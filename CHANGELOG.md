@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 - マルチトークン発行者に対応。
-- 取引結果にポストアクションを定義。
+- アクションと取引に対して潜在アクション属性を定義。
 - CORS設定調整。
 
 ### Deprecated
