@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - アクションと取引に対して潜在アクション属性を定義。
 - CORS設定調整。
 - 承認アクションのobjectに型を定義し、purposeを取引型に変更。
+- 注文の配送前後のステータス遷移を管理するように変更。
 
 ### Deprecated
 
