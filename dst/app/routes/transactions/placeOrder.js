@@ -213,6 +213,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const authorizeObject = {
+            typeOf: 'Mvtk',
             // tslint:disable-next-line:no-magic-numbers
             price: parseInt(req.body.price, 10),
             transactionId: req.params.transactionId,
