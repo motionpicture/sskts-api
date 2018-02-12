@@ -15,6 +15,8 @@ import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
 const debug = createDebug('sskts-api:returnOrderTransactionsRouter');
+const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
 const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
 returnOrderTransactionsRouter.use(authentication);
@@ -39,7 +41,7 @@ returnOrderTransactionsRouter.post(
                 cancellationFee: 0,
                 forcibly: true,
                 reason: sskts.factory.transaction.returnOrder.Reason.Seller
-            })(transactionRepo);
+            })(actionRepo, orderRepo, transactionRepo);
 
             // tslint:disable-next-line:no-string-literal
             // const host = req.headers['host'];
@@ -60,7 +62,7 @@ returnOrderTransactionsRouter.post(
             const transactionResult = await sskts.service.transaction.returnOrder.confirm(
                 req.user.sub,
                 req.params.transactionId
-            )(transactionRepo);
+            )(actionRepo, transactionRepo);
             debug('transaction confirmed', transactionResult);
 
             res.status(CREATED).json(transactionResult);
