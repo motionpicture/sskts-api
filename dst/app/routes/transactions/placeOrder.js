@@ -1,6 +1,6 @@
 "use strict";
 /**
- * placeOrder transactions router
+ * 注文取引ルーター
  * @ignore
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -255,7 +255,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:act
 }));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const order = yield sskts.service.transaction.placeOrderInProgress.confirm(req.user.sub, req.params.transactionId)(new sskts.repository.Action(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection));
+        const order = yield sskts.service.transaction.placeOrderInProgress.confirm(req.user.sub, req.params.transactionId)(new sskts.repository.Action(sskts.mongoose.connection), new sskts.repository.Transaction(sskts.mongoose.connection), new sskts.repository.Organization(sskts.mongoose.connection));
         debug('transaction confirmed', order);
         res.status(http_status_1.CREATED).json(order);
     }

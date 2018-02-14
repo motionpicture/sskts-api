@@ -1,5 +1,5 @@
 /**
- * placeOrder transactions router
+ * 注文取引ルーター
  * @ignore
  */
 
@@ -406,7 +406,8 @@ placeOrderTransactionsRouter.post(
                 req.params.transactionId
             )(
                 new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
+                new sskts.repository.Transaction(sskts.mongoose.connection),
+                new sskts.repository.Organization(sskts.mongoose.connection)
                 );
             debug('transaction confirmed', order);
 
