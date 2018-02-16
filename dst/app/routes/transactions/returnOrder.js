@@ -24,6 +24,7 @@ const debug = createDebug('sskts-api:returnOrderTransactionsRouter');
 const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
 const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
 const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 returnOrderTransactionsRouter.use(authentication_1.default);
 returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
@@ -51,7 +52,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
 }));
 returnOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionResult = yield sskts.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)(actionRepo, transactionRepo);
+        const transactionResult = yield sskts.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)(actionRepo, transactionRepo, organizationRepo);
         debug('transaction confirmed', transactionResult);
         res.status(http_status_1.CREATED).json(transactionResult);
     }

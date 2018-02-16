@@ -18,6 +18,7 @@ const debug = createDebug('sskts-api:returnOrderTransactionsRouter');
 const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
 const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
 const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
 returnOrderTransactionsRouter.use(authentication);
 
@@ -62,7 +63,7 @@ returnOrderTransactionsRouter.post(
             const transactionResult = await sskts.service.transaction.returnOrder.confirm(
                 req.user.sub,
                 req.params.transactionId
-            )(actionRepo, transactionRepo);
+            )(actionRepo, transactionRepo, organizationRepo);
             debug('transaction confirmed', transactionResult);
 
             res.status(CREATED).json(transactionResult);
