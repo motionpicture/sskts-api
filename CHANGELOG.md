@@ -5,14 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- 返品取引ルーターを追加。
 
 ### Changed
-- マルチトークン発行者に対応。
-- アクションと取引に対して潜在アクション属性を定義。
-- CORS設定調整。
-- 承認アクションのobjectに型を定義し、purposeを取引型に変更。
-- 注文の配送前後のステータス遷移を管理するように変更。
 
 ### Deprecated
 
@@ -22,6 +16,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v10.4.0 - 2018-02-20
+### Added
+- 返品取引ルーターを追加。
+
+### Changed
+- マルチトークン発行者に対応。
+- アクションと取引に対して潜在アクション属性を定義。
+- CORS設定調整。
+- 承認アクションのobjectに型を定義し、purposeを取引型に変更。
+- 注文の配送前後のステータス遷移を管理するように変更。
 
 ## v10.3.1 - 2017-12-13
 ### Changed
