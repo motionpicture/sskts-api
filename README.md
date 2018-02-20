@@ -64,6 +64,7 @@ npm start
 | `TOKEN_ISSUERS`                                      | true                  |                     | トークン発行者リスト(コンマつなぎ)              |
 | `WAITER_ENDPOINT`                                    | true                  |                     | WAITER endpoint                    |
 | `WAITER_SECRET`                                      | true                  |                     | WAITER許可証トークン秘密鍵             |
+| `ORDER_INQUIRY_ENDPOINT`                             | true                  |                     | 注文照会URLエンドポイント                 |
 | `BASIC_AUTH_NAME`                                    | false                 |                     | Basic authentication user name     |
 | `BASIC_AUTH_PASS`                                    | false                 |                     | Basic authentication user password |
 | `WEBSITE_NODE_DEFAULT_VERSION`                       | only on Azure WebApps |                     | Node.js version                    |

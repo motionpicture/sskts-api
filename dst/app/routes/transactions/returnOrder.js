@@ -21,7 +21,10 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const debug = createDebug('sskts-api:returnOrderTransactionsRouter');
+const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
 const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 returnOrderTransactionsRouter.use(authentication_1.default);
 returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
@@ -37,7 +40,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
             cancellationFee: 0,
             forcibly: true,
             reason: sskts.factory.transaction.returnOrder.Reason.Seller
-        })(transactionRepo);
+        })(actionRepo, orderRepo, transactionRepo);
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -49,7 +52,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
 }));
 returnOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionResult = yield sskts.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)(transactionRepo);
+        const transactionResult = yield sskts.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)(actionRepo, transactionRepo, organizationRepo);
         debug('transaction confirmed', transactionResult);
         res.status(http_status_1.CREATED).json(transactionResult);
     }

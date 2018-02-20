@@ -101,7 +101,9 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
 
-sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
+sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions)
+    .then(debug)
+    .catch(console.error);
 
 // routers
 app.use('/health', healthRouter);
