@@ -24,6 +24,7 @@ const organizations_1 = require("./routes/organizations");
 const people_1 = require("./routes/people");
 const places_1 = require("./routes/places");
 const placeOrder_1 = require("./routes/transactions/placeOrder");
+const returnOrder_1 = require("./routes/transactions/returnOrder");
 const debug = createDebug('sskts-api:*');
 const app = express();
 app.use(middlewares.basicAuth({
@@ -34,7 +35,15 @@ app.use(middlewares.basicAuth({
         next(new sskts.factory.errors.Unauthorized());
     }
 }));
-app.use(cors()); // enable All CORS Requests
+const options = {
+    origin: '*',
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'Authorization'],
+    credentials: false,
+    methods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+};
+app.use(cors(options));
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
@@ -78,7 +87,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
-sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
+sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default)
+    .then(debug)
+    .catch(console.error);
 // routers
 app.use('/health', health_1.default);
 app.use('/actions', actions_1.default);
@@ -88,6 +99,7 @@ app.use('/people', people_1.default);
 app.use('/places', places_1.default);
 app.use('/events', events_1.default);
 app.use('/transactions/placeOrder', placeOrder_1.default);
+app.use('/transactions/returnOrder', returnOrder_1.default);
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 if (process.env.NODE_ENV !== 'production') {

@@ -4,6 +4,7 @@ jobs:
     # The primary container is an instance of the first list image listed. Your build commands run in this container.
     docker:
       - image: circleci/node:latest
+      - image: mongo:3.4.4
     steps:
       - checkout
       - run:
@@ -37,7 +38,7 @@ jobs:
   test:
     docker:
       - image: circleci/node:latest
-      - image: circleci/mongo:3.2
+      - image: mongo:3.4.4
     steps:
       - checkout
       - restore_cache:
@@ -57,6 +58,7 @@ jobs:
   doc:
     docker:
       - image: circleci/node:latest
+      - image: mongo:3.4.4
     steps:
       - checkout
       - restore_cache:
@@ -68,7 +70,8 @@ jobs:
             npm run doc
   deploy2development:
     docker:
-      - image: circleci/node:8.4
+      - image: circleci/node:latest
+      - image: mongo:3.4.4
     steps:
       - checkout
       - restore_cache:
@@ -80,7 +83,8 @@ jobs:
             git push development-staging $CIRCLE_BRANCH:master -f -v
   prerelease:
     docker:
-      - image: circleci/node:8.4
+      - image: circleci/node:latest
+      - image: mongo:3.4.4
     steps:
       - checkout
       - restore_cache:
@@ -92,7 +96,8 @@ jobs:
             git push prerelease $CIRCLE_BRANCH:master -f -v
   deploy:
     docker:
-      - image: circleci/node:8.4
+      - image: circleci/node:latest
+      - image: mongo:3.4.4
     steps:
       - checkout
       - restore_cache:
