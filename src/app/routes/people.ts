@@ -17,6 +17,10 @@ const peopleRouter = Router();
 
 const debug = createDebug('sskts-api:routes:people');
 
+const pecorinoOAuth2client = new sskts.pecorinoapi.auth.OAuth2({
+    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN
+});
+
 peopleRouter.use(authentication);
 peopleRouter.use(requireMember);
 
@@ -120,6 +124,59 @@ peopleRouter.delete(
             await sskts.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
 
             res.status(NO_CONTENT).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * Pecorino残高照会
+ */
+peopleRouter.get(
+    '/me/accounts',
+    permitScopes(['people.accounts.read-only']),
+    validator,
+    async (req, res, next) => {
+        try {
+            // pecorino支払取引サービスクライアントを生成
+            pecorinoOAuth2client.setCredentials({
+                access_token: req.accessToken
+            });
+            const accountService = new sskts.pecorinoapi.service.Account({
+                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                auth: pecorinoOAuth2client
+            });
+
+            const account = await accountService.findById({ id: 'me' });
+            res.json(account);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * Pecorino取引履歴検索
+ */
+peopleRouter.get(
+    '/me/accounts/actions/trade',
+    permitScopes(['people.accounts.actions.read-only']),
+    validator,
+    async (req, res, next) => {
+        try {
+            // pecorino支払取引サービスクライアントを生成
+            pecorinoOAuth2client.setCredentials({
+                access_token: req.accessToken
+            });
+            const accountService = new sskts.pecorinoapi.service.Account({
+                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                auth: pecorinoOAuth2client
+            });
+            debug('finding account...', accountService);
+
+            const tradeActions = await accountService.searchTradeActions({ acconutId: 'me' });
+            res.json(tradeActions);
         } catch (error) {
             next(error);
         }
