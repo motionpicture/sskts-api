@@ -1,5 +1,5 @@
 /**
- * placeOrder transactions router
+ * 注文取引ルーター
  * @ignore
  */
 
@@ -179,7 +179,7 @@ placeOrderTransactionsRouter.post(
                 req.body.offers
             )(
                 new sskts.repository.Event(sskts.mongoose.connection),
-                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
+                new sskts.repository.Action(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -205,7 +205,7 @@ placeOrderTransactionsRouter.delete(
                 req.params.transactionId,
                 req.params.actionId
             )(
-                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
+                new sskts.repository.Action(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -237,7 +237,7 @@ placeOrderTransactionsRouter.patch(
                 req.body.offers
             )(
                 new sskts.repository.Event(sskts.mongoose.connection),
-                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
+                new sskts.repository.Action(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -281,7 +281,7 @@ placeOrderTransactionsRouter.post(
                 req.body.method,
                 creditCard
             )(
-                new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection),
+                new sskts.repository.Action(sskts.mongoose.connection),
                 new sskts.repository.Organization(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
@@ -310,7 +310,7 @@ placeOrderTransactionsRouter.delete(
                 req.params.transactionId,
                 req.params.actionId
             )(
-                new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection),
+                new sskts.repository.Action(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -335,6 +335,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const authorizeObject = {
+                typeOf: <'Mvtk'>'Mvtk',
                 // tslint:disable-next-line:no-magic-numbers
                 price: parseInt(req.body.price, 10),
                 transactionId: req.params.transactionId,
@@ -358,8 +359,7 @@ placeOrderTransactionsRouter.post(
                 req.params.transactionId,
                 authorizeObject
             )(
-                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
-                new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection),
+                new sskts.repository.Action(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -387,7 +387,7 @@ placeOrderTransactionsRouter.delete(
                 req.params.transactionId,
                 req.params.actionId
             )(
-                new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection),
+                new sskts.repository.Action(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection)
                 );
 
@@ -427,7 +427,7 @@ placeOrderTransactionsRouter.post(
                 req.params.transactionId,
                 req.body.price
             )(
-                new sskts.repository.action.authorize.Pecorino(sskts.mongoose.connection),
+                new sskts.repository.Action(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection),
                 payTransactionService
                 );
@@ -450,11 +450,9 @@ placeOrderTransactionsRouter.post(
                 req.user.sub,
                 req.params.transactionId
             )(
-                new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection),
-                new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection),
-                new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection),
+                new sskts.repository.Action(sskts.mongoose.connection),
                 new sskts.repository.Transaction(sskts.mongoose.connection),
-                new sskts.repository.action.authorize.Pecorino(sskts.mongoose.connection)
+                new sskts.repository.Organization(sskts.mongoose.connection)
                 );
             debug('transaction confirmed', order);
 

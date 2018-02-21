@@ -26,6 +26,7 @@ import organizationsRouter from './routes/organizations';
 import peopleRouter from './routes/people';
 import placesRouter from './routes/places';
 import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
+import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
 
 const debug = createDebug('sskts-api:*');
 
@@ -39,7 +40,17 @@ app.use(middlewares.basicAuth({ // ベーシック認証
         next(new sskts.factory.errors.Unauthorized());
     }
 }));
-app.use(cors()); // enable All CORS Requests
+
+const options: cors.CorsOptions = {
+    origin: '*',
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'Authorization'],
+    credentials: false,
+    methods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+};
+app.use(cors(options));
+
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
@@ -90,7 +101,9 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
 
-sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
+sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions)
+    .then(debug)
+    .catch(console.error);
 
 // routers
 app.use('/health', healthRouter);
@@ -101,6 +114,7 @@ app.use('/people', peopleRouter);
 app.use('/places', placesRouter);
 app.use('/events', eventsRouter);
 app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
+app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
 
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
