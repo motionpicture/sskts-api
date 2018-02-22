@@ -47,7 +47,10 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const events = await sskts.service.event.searchIndividualScreeningEvents({
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 互換性維持のために<any>で一時対応
+            // dayとtheaterを削除する
+            const events = await sskts.service.event.searchIndividualScreeningEvents(<any>{
                 day: req.query.day,
                 theater: req.query.theater,
                 name: req.query.name,

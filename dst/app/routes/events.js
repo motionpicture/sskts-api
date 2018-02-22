@@ -40,6 +40,9 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['events', 
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 互換性維持のために<any>で一時対応
+        // dayとtheaterを削除する
         const events = yield sskts.service.event.searchIndividualScreeningEvents({
             day: req.query.day,
             theater: req.query.theater,

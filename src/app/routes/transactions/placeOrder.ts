@@ -335,7 +335,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const authorizeObject = {
-                typeOf: <'Mvtk'>'Mvtk',
+                typeOf: sskts.factory.action.authorize.mvtk.ObjectType.Mvtk,
                 // tslint:disable-next-line:no-magic-numbers
                 price: parseInt(req.body.price, 10),
                 transactionId: req.params.transactionId,
