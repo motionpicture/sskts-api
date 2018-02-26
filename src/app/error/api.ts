@@ -2,8 +2,6 @@ import { factory } from '@motionpicture/sskts-domain';
 
 /**
  * APIError
- *
- * @class APIError
  * @extends {Error}
  */
 export class APIError extends Error {

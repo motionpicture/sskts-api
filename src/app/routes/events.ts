@@ -22,7 +22,7 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.event.findIndividualScreeningEventByIdentifier(req.params.identifier)(
+            await sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.identifier)(
                 new sskts.repository.Event(sskts.mongoose.connection),
                 new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
             ).then((event) => {
@@ -47,7 +47,10 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const events = await sskts.service.event.searchIndividualScreeningEvents({
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 互換性維持のために<any>で一時対応
+            // dayとtheaterを削除する
+            const events = await sskts.service.offer.searchIndividualScreeningEvents(<any>{
                 day: req.query.day,
                 theater: req.query.theater,
                 name: req.query.name,

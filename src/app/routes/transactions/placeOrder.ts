@@ -20,6 +20,10 @@ import validator from '../../middlewares/validator';
 
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 
+const pecorinoOAuth2client = new sskts.pecorinoapi.auth.OAuth2({
+    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN
+});
+
 // tslint:disable-next-line:no-magic-numbers
 const AGGREGATION_UNIT_IN_SECONDS = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_AGGREGATION_UNIT_IN_SECONDS, 10);
 // tslint:disable-next-line:no-magic-numbers
@@ -331,7 +335,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const authorizeObject = {
-                typeOf: <'Mvtk'>'Mvtk',
+                typeOf: sskts.factory.action.authorize.mvtk.ObjectType.Mvtk,
                 // tslint:disable-next-line:no-magic-numbers
                 price: parseInt(req.body.price, 10),
                 transactionId: req.params.transactionId,
@@ -388,6 +392,47 @@ placeOrderTransactionsRouter.delete(
                 );
 
             res.status(NO_CONTENT).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * Pecorino口座確保
+ */
+placeOrderTransactionsRouter.post(
+    '/:transactionId/actions/authorize/pecorino',
+    permitScopes(['transactions']),
+    (req, __, next) => {
+        req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
+
+        next();
+    },
+    validator,
+    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        try {
+            // pecorino支払取引サービスクライアントを生成
+            pecorinoOAuth2client.setCredentials({
+                access_token: req.accessToken
+            });
+            const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay({
+                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                auth: pecorinoOAuth2client
+            });
+
+            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create(
+                req.user.sub,
+                req.params.transactionId,
+                req.body.price
+            )(
+                new sskts.repository.Action(sskts.mongoose.connection),
+                new sskts.repository.Transaction(sskts.mongoose.connection),
+                payTransactionService
+                );
+
+            res.status(CREATED).json(action);
         } catch (error) {
             next(error);
         }

@@ -1,6 +1,5 @@
 /**
  * oauthコントローラー
- * @namespace controllers/oauth
  * @ignore
  */
 
@@ -23,8 +22,6 @@ export const MESSAGE_INVALID_CLIENT_CREDENTIALS = 'invalid client credentials';
 
 /**
  * 資格情報インターフェース
- *
- * @interface ICredentials
  */
 export interface ICredentials {
     access_token: string;

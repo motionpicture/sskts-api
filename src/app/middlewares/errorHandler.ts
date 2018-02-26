@@ -55,8 +55,7 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
 
 /**
  * SSKTSエラーをHTTPステータスコードへ変換する
- * @function
- * @param {sskts.factory.errors.SSKTS} err SSKTSエラー
+ * @param err SSKTSエラー
  */
 function ssktsError2httpStatusCode(err: sskts.factory.errors.SSKTS) {
     let statusCode = BAD_REQUEST;
@@ -100,7 +99,6 @@ function ssktsError2httpStatusCode(err: sskts.factory.errors.SSKTS) {
         // 400
         default:
             statusCode = BAD_REQUEST;
-            break;
     }
 
     return statusCode;
