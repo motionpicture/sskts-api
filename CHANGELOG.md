@@ -5,7 +5,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- Pecorino口座関連のエンドポイントを追加。
 
 ### Changed
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v10.4.1 - 2018-02-26
+### Added
+- Pecorino口座関連のエンドポイントを追加。
 
 ## v10.4.0 - 2018-02-20
 ### Added
