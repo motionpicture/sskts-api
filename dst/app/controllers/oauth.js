@@ -1,7 +1,6 @@
 "use strict";
 /**
  * oauthコントローラー
- * @namespace controllers/oauth
  * @ignore
  */
 Object.defineProperty(exports, "__esModule", { value: true });

@@ -2,8 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * APIError
- *
- * @class APIError
  * @extends {Error}
  */
 class APIError extends Error {
