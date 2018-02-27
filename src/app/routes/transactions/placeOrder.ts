@@ -108,10 +108,10 @@ placeOrderTransactionsRouter.post(
                 sellerId: req.body.sellerId,
                 clientUser: req.user,
                 passportToken: passportToken
-            })(
-                new sskts.repository.Organization(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
-                );
+            })({
+                organization: new sskts.repository.Organization(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            });
 
             // tslint:disable-next-line:no-string-literal
             // const host = req.headers['host'];
@@ -150,7 +150,9 @@ placeOrderTransactionsRouter.put(
                     email: req.body.email,
                     telephone: req.body.telephone
                 }
-            )(new sskts.repository.Transaction(sskts.mongoose.connection));
+            )({
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            });
 
             res.status(CREATED).json(contact);
         } catch (error) {
@@ -177,11 +179,11 @@ placeOrderTransactionsRouter.post(
                 req.params.transactionId,
                 req.body.eventIdentifier,
                 req.body.offers
-            )(
-                new sskts.repository.Event(sskts.mongoose.connection),
-                new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
-                );
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+                event: new sskts.repository.Event(sskts.mongoose.connection)
+            });
 
             res.status(CREATED).json(action);
         } catch (error) {
@@ -204,10 +206,10 @@ placeOrderTransactionsRouter.delete(
                 req.user.sub,
                 req.params.transactionId,
                 req.params.actionId
-            )(
-                new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
-                );
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            });
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -235,11 +237,11 @@ placeOrderTransactionsRouter.patch(
                 req.params.actionId,
                 req.body.eventIdentifier,
                 req.body.offers
-            )(
-                new sskts.repository.Event(sskts.mongoose.connection),
-                new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
-                );
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+                event: new sskts.repository.Event(sskts.mongoose.connection)
+            });
 
             res.json(action);
         } catch (error) {
@@ -280,11 +282,11 @@ placeOrderTransactionsRouter.post(
                 req.body.amount,
                 req.body.method,
                 creditCard
-            )(
-                new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Organization(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
-                );
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+                organization: new sskts.repository.Organization(sskts.mongoose.connection)
+            });
 
             res.status(CREATED).json({
                 id: action.id
@@ -309,10 +311,10 @@ placeOrderTransactionsRouter.delete(
                 req.user.sub,
                 req.params.transactionId,
                 req.params.actionId
-            )(
-                new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
-                );
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            });
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -358,10 +360,10 @@ placeOrderTransactionsRouter.post(
                 req.user.sub,
                 req.params.transactionId,
                 authorizeObject
-            )(
-                new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
-                );
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            });
 
             res.status(CREATED).json({
                 id: action.id
@@ -386,10 +388,10 @@ placeOrderTransactionsRouter.delete(
                 req.user.sub,
                 req.params.transactionId,
                 req.params.actionId
-            )(
-                new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
-                );
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            });
 
             res.status(NO_CONTENT).end();
         } catch (error) {
@@ -426,11 +428,11 @@ placeOrderTransactionsRouter.post(
                 req.user.sub,
                 req.params.transactionId,
                 req.body.price
-            )(
-                new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection),
-                payTransactionService
-                );
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+                payTransactionService: payTransactionService
+            });
 
             res.status(CREATED).json(action);
         } catch (error) {
@@ -449,11 +451,11 @@ placeOrderTransactionsRouter.post(
             const order = await sskts.service.transaction.placeOrderInProgress.confirm(
                 req.user.sub,
                 req.params.transactionId
-            )(
-                new sskts.repository.Action(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection),
-                new sskts.repository.Organization(sskts.mongoose.connection)
-                );
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+                organization: new sskts.repository.Organization(sskts.mongoose.connection)
+            });
             debug('transaction confirmed', order);
 
             res.status(CREATED).json(order);
@@ -483,10 +485,10 @@ placeOrderTransactionsRouter.post(
                     about: req.body.about,
                     text: req.body.text
                 }
-            )(
-                new sskts.repository.Task(sskts.mongoose.connection),
-                new sskts.repository.Transaction(sskts.mongoose.connection)
-                );
+            )({
+                task: new sskts.repository.Task(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            });
 
             res.status(CREATED).json(task);
         } catch (error) {
