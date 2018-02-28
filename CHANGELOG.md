@@ -7,7 +7,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
-- install sskts-domain@24.0.0.
 
 ### Deprecated
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v10.4.2 - 2018-02-28
+### Changed
+- install sskts-domain@24.0.0.
 
 ## v10.4.1 - 2018-02-26
 ### Added
