@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/express-middleware": "^0.1.0",
-    "@motionpicture/sskts-domain": "^24.0.0-alpha.27",
+    "@motionpicture/sskts-domain": "^24.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
@@ -97,5 +97,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "10.4.1"
+  "version": "10.4.2"
 }

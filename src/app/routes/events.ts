@@ -22,10 +22,10 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.identifier)(
-                new sskts.repository.Event(sskts.mongoose.connection),
-                new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
-            ).then((event) => {
+            await sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.identifier)({
+                event: new sskts.repository.Event(sskts.mongoose.connection),
+                itemAvailability: new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
+            }).then((event) => {
                 res.json(event);
             });
         } catch (error) {
@@ -63,10 +63,10 @@ eventsRouter.get(
                     (Array.isArray(req.query.superEventLocationIdentifiers)) ? req.query.superEventLocationIdentifiers : undefined,
                 workPerformedIdentifiers:
                     (Array.isArray(req.query.workPerformedIdentifiers)) ? req.query.workPerformedIdentifiers : undefined
-            })(
-                new sskts.repository.Event(sskts.mongoose.connection),
-                new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
-                );
+            })({
+                event: new sskts.repository.Event(sskts.mongoose.connection),
+                itemAvailability: new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
+            });
 
             res.json(events);
         } catch (error) {

@@ -42,7 +42,11 @@ returnOrderTransactionsRouter.post(
                 cancellationFee: 0,
                 forcibly: true,
                 reason: sskts.factory.transaction.returnOrder.Reason.Seller
-            })(actionRepo, orderRepo, transactionRepo);
+            })({
+                action: actionRepo,
+                transaction: transactionRepo,
+                order: orderRepo
+            });
 
             // tslint:disable-next-line:no-string-literal
             // const host = req.headers['host'];
@@ -63,7 +67,11 @@ returnOrderTransactionsRouter.post(
             const transactionResult = await sskts.service.transaction.returnOrder.confirm(
                 req.user.sub,
                 req.params.transactionId
-            )(actionRepo, transactionRepo, organizationRepo);
+            )({
+                action: actionRepo,
+                transaction: transactionRepo,
+                organization: organizationRepo
+            });
             debug('transaction confirmed', transactionResult);
 
             res.status(CREATED).json(transactionResult);

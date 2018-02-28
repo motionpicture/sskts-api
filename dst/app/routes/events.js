@@ -24,7 +24,10 @@ const eventsRouter = express_1.Router();
 eventsRouter.use(authentication_1.default);
 eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.identifier)(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())).then((event) => {
+        yield sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.identifier)({
+            event: new sskts.repository.Event(sskts.mongoose.connection),
+            itemAvailability: new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
+        }).then((event) => {
             res.json(event);
         });
     }
@@ -54,7 +57,10 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['events', 
             eventStatuses: (Array.isArray(req.query.eventStatuses)) ? req.query.eventStatuses : undefined,
             superEventLocationIdentifiers: (Array.isArray(req.query.superEventLocationIdentifiers)) ? req.query.superEventLocationIdentifiers : undefined,
             workPerformedIdentifiers: (Array.isArray(req.query.workPerformedIdentifiers)) ? req.query.workPerformedIdentifiers : undefined
-        })(new sskts.repository.Event(sskts.mongoose.connection), new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient()));
+        })({
+            event: new sskts.repository.Event(sskts.mongoose.connection),
+            itemAvailability: new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
+        });
         res.json(events);
     }
     catch (error) {

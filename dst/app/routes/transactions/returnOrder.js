@@ -40,7 +40,11 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
             cancellationFee: 0,
             forcibly: true,
             reason: sskts.factory.transaction.returnOrder.Reason.Seller
-        })(actionRepo, orderRepo, transactionRepo);
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            order: orderRepo
+        });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -52,7 +56,11 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
 }));
 returnOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionResult = yield sskts.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)(actionRepo, transactionRepo, organizationRepo);
+        const transactionResult = yield sskts.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        });
         debug('transaction confirmed', transactionResult);
         res.status(http_status_1.CREATED).json(transactionResult);
     }
