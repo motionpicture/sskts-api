@@ -131,7 +131,7 @@ peopleRouter.get('/me/accounts/actions/trade', permitScopes_1.default(['people.a
             auth: pecorinoOAuth2client
         });
         debug('finding account...', accountService);
-        const tradeActions = yield accountService.searchTradeActions({ acconutId: 'me' });
+        const tradeActions = yield accountService.searchTransferActions({ accountId: 'me' });
         res.json(tradeActions);
     }
     catch (error) {

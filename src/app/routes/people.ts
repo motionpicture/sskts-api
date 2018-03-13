@@ -175,7 +175,7 @@ peopleRouter.get(
             });
             debug('finding account...', accountService);
 
-            const tradeActions = await accountService.searchTradeActions({ acconutId: 'me' });
+            const tradeActions = await accountService.searchTransferActions({ accountId: 'me' });
             res.json(tradeActions);
         } catch (error) {
             next(error);
