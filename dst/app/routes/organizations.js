@@ -42,4 +42,90 @@ organizationsRouter.get('/movieTheater', permitScopes_1.default(['organizations'
         next(error);
     }
 }));
+/**
+ * レストラン検索
+ */
+organizationsRouter.get('/restaurant', permitScopes_1.default(['organizations', 'organizations.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        res.json([
+            {
+                typeOf: 'Restaurant',
+                aggregateRating: {
+                    typeOf: 'AggregateRating',
+                    ratingValue: 4,
+                    reviewCount: 250
+                },
+                name: 'Asahiのおねえちゃん',
+                openingHours: [],
+                telephone: '',
+                url: 'https://example.com',
+                image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz',
+                hasMenu: [{
+                        typeOf: 'Menu',
+                        hasMenuSection: [{
+                                typeOf: 'MenuSection',
+                                name: 'Drinks',
+                                description: '',
+                                image: [
+                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz',
+                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz'
+                                ],
+                                hasMenuItem: [{
+                                        identifier: 'menuItemIdentifier',
+                                        typeOf: 'MenuItem',
+                                        name: 'ビール',
+                                        description: '',
+                                        offers: [{
+                                                identifier: 'offerIdentifier',
+                                                typeOf: 'Offer',
+                                                price: 700,
+                                                priceCurrency: 'JPY'
+                                            }]
+                                    }]
+                            }]
+                    }]
+            },
+            {
+                typeOf: 'Restaurant',
+                aggregateRating: {
+                    typeOf: 'AggregateRating',
+                    ratingValue: 4,
+                    reviewCount: 250
+                },
+                name: 'KIRINのおねえちゃん',
+                openingHours: [],
+                telephone: '',
+                url: 'https://example.com',
+                image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz',
+                hasMenu: [{
+                        typeOf: 'Menu',
+                        hasMenuSection: [{
+                                typeOf: 'MenuSection',
+                                name: 'Drinks',
+                                description: '',
+                                image: [
+                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz',
+                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz'
+                                ],
+                                hasMenuItem: [{
+                                        identifier: 'menuItemIdentifier',
+                                        typeOf: 'MenuItem',
+                                        name: 'ビール',
+                                        description: '',
+                                        offers: [{
+                                                identifier: 'offerIdentifier',
+                                                typeOf: 'Offer',
+                                                price: 700,
+                                                priceCurrency: 'JPY'
+                                            }]
+                                    }]
+                            }]
+                    }]
+            }
+        ]);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = organizationsRouter;

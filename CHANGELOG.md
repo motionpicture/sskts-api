@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## Unreleased
 ### Added
 
+- レストラン検索エンドポイントを追加。
+- 注文取引に対してメニューアイテム承認アクション作成エンドポイントを追加。
+
 ### Changed
 
 ### Deprecated

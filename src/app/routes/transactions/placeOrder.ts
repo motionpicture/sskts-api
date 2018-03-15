@@ -401,6 +401,104 @@ placeOrderTransactionsRouter.delete(
 );
 
 /**
+ * レストランメニューアイテム承認アクション
+ */
+placeOrderTransactionsRouter.post(
+    '/:transactionId/actions/authorize/menuItem',
+    permitScopes(['transactions']),
+    (__1, __2, next) => {
+        next();
+    },
+    validator,
+    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        try {
+            const action = await authorizeMenuItem(
+                req.user.sub,
+                req.params.transactionId,
+                req.body.menuItemIdentifier,
+                req.body.offerIdentifier
+            )({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            });
+
+            res.status(CREATED).json(action);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+function authorizeMenuItem(
+    agentId: string,
+    transactionId: string,
+    menuItemIdentifier: string,
+    offerIdentifier: string
+): any {
+    return async (repos: {
+        action: sskts.repository.Action;
+        transaction: sskts.repository.Transaction;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+
+        if (transaction.agent.id !== agentId) {
+            throw new sskts.factory.errors.Forbidden('A specified transaction is not yours.');
+        }
+
+        // メニューアイテムを取得？
+        // const individualScreeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(eventIdentifier);
+
+        // 供給情報の有効性を確認？
+        // const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
+
+        // 承認アクションを開始
+        debug('starting authorize action of menuItem...', menuItemIdentifier, offerIdentifier);
+        const actionAttributes = {
+            typeOf: sskts.factory.actionType.AuthorizeAction,
+            object: {
+                typeOf: 'Offer',
+                identifier: 'offerIdentifier',
+                price: 700,
+                priceCurrency: 'JPY',
+                itemOffered: {
+                    identifier: 'menuItemIdentifier',
+                    typeOf: 'MenuItem',
+                    name: 'ビール',
+                    description: ''
+                }
+            },
+            agent: transaction.seller,
+            recipient: transaction.agent,
+            purpose: transaction // purposeは取引
+        };
+        const action = await repos.action.start(actionAttributes);
+
+        try {
+            // 在庫確保？
+        } catch (error) {
+            // actionにエラー結果を追加
+            try {
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                await repos.action.giveUp(action.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            throw new sskts.factory.errors.ServiceUnavailable('Unexepected error occurred.');
+        }
+
+        // アクションを完了
+        debug('ending authorize action...');
+        const result: any = {
+            price: 700
+        };
+
+        return repos.action.complete(action.typeOf, action.id, result);
+    };
+}
+
+/**
  * Pecorino口座確保
  */
 placeOrderTransactionsRouter.post(
