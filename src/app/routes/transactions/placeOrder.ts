@@ -563,7 +563,8 @@ function authorizeMenuItem(
         // アクションを完了
         debug('ending authorize action...');
         const result: any = {
-            price: 700
+            price: acceptedOffer.price * acceptedQuantity,
+            priceCurrency: acceptedOffer.priceCurrency
         };
 
         return repos.action.complete(action.typeOf, action.id, result);
