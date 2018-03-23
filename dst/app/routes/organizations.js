@@ -16,6 +16,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const organizationsRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
+// tslint:disable-next-line:no-require-imports no-var-requires
+const restaurants = require('../../../data/organizations/restaurant.json');
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -47,82 +49,23 @@ organizationsRouter.get('/movieTheater', permitScopes_1.default(['organizations'
  */
 organizationsRouter.get('/restaurant', permitScopes_1.default(['organizations', 'organizations.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        res.json([
-            {
-                typeOf: 'Restaurant',
-                aggregateRating: {
-                    typeOf: 'AggregateRating',
-                    ratingValue: 4,
-                    reviewCount: 250
-                },
-                name: 'Asahiのおねえちゃん',
-                openingHours: [],
-                telephone: '',
-                url: 'https://example.com',
-                image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz',
-                hasMenu: [{
-                        typeOf: 'Menu',
-                        hasMenuSection: [{
-                                typeOf: 'MenuSection',
-                                name: 'Drinks',
-                                description: '',
-                                image: [
-                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz',
-                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz'
-                                ],
-                                hasMenuItem: [{
-                                        identifier: 'menuItemIdentifier',
-                                        typeOf: 'MenuItem',
-                                        name: 'ビール',
-                                        description: '',
-                                        offers: [{
-                                                identifier: 'offerIdentifier',
-                                                typeOf: 'Offer',
-                                                price: 700,
-                                                priceCurrency: 'JPY'
-                                            }]
-                                    }]
-                            }]
-                    }]
-            },
-            {
-                typeOf: 'Restaurant',
-                aggregateRating: {
-                    typeOf: 'AggregateRating',
-                    ratingValue: 4,
-                    reviewCount: 250
-                },
-                name: 'KIRINのおねえちゃん',
-                openingHours: [],
-                telephone: '',
-                url: 'https://example.com',
-                image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz',
-                hasMenu: [{
-                        typeOf: 'Menu',
-                        hasMenuSection: [{
-                                typeOf: 'MenuSection',
-                                name: 'Drinks',
-                                description: '',
-                                image: [
-                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz',
-                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz'
-                                ],
-                                hasMenuItem: [{
-                                        identifier: 'menuItemIdentifier',
-                                        typeOf: 'MenuItem',
-                                        name: 'ビール',
-                                        description: '',
-                                        offers: [{
-                                                identifier: 'offerIdentifier',
-                                                typeOf: 'Offer',
-                                                price: 700,
-                                                priceCurrency: 'JPY'
-                                            }]
-                                    }]
-                            }]
-                    }]
-            }
-        ]);
+        res.json(restaurants);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * レストランに対する注文検索
+ */
+organizationsRouter.get('/restaurant/:identifier/orders', permitScopes_1.default(['organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
+        const orders = yield orderRepo.orderModel.find({
+            'acceptedOffers.itemOffered.provider.typeOf': 'Restaurant',
+            'acceptedOffers.itemOffered.provider.identifier': req.params.identifier
+        }).exec().then((docs) => docs.map((doc) => doc.toObject()));
+        res.json(orders);
     }
     catch (error) {
         next(error);

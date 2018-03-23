@@ -18,6 +18,57 @@ import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
+// tslint:disable-next-line:no-require-imports no-var-requires
+const restaurants: IRestaurantOrganization[] = require('../../../../data/organizations/restaurant.json');
+
+export interface IMenuItemOffer {
+    identifier: string;
+    typeOf: 'Offer';
+    price: number;
+    priceCurrency: sskts.factory.priceCurrency;
+    offeredBy?: {
+        typeOf: 'Restaurant';
+        identifier: string;
+        name: string;
+        telephone: string;
+        url: string;
+        image: string;
+    };
+}
+
+export interface IMenuItem {
+    identifier: string;
+    typeOf: 'MenuItem';
+    name: string;
+    description: string;
+    offers: IMenuItemOffer[];
+}
+
+export interface IRestaurantOrganization {
+    typeOf: 'Restaurant';
+    identifier: string;
+    aggregateRating: {
+        typeOf: 'AggregateRating';
+        ratingValue: number;
+        reviewCount: number;
+    };
+    name: string;
+    openingHours: any[];
+    telephone: string;
+    url: string;
+    image: string;
+    hasMenu: {
+        typeOf: 'Menu';
+        hasMenuSection: {
+            typeOf: 'MenuSection';
+            name: string;
+            description: string;
+            image: string[];
+            hasMenuItem: IMenuItem[];
+        }[];
+    }[];
+}
+
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 
 const pecorinoOAuth2client = new sskts.pecorinoapi.auth.OAuth2({
@@ -417,7 +468,8 @@ placeOrderTransactionsRouter.post(
                 req.user.sub,
                 req.params.transactionId,
                 req.body.menuItemIdentifier,
-                req.body.offerIdentifier
+                req.body.offerIdentifier,
+                req.body.acceptedQuantity
             )({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
@@ -434,7 +486,8 @@ function authorizeMenuItem(
     agentId: string,
     transactionId: string,
     menuItemIdentifier: string,
-    offerIdentifier: string
+    offerIdentifier: string,
+    acceptedQuantity: number
 ): any {
     return async (repos: {
         action: sskts.repository.Action;
@@ -446,31 +499,50 @@ function authorizeMenuItem(
             throw new sskts.factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        // メニューアイテムを取得？
-        // const individualScreeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(eventIdentifier);
+        // メニューアイテムリストをマージ
+        const menuItems: IMenuItem[] = [];
+        restaurants.forEach((restaurant) => {
+            restaurant.hasMenu.forEach((menu) => {
+                menu.hasMenuSection.forEach((menuSection) => {
+                    menuItems.push(...menuSection.hasMenuItem.map((i) => {
+                        return {
+                            ...i,
+                            offers: i.offers.map((o) => {
+                                return {
+                                    ...o,
+                                    offeredBy: restaurant
+                                };
+                            })
+                        };
+                    }));
+                });
+            });
+        });
 
-        // 供給情報の有効性を確認？
-        // const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
+        // メニューアイテムの存在確認
+        const menuItem = menuItems.find((i) => i.identifier === menuItemIdentifier);
+        if (menuItem === undefined) {
+            throw new sskts.factory.errors.NotFound('MenuItem');
+        }
+
+        // 販売情報の存在確認
+        const acceptedOffer = menuItem.offers.find((o) => o.identifier === offerIdentifier);
+        if (acceptedOffer === undefined) {
+            throw new sskts.factory.errors.NotFound('Offer');
+        }
 
         // 承認アクションを開始
         debug('starting authorize action of menuItem...', menuItemIdentifier, offerIdentifier);
         const actionAttributes = {
             typeOf: sskts.factory.actionType.AuthorizeAction,
             object: {
-                typeOf: 'Offer',
-                identifier: 'offerIdentifier',
-                price: 700,
-                priceCurrency: 'JPY',
-                itemOffered: {
-                    identifier: 'menuItemIdentifier',
-                    typeOf: 'MenuItem',
-                    name: 'ビール',
-                    description: ''
-                }
+                ...acceptedOffer,
+                acceptedQuantity: acceptedQuantity,
+                itemOffered: menuItem
             },
             agent: transaction.seller,
             recipient: transaction.agent,
-            purpose: transaction // purposeは取引
+            purpose: transaction
         };
         const action = await repos.action.start(actionAttributes);
 

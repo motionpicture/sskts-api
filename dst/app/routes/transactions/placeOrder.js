@@ -24,6 +24,8 @@ const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
+// tslint:disable-next-line:no-require-imports no-var-requires
+const restaurants = require('../../../../data/organizations/restaurant.json');
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 const pecorinoOAuth2client = new sskts.pecorinoapi.auth.OAuth2({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN
@@ -292,7 +294,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/menuItem', 
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield authorizeMenuItem(req.user.sub, req.params.transactionId, req.body.menuItemIdentifier, req.body.offerIdentifier)({
+        const action = yield authorizeMenuItem(req.user.sub, req.params.transactionId, req.body.menuItemIdentifier, req.body.offerIdentifier, req.body.acceptedQuantity)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
@@ -302,35 +304,43 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/menuItem', 
         next(error);
     }
 }));
-function authorizeMenuItem(agentId, transactionId, menuItemIdentifier, offerIdentifier) {
+function authorizeMenuItem(agentId, transactionId, menuItemIdentifier, offerIdentifier, acceptedQuantity) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         const transaction = yield repos.transaction.findPlaceOrderInProgressById(transactionId);
         if (transaction.agent.id !== agentId) {
             throw new sskts.factory.errors.Forbidden('A specified transaction is not yours.');
         }
-        // メニューアイテムを取得？
-        // const individualScreeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(eventIdentifier);
-        // 供給情報の有効性を確認？
-        // const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
+        // メニューアイテムリストをマージ
+        const menuItems = [];
+        restaurants.forEach((restaurant) => {
+            restaurant.hasMenu.forEach((menu) => {
+                menu.hasMenuSection.forEach((menuSection) => {
+                    menuItems.push(...menuSection.hasMenuItem.map((i) => {
+                        return Object.assign({}, i, { offers: i.offers.map((o) => {
+                                return Object.assign({}, o, { offeredBy: restaurant });
+                            }) });
+                    }));
+                });
+            });
+        });
+        // メニューアイテムの存在確認
+        const menuItem = menuItems.find((i) => i.identifier === menuItemIdentifier);
+        if (menuItem === undefined) {
+            throw new sskts.factory.errors.NotFound('MenuItem');
+        }
+        // 販売情報の存在確認
+        const acceptedOffer = menuItem.offers.find((o) => o.identifier === offerIdentifier);
+        if (acceptedOffer === undefined) {
+            throw new sskts.factory.errors.NotFound('Offer');
+        }
         // 承認アクションを開始
         debug('starting authorize action of menuItem...', menuItemIdentifier, offerIdentifier);
         const actionAttributes = {
             typeOf: sskts.factory.actionType.AuthorizeAction,
-            object: {
-                typeOf: 'Offer',
-                identifier: 'offerIdentifier',
-                price: 700,
-                priceCurrency: 'JPY',
-                itemOffered: {
-                    identifier: 'menuItemIdentifier',
-                    typeOf: 'MenuItem',
-                    name: 'ビール',
-                    description: ''
-                }
-            },
+            object: Object.assign({}, acceptedOffer, { acceptedQuantity: acceptedQuantity, itemOffered: menuItem }),
             agent: transaction.seller,
             recipient: transaction.agent,
-            purpose: transaction // purposeは取引
+            purpose: transaction
         };
         const action = yield repos.action.start(actionAttributes);
         try {

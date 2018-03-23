@@ -1,0 +1,98 @@
+[
+    {
+        "typeOf": "Restaurant",
+        "identifier": "Restaurants-mizuho",
+        "aggregateRating": {
+            "typeOf": "AggregateRating",
+            "ratingValue": 4,
+            "reviewCount": 250
+        },
+        "name": "MIZUHOスタンド",
+        "openingHours": [],
+        "telephone": "",
+        "url": "https://example.com",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz",
+        "hasMenu": [
+            {
+                "typeOf": "Menu",
+                "hasMenuSection": [
+                    {
+                        "typeOf": "MenuSection",
+                        "name": "Drinks",
+                        "description": "",
+                        "image": [
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz",
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz"
+                        ],
+                        "hasMenuItem": [
+                            {
+                                "identifier": "Restaurants-mizuho-drinks-beer",
+                                "typeOf": "MenuItem",
+                                "name": "生ビール",
+                                "description": "",
+                                "offers": [
+                                    {
+                                        "identifier": "Restaurants-mizuho-drinks-beer-01",
+                                        "typeOf": "Offer",
+                                        "price": 700,
+                                        "priceCurrency": "JPY"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "typeOf": "MenuSection",
+                        "name": "Foods",
+                        "description": "",
+                        "image": [
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz",
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz"
+                        ],
+                        "hasMenuItem": [
+                            {
+                                "identifier": "Restaurants-mizuho-foods-beer",
+                                "typeOf": "MenuItem",
+                                "name": "フライドポテト",
+                                "description": "",
+                                "offers": [
+                                    {
+                                        "identifier": "Restaurants-mizuho-foods-beer-01",
+                                        "typeOf": "Offer",
+                                        "price": 350,
+                                        "priceCurrency": "JPY"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "typeOf": "MenuSection",
+                        "name": "Combos",
+                        "description": "",
+                        "image": [
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz",
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrhpsOJOcLBwc1SPD9sWlinildy4S05-I2Wf6z2wRXnSxbmtRz"
+                        ],
+                        "hasMenuItem": [
+                            {
+                                "identifier": "Restaurants-mizuho-combos-beer-potatos",
+                                "typeOf": "MenuItem",
+                                "name": "生ビール & フライドポテト",
+                                "description": "",
+                                "offers": [
+                                    {
+                                        "identifier": "Restaurants-mizuho-combos-beer-potatos-01",
+                                        "typeOf": "Offer",
+                                        "price": 1000,
+                                        "priceCurrency": "JPY"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
