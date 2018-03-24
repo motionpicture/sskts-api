@@ -21,7 +21,7 @@
                         "name": "Drinks",
                         "description": "",
                         "image": [
-                            "https://cdn.pixabay.com/photo/2016/07/24/16/38/beer-1538753_960_720.png"
+                            "https://upload.wikimedia.org/wikipedia/commons/6/6e/Beer_mug_transparent.png"
                         ],
                         "hasMenuItem": [
                             {
@@ -45,7 +45,7 @@
                         "name": "Foods",
                         "description": "",
                         "image": [
-                            "https://cdn.pixabay.com/photo/2015/12/09/17/12/popcorn-1085072_960_720.jpg"
+                            "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Popcorn.svg/728px-Popcorn.svg.png"
                         ],
                         "hasMenuItem": [
                             {
