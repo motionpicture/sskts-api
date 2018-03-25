@@ -1,12 +1,16 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
+
 ### Added
 
 ### Changed
+
+- 上映イベント予約の所有権検索時に使用するMongoDBインデックスを追加。
 
 ### Deprecated
 
@@ -15,7 +19,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
-
 
 ## v10.4.2 - 2018-02-28
 ### Changed
