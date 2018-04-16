@@ -24,11 +24,15 @@ export default (permittedScopes: IScope[]) => {
 
         debug('req.user.scopes:', req.user.scopes);
 
-        // ドメインつきのスコープリストも許容するように変更
+        // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURECE_SERVER_IDENTIFIER}/${permittedScope}`),
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURECE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
         ];
+        // cognitoユーザー管理スコープは単体で特別扱い
+        if (permittedScopes.indexOf('aws.cognito.signin.user.admin') >= 0) {
+            permittedScopesWithResourceServerIdentifier.push('aws.cognito.signin.user.admin');
+        }
         debug('permittedScopesWithResourceServerIdentifier:', permittedScopesWithResourceServerIdentifier);
 
         // スコープチェック
