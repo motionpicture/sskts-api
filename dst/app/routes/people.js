@@ -30,7 +30,7 @@ peopleRouter.use(requireMember_1.default);
 /**
  * retrieve contacts from Amazon Cognito
  */
-peopleRouter.get('/me/contacts', permitScopes_1.default(['people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('/me/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const contact = yield sskts.service.person.contact.retrieve(req.accessToken)();
         res.json(contact);
@@ -42,7 +42,7 @@ peopleRouter.get('/me/contacts', permitScopes_1.default(['people.contacts', 'peo
 /**
  * 会員プロフィール更新
  */
-peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (__1, __2, next) => {
+peopleRouter.put('/me/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -61,7 +61,7 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['people.contacts']), (_
 /**
  * 会員クレジットカード取得
  */
-peopleRouter.get('/me/creditCards', permitScopes_1.default(['people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('/me/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const searchCardResults = yield sskts.service.person.creditCard.find(req.user.sub, req.user.username)();
         debug('searchCardResults:', searchCardResults);
@@ -74,7 +74,7 @@ peopleRouter.get('/me/creditCards', permitScopes_1.default(['people.creditCards'
 /**
  * 会員クレジットカード追加
  */
-peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards']), (__1, __2, next) => {
+peopleRouter.post('/me/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -88,7 +88,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['people.creditCards
 /**
  * 会員クレジットカード削除
  */
-peopleRouter.delete('/me/creditCards/:cardSeq', permitScopes_1.default(['people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.delete('/me/creditCards/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
         res.status(http_status_1.NO_CONTENT).end();
@@ -100,7 +100,7 @@ peopleRouter.delete('/me/creditCards/:cardSeq', permitScopes_1.default(['people.
 /**
  * Pecorino残高照会
  */
-peopleRouter.get('/me/accounts', permitScopes_1.default(['people.accounts.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('/me/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // pecorino支払取引サービスクライアントを生成
         pecorinoOAuth2client.setCredentials({
@@ -120,7 +120,7 @@ peopleRouter.get('/me/accounts', permitScopes_1.default(['people.accounts.read-o
 /**
  * Pecorino取引履歴検索
  */
-peopleRouter.get('/me/accounts/actions/trade', permitScopes_1.default(['people.accounts.actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('/me/accounts/actions/trade', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // pecorino支払取引サービスクライアントを生成
         pecorinoOAuth2client.setCredentials({
@@ -141,7 +141,7 @@ peopleRouter.get('/me/accounts/actions/trade', permitScopes_1.default(['people.a
 /**
  * find user's reservation ownershipInfos
  */
-peopleRouter.get('/me/ownershipInfos/reservation', permitScopes_1.default(['people.ownershipInfos', 'people.ownershipInfos.read-only']), (_1, _2, next) => {
+peopleRouter.get('/me/ownershipInfos/reservation', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

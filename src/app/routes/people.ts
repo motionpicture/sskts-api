@@ -29,7 +29,7 @@ peopleRouter.use(requireMember);
  */
 peopleRouter.get(
     '/me/contacts',
-    permitScopes(['people.contacts', 'people.contacts.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']),
     async (req, res, next) => {
         try {
             const contact = await sskts.service.person.contact.retrieve(req.accessToken)();
@@ -45,7 +45,7 @@ peopleRouter.get(
  */
 peopleRouter.put(
     '/me/contacts',
-    permitScopes(['people.contacts']),
+    permitScopes(['aws.cognito.signin.user.admin', 'people.contacts']),
     (__1, __2, next) => {
         next();
     },
@@ -74,7 +74,7 @@ peopleRouter.put(
  */
 peopleRouter.get(
     '/me/creditCards',
-    permitScopes(['people.creditCards', 'people.creditCards.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
             const searchCardResults = await sskts.service.person.creditCard.find(req.user.sub, <string>req.user.username)();
@@ -92,7 +92,7 @@ peopleRouter.get(
  */
 peopleRouter.post(
     '/me/creditCards',
-    permitScopes(['people.creditCards']),
+    permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
     (__1, __2, next) => {
         next();
     },
@@ -117,7 +117,7 @@ peopleRouter.post(
  */
 peopleRouter.delete(
     '/me/creditCards/:cardSeq',
-    permitScopes(['people.creditCards']),
+    permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
     validator,
     async (req, res, next) => {
         try {
@@ -135,7 +135,7 @@ peopleRouter.delete(
  */
 peopleRouter.get(
     '/me/accounts',
-    permitScopes(['people.accounts.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -161,7 +161,7 @@ peopleRouter.get(
  */
 peopleRouter.get(
     '/me/accounts/actions/trade',
-    permitScopes(['people.accounts.actions.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -188,7 +188,7 @@ peopleRouter.get(
  */
 peopleRouter.get(
     '/me/ownershipInfos/reservation',
-    permitScopes(['people.ownershipInfos', 'people.ownershipInfos.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
     (_1, _2, next) => {
         next();
     },

@@ -20,7 +20,7 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 placesRouter.use(authentication_1.default);
-placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['places', 'places.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['aws.cognito.signin.user.admin', 'places', 'places.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const repository = new sskts.repository.Place(sskts.mongoose.connection);
         yield repository.findMovieTheaterByBranchCode(req.params.branchCode).then((theater) => {
@@ -31,7 +31,7 @@ placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['places', 
         next(error);
     }
 }));
-placesRouter.get('/movieTheater', permitScopes_1.default(['places', 'places.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
+placesRouter.get('/movieTheater', permitScopes_1.default(['aws.cognito.signin.user.admin', 'places', 'places.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const repository = new sskts.repository.Place(sskts.mongoose.connection);
         yield repository.searchMovieTheaters({}).then((places) => {

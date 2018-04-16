@@ -58,7 +58,7 @@ placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, _, next) => {
         // expires is unix timestamp (in seconds)
         req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required');
@@ -128,7 +128,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, _, next) => {
         req.checkBody('familyName').notEmpty().withMessage('required');
         req.checkBody('givenName').notEmpty().withMessage('required');
@@ -166,7 +166,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (__1, __2, next) => {
         next();
     },
@@ -197,7 +197,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -223,7 +223,7 @@ placeOrderTransactionsRouter.delete(
  */
 placeOrderTransactionsRouter.patch(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (__1, __2, next) => {
         next();
     },
@@ -252,7 +252,7 @@ placeOrderTransactionsRouter.patch(
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/creditCard',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, __2, next) => {
         req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
         req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
@@ -302,7 +302,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/creditCard/:actionId',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -328,7 +328,7 @@ placeOrderTransactionsRouter.delete(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/mvtk',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (__1, __2, next) => {
         next();
     },
@@ -379,7 +379,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/mvtk/:actionId',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -405,7 +405,7 @@ placeOrderTransactionsRouter.delete(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/pecorino',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, __, next) => {
         req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
 
@@ -443,7 +443,7 @@ placeOrderTransactionsRouter.post(
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -467,7 +467,7 @@ placeOrderTransactionsRouter.post(
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/tasks/sendEmailNotification',
-    permitScopes(['transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     async (req, res, next) => {
         try {

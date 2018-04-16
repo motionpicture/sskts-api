@@ -57,7 +57,7 @@ const rateLimit4transactionInProgress = middlewares.rateLimit({
     scopeGenerator: (req) => `placeOrderTransaction.${req.params.transactionId}`
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
-placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => {
+placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, _, next) => {
     // expires is unix timestamp (in seconds)
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required');
     req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
@@ -116,7 +116,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 /**
  * 購入者情報を変更する
  */
-placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['transactions']), (req, _, next) => {
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, _, next) => {
     req.checkBody('familyName').notEmpty().withMessage('required');
     req.checkBody('givenName').notEmpty().withMessage('required');
     req.checkBody('telephone').notEmpty().withMessage('required');
@@ -141,7 +141,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -159,7 +159,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
 /**
  * 座席仮予約削除
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
@@ -174,7 +174,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
 /**
  * 座席仮予へ変更(券種変更)
  */
-placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -189,7 +189,7 @@ placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReserv
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard', permitScopes_1.default(['transactions']), (req, __2, next) => {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
     req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
     req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
     req.checkBody('method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
@@ -219,7 +219,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
 /**
  * クレジットカードオーソリ取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
@@ -234,7 +234,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCar
 /**
  * ムビチケ追加
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -273,7 +273,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
 /**
  * ムビチケ取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
@@ -288,7 +288,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:act
 /**
  * Pecorino口座確保
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', permitScopes_1.default(['transactions']), (req, __, next) => {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __, next) => {
     req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -312,7 +312,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', 
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = yield sskts.service.transaction.placeOrderInProgress.confirm(req.user.sub, req.params.transactionId)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
@@ -326,7 +326,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const task = yield sskts.service.transaction.placeOrder.sendEmail(req.params.transactionId, {
             sender: {

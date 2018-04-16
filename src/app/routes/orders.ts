@@ -19,7 +19,7 @@ ordersRouter.use(authentication);
  */
 ordersRouter.post(
     '/findByOrderInquiryKey',
-    permitScopes(['orders', 'orders.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
     (req, _, next) => {
         req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
         req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');

@@ -22,7 +22,7 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const eventsRouter = express_1.Router();
 eventsRouter.use(authentication_1.default);
-eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.identifier)({
             event: new sskts.repository.Event(sskts.mongoose.connection),
@@ -35,7 +35,7 @@ eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default
         next(error);
     }
 }));
-eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['events', 'events.read-only']), (req, __, next) => {
+eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), (req, __, next) => {
     req.checkQuery('startFrom').optional().isISO8601().withMessage('startFrom must be ISO8601 timestamp');
     req.checkQuery('startThrough').optional().isISO8601().withMessage('startThrough must be ISO8601 timestamp');
     req.checkQuery('endFrom').optional().isISO8601().withMessage('endFrom must be ISO8601 timestamp');

@@ -17,7 +17,7 @@ organizationsRouter.use(authentication);
 
 organizationsRouter.get(
     '/movieTheater/:branchCode',
-    permitScopes(['organizations', 'organizations.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -32,7 +32,7 @@ organizationsRouter.get(
 
 organizationsRouter.get(
     '/movieTheater',
-    permitScopes(['organizations', 'organizations.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
     validator,
     async (__, res, next) => {
         try {
