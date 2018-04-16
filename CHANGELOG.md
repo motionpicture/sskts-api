@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- 会員のクレジットカード操作時のGMO会員存在なしエラーをハンドリング。
+
 ### Security
 
 ## v10.4.2 - 2018-02-28
