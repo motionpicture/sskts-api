@@ -1,9 +1,8 @@
 /**
  * people router
- * @module peopleRouter
  */
-
 import * as sskts from '@motionpicture/sskts-domain';
+import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
@@ -16,9 +15,21 @@ import validator from '../middlewares/validator';
 const peopleRouter = Router();
 
 const debug = createDebug('sskts-api:routes:people');
-
-const pecorinoOAuth2client = new sskts.pecorinoapi.auth.OAuth2({
-    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN
+const CUSTOM_ATTRIBUTE_NAME = <string>process.env.COGNITO_ATTRIBUTE_NAME_ACCOUNT_NUMBERS;
+const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+    apiVersion: 'latest',
+    region: 'ap-northeast-1',
+    credentials: new AWS.Credentials({
+        accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
+    })
+});
+const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.PECORINO_API_CLIENT_ID,
+    clientSecret: <string>process.env.PECORINO_API_CLIENT_SECRET,
+    scopes: [],
+    state: ''
 });
 
 peopleRouter.use(authentication);
@@ -131,7 +142,35 @@ peopleRouter.delete(
 );
 
 /**
- * Pecorino残高照会
+ * Pecorino口座開設
+ */
+peopleRouter.post(
+    '/me/accounts',
+    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const accountService = new sskts.pecorinoapi.service.Account({
+                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                auth: pecorinoAuthClient
+            });
+            let account = await accountService.open({
+                name: req.body.name,
+                initialBalance: 0
+            });
+            await addPecorinoAccountNumber(<string>req.user.username, account.accountNumber);
+
+            // 互換性維持のため、idを口座番号に置換
+            account = { ...account, id: account.accountNumber };
+            res.status(CREATED).json(account);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * Pecorino口座検索
  */
 peopleRouter.get(
     '/me/accounts',
@@ -139,17 +178,29 @@ peopleRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            // pecorino支払取引サービスクライアントを生成
-            pecorinoOAuth2client.setCredentials({
-                access_token: req.accessToken
-            });
+            if (req.user.username === undefined) {
+                throw new sskts.factory.errors.Forbidden('Login required');
+            }
+
             const accountService = new sskts.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
-                auth: pecorinoOAuth2client
+                auth: pecorinoAuthClient
             });
+            let accounts: sskts.factory.pecorino.account.IAccount[] = [];
+            const accountNumbers = await getAccountNumbers(req.user.username);
+            if (accountNumbers.length > 0) {
+                accounts = await accountService.search({
+                    accountNumbers: accountNumbers,
+                    statuses: [],
+                    limit: 100
+                });
+            }
 
-            const account = await accountService.findById({ id: 'me' });
-            res.json(account);
+            // 互換性維持のため、idを口座番号に置換
+            accounts = accounts.map((a) => {
+                return { ...a, id: a.accountNumber };
+            });
+            res.json(accounts);
         } catch (error) {
             next(error);
         }
@@ -160,28 +211,73 @@ peopleRouter.get(
  * Pecorino取引履歴検索
  */
 peopleRouter.get(
-    '/me/accounts/actions/trade',
+    '/me/accounts/:accountNumber/actions/moneyTransfer',
     permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']),
     validator,
     async (req, res, next) => {
         try {
-            // pecorino支払取引サービスクライアントを生成
-            pecorinoOAuth2client.setCredentials({
-                access_token: req.accessToken
-            });
             const accountService = new sskts.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
-                auth: pecorinoOAuth2client
+                auth: pecorinoAuthClient
             });
-            debug('finding account...', accountService);
-
-            const tradeActions = await accountService.searchTransferActions({ accountId: 'me' });
-            res.json(tradeActions);
+            const actions = await accountService.searchMoneyTransferActions({ accountNumber: req.params.accountNumber });
+            res.json(actions);
         } catch (error) {
             next(error);
         }
     }
 );
+
+async function addPecorinoAccountNumber(username: string, accountNumber: string) {
+    const accountNumbers = await getAccountNumbers(username);
+    debug('currently accountNumbers are', accountNumbers);
+
+    accountNumbers.push(accountNumber);
+
+    await new Promise((resolve, reject) => {
+        cognitoIdentityServiceProvider.adminUpdateUserAttributes(
+            {
+                UserPoolId: <string>process.env.COGNITO_USER_POOL_ID,
+                Username: username,
+                UserAttributes: [
+                    {
+                        Name: `custom:${CUSTOM_ATTRIBUTE_NAME}`,
+                        Value: JSON.stringify(accountNumbers)
+                    }
+                ]
+            },
+            (err) => {
+                if (err instanceof Error) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+    });
+    debug('accountNumber added.', accountNumbers);
+}
+
+async function getAccountNumbers(username: string) {
+    return new Promise<string[]>((resolve, reject) => {
+        cognitoIdentityServiceProvider.adminGetUser(
+            {
+                UserPoolId: <string>process.env.COGNITO_USER_POOL_ID,
+                Username: username
+            },
+            (err, data) => {
+                if (err instanceof Error) {
+                    reject(err);
+                } else {
+                    if (data.UserAttributes === undefined) {
+                        reject(new Error('UserAttributes not found.'));
+                    } else {
+                        const attribute = data.UserAttributes.find((a) => a.Name === `custom:${CUSTOM_ATTRIBUTE_NAME}`);
+                        resolve((attribute !== undefined && attribute.Value !== undefined) ? JSON.parse(attribute.Value) : []);
+                    }
+                }
+            });
+    });
+}
 
 /**
  * find user's reservation ownershipInfos
@@ -207,5 +303,31 @@ peopleRouter.get(
         }
     }
 );
+
+/**
+ * find user's ownershipInfos
+ */
+// peopleRouter.get(
+//     '/me/ownershipInfos/:goodType',
+//     permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
+//     (_1, _2, next) => {
+//         next();
+//     },
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+//             const ownershipInfos = await repository.search({
+//                 goodType: req.params.goodType,
+//                 ownedBy: req.user.sub,
+//                 ownedAt: new Date()
+//             });
+
+//             res.json(ownershipInfos);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 export default peopleRouter;

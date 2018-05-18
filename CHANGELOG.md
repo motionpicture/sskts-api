@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- Pecorino口座開設エンドポイントを追加。
+- Pecorino口座検索エンドポイントを追加。
+
 ### Changed
 
 - 上映イベント予約の所有権検索時に使用するMongoDBインデックスを追加。

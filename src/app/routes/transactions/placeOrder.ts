@@ -1,8 +1,6 @@
 /**
  * 注文取引ルーター
- * @ignore
  */
-
 import * as middlewares from '@motionpicture/express-middleware';
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
@@ -12,16 +10,18 @@ import * as redis from 'ioredis';
 import * as moment from 'moment';
 import * as request from 'request-promise-native';
 
-const placeOrderTransactionsRouter = Router();
-
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
+const placeOrderTransactionsRouter = Router();
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
-
-const pecorinoOAuth2client = new sskts.pecorinoapi.auth.OAuth2({
-    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN
+const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.PECORINO_API_CLIENT_ID,
+    clientSecret: <string>process.env.PECORINO_API_CLIENT_SECRET,
+    scopes: [],
+    state: ''
 });
 
 // tslint:disable-next-line:no-magic-numbers
@@ -408,7 +408,7 @@ placeOrderTransactionsRouter.post(
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, __, next) => {
         req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
-
+        req.checkBody('fromAccountNumber', 'invalid fromAccountNumber').notEmpty().withMessage('fromAccountNumber is required');
         next();
     },
     validator,
@@ -416,24 +416,21 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             // pecorino支払取引サービスクライアントを生成
-            pecorinoOAuth2client.setCredentials({
-                access_token: req.accessToken
-            });
-            const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay({
+            const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
-                auth: pecorinoOAuth2client
+                auth: pecorinoAuthClient
             });
-
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create(
-                req.user.sub,
-                req.params.transactionId,
-                req.body.price
-            )({
+            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
+                transactionId: req.params.transactionId,
+                price: req.body.price,
+                fromAccountNumber: req.body.fromAccountNumber,
+                notes: req.body.notes
+            })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
+                organization: new sskts.repository.Organization(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-                payTransactionService: payTransactionService
+                transferTransactionService: transferTransactionService
             });
-
             res.status(CREATED).json(action);
         } catch (error) {
             next(error);

@@ -1,8 +1,4 @@
 "use strict";
-/**
- * 注文取引ルーター
- * @ignore
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -12,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 注文取引ルーター
+ */
 const middlewares = require("@motionpicture/express-middleware");
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
@@ -20,13 +19,17 @@ const http_status_1 = require("http-status");
 const redis = require("ioredis");
 const moment = require("moment");
 const request = require("request-promise-native");
-const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
+const placeOrderTransactionsRouter = express_1.Router();
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
-const pecorinoOAuth2client = new sskts.pecorinoapi.auth.OAuth2({
-    domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN
+const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+    domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.PECORINO_API_CLIENT_ID,
+    clientSecret: process.env.PECORINO_API_CLIENT_SECRET,
+    scopes: [],
+    state: ''
 });
 // tslint:disable-next-line:no-magic-numbers
 const AGGREGATION_UNIT_IN_SECONDS = parseInt(process.env.TRANSACTION_RATE_LIMIT_AGGREGATION_UNIT_IN_SECONDS, 10);
@@ -290,21 +293,25 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:act
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __, next) => {
     req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
+    req.checkBody('fromAccountNumber', 'invalid fromAccountNumber').notEmpty().withMessage('fromAccountNumber is required');
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // pecorino支払取引サービスクライアントを生成
-        pecorinoOAuth2client.setCredentials({
-            access_token: req.accessToken
-        });
-        const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay({
+        const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
             endpoint: process.env.PECORINO_API_ENDPOINT,
-            auth: pecorinoOAuth2client
+            auth: pecorinoAuthClient
         });
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create(req.user.sub, req.params.transactionId, req.body.price)({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
+            transactionId: req.params.transactionId,
+            price: req.body.price,
+            fromAccountNumber: req.body.fromAccountNumber,
+            notes: req.body.notes
+        })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
+            organization: new sskts.repository.Organization(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-            payTransactionService: payTransactionService
+            transferTransactionService: transferTransactionService
         });
         res.status(http_status_1.CREATED).json(action);
     }
