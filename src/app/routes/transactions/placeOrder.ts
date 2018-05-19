@@ -250,6 +250,50 @@ placeOrderTransactionsRouter.patch(
     }
 );
 
+/**
+ * 会員プログラムオファー承認アクション
+ */
+placeOrderTransactionsRouter.post(
+    '/:transactionId/actions/authorize/offer/programMembership',
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    (__1, __2, next) => {
+        next();
+    },
+    validator,
+    rateLimit4transactionInProgress,
+    async (_, res, next) => {
+        try {
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 実装
+            res.status(CREATED).json({});
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 会員プログラムオファー承認アクション取消
+ */
+placeOrderTransactionsRouter.delete(
+    '/:transactionId/actions/authorize/offer/programMembership/:actionId',
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    (__1, __2, next) => {
+        next();
+    },
+    validator,
+    rateLimit4transactionInProgress,
+    async (_, res, next) => {
+        try {
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 実装
+            res.status(NO_CONTENT).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/creditCard',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
@@ -438,6 +482,25 @@ placeOrderTransactionsRouter.post(
     }
 );
 
+/**
+ * Pecorino口座承認取消
+ */
+placeOrderTransactionsRouter.delete(
+    '/:transactionId/actions/authorize/pecorino/:actionId',
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    validator,
+    rateLimit4transactionInProgress,
+    async (_, res, next) => {
+        try {
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 実装
+            res.status(NO_CONTENT).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
@@ -456,6 +519,24 @@ placeOrderTransactionsRouter.post(
             debug('transaction confirmed', order);
 
             res.status(CREATED).json(order);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 取引を明示的に中止
+ */
+placeOrderTransactionsRouter.post(
+    '/:transactionId/cancel',
+    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
+    validator,
+    async (_, res, next) => {
+        try {
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 実装
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }

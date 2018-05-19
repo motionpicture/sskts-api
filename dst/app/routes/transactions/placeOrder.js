@@ -192,6 +192,36 @@ placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReserv
         next(error);
     }
 }));
+/**
+ * 会員プログラムオファー承認アクション
+ */
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/programMembership', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
+    next();
+}, validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 実装
+        res.status(http_status_1.CREATED).json({});
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 会員プログラムオファー承認アクション取消
+ */
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/offer/programMembership/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
+    next();
+}, validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 実装
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
     req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
     req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
@@ -319,6 +349,19 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', 
         next(error);
     }
 }));
+/**
+ * Pecorino口座承認取消
+ */
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/pecorino/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 実装
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const order = yield sskts.service.transaction.placeOrderInProgress.confirm(req.user.sub, req.params.transactionId)({
@@ -328,6 +371,19 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         });
         debug('transaction confirmed', order);
         res.status(http_status_1.CREATED).json(order);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 取引を明示的に中止
+ */
+placeOrderTransactionsRouter.post('/:transactionId/cancel', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 実装
+        res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
         next(error);

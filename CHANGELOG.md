@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Pecorino口座検索エンドポイントを追加。
 - ユーザーの汎用的な所有権検索エンドポイントを追加。
 - 会員プログラム検索エンドポイントを追加。
+- 注文取引中止エンドポイントを追加。
+- Pecorino口座承認取消エンドポイントを追加。
+- 会員プログラムオファー承認エンドポイントを追加。
 
 ### Changed
 
