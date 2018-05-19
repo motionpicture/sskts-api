@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - Pecorino口座開設エンドポイントを追加。
 - Pecorino口座検索エンドポイントを追加。
+- ユーザーの汎用的な所有権検索エンドポイントを追加。
+- 会員プログラム検索エンドポイントを追加。
 
 ### Changed
 

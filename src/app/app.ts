@@ -14,19 +14,9 @@ import * as helmet from 'helmet';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
-// import basicAuth from './middlewares/basicAuth';
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
-import actionsRouter from './routes/actions';
-import devRouter from './routes/dev';
-import eventsRouter from './routes/events';
-import healthRouter from './routes/health';
-import ordersRouter from './routes/orders';
-import organizationsRouter from './routes/organizations';
-import peopleRouter from './routes/people';
-import placesRouter from './routes/places';
-import placeOrderTransactionsRouter from './routes/transactions/placeOrder';
-import returnOrderTransactionsRouter from './routes/transactions/returnOrder';
+import router from './routes/router';
 
 const debug = createDebug('sskts-api:*');
 
@@ -106,21 +96,7 @@ sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptio
     .catch(console.error);
 
 // routers
-app.use('/health', healthRouter);
-app.use('/actions', actionsRouter);
-app.use('/organizations', organizationsRouter);
-app.use('/orders', ordersRouter);
-app.use('/people', peopleRouter);
-app.use('/places', placesRouter);
-app.use('/events', eventsRouter);
-app.use('/transactions/placeOrder', placeOrderTransactionsRouter);
-app.use('/transactions/returnOrder', returnOrderTransactionsRouter);
-
-// tslint:disable-next-line:no-single-line-block-comment
-/* istanbul ignore next */
-if (process.env.NODE_ENV !== 'production') {
-    app.use('/dev', devRouter);
-}
+app.use('/', router);
 
 // 404
 app.use(notFoundHandler);

@@ -1,5 +1,5 @@
 /**
- * people router
+ * ユーザールーター
  */
 import * as sskts from '@motionpicture/sskts-domain';
 import * as AWS from 'aws-sdk';
@@ -36,7 +36,7 @@ peopleRouter.use(authentication);
 peopleRouter.use(requireMember);
 
 /**
- * retrieve contacts from Amazon Cognito
+ * 連絡先検索
  */
 peopleRouter.get(
     '/me/contacts',
@@ -72,7 +72,6 @@ peopleRouter.put(
                     telephone: req.body.telephone
                 }
             )();
-
             res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
@@ -81,7 +80,7 @@ peopleRouter.put(
 );
 
 /**
- * 会員クレジットカード取得
+ * 会員クレジットカード検索
  */
 peopleRouter.get(
     '/me/creditCards',
@@ -90,7 +89,6 @@ peopleRouter.get(
         try {
             const searchCardResults = await sskts.service.person.creditCard.find(req.user.sub, <string>req.user.username)();
             debug('searchCardResults:', searchCardResults);
-
             res.json(searchCardResults);
         } catch (error) {
             next(error);
@@ -115,7 +113,6 @@ peopleRouter.post(
                 <string>req.user.username,
                 req.body
             )();
-
             res.status(CREATED).json(creditCard);
         } catch (error) {
             next(error);
@@ -280,10 +277,10 @@ async function getAccountNumbers(username: string) {
 }
 
 /**
- * find user's reservation ownershipInfos
+ * ユーザーの所有権検索
  */
 peopleRouter.get(
-    '/me/ownershipInfos/reservation',
+    '/me/ownershipInfos/:goodType',
     permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
     (_1, _2, next) => {
         next();
@@ -292,42 +289,16 @@ peopleRouter.get(
     async (req, res, next) => {
         try {
             const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const ownershipInfos = await repository.searchScreeningEventReservation({
+            const ownershipInfos = await repository.search({
+                goodType: req.params.goodType,
                 ownedBy: req.user.sub,
                 ownedAt: new Date()
             });
-
             res.json(ownershipInfos);
         } catch (error) {
             next(error);
         }
     }
 );
-
-/**
- * find user's ownershipInfos
- */
-// peopleRouter.get(
-//     '/me/ownershipInfos/:goodType',
-//     permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
-//     (_1, _2, next) => {
-//         next();
-//     },
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-//             const ownershipInfos = await repository.search({
-//                 goodType: req.params.goodType,
-//                 ownedBy: req.user.sub,
-//                 ownedAt: new Date()
-//             });
-
-//             res.json(ownershipInfos);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
 
 export default peopleRouter;
