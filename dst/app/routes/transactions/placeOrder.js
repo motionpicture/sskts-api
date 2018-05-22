@@ -322,7 +322,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:act
  * Pecorino口座確保
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __, next) => {
-    req.checkBody('price', 'invalid price').notEmpty().withMessage('price is required').isInt();
+    req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
     req.checkBody('fromAccountNumber', 'invalid fromAccountNumber').notEmpty().withMessage('fromAccountNumber is required');
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -334,7 +334,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', 
         });
         const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
             transactionId: req.params.transactionId,
-            price: req.body.price,
+            amount: parseInt(req.body.amount, 10),
             fromAccountNumber: req.body.fromAccountNumber,
             notes: req.body.notes
         })({
@@ -364,7 +364,25 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/pecorino/
 }));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const order = yield sskts.service.transaction.placeOrderInProgress.confirm(req.user.sub, req.params.transactionId)({
+        let incentives = [];
+        if (Array.isArray(req.body.incentives)) {
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO バックエンドでインセンティブのバリデーションを実装
+            incentives = req.body.incentives.map((i) => {
+                return {
+                    // tslint:disable-next-line:no-suspicious-comment
+                    amount: parseInt(i.amount, 10),
+                    toAccountNumber: i.toAccountNumber,
+                    pecorinoEndpoint: process.env.PECORINO_API_ENDPOINT
+                };
+            });
+        }
+        const order = yield sskts.service.transaction.placeOrderInProgress.confirm({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
+            incentives: incentives
+        })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             organization: new sskts.repository.Organization(sskts.mongoose.connection)
