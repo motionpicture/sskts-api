@@ -459,7 +459,7 @@ placeOrderTransactionsRouter.post(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            // pecorino支払取引サービスクライアントを生成
+            // pecorino転送取引サービスクライアントを生成
             const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
@@ -490,10 +490,22 @@ placeOrderTransactionsRouter.delete(
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     rateLimit4transactionInProgress,
-    async (_, res, next) => {
+    async (req, res, next) => {
         try {
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 実装
+            // pecorino転送取引サービスクライアントを生成
+            const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
+                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                auth: pecorinoAuthClient
+            });
+            await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.cancel({
+                agentId: req.user.sub,
+                transactionId: req.params.transactionId,
+                actionId: req.params.actionId
+            })({
+                action: new sskts.repository.Action(sskts.mongoose.connection),
+                transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+                transferTransactionService: transferTransactionService
+            });
             res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
@@ -548,10 +560,11 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/cancel',
     permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    async (_, res, next) => {
+    async (req, res, next) => {
         try {
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 実装
+            const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+            await transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, req.params.transactionId);
+            debug('transaction canceled.');
             res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);

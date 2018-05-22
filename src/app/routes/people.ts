@@ -144,6 +144,10 @@ peopleRouter.delete(
 peopleRouter.post(
     '/me/accounts',
     permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
+    (req, _, next) => {
+        req.checkBody('name', 'invalid name').notEmpty().withMessage('name is required');
+        next();
+    },
     validator,
     async (req, res, next) => {
         try {

@@ -113,7 +113,10 @@ peopleRouter.delete('/me/creditCards/:cardSeq', permitScopes_1.default(['aws.cog
 /**
  * Pecorino口座開設
  */
-peopleRouter.post('/me/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.post('/me/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), (req, _, next) => {
+    req.checkBody('name', 'invalid name').notEmpty().withMessage('name is required');
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const accountService = new sskts.pecorinoapi.service.Account({
             endpoint: process.env.PECORINO_API_ENDPOINT,

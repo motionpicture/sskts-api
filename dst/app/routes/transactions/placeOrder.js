@@ -327,7 +327,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', 
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // pecorino支払取引サービスクライアントを生成
+        // pecorino転送取引サービスクライアントを生成
         const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
@@ -352,10 +352,22 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', 
 /**
  * Pecorino口座承認取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/pecorino/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/pecorino/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 実装
+        // pecorino転送取引サービスクライアントを生成
+        const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
+            endpoint: process.env.PECORINO_API_ENDPOINT,
+            auth: pecorinoAuthClient
+        });
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.cancel({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            actionId: req.params.actionId
+        })({
+            action: new sskts.repository.Action(sskts.mongoose.connection),
+            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            transferTransactionService: transferTransactionService
+        });
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -397,10 +409,11 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
 /**
  * 取引を明示的に中止
  */
-placeOrderTransactionsRouter.post('/:transactionId/cancel', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/cancel', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 実装
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        yield transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, req.params.transactionId);
+        debug('transaction canceled.');
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
