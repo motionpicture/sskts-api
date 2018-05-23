@@ -225,8 +225,8 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/offer/pro
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
     req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
     req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
-    req.checkBody('method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
-    req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('gmo_amount is required');
+    req.checkBody('method', 'invalid method').notEmpty().withMessage('method is required');
+    req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('creditCard is required');
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

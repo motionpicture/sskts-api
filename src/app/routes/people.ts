@@ -5,7 +5,7 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import { Router } from 'express';
-import { CREATED, NO_CONTENT } from 'http-status';
+import { BAD_REQUEST, CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -155,15 +155,75 @@ peopleRouter.post(
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            let account = await accountService.open({
-                name: req.body.name,
-                initialBalance: 0
+            const account = await accountService.open({
+                name: req.body.name
             });
             await addPecorinoAccountNumber(<string>req.user.username, account.accountNumber);
-
-            // 互換性維持のため、idを口座番号に置換
-            account = { ...account, id: account.accountNumber };
             res.status(CREATED).json(account);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * Pecorino口座解約
+ * 口座の状態を変更するだけで、所有口座リストから削除はしない
+ */
+peopleRouter.put(
+    '/me/accounts/:accountNumber/close',
+    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const accountService = new sskts.pecorinoapi.service.Account({
+                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                auth: pecorinoAuthClient
+            });
+            await accountService.close({ accountNumber: req.params.accountNumber });
+            res.status(NO_CONTENT).end();
+        } catch (error) {
+            // PecorinoAPIのレスポンスステータスコードが4xxであればクライアントエラー
+            if (error.name === 'PecorinoRequestError') {
+                // Pecorino APIのステータスコード4xxをハンドリング
+                const message = `${error.name}:${error.message}`;
+                switch (error.code) {
+                    case BAD_REQUEST: // 400
+                        error = new sskts.factory.errors.Argument('accountNumber', message);
+                        break;
+                    case UNAUTHORIZED: // 401
+                        error = new sskts.factory.errors.Unauthorized(message);
+                        break;
+                    case FORBIDDEN: // 403
+                        error = new sskts.factory.errors.Forbidden(message);
+                        break;
+                    case NOT_FOUND: // 404
+                        error = new sskts.factory.errors.NotFound(message);
+                        break;
+                    case TOO_MANY_REQUESTS: // 429
+                        error = new sskts.factory.errors.RateLimitExceeded(message);
+                        break;
+                    default:
+                        error = new sskts.factory.errors.ServiceUnavailable(message);
+                }
+            }
+
+            next(error);
+        }
+    }
+);
+
+/**
+ * Pecorino口座削除
+ */
+peopleRouter.delete(
+    '/me/accounts/:accountNumber',
+    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
+    validator,
+    async (req, res, next) => {
+        try {
+            await removePecorinoAccountNumber(<string>req.user.username, req.params.accountNumber);
+            res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }
@@ -234,6 +294,39 @@ async function addPecorinoAccountNumber(username: string, accountNumber: string)
     debug('currently accountNumbers are', accountNumbers);
 
     accountNumbers.push(accountNumber);
+
+    await new Promise((resolve, reject) => {
+        cognitoIdentityServiceProvider.adminUpdateUserAttributes(
+            {
+                UserPoolId: <string>process.env.COGNITO_USER_POOL_ID,
+                Username: username,
+                UserAttributes: [
+                    {
+                        Name: `custom:${CUSTOM_ATTRIBUTE_NAME}`,
+                        Value: JSON.stringify(accountNumbers)
+                    }
+                ]
+            },
+            (err) => {
+                if (err instanceof Error) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+    });
+    debug('accountNumber added.', accountNumbers);
+}
+
+async function removePecorinoAccountNumber(username: string, accountNumber: string) {
+    const accountNumbers = await getAccountNumbers(username);
+    debug('currently accountNumbers are', accountNumbers);
+
+    // 口座番号が存在すれば削除
+    const accountNumberIndex = accountNumber.indexOf(accountNumber);
+    if (accountNumberIndex >= 0) {
+        accountNumbers.splice(accountNumberIndex, 1);
+    }
 
     await new Promise((resolve, reject) => {
         cognitoIdentityServiceProvider.adminUpdateUserAttributes(

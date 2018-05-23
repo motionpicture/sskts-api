@@ -300,8 +300,8 @@ placeOrderTransactionsRouter.post(
     (req, __2, next) => {
         req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
         req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
-        req.checkBody('method', 'invalid method').notEmpty().withMessage('gmo_order_id is required');
-        req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('gmo_amount is required');
+        req.checkBody('method', 'invalid method').notEmpty().withMessage('method is required');
+        req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('creditCard is required');
 
         next();
     },

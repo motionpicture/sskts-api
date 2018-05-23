@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文取引中止エンドポイントを追加。
 - Pecorino口座承認取消エンドポイントを追加。
 - 会員プログラムオファー承認エンドポイントを追加。
+- Pecorino口座解約エンドポイントを追加。
 
 ### Changed
 
