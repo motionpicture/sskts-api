@@ -148,7 +148,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(req.user.sub, req.params.transactionId, req.body.eventIdentifier, req.body.offers)({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(req.user.sub, req.params.transactionId, req.body.eventIdentifier, req.body.offers)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             event: new sskts.repository.Event(sskts.mongoose.connection)
@@ -164,7 +164,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
@@ -181,7 +181,7 @@ placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReserv
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(req.user.sub, req.params.transactionId, req.params.actionId, req.body.eventIdentifier, req.body.offers)({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers(req.user.sub, req.params.transactionId, req.params.actionId, req.body.eventIdentifier, req.body.offers)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             event: new sskts.repository.Event(sskts.mongoose.connection)
@@ -230,13 +230,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // 会員IDを強制的にログイン中の人物IDに変更
         const creditCard = Object.assign({}, req.body.creditCard, {
             memberId: (req.user.username !== undefined) ? req.user.sub : undefined
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             organization: new sskts.repository.Organization(sskts.mongoose.connection)
@@ -254,7 +253,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
@@ -272,7 +271,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const authorizeObject = {
-            typeOf: sskts.factory.action.authorize.mvtk.ObjectType.Mvtk,
+            typeOf: sskts.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
             // tslint:disable-next-line:no-magic-numbers
             price: parseInt(req.body.price, 10),
             transactionId: req.params.transactionId,
@@ -291,7 +290,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
                 skhnCd: req.body.seatInfoSyncIn.skhnCd
             }
         };
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(req.user.sub, req.params.transactionId, authorizeObject)({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(req.user.sub, req.params.transactionId, authorizeObject)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
@@ -308,7 +307,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
@@ -321,7 +320,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:act
 /**
  * Pecorino口座確保
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __, next) => {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/pecorino', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __, next) => {
     req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
     req.checkBody('fromAccountNumber', 'invalid fromAccountNumber').notEmpty().withMessage('fromAccountNumber is required');
     next();
@@ -332,7 +331,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', 
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
             transactionId: req.params.transactionId,
             amount: parseInt(req.body.amount, 10),
             fromAccountNumber: req.body.fromAccountNumber,
@@ -352,14 +351,14 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/pecorino', 
 /**
  * Pecorino口座承認取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/pecorino/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/paymentMethod/pecorino/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // pecorino転送取引サービスクライアントを生成
         const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        yield sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.cancel({
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.cancel({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             actionId: req.params.actionId
@@ -367,6 +366,63 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/pecorino/
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             transferTransactionService: transferTransactionService
+        });
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * Pecorino賞金承認アクション
+ */
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/pecorino', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
+    req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
+    req.checkBody('toAccountNumber', 'invalid toAccountNumber').notEmpty().withMessage('toAccountNumber is required');
+    next();
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // pecorino転送取引サービスクライアントを生成
+        const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
+            endpoint: process.env.PECORINO_API_ENDPOINT,
+            auth: pecorinoAuthClient
+        });
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.create({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            amount: parseInt(req.body.amount, 10),
+            toAccountNumber: req.body.toAccountNumber,
+            notes: req.body.notes
+        })({
+            action: new sskts.repository.Action(sskts.mongoose.connection),
+            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            depositTransactionService: depositService
+        });
+        res.status(http_status_1.CREATED).json(action);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * Pecorino賞金承認アクション取消
+ */
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/award/pecorino/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
+    next();
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
+            endpoint: process.env.PECORINO_API_ENDPOINT,
+            auth: pecorinoAuthClient
+        });
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.cancel({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            actionId: req.params.actionId
+        })({
+            action: new sskts.repository.Action(sskts.mongoose.connection),
+            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            depositTransactionService: depositService
         });
         res.status(http_status_1.NO_CONTENT).end();
     }
