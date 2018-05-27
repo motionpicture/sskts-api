@@ -127,11 +127,15 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const contact = yield sskts.service.transaction.placeOrderInProgress.setCustomerContact(req.user.sub, req.params.transactionId, {
-            familyName: req.body.familyName,
-            givenName: req.body.givenName,
-            email: req.body.email,
-            telephone: req.body.telephone
+        const contact = yield sskts.service.transaction.placeOrderInProgress.setCustomerContact({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            contact: {
+                familyName: req.body.familyName,
+                givenName: req.body.givenName,
+                email: req.body.email,
+                telephone: req.body.telephone
+            }
         })({
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
@@ -235,7 +239,14 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(req.user.sub, req.params.transactionId, req.body.orderId, req.body.amount, req.body.method, creditCard)({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            orderId: req.body.orderId,
+            amount: req.body.amount,
+            method: req.body.method,
+            creditCard: creditCard
+        })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             organization: new sskts.repository.Organization(sskts.mongoose.connection)
@@ -253,7 +264,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            actionId: req.params.actionId
+        })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
@@ -432,24 +447,10 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/award/pec
 }));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        let incentives = [];
-        if (Array.isArray(req.body.incentives)) {
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO バックエンドでインセンティブのバリデーションを実装
-            incentives = req.body.incentives.map((i) => {
-                return {
-                    // tslint:disable-next-line:no-suspicious-comment
-                    amount: parseInt(i.amount, 10),
-                    toAccountNumber: i.toAccountNumber,
-                    pecorinoEndpoint: process.env.PECORINO_API_ENDPOINT
-                };
-            });
-        }
         const order = yield sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
-            sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
-            incentives: incentives
+            sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),

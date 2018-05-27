@@ -5,7 +5,7 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import { Router } from 'express';
-import { BAD_REQUEST, CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
+import { ACCEPTED, BAD_REQUEST, CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -392,6 +392,39 @@ peopleRouter.get(
                 ownedAt: new Date()
             });
             res.json(ownershipInfos);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 会員プログラム登録
+ */
+peopleRouter.post(
+    '/me/ownershipInfos/programMembership/register',
+    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
+    (_1, _2, next) => {
+        next();
+    },
+    validator,
+    async (req, res, next) => {
+        try {
+            const task = await sskts.service.programMembership.createRegisterTask({
+                userId: req.user.sub,
+                username: <string>req.user.username,
+                userPoolId: <string>process.env.COGNITO_USER_POOL_ID,
+                programMembershipId: req.body.programMembershipId,
+                offerIdentifier: req.body.offerIdentifier,
+                sellerType: req.body.sellerType,
+                sellerId: req.body.sellerId
+            })({
+                organization: new sskts.repository.Organization(sskts.mongoose.connection),
+                programMembership: new sskts.repository.ProgramMembership(sskts.mongoose.connection),
+                task: new sskts.repository.Task(sskts.mongoose.connection)
+            });
+            // 会員登録タスクとして受け入れられたのでACCEPTED
+            res.status(ACCEPTED).json(task);
         } catch (error) {
             next(error);
         }

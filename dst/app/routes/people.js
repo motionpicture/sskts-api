@@ -332,4 +332,31 @@ peopleRouter.get('/me/ownershipInfos/:goodType', permitScopes_1.default(['aws.co
         next(error);
     }
 }));
+/**
+ * 会員プログラム登録
+ */
+peopleRouter.post('/me/ownershipInfos/programMembership/register', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']), (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const task = yield sskts.service.programMembership.createRegisterTask({
+            userId: req.user.sub,
+            username: req.user.username,
+            userPoolId: process.env.COGNITO_USER_POOL_ID,
+            programMembershipId: req.body.programMembershipId,
+            offerIdentifier: req.body.offerIdentifier,
+            sellerType: req.body.sellerType,
+            sellerId: req.body.sellerId
+        })({
+            organization: new sskts.repository.Organization(sskts.mongoose.connection),
+            programMembership: new sskts.repository.ProgramMembership(sskts.mongoose.connection),
+            task: new sskts.repository.Task(sskts.mongoose.connection)
+        });
+        // 会員登録タスクとして受け入れられたのでACCEPTED
+        res.status(http_status_1.ACCEPTED).json(task);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = peopleRouter;
