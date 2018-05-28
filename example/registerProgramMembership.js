@@ -4,7 +4,7 @@ const request = require('request-promise-native');
 const accessToken = process.env.TEST_ACCESS_TOKEN;
 
 async function main() {
-    let response = await request.post({
+    let response = await request.put({
         url: `http://localhost:8081/people/me/ownershipInfos/programMembership/register`,
         auth: { bearer: accessToken },
         json: true,

@@ -32,13 +32,10 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
     try {
         const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
         const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
-        // sskts-domain@v22のデータとの互換性維持のため、いったんコメントアウト
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO v22のデータが全て上映終了すれば元に戻してよい
-        // if (!phoneUtil.isValidNumber(phoneNumber)) {
-        //     next(new Error('invalid phone number format'));
-        //     return;
-        // }
+        if (!phoneUtil.isValidNumber(phoneNumber)) {
+            next(new sskts.factory.errors.Argument('telephone', 'Invalid phone number format'));
+            return;
+        }
         const key = {
             theaterCode: req.body.theaterCode,
             confirmationNumber: req.body.confirmationNumber,

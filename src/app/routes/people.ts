@@ -387,7 +387,7 @@ peopleRouter.get(
             const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
             const ownershipInfos = await repository.search({
                 goodType: req.params.goodType,
-                ownedBy: req.user.sub,
+                ownedBy: req.user.username, // ユーザーネームで検索
                 ownedAt: new Date()
             });
             res.json(ownershipInfos);
@@ -400,9 +400,9 @@ peopleRouter.get(
 /**
  * 会員プログラム登録
  */
-peopleRouter.post(
+peopleRouter.put(
     '/me/ownershipInfos/programMembership/register',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos']),
     (_1, _2, next) => {
         next();
     },

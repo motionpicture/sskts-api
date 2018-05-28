@@ -323,7 +323,7 @@ peopleRouter.get('/me/ownershipInfos/:goodType', permitScopes_1.default(['aws.co
         const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const ownershipInfos = yield repository.search({
             goodType: req.params.goodType,
-            ownedBy: req.user.sub,
+            ownedBy: req.user.username,
             ownedAt: new Date()
         });
         res.json(ownershipInfos);
@@ -335,7 +335,7 @@ peopleRouter.get('/me/ownershipInfos/:goodType', permitScopes_1.default(['aws.co
 /**
  * 会員プログラム登録
  */
-peopleRouter.post('/me/ownershipInfos/programMembership/register', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']), (_1, _2, next) => {
+peopleRouter.put('/me/ownershipInfos/programMembership/register', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
