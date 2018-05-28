@@ -12,21 +12,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * ユーザールーター
  */
 const sskts = require("@motionpicture/sskts-domain");
-const AWS = require("aws-sdk");
 const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
+const moment = require("moment");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const requireMember_1 = require("../middlewares/requireMember");
 const validator_1 = require("../middlewares/validator");
 const peopleRouter = express_1.Router();
 const debug = createDebug('sskts-api:routes:people');
-const CUSTOM_ATTRIBUTE_NAME = process.env.COGNITO_ATTRIBUTE_NAME_ACCOUNT_NUMBERS;
-const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
+const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
-    credentials: new AWS.Credentials({
+    credentials: new sskts.AWS.Credentials({
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     })
@@ -45,7 +44,8 @@ peopleRouter.use(requireMember_1.default);
  */
 peopleRouter.get('/me/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const contact = yield sskts.service.person.contact.retrieve(req.accessToken)();
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        const contact = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
         res.json(contact);
     }
     catch (error) {
@@ -59,12 +59,16 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['aws.cognito.signin.use
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.person.contact.update(req.accessToken, {
-            givenName: req.body.givenName,
-            familyName: req.body.familyName,
-            email: req.body.email,
-            telephone: req.body.telephone
-        })();
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        yield personRepo.updateContactByAccessToken({
+            accessToken: req.accessToken,
+            contact: {
+                givenName: req.body.givenName,
+                familyName: req.body.familyName,
+                email: req.body.email,
+                telephone: req.body.telephone
+            }
+        });
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -118,6 +122,7 @@ peopleRouter.post('/me/accounts', permitScopes_1.default(['aws.cognito.signin.us
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const now = new Date();
         const accountService = new sskts.pecorinoapi.service.Account({
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
@@ -125,7 +130,22 @@ peopleRouter.post('/me/accounts', permitScopes_1.default(['aws.cognito.signin.us
         const account = yield accountService.open({
             name: req.body.name
         });
-        yield addPecorinoAccountNumber(req.user.username, account.accountNumber);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const ownershipInfo = {
+            typeOf: 'OwnershipInfo',
+            // 十分にユニーク
+            identifier: `${sskts.factory.pecorino.account.AccountType.Account}-${req.user.username}-${account.accountNumber}`,
+            typeOfGood: {
+                typeOf: sskts.factory.pecorino.account.AccountType.Account,
+                accountNumber: account.accountNumber
+            },
+            ownedBy: req.agent,
+            ownedFrom: now,
+            // tslint:disable-next-line:no-magic-numbers
+            ownedThrough: moment(now).add(100, 'years').toDate() // 十分に無期限
+        };
+        yield ownershipInfoRepo.save(ownershipInfo);
+        // await addPecorinoAccountNumber(<string>req.user.username, account.accountNumber);
         res.status(http_status_1.CREATED).json(account);
     }
     catch (error) {
@@ -138,11 +158,21 @@ peopleRouter.post('/me/accounts', permitScopes_1.default(['aws.cognito.signin.us
  */
 peopleRouter.put('/me/accounts/:accountNumber/close', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        // 口座所有権を検索
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+            goodType: sskts.factory.pecorino.account.AccountType.Account,
+            ownedBy: req.user.username
+        });
+        const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
+        if (accountOwnershipInfo === undefined) {
+            throw new sskts.factory.errors.NotFound('Account');
+        }
         const accountService = new sskts.pecorinoapi.service.Account({
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        yield accountService.close({ accountNumber: req.params.accountNumber });
+        yield accountService.close({ accountNumber: accountOwnershipInfo.typeOfGood.accountNumber });
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -178,7 +208,20 @@ peopleRouter.put('/me/accounts/:accountNumber/close', permitScopes_1.default(['a
  */
 peopleRouter.delete('/me/accounts/:accountNumber', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield removePecorinoAccountNumber(req.user.username, req.params.accountNumber);
+        const now = new Date();
+        // 口座所有権を検索
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+            goodType: sskts.factory.pecorino.account.AccountType.Account,
+            ownedBy: req.user.username,
+            ownedAt: now
+        });
+        const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
+        if (accountOwnershipInfo === undefined) {
+            throw new sskts.factory.errors.NotFound('Account');
+        }
+        // 所有期限を更新
+        yield ownershipInfoRepo.ownershipInfoModel.findOneAndUpdate({ identifier: accountOwnershipInfo.identifier }, { ownedThrough: now }).exec();
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -190,26 +233,29 @@ peopleRouter.delete('/me/accounts/:accountNumber', permitScopes_1.default(['aws.
  */
 peopleRouter.get('/me/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const now = new Date();
         if (req.user.username === undefined) {
             throw new sskts.factory.errors.Forbidden('Login required');
         }
-        const accountService = new sskts.pecorinoapi.service.Account({
-            endpoint: process.env.PECORINO_API_ENDPOINT,
-            auth: pecorinoAuthClient
+        // 口座所有権を検索
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+            goodType: sskts.factory.pecorino.account.AccountType.Account,
+            ownedBy: req.user.username,
+            ownedAt: now
         });
         let accounts = [];
-        const accountNumbers = yield getAccountNumbers(req.user.username);
-        if (accountNumbers.length > 0) {
+        if (accountOwnershipInfos.length > 0) {
+            const accountService = new sskts.pecorinoapi.service.Account({
+                endpoint: process.env.PECORINO_API_ENDPOINT,
+                auth: pecorinoAuthClient
+            });
             accounts = yield accountService.search({
-                accountNumbers: accountNumbers,
+                accountNumbers: accountOwnershipInfos.map((o) => o.typeOfGood.accountNumber),
                 statuses: [],
                 limit: 100
             });
         }
-        // 互換性維持のため、idを口座番号に置換
-        accounts = accounts.map((a) => {
-            return Object.assign({}, a, { id: a.accountNumber });
-        });
         res.json(accounts);
     }
     catch (error) {
@@ -221,98 +267,31 @@ peopleRouter.get('/me/accounts', permitScopes_1.default(['aws.cognito.signin.use
  */
 peopleRouter.get('/me/accounts/:accountNumber/actions/moneyTransfer', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const now = new Date();
+        // 口座所有権を検索
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+            goodType: sskts.factory.pecorino.account.AccountType.Account,
+            ownedBy: req.user.username,
+            ownedAt: now
+        });
+        const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
+        if (accountOwnershipInfo === undefined) {
+            throw new sskts.factory.errors.NotFound('Account');
+        }
         const accountService = new sskts.pecorinoapi.service.Account({
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        const actions = yield accountService.searchMoneyTransferActions({ accountNumber: req.params.accountNumber });
+        const actions = yield accountService.searchMoneyTransferActions({
+            accountNumber: accountOwnershipInfo.typeOfGood.accountNumber
+        });
         res.json(actions);
     }
     catch (error) {
         next(error);
     }
 }));
-function addPecorinoAccountNumber(username, accountNumber) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const accountNumbers = yield getAccountNumbers(username);
-        debug('currently accountNumbers are', accountNumbers);
-        accountNumbers.push(accountNumber);
-        yield new Promise((resolve, reject) => {
-            cognitoIdentityServiceProvider.adminUpdateUserAttributes({
-                UserPoolId: process.env.COGNITO_USER_POOL_ID,
-                Username: username,
-                UserAttributes: [
-                    {
-                        Name: `custom:${CUSTOM_ATTRIBUTE_NAME}`,
-                        Value: JSON.stringify(accountNumbers)
-                    }
-                ]
-            }, (err) => {
-                if (err instanceof Error) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
-        debug('accountNumber added.', accountNumbers);
-    });
-}
-function removePecorinoAccountNumber(username, accountNumber) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const accountNumbers = yield getAccountNumbers(username);
-        debug('currently accountNumbers are', accountNumbers);
-        // 口座番号が存在すれば削除
-        const accountNumberIndex = accountNumber.indexOf(accountNumber);
-        if (accountNumberIndex >= 0) {
-            accountNumbers.splice(accountNumberIndex, 1);
-        }
-        yield new Promise((resolve, reject) => {
-            cognitoIdentityServiceProvider.adminUpdateUserAttributes({
-                UserPoolId: process.env.COGNITO_USER_POOL_ID,
-                Username: username,
-                UserAttributes: [
-                    {
-                        Name: `custom:${CUSTOM_ATTRIBUTE_NAME}`,
-                        Value: JSON.stringify(accountNumbers)
-                    }
-                ]
-            }, (err) => {
-                if (err instanceof Error) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
-        debug('accountNumber added.', accountNumbers);
-    });
-}
-function getAccountNumbers(username) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            cognitoIdentityServiceProvider.adminGetUser({
-                UserPoolId: process.env.COGNITO_USER_POOL_ID,
-                Username: username
-            }, (err, data) => {
-                if (err instanceof Error) {
-                    reject(err);
-                }
-                else {
-                    if (data.UserAttributes === undefined) {
-                        reject(new Error('UserAttributes not found.'));
-                    }
-                    else {
-                        const attribute = data.UserAttributes.find((a) => a.Name === `custom:${CUSTOM_ATTRIBUTE_NAME}`);
-                        resolve((attribute !== undefined && attribute.Value !== undefined) ? JSON.parse(attribute.Value) : []);
-                    }
-                }
-            });
-        });
-    });
-}
 /**
  * ユーザーの所有権検索
  */
