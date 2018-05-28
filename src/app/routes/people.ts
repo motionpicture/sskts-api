@@ -87,7 +87,7 @@ peopleRouter.get(
     permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
-            const searchCardResults = await sskts.service.person.creditCard.find(req.user.sub, <string>req.user.username)();
+            const searchCardResults = await sskts.service.person.creditCard.find(<string>req.user.username)();
             debug('searchCardResults:', searchCardResults);
             res.json(searchCardResults);
         } catch (error) {
@@ -109,7 +109,6 @@ peopleRouter.post(
     async (req, res, next) => {
         try {
             const creditCard = await sskts.service.person.creditCard.save(
-                req.user.sub,
                 <string>req.user.username,
                 req.body
             )();
@@ -411,13 +410,13 @@ peopleRouter.post(
     async (req, res, next) => {
         try {
             const task = await sskts.service.programMembership.createRegisterTask({
-                userId: req.user.sub,
-                username: <string>req.user.username,
-                userPoolId: <string>process.env.COGNITO_USER_POOL_ID,
+                agent: req.agent,
+                seller: {
+                    typeOf: req.body.sellerType,
+                    id: req.body.sellerId
+                },
                 programMembershipId: req.body.programMembershipId,
-                offerIdentifier: req.body.offerIdentifier,
-                sellerType: req.body.sellerType,
-                sellerId: req.body.sellerId
+                offerIdentifier: req.body.offerIdentifier
             })({
                 organization: new sskts.repository.Organization(sskts.mongoose.connection),
                 programMembership: new sskts.repository.ProgramMembership(sskts.mongoose.connection),

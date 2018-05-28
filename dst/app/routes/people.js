@@ -76,7 +76,7 @@ peopleRouter.put('/me/contacts', permitScopes_1.default(['aws.cognito.signin.use
  */
 peopleRouter.get('/me/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const searchCardResults = yield sskts.service.person.creditCard.find(req.user.sub, req.user.username)();
+        const searchCardResults = yield sskts.service.person.creditCard.find(req.user.username)();
         debug('searchCardResults:', searchCardResults);
         res.json(searchCardResults);
     }
@@ -91,7 +91,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['aws.cognito.signin
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const creditCard = yield sskts.service.person.creditCard.save(req.user.sub, req.user.username, req.body)();
+        const creditCard = yield sskts.service.person.creditCard.save(req.user.username, req.body)();
         res.status(http_status_1.CREATED).json(creditCard);
     }
     catch (error) {
@@ -340,13 +340,13 @@ peopleRouter.post('/me/ownershipInfos/programMembership/register', permitScopes_
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const task = yield sskts.service.programMembership.createRegisterTask({
-            userId: req.user.sub,
-            username: req.user.username,
-            userPoolId: process.env.COGNITO_USER_POOL_ID,
+            agent: req.agent,
+            seller: {
+                typeOf: req.body.sellerType,
+                id: req.body.sellerId
+            },
             programMembershipId: req.body.programMembershipId,
-            offerIdentifier: req.body.offerIdentifier,
-            sellerType: req.body.sellerType,
-            sellerId: req.body.sellerId
+            offerIdentifier: req.body.offerIdentifier
         })({
             organization: new sskts.repository.Organization(sskts.mongoose.connection),
             programMembership: new sskts.repository.ProgramMembership(sskts.mongoose.connection),

@@ -71,7 +71,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
         // 許可証トークンパラメーターがなければ、WAITERで許可証を取得
         if (passportToken === undefined) {
             const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
-            const seller = yield organizationRepo.findMovieTheaterById(req.body.sellerId);
+            const seller = yield organizationRepo.findById(sskts.factory.organizationType.MovieTheater, req.body.sellerId);
             try {
                 passportToken = yield request.post(`${process.env.WAITER_ENDPOINT}/passports`, {
                     body: {
@@ -99,8 +99,11 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
             : moment(req.body.expires).toDate();
         const transaction = yield sskts.service.transaction.placeOrderInProgress.start({
             expires: expires,
-            agentId: req.user.sub,
-            sellerId: req.body.sellerId,
+            customer: req.agent,
+            seller: {
+                typeOf: sskts.factory.organizationType.MovieTheater,
+                id: req.body.sellerId
+            },
             clientUser: req.user,
             passportToken: passportToken
         })({
