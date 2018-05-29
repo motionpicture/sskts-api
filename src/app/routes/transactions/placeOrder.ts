@@ -477,6 +477,7 @@ placeOrderTransactionsRouter.post(
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 organization: new sskts.repository.Organization(sskts.mongoose.connection),
+                ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
                 transferTransactionService: transferTransactionService
             });
@@ -547,6 +548,7 @@ placeOrderTransactionsRouter.post(
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+                ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
                 depositTransactionService: depositService
             });
             res.status(CREATED).json(action);
@@ -596,10 +598,12 @@ placeOrderTransactionsRouter.post(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
+            const orderDate = new Date();
             const order = await sskts.service.transaction.placeOrderInProgress.confirm({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
-                sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
+                sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
+                orderDate: orderDate
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),

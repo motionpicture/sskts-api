@@ -357,6 +357,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             organization: new sskts.repository.Organization(sskts.mongoose.connection),
+            ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             transferTransactionService: transferTransactionService
         });
@@ -414,6 +415,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/pecor
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
             depositTransactionService: depositService
         });
         res.status(http_status_1.CREATED).json(action);
@@ -450,10 +452,12 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/award/pec
 }));
 placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const orderDate = new Date();
         const order = yield sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
-            sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
+            sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
+            orderDate: orderDate
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
