@@ -107,7 +107,7 @@ peopleRouter.post('/me/creditCards', permitScopes_1.default(['aws.cognito.signin
  */
 peopleRouter.delete('/me/creditCards/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
+        yield sskts.service.person.creditCard.unsubscribe(req.user.username, req.params.cardSeq)();
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {

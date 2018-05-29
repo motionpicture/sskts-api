@@ -109,10 +109,7 @@ peopleRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const creditCard = await sskts.service.person.creditCard.save(
-                <string>req.user.username,
-                req.body
-            )();
+            const creditCard = await sskts.service.person.creditCard.save(<string>req.user.username, req.body)();
             res.status(CREATED).json(creditCard);
         } catch (error) {
             next(error);
@@ -129,8 +126,7 @@ peopleRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
-
+            await sskts.service.person.creditCard.unsubscribe(<string>req.user.username, req.params.cardSeq)();
             res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
