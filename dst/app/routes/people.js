@@ -338,4 +338,54 @@ peopleRouter.put('/me/ownershipInfos/programMembership/register', permitScopes_1
         next(error);
     }
 }));
+/**
+ * 会員プログラム登録解除
+ * 所有権のidentifierをURLで指定
+ */
+peopleRouter.put('/me/ownershipInfos/programMembership/:identifier/unRegister', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos']), (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // 所有している会員プログラムを検索
+        const now = new Date();
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const doc = yield ownershipInfoRepo.ownershipInfoModel.findOne({
+            identifier: req.params.identifier,
+            'typeOfGood.typeOf': 'ProgramMembership',
+            'ownedBy.memberOf.membershipNumber': {
+                $exists: true,
+                $eq: req.user.username
+            },
+            ownedFrom: { $lte: now },
+            ownedThrough: { $gte: now }
+        }).exec();
+        if (doc === null) {
+            throw new sskts.factory.errors.NotFound('OwnershipInfo');
+        }
+        // 所有が確認できれば、会員プログラム登録解除タスクを作成する
+        const ownershipInfo = doc.toObject();
+        const unRegisterActionAttributes = {
+            typeOf: sskts.factory.actionType.UnRegisterAction,
+            agent: req.agent,
+            object: ownershipInfo
+        };
+        const taskAttributes = {
+            name: sskts.factory.taskName.UnRegisterProgramMembership,
+            status: sskts.factory.taskStatus.Ready,
+            runsAt: now,
+            remainingNumberOfTries: 10,
+            lastTriedAt: null,
+            numberOfTried: 0,
+            executionResults: [],
+            data: unRegisterActionAttributes
+        };
+        const task = yield taskRepo.save(taskAttributes);
+        // 会員登録解除タスクとして受け入れられたのでACCEPTED
+        res.status(http_status_1.ACCEPTED).json(task);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = peopleRouter;
