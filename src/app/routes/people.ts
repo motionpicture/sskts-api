@@ -418,43 +418,13 @@ peopleRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            // 所有している会員プログラムを検索
-            const now = new Date();
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
-            const doc = await ownershipInfoRepo.ownershipInfoModel.findOne({
-                identifier: req.params.identifier,
-                'typeOfGood.typeOf': 'ProgramMembership',
-                'ownedBy.memberOf.membershipNumber': {
-                    $exists: true,
-                    $eq: req.user.username
-                },
-                ownedFrom: { $lte: now },
-                ownedThrough: { $gte: now }
-            }).exec();
-            if (doc === null) {
-                throw new sskts.factory.errors.NotFound('OwnershipInfo');
-            }
-
-            // 所有が確認できれば、会員プログラム登録解除タスクを作成する
-            const ownershipInfo = <sskts.factory.ownershipInfo.IOwnershipInfo<sskts.factory.programMembership.ProgramMembershipType>>
-                doc.toObject();
-            const unRegisterActionAttributes: sskts.factory.action.interact.unRegister.programMembership.IAttributes = {
-                typeOf: <any>sskts.factory.actionType.UnRegisterAction,
+            const task = await sskts.service.programMembership.createUnRegisterTask({
                 agent: req.agent,
-                object: ownershipInfo
-            };
-            const taskAttributes: sskts.factory.task.unRegisterProgramMembership.IAttributes = {
-                name: sskts.factory.taskName.UnRegisterProgramMembership,
-                status: sskts.factory.taskStatus.Ready,
-                runsAt: now,
-                remainingNumberOfTries: 10,
-                lastTriedAt: null,
-                numberOfTried: 0,
-                executionResults: [],
-                data: unRegisterActionAttributes
-            };
-            const task = await taskRepo.save(taskAttributes);
+                ownershipInfoIdentifier: req.params.identifier
+            })({
+                ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
+                task: new sskts.repository.Task(sskts.mongoose.connection)
+            });
             // 会員登録解除タスクとして受け入れられたのでACCEPTED
             res.status(ACCEPTED).json(task);
         } catch (error) {
