@@ -16,12 +16,13 @@ const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
-const redis = require("ioredis");
+const ioredis = require("ioredis");
 const moment = require("moment");
 const request = require("request-promise-native");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
+const redis = require("../../../redis");
 const placeOrderTransactionsRouter = express_1.Router();
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
@@ -41,7 +42,7 @@ const THRESHOLD = parseInt(process.env.TRANSACTION_RATE_LIMIT_THRESHOLD, 10);
  * @const
  */
 const rateLimit4transactionInProgress = middlewares.rateLimit({
-    redisClient: new redis({
+    redisClient: new ioredis({
         host: process.env.RATE_LIMIT_REDIS_HOST,
         // tslint:disable-next-line:no-magic-numbers
         port: parseInt(process.env.RATE_LIMIT_REDIS_PORT, 10),
@@ -461,6 +462,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            orderNumber: new sskts.repository.OrderNumber(redis.getClient()),
             organization: new sskts.repository.Organization(sskts.mongoose.connection)
         });
         debug('transaction confirmed', order);

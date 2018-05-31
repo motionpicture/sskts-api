@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 'aws.cognito.signin.user.admin'スコープで会員インターフェースを利用可能にするよう対応。
 - Pecorino決済を、口座支払取引と口座転送取引の2つに対応。
 - 注文取引を、ポイント鑑賞券とPecorino決済で成立させることができるように調整。
+- 注文番号発行方法を汎用的に拡張。
 
 ### Deprecated
 

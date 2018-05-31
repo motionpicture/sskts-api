@@ -6,13 +6,15 @@ import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS } from 'http-status';
-import * as redis from 'ioredis';
+import * as ioredis from 'ioredis';
 import * as moment from 'moment';
 import * as request from 'request-promise-native';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
+
+import * as redis from '../../../redis';
 
 const placeOrderTransactionsRouter = Router();
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
@@ -35,7 +37,7 @@ const THRESHOLD = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_THRESHOLD,
  */
 const rateLimit4transactionInProgress =
     middlewares.rateLimit({
-        redisClient: new redis({
+        redisClient: new ioredis({
             host: <string>process.env.RATE_LIMIT_REDIS_HOST,
             // tslint:disable-next-line:no-magic-numbers
             port: parseInt(<string>process.env.RATE_LIMIT_REDIS_PORT, 10),
@@ -607,6 +609,7 @@ placeOrderTransactionsRouter.post(
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+                orderNumber: new sskts.repository.OrderNumber(redis.getClient()),
                 organization: new sskts.repository.Organization(sskts.mongoose.connection)
             });
             debug('transaction confirmed', order);
