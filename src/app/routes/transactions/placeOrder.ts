@@ -179,12 +179,12 @@ placeOrderTransactionsRouter.post(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
-                req.user.sub,
-                req.params.transactionId,
-                req.body.eventIdentifier,
-                req.body.offers
-            )({
+            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
+                agentId: req.user.sub,
+                transactionId: req.params.transactionId,
+                eventIdentifier: req.body.eventIdentifier,
+                offers: req.body.offers
+            })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
                 event: new sskts.repository.Event(sskts.mongoose.connection)
@@ -207,11 +207,11 @@ placeOrderTransactionsRouter.delete(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel(
-                req.user.sub,
-                req.params.transactionId,
-                req.params.actionId
-            )({
+            await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
+                agentId: req.user.sub,
+                transactionId: req.params.transactionId,
+                actionId: req.params.actionId
+            })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
             });
@@ -236,13 +236,13 @@ placeOrderTransactionsRouter.patch(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers(
-                req.user.sub,
-                req.params.transactionId,
-                req.params.actionId,
-                req.body.eventIdentifier,
-                req.body.offers
-            )({
+            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers({
+                agentId: req.user.sub,
+                transactionId: req.params.transactionId,
+                actionId: req.params.actionId,
+                eventIdentifier: req.body.eventIdentifier,
+                offers: req.body.offers
+            })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
                 event: new sskts.repository.Event(sskts.mongoose.connection)
@@ -320,7 +320,7 @@ placeOrderTransactionsRouter.post(
             const creditCard: ICreditCard4authorizeAction = {
                 ...req.body.creditCard,
                 ...{
-                    memberId: (req.user.username !== undefined) ? req.user.sub : undefined
+                    memberId: (req.user.username !== undefined) ? req.user.username : undefined
                 }
             };
             debug('authorizing credit card...', creditCard);
@@ -407,11 +407,11 @@ placeOrderTransactionsRouter.post(
                     skhnCd: req.body.seatInfoSyncIn.skhnCd
                 }
             };
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
-                req.user.sub,
-                req.params.transactionId,
-                authorizeObject
-            )({
+            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
+                agentId: req.user.sub,
+                transactionId: req.params.transactionId,
+                authorizeObject: authorizeObject
+            })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
             });
@@ -435,11 +435,11 @@ placeOrderTransactionsRouter.delete(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel(
-                req.user.sub,
-                req.params.transactionId,
-                req.params.actionId
-            )({
+            await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
+                agentId: req.user.sub,
+                transactionId: req.params.transactionId,
+                actionId: req.params.actionId
+            })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
             });

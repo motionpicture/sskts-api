@@ -156,7 +156,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(req.user.sub, req.params.transactionId, req.body.eventIdentifier, req.body.offers)({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            eventIdentifier: req.body.eventIdentifier,
+            offers: req.body.offers
+        })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             event: new sskts.repository.Event(sskts.mongoose.connection)
@@ -172,7 +177,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            actionId: req.params.actionId
+        })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
@@ -189,7 +198,13 @@ placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReserv
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers(req.user.sub, req.params.transactionId, req.params.actionId, req.body.eventIdentifier, req.body.offers)({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            actionId: req.params.actionId,
+            eventIdentifier: req.body.eventIdentifier,
+            offers: req.body.offers
+        })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             event: new sskts.repository.Event(sskts.mongoose.connection)
@@ -239,7 +254,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const creditCard = Object.assign({}, req.body.creditCard, {
-            memberId: (req.user.username !== undefined) ? req.user.sub : undefined
+            memberId: (req.user.username !== undefined) ? req.user.username : undefined
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
@@ -309,7 +324,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
                 skhnCd: req.body.seatInfoSyncIn.skhnCd
             }
         };
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(req.user.sub, req.params.transactionId, authorizeObject)({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            authorizeObject: authorizeObject
+        })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
@@ -326,7 +345,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel(req.user.sub, req.params.transactionId, req.params.actionId)({
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            actionId: req.params.actionId
+        })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
