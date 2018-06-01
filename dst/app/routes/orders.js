@@ -1,8 +1,4 @@
 "use strict";
-/**
- * orders router
- * @module ordersRouter
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -12,16 +8,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 注文ルーター
+ */
 const sskts = require("@motionpicture/sskts-domain");
 const express_1 = require("express");
 const google_libphonenumber_1 = require("google-libphonenumber");
+const moment = require("moment");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
- * make inquiry of an order
+ * 確認番号と電話番号で注文照会
  */
 ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), (req, _, next) => {
     req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
@@ -42,9 +42,32 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
             telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
         const repository = new sskts.repository.Order(sskts.mongoose.connection);
-        yield repository.findByOrderInquiryKey(key).then((order) => {
-            res.json(order);
+        const order = yield repository.findByOrderInquiryKey(key);
+        res.json(order);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 注文検索
+ */
+ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
+    req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601');
+    req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601');
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
+        const orders = yield orderRepo.search({
+            sellerId: req.query.sellerId,
+            customerMembershipNumber: req.query.customerMembershipNumber,
+            orderNumber: req.query.orderNumber,
+            orderStatus: req.query.orderStatus,
+            orderDateFrom: moment(req.query.orderDateFrom).toDate(),
+            orderDateThrough: moment(req.query.orderDateThrough).toDate()
         });
+        res.json(orders);
     }
     catch (error) {
         next(error);

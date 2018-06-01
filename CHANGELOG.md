@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Pecorinoインセンティブ承認エンドポイントを追加。
 - 会員プログラム登録エンドポイントを追加。
 - 会員プログラム登録解除エンドポイントを追加。
+- 注文検索エンドポイントを追加。
 
 ### Changed
 
