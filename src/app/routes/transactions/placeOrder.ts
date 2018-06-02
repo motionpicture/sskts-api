@@ -467,7 +467,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             // pecorino転送取引サービスクライアントを生成
-            const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
+            const transferService = new sskts.pecorinoapi.service.transaction.Transfer({
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
@@ -481,7 +481,7 @@ placeOrderTransactionsRouter.post(
                 organization: new sskts.repository.Organization(sskts.mongoose.connection),
                 ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-                transferTransactionService: transferTransactionService
+                transferTransactionService: transferService
             });
             res.status(CREATED).json(action);
         } catch (error) {
@@ -501,7 +501,7 @@ placeOrderTransactionsRouter.delete(
     async (req, res, next) => {
         try {
             // pecorino転送取引サービスクライアントを生成
-            const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
+            const transferService = new sskts.pecorinoapi.service.transaction.Transfer({
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
@@ -512,7 +512,7 @@ placeOrderTransactionsRouter.delete(
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-                transferTransactionService: transferTransactionService
+                transferTransactionService: transferService
             });
             res.status(NO_CONTENT).end();
         } catch (error) {

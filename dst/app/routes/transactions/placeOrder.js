@@ -369,7 +369,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // pecorino転送取引サービスクライアントを生成
-        const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
+        const transferService = new sskts.pecorinoapi.service.transaction.Transfer({
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
@@ -383,7 +383,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             organization: new sskts.repository.Organization(sskts.mongoose.connection),
             ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-            transferTransactionService: transferTransactionService
+            transferTransactionService: transferService
         });
         res.status(http_status_1.CREATED).json(action);
     }
@@ -397,7 +397,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/paymentMethod/pecorino/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // pecorino転送取引サービスクライアントを生成
-        const transferTransactionService = new sskts.pecorinoapi.service.transaction.Transfer({
+        const transferService = new sskts.pecorinoapi.service.transaction.Transfer({
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
@@ -408,7 +408,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/paymentMe
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-            transferTransactionService: transferTransactionService
+            transferTransactionService: transferService
         });
         res.status(http_status_1.NO_CONTENT).end();
     }
