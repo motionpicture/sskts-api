@@ -5,13 +5,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @ignore
  */
 const express = require("express");
+const accounts_1 = require("./accounts");
 const actions_1 = require("./actions");
 const dev_1 = require("./dev");
 const events_1 = require("./events");
 const health_1 = require("./health");
 const orders_1 = require("./orders");
 const organizations_1 = require("./organizations");
-const people_1 = require("./people");
+const me_1 = require("./people/me");
 const places_1 = require("./places");
 const programMembership_1 = require("./programMembership");
 const placeOrder_1 = require("./transactions/placeOrder");
@@ -23,10 +24,11 @@ const router = express.Router();
 //   next()
 // })
 router.use('/health', health_1.default);
+router.use('/accounts', accounts_1.default);
 router.use('/actions', actions_1.default);
 router.use('/organizations', organizations_1.default);
 router.use('/orders', orders_1.default);
-router.use('/people', people_1.default);
+router.use('/people/me', me_1.default);
 router.use('/places', places_1.default);
 router.use('/programMemberships', programMembership_1.default);
 router.use('/events', events_1.default);

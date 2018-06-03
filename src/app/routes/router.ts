@@ -4,13 +4,14 @@
  */
 import * as express from 'express';
 
+import accountsRouter from './accounts';
 import actionsRouter from './actions';
 import devRouter from './dev';
 import eventsRouter from './events';
 import healthRouter from './health';
 import ordersRouter from './orders';
 import organizationsRouter from './organizations';
-import peopleRouter from './people';
+import meRouter from './people/me';
 import placesRouter from './places';
 import programMembershipsRouter from './programMembership';
 import placeOrderTransactionsRouter from './transactions/placeOrder';
@@ -25,10 +26,11 @@ const router = express.Router();
 // })
 
 router.use('/health', healthRouter);
+router.use('/accounts', accountsRouter);
 router.use('/actions', actionsRouter);
 router.use('/organizations', organizationsRouter);
 router.use('/orders', ordersRouter);
-router.use('/people', peopleRouter);
+router.use('/people/me', meRouter);
 router.use('/places', placesRouter);
 router.use('/programMemberships', programMembershipsRouter);
 router.use('/events', eventsRouter);

@@ -1,5 +1,5 @@
 /**
- * ユーザールーター
+ * me(今ログイン中のユーザー)ルーター
  */
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
@@ -7,14 +7,14 @@ import { Router } from 'express';
 import { ACCEPTED, BAD_REQUEST, CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as moment from 'moment';
 
-import authentication from '../middlewares/authentication';
-import permitScopes from '../middlewares/permitScopes';
-import requireMember from '../middlewares/requireMember';
-import validator from '../middlewares/validator';
+import authentication from '../../middlewares/authentication';
+import permitScopes from '../../middlewares/permitScopes';
+import requireMember from '../../middlewares/requireMember';
+import validator from '../../middlewares/validator';
 
-const peopleRouter = Router();
+const meRouter = Router();
 
-const debug = createDebug('sskts-api:routes:people');
+const debug = createDebug('sskts-api:routes:people:me');
 const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
@@ -31,14 +31,14 @@ const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 
-peopleRouter.use(authentication);
-peopleRouter.use(requireMember);
+meRouter.use(authentication);
+meRouter.use(requireMember); // 自分のリソースへのアクセスなので、もちろんログイン必須
 
 /**
  * 連絡先検索
  */
-peopleRouter.get(
-    '/me/contacts',
+meRouter.get(
+    '/contacts',
     permitScopes(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']),
     async (req, res, next) => {
         try {
@@ -54,8 +54,8 @@ peopleRouter.get(
 /**
  * 会員プロフィール更新
  */
-peopleRouter.put(
-    '/me/contacts',
+meRouter.put(
+    '/contacts',
     permitScopes(['aws.cognito.signin.user.admin', 'people.contacts']),
     (__1, __2, next) => {
         next();
@@ -83,8 +83,8 @@ peopleRouter.put(
 /**
  * 会員クレジットカード検索
  */
-peopleRouter.get(
-    '/me/creditCards',
+meRouter.get(
+    '/creditCards',
     permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
@@ -100,8 +100,8 @@ peopleRouter.get(
 /**
  * 会員クレジットカード追加
  */
-peopleRouter.post(
-    '/me/creditCards',
+meRouter.post(
+    '/creditCards',
     permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
     (__1, __2, next) => {
         next();
@@ -120,8 +120,8 @@ peopleRouter.post(
 /**
  * 会員クレジットカード削除
  */
-peopleRouter.delete(
-    '/me/creditCards/:cardSeq',
+meRouter.delete(
+    '/creditCards/:cardSeq',
     permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
     validator,
     async (req, res, next) => {
@@ -137,8 +137,8 @@ peopleRouter.delete(
 /**
  * Pecorino口座開設
  */
-peopleRouter.post(
-    '/me/accounts',
+meRouter.post(
+    '/accounts',
     permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
     (req, _, next) => {
         req.checkBody('name', 'invalid name').notEmpty().withMessage('name is required');
@@ -182,8 +182,8 @@ peopleRouter.post(
  * Pecorino口座解約
  * 口座の状態を変更するだけで、所有口座リストから削除はしない
  */
-peopleRouter.put(
-    '/me/accounts/:accountNumber/close',
+meRouter.put(
+    '/accounts/:accountNumber/close',
     permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
     validator,
     async (req, res, next) => {
@@ -239,8 +239,8 @@ peopleRouter.put(
 /**
  * Pecorino口座削除
  */
-peopleRouter.delete(
-    '/me/accounts/:accountNumber',
+meRouter.delete(
+    '/accounts/:accountNumber',
     permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
     validator,
     async (req, res, next) => {
@@ -273,8 +273,8 @@ peopleRouter.delete(
 /**
  * Pecorino口座検索
  */
-peopleRouter.get(
-    '/me/accounts',
+meRouter.get(
+    '/accounts',
     permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.read-only']),
     validator,
     async (req, res, next) => {
@@ -314,8 +314,8 @@ peopleRouter.get(
 /**
  * Pecorino取引履歴検索
  */
-peopleRouter.get(
-    '/me/accounts/:accountNumber/actions/moneyTransfer',
+meRouter.get(
+    '/accounts/:accountNumber/actions/moneyTransfer',
     permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']),
     validator,
     async (req, res, next) => {
@@ -350,8 +350,8 @@ peopleRouter.get(
 /**
  * ユーザーの所有権検索
  */
-peopleRouter.get(
-    '/me/ownershipInfos/:goodType',
+meRouter.get(
+    '/ownershipInfos/:goodType',
     permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
     (_1, _2, next) => {
         next();
@@ -375,8 +375,8 @@ peopleRouter.get(
 /**
  * 会員プログラム登録
  */
-peopleRouter.put(
-    '/me/ownershipInfos/programMembership/register',
+meRouter.put(
+    '/ownershipInfos/programMembership/register',
     permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos']),
     (_1, _2, next) => {
         next();
@@ -409,8 +409,8 @@ peopleRouter.put(
  * 会員プログラム登録解除
  * 所有権のidentifierをURLで指定
  */
-peopleRouter.put(
-    '/me/ownershipInfos/programMembership/:identifier/unRegister',
+meRouter.put(
+    '/ownershipInfos/programMembership/:identifier/unRegister',
     permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos']),
     (_1, _2, next) => {
         next();
@@ -433,4 +433,4 @@ peopleRouter.put(
     }
 );
 
-export default peopleRouter;
+export default meRouter;
