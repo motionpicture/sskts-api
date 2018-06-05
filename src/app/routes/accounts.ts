@@ -25,7 +25,6 @@ accountsRouter.use(authentication);
 
 /**
  * 管理者として口座に入金する
- * [username]の所有する口座に対して入金処理を実行する
  */
 accountsRouter.post(
     '/transactions/deposit',
@@ -39,11 +38,11 @@ accountsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const accountRepo = new sskts.repository.Account({
+            const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
-                authClient: pecorinoAuthClient
+                auth: pecorinoAuthClient
             });
-            await accountRepo.deposit({
+            await sskts.service.account.deposit({
                 toAccountNumber: req.body.toAccountNumber,
                 agent: {
                     id: req.user.sub,
@@ -53,6 +52,8 @@ accountsRouter.post(
                 recipient: req.body.recipient,
                 amount: parseInt(req.body.amount, 10),
                 notes: (req.body.notes !== undefined) ? req.body.notes : 'シネマサンシャイン入金'
+            })({
+                depositService: depositService
             });
             res.status(NO_CONTENT).end();
         } catch (error) {

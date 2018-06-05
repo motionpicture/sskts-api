@@ -12,6 +12,8 @@ import permitScopes from '../../middlewares/permitScopes';
 import requireMember from '../../middlewares/requireMember';
 import validator from '../../middlewares/validator';
 
+import * as redis from '../../../redis';
+
 const meRouter = Router();
 
 const debug = createDebug('sskts-api:routes:people:me');
@@ -148,12 +150,16 @@ meRouter.post(
     async (req, res, next) => {
         try {
             const now = new Date();
+            const accountNumberRepo = new sskts.repository.AccountNumber(redis.getClient());
             const accountService = new sskts.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const account = await accountService.open({
+            const account = await sskts.service.account.open({
                 name: req.body.name
+            })({
+                accountNumber: accountNumberRepo,
+                accountService: accountService
             });
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
             const ownershipInfo: sskts.factory.ownershipInfo.IOwnershipInfo<sskts.factory.pecorino.account.AccountType> = {

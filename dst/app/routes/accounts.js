@@ -30,7 +30,6 @@ const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
 accountsRouter.use(authentication_1.default);
 /**
  * 管理者として口座に入金する
- * [username]の所有する口座に対して入金処理を実行する
  */
 accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), (req, __, next) => {
     req.checkBody('recipient', 'invalid recipient').notEmpty().withMessage('recipient is required');
@@ -39,11 +38,11 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const accountRepo = new sskts.repository.Account({
+        const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
             endpoint: process.env.PECORINO_API_ENDPOINT,
-            authClient: pecorinoAuthClient
+            auth: pecorinoAuthClient
         });
-        yield accountRepo.deposit({
+        yield sskts.service.account.deposit({
             toAccountNumber: req.body.toAccountNumber,
             agent: {
                 id: req.user.sub,
@@ -53,6 +52,8 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
             recipient: req.body.recipient,
             amount: parseInt(req.body.amount, 10),
             notes: (req.body.notes !== undefined) ? req.body.notes : 'シネマサンシャイン入金'
+        })({
+            depositService: depositService
         });
         res.status(http_status_1.NO_CONTENT).end();
     }

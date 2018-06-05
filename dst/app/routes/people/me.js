@@ -20,6 +20,7 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const requireMember_1 = require("../../middlewares/requireMember");
 const validator_1 = require("../../middlewares/validator");
+const redis = require("../../../redis");
 const meRouter = express_1.Router();
 const debug = createDebug('sskts-api:routes:people:me');
 const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvider({
@@ -123,12 +124,16 @@ meRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admi
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const now = new Date();
+        const accountNumberRepo = new sskts.repository.AccountNumber(redis.getClient());
         const accountService = new sskts.pecorinoapi.service.Account({
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        const account = yield accountService.open({
+        const account = yield sskts.service.account.open({
             name: req.body.name
+        })({
+            accountNumber: accountNumberRepo,
+            accountService: accountService
         });
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const ownershipInfo = {
