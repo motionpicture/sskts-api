@@ -101,7 +101,3 @@ npm start
 ## テスト
 
 `npm test`でテスト実行。
-
-## ドキュメント
-
-`npm run doc`でjsdocが作成されます。

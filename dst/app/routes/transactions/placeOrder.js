@@ -512,6 +512,7 @@ placeOrderTransactionsRouter.post('/:transactionId/cancel', permitScopes_1.defau
 placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const task = yield sskts.service.transaction.placeOrder.sendEmail(req.params.transactionId, {
+            typeOf: sskts.factory.creativeWorkType.EmailMessage,
             sender: {
                 name: req.body.sender.name,
                 email: req.body.sender.email

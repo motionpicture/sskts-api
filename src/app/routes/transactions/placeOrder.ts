@@ -649,6 +649,7 @@ placeOrderTransactionsRouter.post(
             const task = await sskts.service.transaction.placeOrder.sendEmail(
                 req.params.transactionId,
                 {
+                    typeOf: sskts.factory.creativeWorkType.EmailMessage,
                     sender: {
                         name: req.body.sender.name,
                         email: req.body.sender.email
