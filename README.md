@@ -70,16 +70,14 @@ npm start
 | `ORDER_INQUIRY_ENDPOINT`                             | true                  |             | 注文照会URLエンドポイント                     |
 | `BASIC_AUTH_NAME`                                    | false                 |             | Basic authentication user name     |
 | `BASIC_AUTH_PASS`                                    | false                 |             | Basic authentication user password |
-| `PECORINO_API_ENDPOINT`                              | true                  |             | PecorinoAPIエンドポイント                 |
-| `PECORINO_AUTHORIZE_SERVER_DOMAIN`                   | true                  |             | Pecorino認可サーバードメイン                 |
-| `WEBSITE_NODE_DEFAULT_VERSION`                       | only on Azure WebApps |             | Node.js version                    |
 | `AWS_ACCESS_KEY_ID`                                  | true                  |             | AWSアクセスキー                          |
 | `AWS_SECRET_ACCESS_KEY`                              | true                  |             | AWSシークレットアクセスキー                    |
-| `COGNITO_ATTRIBUTE_NAME_ACCOUNT_NUMBERS`             | true                  |             | Pecorino口座番号を保管するCognitoユーザー属性名    |
+| `COGNITO_USER_POOL_ID`                               | true                  |             | CognitoユーザープールID             ID    |
 | `PECORINO_API_ENDPOINT`                              | true                  |             | PecorinoAPIエンドポイント                 |
 | `PECORINO_AUTHORIZE_SERVER_DOMAIN`                   | true                  |             | Pecorino認可サーバードメイン                 |
 | `PECORINO_API_CLIENT_ID`                             | true                  |             | PecorinoAPIクライアントID                |
 | `PECORINO_API_CLIENT_SECRET`                         | true                  |             | PecorinoAPIクライアントシークレット            |
+| `WEBSITE_NODE_DEFAULT_VERSION`                       | only on Azure WebApps |             | Node.js version                    |
 
 ## tslint
 
