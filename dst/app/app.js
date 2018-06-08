@@ -12,19 +12,9 @@ const express = require("express");
 const expressValidator = require("express-validator");
 const helmet = require("helmet");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
-// import basicAuth from './middlewares/basicAuth';
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
-const actions_1 = require("./routes/actions");
-const dev_1 = require("./routes/dev");
-const events_1 = require("./routes/events");
-const health_1 = require("./routes/health");
-const orders_1 = require("./routes/orders");
-const organizations_1 = require("./routes/organizations");
-const people_1 = require("./routes/people");
-const places_1 = require("./routes/places");
-const placeOrder_1 = require("./routes/transactions/placeOrder");
-const returnOrder_1 = require("./routes/transactions/returnOrder");
+const router_1 = require("./routes/router");
 const debug = createDebug('sskts-api:*');
 const app = express();
 app.use(middlewares.basicAuth({
@@ -88,23 +78,10 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
 sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default)
-    .then(debug)
+    .then(() => { debug('MongoDB connected.'); })
     .catch(console.error);
 // routers
-app.use('/health', health_1.default);
-app.use('/actions', actions_1.default);
-app.use('/organizations', organizations_1.default);
-app.use('/orders', orders_1.default);
-app.use('/people', people_1.default);
-app.use('/places', places_1.default);
-app.use('/events', events_1.default);
-app.use('/transactions/placeOrder', placeOrder_1.default);
-app.use('/transactions/returnOrder', returnOrder_1.default);
-// tslint:disable-next-line:no-single-line-block-comment
-/* istanbul ignore next */
-if (process.env.NODE_ENV !== 'production') {
-    app.use('/dev', dev_1.default);
-}
+app.use('/', router_1.default);
 // 404
 app.use(notFoundHandler_1.default);
 // error handlers

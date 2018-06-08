@@ -12,6 +12,7 @@ declare global {
 
         // tslint:disable-next-line:interface-name
         export interface Request {
+            agent: sskts.factory.person.IPerson;
             user: IUser;
             accessToken: string;
         }

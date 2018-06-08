@@ -1,9 +1,11 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
+
 ### Added
 
 ### Changed
@@ -16,6 +18,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v10.5.0 - 2018-06-08
+
+### Added
+
+- Pecorino口座開設エンドポイントを追加。
+- Pecorino口座検索エンドポイントを追加。
+- ユーザーの汎用的な所有権検索エンドポイントを追加。
+- 会員プログラム検索エンドポイントを追加。
+- 注文取引中止エンドポイントを追加。
+- Pecorino口座承認取消エンドポイントを追加。
+- 会員プログラムオファー承認エンドポイントを追加。
+- Pecorino口座解約エンドポイントを追加。
+- Pecorinoインセンティブ承認エンドポイントを追加。
+- 会員プログラム登録エンドポイントを追加。
+- 会員プログラム登録解除エンドポイントを追加。
+- 注文検索エンドポイントを追加。
+- pecorino口座入金エンドポイントを追加。
+
+### Changed
+
+- 上映イベント予約の所有権検索時に使用するMongoDBインデックスを追加。
+- 'aws.cognito.signin.user.admin'スコープで会員インターフェースを利用可能にするよう対応。
+- Pecorino決済を、口座支払取引と口座転送取引の2つに対応。
+- 注文取引を、ポイント鑑賞券とPecorino決済で成立させることができるように調整。
+- 注文番号発行方法を汎用的に拡張。
+
+### Fixed
+
+- 会員のクレジットカード操作時のGMO会員存在なしエラーをハンドリング。
 
 ## v10.4.2 - 2018-02-28
 ### Changed

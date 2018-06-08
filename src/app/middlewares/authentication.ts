@@ -3,7 +3,6 @@
  * @module middlewares.authentication
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
-
 import { cognitoAuth } from '@motionpicture/express-middleware';
 import * as sskts from '@motionpicture/sskts-domain';
 import { NextFunction, Request, Response } from 'express';
@@ -20,7 +19,17 @@ export default async (req: Request, res: Response, next: NextFunction) => {
             authorizedHandler: async (user, token) => {
                 req.user = user;
                 req.accessToken = token;
-
+                req.agent = {
+                    typeOf: sskts.factory.personType.Person,
+                    id: user.sub,
+                    memberOf: (user.username !== undefined) ? <any>{
+                        typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
+                        membershipNumber: user.username,
+                        programName: 'Amazon Cognito',
+                        award: [],
+                        url: user.iss
+                    } : undefined
+                };
                 next();
             },
             unauthorizedHandler: (err) => {

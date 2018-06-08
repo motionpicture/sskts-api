@@ -1,9 +1,4 @@
 "use strict";
-/**
- * oauthミドルウェア
- * @module middlewares.authentication
- * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13,6 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * oauthミドルウェア
+ * @module middlewares.authentication
+ * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
+ */
 const express_middleware_1 = require("@motionpicture/express-middleware");
 const sskts = require("@motionpicture/sskts-domain");
 // 許可発行者リスト
@@ -26,6 +26,17 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
             authorizedHandler: (user, token) => __awaiter(this, void 0, void 0, function* () {
                 req.user = user;
                 req.accessToken = token;
+                req.agent = {
+                    typeOf: sskts.factory.personType.Person,
+                    id: user.sub,
+                    memberOf: (user.username !== undefined) ? {
+                        typeOf: 'ProgramMembership',
+                        membershipNumber: user.username,
+                        programName: 'Amazon Cognito',
+                        award: [],
+                        url: user.iss
+                    } : undefined
+                };
                 next();
             }),
             unauthorizedHandler: (err) => {

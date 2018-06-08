@@ -18,7 +18,7 @@ eventsRouter.use(authentication);
 
 eventsRouter.get(
     '/individualScreeningEvent/:identifier',
-    permitScopes(['events', 'events.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -35,7 +35,7 @@ eventsRouter.get(
 
 eventsRouter.get(
     '/individualScreeningEvent',
-    permitScopes(['events', 'events.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
     (req, __, next) => {
         req.checkQuery('startFrom').optional().isISO8601().withMessage('startFrom must be ISO8601 timestamp');
         req.checkQuery('startThrough').optional().isISO8601().withMessage('startThrough must be ISO8601 timestamp');
