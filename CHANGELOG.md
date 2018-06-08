@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v10.5.0 - 2018-06-08
+
+### Added
+
 - Pecorino口座開設エンドポイントを追加。
 - Pecorino口座検索エンドポイントを追加。
 - ユーザーの汎用的な所有権検索エンドポイントを追加。
@@ -30,15 +44,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文取引を、ポイント鑑賞券とPecorino決済で成立させることができるように調整。
 - 注文番号発行方法を汎用的に拡張。
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - 会員のクレジットカード操作時のGMO会員存在なしエラーをハンドリング。
-
-### Security
 
 ## v10.4.2 - 2018-02-28
 ### Changed
