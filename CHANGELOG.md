@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v10.5.1 - 2018-06-09
+
+### Fixed
+
+- sskts-domain内でのエラーハンドラーを読み込むパスの間違いを修正。
+
 ## v10.5.0 - 2018-06-08
 
 ### Added
