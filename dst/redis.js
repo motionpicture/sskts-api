@@ -1,10 +1,8 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * redis cacheクライアント
- *
- * @module
  */
-Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const debug = createDebug('sskts-api:redis');
