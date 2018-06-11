@@ -1,9 +1,6 @@
 /**
  * redis cacheクライアント
- *
- * @module
  */
-
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 
