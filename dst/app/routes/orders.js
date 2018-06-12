@@ -61,9 +61,15 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
         const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
         const orders = yield orderRepo.search({
             sellerId: req.query.sellerId,
+            sellerIds: (Array.isArray(req.query.sellerIds)) ? req.query.sellerIds : undefined,
             customerMembershipNumber: req.query.customerMembershipNumber,
+            customerMembershipNumbers: (Array.isArray(req.query.customerMembershipNumbers))
+                ? req.query.customerMembershipNumbers
+                : undefined,
             orderNumber: req.query.orderNumber,
+            orderNumbers: (Array.isArray(req.query.orderNumbers)) ? req.query.orderNumbers : undefined,
             orderStatus: req.query.orderStatus,
+            orderStatuses: (Array.isArray(req.query.orderStatuses)) ? req.query.orderStatuses : undefined,
             orderDateFrom: moment(req.query.orderDateFrom).toDate(),
             orderDateThrough: moment(req.query.orderDateThrough).toDate()
         });
