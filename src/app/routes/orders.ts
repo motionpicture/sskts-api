@@ -79,7 +79,13 @@ ordersRouter.get(
                 orderStatus: req.query.orderStatus,
                 orderStatuses: (Array.isArray(req.query.orderStatuses)) ? req.query.orderStatuses : undefined,
                 orderDateFrom: moment(req.query.orderDateFrom).toDate(),
-                orderDateThrough: moment(req.query.orderDateThrough).toDate()
+                orderDateThrough: moment(req.query.orderDateThrough).toDate(),
+                confirmationNumbers: (Array.isArray(req.query.confirmationNumbers))
+                    ? req.query.confirmationNumbers
+                    : undefined,
+                reservedEventIdentifiers: (Array.isArray(req.query.reservedEventIdentifiers))
+                    ? req.query.reservedEventIdentifiers
+                    : undefined
             });
             res.json(orders);
         } catch (error) {
