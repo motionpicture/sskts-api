@@ -245,6 +245,45 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/offer/pro
         next(error);
     }
 }));
+/**
+ * クレジットカード有効性チェック
+ */
+placeOrderTransactionsRouter.post('/:transactionId/actions/validate/creditCard', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
+    req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
+    req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
+    req.checkBody('method', 'invalid method').notEmpty().withMessage('method is required');
+    req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('creditCard is required');
+    next();
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const creditCard = Object.assign({}, req.body.creditCard, {
+            memberId: (req.user.username !== undefined) ? req.user.username : undefined
+        });
+        debug('authorizing credit card...', creditCard);
+        debug('authorizing credit card...', req.body.creditCard);
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.check({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            orderId: req.body.orderId,
+            amount: req.body.amount,
+            method: req.body.method,
+            creditCard: creditCard
+        })({
+            action: new sskts.repository.Action(sskts.mongoose.connection),
+            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            organization: new sskts.repository.Organization(sskts.mongoose.connection)
+        });
+        res.status(http_status_1.ACCEPTED).json({
+            id: action.id
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * クレジットカードオーソリ
+ */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
     req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
     req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
