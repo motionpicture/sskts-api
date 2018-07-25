@@ -248,39 +248,51 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/offer/pro
 /**
  * クレジットカード有効性チェック
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/validate/creditCard', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
-    req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
-    req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
-    req.checkBody('method', 'invalid method').notEmpty().withMessage('method is required');
-    req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('creditCard is required');
-    next();
-}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const creditCard = Object.assign({}, req.body.creditCard, {
-            memberId: (req.user.username !== undefined) ? req.user.username : undefined
-        });
-        debug('authorizing credit card...', creditCard);
-        debug('authorizing credit card...', req.body.creditCard);
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.check({
-            agentId: req.user.sub,
-            transactionId: req.params.transactionId,
-            orderId: req.body.orderId,
-            amount: req.body.amount,
-            method: req.body.method,
-            creditCard: creditCard
-        })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-            organization: new sskts.repository.Organization(sskts.mongoose.connection)
-        });
-        res.status(http_status_1.ACCEPTED).json({
-            id: action.id
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrderTransactionsRouter.post(
+//     '/:transactionId/actions/validate/creditCard',
+//     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+//     (req, __2, next) => {
+//         req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
+//         req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
+//         req.checkBody('method', 'invalid method').notEmpty().withMessage('method is required');
+//         req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('creditCard is required');
+//         next();
+//     },
+//     validator,
+//     rateLimit4transactionInProgress,
+//     async (req, res, next) => {
+//         try {
+//             // 会員IDを強制的にログイン中の人物IDに変更
+//             type ICreditCard4authorizeAction =
+//                 sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.ICreditCard4authorizeAction;
+//             const creditCard: ICreditCard4authorizeAction = {
+//                 ...req.body.creditCard,
+//                 ...{
+//                     memberId: (req.user.username !== undefined) ? req.user.username : undefined
+//                 }
+//             };
+//             debug('authorizing credit card...', creditCard);
+//             debug('authorizing credit card...', req.body.creditCard);
+//             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.check({
+//                 agentId: req.user.sub,
+//                 transactionId: req.params.transactionId,
+//                 orderId: req.body.orderId,
+//                 amount: req.body.amount,
+//                 method: req.body.method,
+//                 creditCard: creditCard
+//             })({
+//                 action: new sskts.repository.Action(sskts.mongoose.connection),
+//                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+//                 organization: new sskts.repository.Organization(sskts.mongoose.connection)
+//             });
+//             res.status(ACCEPTED).json({
+//                 id: action.id
+//             });
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * クレジットカードオーソリ
  */
@@ -455,6 +467,76 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/paymentMe
         next(error);
     }
 }));
+/**
+ * Mocoin口座確保
+ */
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/mocoin', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __, next) => {
+    req.checkBody('token', 'invalid token').notEmpty().withMessage('token is required');
+    req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
+    req.checkBody('fromAccountNumber', 'invalid fromAccountNumber').notEmpty().withMessage('fromAccountNumber is required');
+    next();
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // mocoin転送取引サービスクライアントを生成
+        const authClient = new sskts.mocoin.auth.OAuth2({
+            domain: process.env.MOCOIN_AUTHORIZE_SERVER_DOMAIN,
+            clientId: process.env.MOCOIN_CLIENT_ID,
+            clientSecret: process.env.MOCOIN_CLIENT_SECRET,
+            redirectUri: '',
+            logoutUri: ''
+        });
+        authClient.setCredentials({ access_token: req.body.token });
+        const transferService = new sskts.mocoin.service.transaction.TransferCoin({
+            endpoint: process.env.MOCOIN_API_ENDPOINT,
+            auth: authClient
+        });
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.mocoin.create({
+            transactionId: req.params.transactionId,
+            amount: parseInt(req.body.amount, 10),
+            fromAccountNumber: req.body.fromAccountNumber,
+            notes: req.body.notes
+        })({
+            action: new sskts.repository.Action(sskts.mongoose.connection),
+            organization: new sskts.repository.Organization(sskts.mongoose.connection),
+            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            transferService: transferService
+        });
+        res.status(http_status_1.CREATED).json(action);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * Mocoin口座承認取消
+ */
+// placeOrderTransactionsRouter.delete(
+//     '/:transactionId/actions/authorize/paymentMethod/mocoin/:actionId',
+//     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+//     validator,
+//     rateLimit4transactionInProgress,
+//     async (req, res, next) => {
+//         try {
+//             // pecorino転送取引サービスクライアントを生成
+//             const transferService = new sskts.mocoin.service.transaction.TransferCoin({
+//                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+//                 auth: pecorinoAuthClient
+//             });
+//             await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.mocoin.cancel({
+//                 agentId: req.user.sub,
+//                 transactionId: req.params.transactionId,
+//                 actionId: req.params.actionId
+//             })({
+//                 action: new sskts.repository.Action(sskts.mongoose.connection),
+//                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+//                 transferService: transferService
+//             });
+//             res.status(NO_CONTENT).end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * Pecorino賞金承認アクション
  */
