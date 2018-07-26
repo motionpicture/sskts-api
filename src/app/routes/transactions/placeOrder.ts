@@ -5,7 +5,7 @@ import * as middlewares from '@motionpicture/express-middleware';
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
-import { ACCEPTED, CREATED, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS } from 'http-status';
+import { CREATED, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
 import * as request from 'request-promise-native';
@@ -302,54 +302,54 @@ placeOrderTransactionsRouter.delete(
 /**
  * クレジットカード有効性チェック
  */
-placeOrderTransactionsRouter.post(
-    '/:transactionId/actions/validate/creditCard',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (req, __2, next) => {
-        req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
-        req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
-        req.checkBody('method', 'invalid method').notEmpty().withMessage('method is required');
-        req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('creditCard is required');
+// placeOrderTransactionsRouter.post(
+//     '/:transactionId/actions/validate/creditCard',
+//     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+//     (req, __2, next) => {
+//         req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
+//         req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
+//         req.checkBody('method', 'invalid method').notEmpty().withMessage('method is required');
+//         req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('creditCard is required');
 
-        next();
-    },
-    validator,
-    rateLimit4transactionInProgress,
-    async (req, res, next) => {
-        try {
-            // 会員IDを強制的にログイン中の人物IDに変更
-            type ICreditCard4authorizeAction =
-                sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.ICreditCard4authorizeAction;
-            const creditCard: ICreditCard4authorizeAction = {
-                ...req.body.creditCard,
-                ...{
-                    memberId: (req.user.username !== undefined) ? req.user.username : undefined
-                }
-            };
-            debug('authorizing credit card...', creditCard);
+//         next();
+//     },
+//     validator,
+//     rateLimit4transactionInProgress,
+//     async (req, res, next) => {
+//         try {
+//             // 会員IDを強制的にログイン中の人物IDに変更
+//             type ICreditCard4authorizeAction =
+//                 sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.ICreditCard4authorizeAction;
+//             const creditCard: ICreditCard4authorizeAction = {
+//                 ...req.body.creditCard,
+//                 ...{
+//                     memberId: (req.user.username !== undefined) ? req.user.username : undefined
+//                 }
+//             };
+//             debug('authorizing credit card...', creditCard);
 
-            debug('authorizing credit card...', req.body.creditCard);
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.check({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                orderId: req.body.orderId,
-                amount: req.body.amount,
-                method: req.body.method,
-                creditCard: creditCard
-            })({
-                action: new sskts.repository.Action(sskts.mongoose.connection),
-                transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-                organization: new sskts.repository.Organization(sskts.mongoose.connection)
-            });
+//             debug('authorizing credit card...', req.body.creditCard);
+//             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.check({
+//                 agentId: req.user.sub,
+//                 transactionId: req.params.transactionId,
+//                 orderId: req.body.orderId,
+//                 amount: req.body.amount,
+//                 method: req.body.method,
+//                 creditCard: creditCard
+//             })({
+//                 action: new sskts.repository.Action(sskts.mongoose.connection),
+//                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+//                 organization: new sskts.repository.Organization(sskts.mongoose.connection)
+//             });
 
-            res.status(ACCEPTED).json({
-                id: action.id
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.status(ACCEPTED).json({
+//                 id: action.id
+//             });
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 /**
  * クレジットカードオーソリ
