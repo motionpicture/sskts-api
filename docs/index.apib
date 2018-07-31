@@ -4,40 +4,6 @@ FORMAT: 1A
 
 シネマサンシャインチケッティングサービスが提供するAPIは、シネマサンシャインにおける座席予約とチケット管理を扱うアプリケーションに有用なインターフェースを提供します。
 
-## Group 口座管理サービス
-
-### /accounts/transactions/deposit
-
-#### 口座入金 [POST]
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 204 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
 ## Group 組織管理サービス
 
 ### /organizations/movieTheater
@@ -58,6 +24,22 @@ FORMAT: 1A
 
     + Body
 
+            [
+              {},
+              {},
+              {}
+            ]
+
+    + Schema
+
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": ""
+              }
+            }
+
 + Request (application/json)
 
     + Headers
@@ -72,9 +54,13 @@ FORMAT: 1A
 
     + Body
 
-### /organizations/movieTheater/:branchCode
+### /organizations/movieTheater/{branchCode}
 
 #### 劇場取得 [GET]
+
++ Parameters
+
+    + branchCode (required)
 
 + Request (application/json)
 
@@ -89,6 +75,15 @@ FORMAT: 1A
     Successful operation
 
     + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
 
 + Request (application/json)
 
@@ -118,7 +113,547 @@ FORMAT: 1A
 
     + Body
 
+            {
+              "theaterCode": "ut",
+              "confirmationNumber": 94624579,
+              "telephone": "pariatur qui ullamco veniam"
+            }
+
+    + Schema
+
+            {
+              "type": "object",
+              "required": [
+                "theaterCode",
+                "confirmationNumber",
+                "telephone"
+              ],
+              "properties": {
+                "theaterCode": {
+                  "type": "string",
+                  "example": 118
+                },
+                "confirmationNumber": {
+                  "type": "integer",
+                  "example": 12345
+                },
+                "telephone": {
+                  "type": "string",
+                  "example": "09012345678"
+                }
+              }
+            }
+
 + Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
+            {
+              "theaterCode": "incididunt cupidatat proiden",
+              "confirmationNumber": -61810393,
+              "telephone": "non in est ad c"
+            }
+
+    + Schema
+
+            {
+              "type": "object",
+              "required": [
+                "theaterCode",
+                "confirmationNumber",
+                "telephone"
+              ],
+              "properties": {
+                "theaterCode": {
+                  "type": "string",
+                  "example": 118
+                },
+                "confirmationNumber": {
+                  "type": "integer",
+                  "example": 12345
+                },
+                "telephone": {
+                  "type": "string",
+                  "example": "09012345678"
+                }
+              }
+            }
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+#### 注文検索 [GET /orders]
+
++ Parameters
+
+    + sellerIds: 
+    
+    + customerMembershipNumbers: 
+    
+    + orderNumbers: 
+    
+    + orderStatuses: 
+    
+    + orderDateFrom
+    
+    + orderDateThrough
+    
+    + confirmationNumbers: 
+    
+    + reservedEventIdentifiers: 
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            [
+              {},
+              {},
+              {}
+            ]
+
+    + Schema
+
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": ""
+              }
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+## Group 場所管理サービス
+
+### /places/movieTheater/{branchCode}
+
+#### 劇場取得 [GET]
+
++ Parameters
+
+    + branchCode (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /places/movieTheater
+
+#### 劇場検索 [GET]
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            [
+              {}
+            ]
+
+    + Schema
+
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": ""
+              }
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+## Group 会員プログラム管理サービス
+
+### /programMemberships
+
+#### 会員プログラム検索 [GET]
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            [
+              {}
+            ]
+
+    + Schema
+
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": ""
+              }
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+## Group イベント管理サービス
+
+### /events/individualScreeningEvent/{identifier}
+
+#### 上映イベント取得 [GET]
+
++ Parameters
+
+    + identifier (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /events/individualScreeningEvent
+
+#### 上映イベント検索 [GET]
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            [
+              {}
+            ]
+
+    + Schema
+
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": ""
+              }
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+## Group 注文取引サービス
+
+### /transactions/placeOrder/start
+
+#### 注文取引開始 [POST]
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/customerContact
+
+#### 購入者情報変更 [PUT]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/seatReservation
+
+#### 座席予約承認追加 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/seatReservation/{actionId}
+
+#### 座席予約承認取消 [DELETE]
+
++ Parameters
+
+    + transactionId (required)
+    
+    + actionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 204 (application/json)
 
     Successful operation
 
@@ -138,9 +673,13 @@ FORMAT: 1A
 
     + Body
 
-### /orders
+#### 座席予約承認変更 [PATCH]
 
-#### 注文検索 [POST]
++ Parameters
+
+    + transactionId (required)
+    
+    + actionId (required)
 
 + Request (application/json)
 
@@ -151,6 +690,678 @@ FORMAT: 1A
     + Body
 
 + Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/offer/programMembership
+
+#### 会員プログラムオファー承認追加 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/offer/programMembership/{actionId}
+
+#### 会員プログラムオファー承認取消 [DELETE]
+
++ Parameters
+
+    + transactionId (required)
+    
+    + actionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 204 (application/json)
+
+    Successful operation
+
+    + Body
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/creditCard
+
+#### クレジットカード決済承認追加 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/creditCard/{actionId}
+
+#### クレジットカード決済承認取消 [DELETE]
+
++ Parameters
+
+    + transactionId (required)
+    
+    + actionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 204 (application/json)
+
+    Successful operation
+
+    + Body
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/mvtk
+
+#### ムビチケ割引承認追加 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/mvtk/{actionId}
+
+#### ムビチケ割引承認取消 [DELETE]
+
++ Parameters
+
+    + transactionId (required)
+    
+    + actionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 204 (application/json)
+
+    Successful operation
+
+    + Body
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/paymentMethod/pecorino
+
+#### ポイント決済承認追加 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/paymentMethod/pecorino/{actionId}
+
+#### ポイント決済承認取消 [DELETE]
+
++ Parameters
+
+    + transactionId (required)
+    
+    + actionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 204 (application/json)
+
+    Successful operation
+
+    + Body
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/award/pecorino
+
+#### ポイントインセンティブ承認追加 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/actions/authorize/award/pecorino/{actionId}
+
+#### ポイントインセンティブ承認取消 [DELETE]
+
++ Parameters
+
+    + transactionId (required)
+    
+    + actionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 204 (application/json)
+
+    Successful operation
+
+    + Body
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/confirm
+
+#### 取引確定 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/cancel
+
+#### 取引中止 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 204 (application/json)
+
+    Successful operation
+
+    + Body
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/placeOrder/{transactionId}/tasks/sendEmailNotification
+
+#### メール送信タスク追加 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+## Group 注文返品取引サービス
+
+### /transactions/returnOrder/start
+
+#### 注文返品取引開始 [POST]
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+### /transactions/returnOrder/{transactionId}/confirm
+
+#### 注文返品取引確定 [POST]
+
++ Parameters
+
+    + transactionId (required)
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 201 (application/json)
+
+    Successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 400 (application/json)
+
+    パラメータ不適切
+
+    + Body
+
+## Group 口座管理サービス
+
+### /accounts/transactions/deposit
+
+#### 口座入金 [POST]
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
++ Response 204 (application/json)
 
     Successful operation
 
@@ -189,6 +1400,15 @@ FORMAT: 1A
     Successful operation
 
     + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
 
 + Request (application/json)
 
@@ -246,6 +1466,37 @@ FORMAT: 1A
 
     + Body
 
++ Response 200 (application/json)
+
+    Successful operation
+
+    + Body
+
+            [
+              {},
+              {},
+              {},
+              {}
+            ]
+
+    + Schema
+
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": ""
+              }
+            }
+
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+
+    + Body
+
 + Response 400 (application/json)
 
     パラメータ不適切
@@ -262,11 +1513,20 @@ FORMAT: 1A
 
     + Body
 
-+ Response 200 (application/json)
++ Response 201 (application/json)
 
     Successful operation
 
     + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
 
 + Request (application/json)
 
@@ -298,7 +1558,7 @@ FORMAT: 1A
 
     + Body
 
-+ Response 201 (application/json)
++ Response 204 (application/json)
 
     Successful operation
 
@@ -336,6 +1596,24 @@ FORMAT: 1A
 
     + Body
 
+            [
+              {},
+              {},
+              {},
+              {},
+              {}
+            ]
+
+    + Schema
+
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": ""
+              }
+            }
+
 + Request (application/json)
 
     + Headers
@@ -365,6 +1643,15 @@ FORMAT: 1A
     Successful operation
 
     + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
 
 + Request (application/json)
 
@@ -474,6 +1761,21 @@ FORMAT: 1A
 
     + Body
 
+            [
+              {},
+              {}
+            ]
+
+    + Schema
+
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": ""
+              }
+            }
+
 + Request (application/json)
 
     + Headers
@@ -510,6 +1812,23 @@ FORMAT: 1A
 
     + Body
 
+            [
+              {},
+              {},
+              {},
+              {}
+            ]
+
+    + Schema
+
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "description": ""
+              }
+            }
+
 + Request (application/json)
 
     + Headers
@@ -541,6 +1860,15 @@ FORMAT: 1A
     Successful operation
 
     + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "description": ""
+            }
 
 + Request (application/json)
 
@@ -578,907 +1906,14 @@ FORMAT: 1A
 
     + Body
 
-+ Request (application/json)
+            {}
 
-    + Headers
+    + Schema
 
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-## Group 場所管理サービス
-
-### /places/movieTheater/{branchCode}
-
-#### 劇場取得 [GET]
-
-+ Parameters
-
-    + branchCode (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 200 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /places/movieTheater
-
-#### 劇場検索 [GET]
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 200 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-## Group 会員プログラム管理サービス
-
-### /programMemberships
-
-#### 会員プログラム検索 [GET]
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 200 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-## Group イベント管理サービス
-
-### /events/individualScreeningEvent/{identifier}
-
-#### 上映イベント取得 [GET]
-
-+ Parameters
-
-    + identifier (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 200 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /events/individualScreeningEvent
-
-#### 上映イベント検索 [GET]
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 200 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-## Group 注文取引サービス
-
-### /transactions/placeOrder/start
-
-#### 注文取引開始 [POST]
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 200 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/customerContact
-
-#### 購入者情報変更 [PUT]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/seatReservation
-
-#### 座席予約承認追加 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/seatReservation/{actionId}
-
-#### 座席予約承認取消 [DELETE]
-
-+ Parameters
-
-    + transactionId (required)
-    
-    + actionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 204 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-#### 座席予約承認変更 [PATCH]
-
-+ Parameters
-
-    + transactionId (required)
-    
-    + actionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 200 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/offer/programMembership
-
-#### 会員プログラムオファー承認追加 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/offer/programMembership/{actionId}
-
-#### 会員プログラムオファー承認取消 [DELETE]
-
-+ Parameters
-
-    + transactionId (required)
-    
-    + actionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 204 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/creditCard
-
-#### クレジットカード決済承認追加 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/creditCard/{actionId}
-
-#### クレジットカード決済承認取消 [DELETE]
-
-+ Parameters
-
-    + transactionId (required)
-    
-    + actionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 204 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/mvtk
-
-#### ムビチケ割引承認追加 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/mvtk/{actionId}
-
-#### ムビチケ割引承認取消 [DELETE]
-
-+ Parameters
-
-    + transactionId (required)
-    
-    + actionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 204 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/paymentMethod/pecorino
-
-#### ポイント決済承認追加 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/paymentMethod/pecorino/{actionId}
-
-#### ポイント決済承認取消 [DELETE]
-
-+ Parameters
-
-    + transactionId (required)
-    
-    + actionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 204 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/award/pecorino
-
-#### ポイントインセンティブ承認追加 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/actions/authorize/award/pecorino/{actionId}
-
-#### ポイントインセンティブ承認取消 [DELETE]
-
-+ Parameters
-
-    + transactionId (required)
-    
-    + actionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 204 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/confirm
-
-#### 取引確定 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/cancel
-
-#### 取引中止 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 204 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/placeOrder/{transactionId}/tasks/sendEmailNotification
-
-#### メール送信タスク追加 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-## Group 注文返品取引サービス
-
-### /transactions/returnOrder/start
-
-#### 注文返品取引開始 [POST]
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 200 (application/json)
-
-    Successful operation
-
-    + Body
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 400 (application/json)
-
-    パラメータ不適切
-
-    + Body
-
-### /transactions/returnOrder/{transactionId}/confirm
-
-#### 注文返品取引確定 [POST]
-
-+ Parameters
-
-    + transactionId (required)
-
-+ Request (application/json)
-
-    + Headers
-
-            Accept: application/json
-
-    + Body
-
-+ Response 201 (application/json)
-
-    Successful operation
-
-    + Body
+            {
+              "type": "object",
+              "description": ""
+            }
 
 + Request (application/json)
 
