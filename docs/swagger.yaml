@@ -1,4 +1,3 @@
----
 swagger: "2.0"
 info:
   description: "シネマサンシャインチケッティングサービスが提供するAPIは、シネマサンシャインにおける座席予約とチケット管理を扱うアプリケーションに有用なインターフェースを提供します。"
@@ -34,24 +33,11 @@ tags:
 schemes:
 - "https"
 - "http"
+consumes:
+- "application/json"
+produces:
+- "application/json"
 paths:
-  /accounts/transactions/deposit:
-    post:
-      tags:
-      - "口座管理サービス"
-      summary: "口座入金"
-      description: ""
-      operationId: "depositAccount"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        204:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
   /organizations/movieTheater:
     get:
       tags:
@@ -59,32 +45,40 @@ paths:
       summary: "劇場検索"
       description: ""
       operationId: "findMovieTheaterOrganization"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       responses:
         200:
           description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MovieTheaterOrganization"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
-  /organizations/movieTheater/:branchCode:
+  /organizations/movieTheater/{branchCode}:
     get:
       tags:
       - "組織管理サービス"
       summary: "劇場取得"
       description: ""
       operationId: "searchMovieTheaterOrganization"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
+      parameters:
+      - name: branchCode
+        in: path
+        description: ""
+        required: true
+        type: string
       responses:
         200:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/MovieTheaterOrganization"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /orders/findByOrderInquiryKey:
     post:
@@ -93,281 +87,93 @@ paths:
       summary: "注文照会"
       description: ""
       operationId: "inquiryOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
+      parameters:
+        - in: body
+          name: 注文照会キー
+          description: ""
+          schema:
+            $ref: "#/definitions/OrderInquiryKey"
       responses:
         200:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/Order"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /orders:
-    post:
+    get:
       tags:
       - "注文管理サービス"
       summary: "注文検索"
       description: ""
       operationId: "searchOrders"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
+      parameters:
+        - in: query
+          name: sellerIds
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+          description: ""
+        - in: query
+          name: customerMembershipNumbers
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+          description: ""
+        - in: query
+          name: orderNumbers
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+          description: ""
+        - in: query
+          name: orderStatuses
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+          description: ""
+        - in: query
+          name: orderDateFrom
+          type: string
+          format: date
+          description: ""
+        - in: query
+          name: orderDateThrough
+          type: string
+          format: date
+          description: ""
+        - in: query
+          name: confirmationNumbers
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+          description: ""
+        - in: query
+          name: reservedEventIdentifiers
+          type: array
+          collectionFormat: multi
+          items:
+            type: string
+          description: ""
       responses:
         200:
           description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Order"
         400:
           description: "パラメータ不適切"
-
-  /people/me/contacts:
-    get:
-      tags:
-      - "ユーザーサービス"
-      summary: "連絡先検索"
-      description: ""
-      operationId: "findMyContacts"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-    put:
-      tags:
-      - "ユーザーサービス"
-      summary: "連絡先更新"
-      description: ""
-      operationId: "updateMyContacts"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        204:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
-  /people/me/creditCards:
-    get:
-      tags:
-      - "ユーザーサービス"
-      summary: "クレジットカード検索"
-      description: ""
-      operationId: "searchMyCreditCards"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        400:
-          description: "パラメータ不適切"
-    post:
-      tags:
-      - "ユーザーサービス"
-      summary: "クレジットカード追加"
-      description: ""
-      operationId: "addMyCreditCards"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
-  /people/me/creditCards/{cardSeq}:
-    delete:
-      tags:
-      - "ユーザーサービス"
-      summary: "クレジットカード削除"
-      description: ""
-      operationId: "deleteMyCreditCards"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "cardSeq"
-        in: "path"
-        description: ""
-        required: true
-        type: "string"
-      responses:
-        201:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
-  /people/me/accounts:
-    get:
-      tags:
-      - "ユーザーサービス"
-      summary: "口座検索"
-      description: ""
-      operationId: "searchMyAccounts"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-    post:
-      tags:
-      - "ユーザーサービス"
-      summary: "口座開設"
-      description: ""
-      operationId: "openMyAccount"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        201:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
-  /people/me/accounts/{accountNumber}/close:
-    put:
-      tags:
-      - "ユーザーサービス"
-      summary: "口座解約"
-      description: ""
-      operationId: "closeMyAccount"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "accountNumber"
-        in: "path"
-        description: ""
-        required: true
-        type: "string"
-      responses:
-        204:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
-  /people/me/accounts/{accountNumber}:
-    delete:
-      tags:
-      - "ユーザーサービス"
-      summary: "口座削除"
-      description: ""
-      operationId: "deleteMyAccount"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "accountNumber"
-        in: "path"
-        description: ""
-        required: true
-        type: "string"
-      responses:
-        204:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
-  /people/me/accounts/{accountNumber}/actions/moneyTransfer:
-    get:
-      tags:
-      - "ユーザーサービス"
-      summary: "口座取引履歴検索"
-      description: ""
-      operationId: "searchMyAccountMoneyTransferActions"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "accountNumber"
-        in: "path"
-        description: ""
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
-  /people/me/ownershipInfos/{goodType}:
-    get:
-      tags:
-      - "ユーザーサービス"
-      summary: "所有権検索"
-      description: ""
-      operationId: "searchMyOwnershipInfos"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "goodType"
-        in: "path"
-        description: ""
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
-  /people/me/ownershipInfos/programMembership/register:
-    put:
-      tags:
-      - "ユーザーサービス"
-      summary: "会員プログラム登録"
-      description: ""
-      operationId: "registerMyProgramMembership"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        202:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
-
-  /people/me/ownershipInfosownershipInfos/programMembership/{identifier}/unRegister:
-    put:
-      tags:
-      - "ユーザーサービス"
-      summary: "会員プログラム登録解除"
-      description: ""
-      operationId: "unRegisterMyProgramMembership"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "identifier"
-        in: "path"
-        description: ""
-        required: true
-        type: "string"
-      responses:
-        202:
-          description: Successful operation
-        400:
-          description: "パラメータ不適切"
+      security:
+      - AdminUserAuth: []
 
   /places/movieTheater/{branchCode}:
     get:
@@ -376,21 +182,21 @@ paths:
       summary: "劇場取得"
       description: ""
       operationId: "findMovieTheaterPlace"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "branchCode"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         200:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/MovieTheaterPlace"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /places/movieTheater:
     get:
@@ -399,15 +205,17 @@ paths:
       summary: "劇場検索"
       description: ""
       operationId: "searchMovieTheaterPlaces"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       responses:
         200:
           description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MovieTheaterPlace"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /programMemberships:
     get:
@@ -416,15 +224,17 @@ paths:
       summary: "会員プログラム検索"
       description: ""
       operationId: "searchProgramMemberships"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       responses:
         200:
           description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ProgramMembership"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /events/individualScreeningEvent/{identifier}:
     get:
@@ -433,21 +243,21 @@ paths:
       summary: "上映イベント取得"
       description: ""
       operationId: "findIndividualScreeningEvent"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "identifier"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         200:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/IndividualScreeningEvent"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /events/individualScreeningEvent:
     get:
@@ -456,15 +266,17 @@ paths:
       summary: "上映イベント検索"
       description: ""
       operationId: "searchIndividualScreeningEvents"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       responses:
         200:
           description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/IndividualScreeningEvent"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/start:
     post:
@@ -473,15 +285,15 @@ paths:
       summary: "注文取引開始"
       description: ""
       operationId: "startPlaceOrderTransaction"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       responses:
         200:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/PlaceOrderTransaction"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/customerContact:
     put:
@@ -490,21 +302,21 @@ paths:
       summary: "購入者情報変更"
       description: ""
       operationId: "setCustomerContactOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/PersonContact"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/actions/authorize/seatReservation:
     post:
@@ -513,21 +325,21 @@ paths:
       summary: "座席予約承認追加"
       description: ""
       operationId: "authorizeSeatReservationOfferOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/AuthorizeAction"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/actions/authorize/seatReservation/{actionId}:
     delete:
@@ -536,52 +348,51 @@ paths:
       summary: "座席予約承認取消"
       description: ""
       operationId: "cancelSeatReservationOfferAuthorizationOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       - name: "actionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         204:
           description: Successful operation
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
+
     patch:
       tags:
       - "注文取引サービス"
       summary: "座席予約承認変更"
       description: ""
       operationId: "changeSeatReservationOfferAuthorizationOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       - name: "actionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         200:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/AuthorizeAction"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/actions/authorize/offer/programMembership:
     post:
@@ -590,21 +401,21 @@ paths:
       summary: "会員プログラムオファー承認追加"
       description: ""
       operationId: "authorizeProgramMembershipOfferOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/AuthorizeAction"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/actions/authorize/offer/programMembership/{actionId}:
     delete:
@@ -613,26 +424,24 @@ paths:
       summary: "会員プログラムオファー承認取消"
       description: ""
       operationId: "cancelProgramMebmershipOfferAuthorizationOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       - name: "actionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         204:
           description: Successful operation
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/actions/authorize/creditCard:
     post:
@@ -641,21 +450,21 @@ paths:
       summary: "クレジットカード決済承認追加"
       description: ""
       operationId: "authorizeCreditCardPaymentMethodOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/AuthorizeAction"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/actions/authorize/creditCard/{actionId}:
     delete:
@@ -664,26 +473,24 @@ paths:
       summary: "クレジットカード決済承認取消"
       description: ""
       operationId: "cancelCreditCardPaymentMethodAuthorizationOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       - name: "actionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         204:
           description: Successful operation
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/actions/authorize/mvtk:
     post:
@@ -692,21 +499,21 @@ paths:
       summary: "ムビチケ割引承認追加"
       description: ""
       operationId: "authorizeMvtkDiscountOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/AuthorizeAction"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/actions/authorize/mvtk/{actionId}:
     delete:
@@ -715,26 +522,24 @@ paths:
       summary: "ムビチケ割引承認取消"
       description: ""
       operationId: "cancelMvtkDiscountAuthorizationOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       - name: "actionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         204:
           description: Successful operation
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/actions/authorize/paymentMethod/pecorino:
     post:
@@ -743,19 +548,17 @@ paths:
       summary: "ポイント決済承認追加"
       description: ""
       operationId: "authorizePecorinoPaymentMethodOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/AuthorizeAction"
         400:
           description: "パラメータ不適切"
 
@@ -766,21 +569,17 @@ paths:
       summary: "ポイント決済承認取消"
       description: ""
       operationId: "cancelPecorinoPaymentMethodAuthorizationOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       - name: "actionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         204:
           description: Successful operation
@@ -794,19 +593,17 @@ paths:
       summary: "ポイントインセンティブ承認追加"
       description: ""
       operationId: "authorizePecorinoAwardOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/AuthorizeAction"
         400:
           description: "パラメータ不適切"
 
@@ -817,21 +614,17 @@ paths:
       summary: "ポイントインセンティブ承認取消"
       description: ""
       operationId: "cancelPecorinoAwardAuthorizationOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       - name: "actionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         204:
           description: Successful operation
@@ -845,21 +638,21 @@ paths:
       summary: "取引確定"
       description: ""
       operationId: "confirmPlaceOrderTransaction"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/Order"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/cancel:
     post:
@@ -868,21 +661,19 @@ paths:
       summary: "取引中止"
       description: ""
       operationId: "cancelPlaceOrderTransaction"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         204:
           description: Successful operation
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/placeOrder/{transactionId}/tasks/sendEmailNotification:
     post:
@@ -891,21 +682,21 @@ paths:
       summary: "メール送信タスク追加"
       description: ""
       operationId: "addSendEmailTaskOnPlaceOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/Task"
         400:
           description: "パラメータ不適切"
+      security:
+      - AnonymousUserAuth: []
 
   /transactions/returnOrder/start:
     post:
@@ -914,15 +705,15 @@ paths:
       summary: "注文返品取引開始"
       description: ""
       operationId: "startReturnOrderTransaction"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       responses:
         200:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/ReturnOrderTransaction"
         400:
           description: "パラメータ不適切"
+      security:
+      - AdminUserAuth: []
 
   /transactions/returnOrder/{transactionId}/confirm:
     post:
@@ -931,26 +722,383 @@ paths:
       summary: "注文返品取引確定"
       description: ""
       operationId: "confirmReturnOrderTransaction"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
       parameters:
       - name: "transactionId"
-        in: "path"
+        in: path
         description: ""
         required: true
-        type: "string"
+        type: string
       responses:
         201:
           description: Successful operation
+          schema:
+            $ref: "#/definitions/ReturnOrderTransactionResult"
         400:
           description: "パラメータ不適切"
+      security:
+      - AdminUserAuth: []
 
-# securityDefinitions:
-#   adminAuth:
-#     type: "oauth2"
-#     tokenUrl: "https://sskts-development-v2.auth.ap-northeast-1.amazoncognito.com/oauth2/token"
-#     flow: "application"
+  /accounts/transactions/deposit:
+    post:
+      tags:
+      - "口座管理サービス"
+      summary: "口座入金"
+      description: ""
+      operationId: "depositAccount"
+      responses:
+        204:
+          description: Successful operation
+        400:
+          description: "パラメータ不適切"
+      security:
+      - AdminUserAuth: []
 
-# definitions:
+  /people/me/contacts:
+    get:
+      tags:
+      - "ユーザーサービス"
+      summary: "連絡先検索"
+      description: ""
+      operationId: "findMyContacts"
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: "#/definitions/PersonContact"
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+    put:
+      tags:
+      - "ユーザーサービス"
+      summary: "連絡先更新"
+      description: ""
+      operationId: "updateMyContacts"
+      responses:
+        204:
+          description: Successful operation
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+  /people/me/creditCards:
+    get:
+      tags:
+      - "ユーザーサービス"
+      summary: "クレジットカード検索"
+      description: ""
+      operationId: "searchMyCreditCards"
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/CreditCard"
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+    post:
+      tags:
+      - "ユーザーサービス"
+      summary: "クレジットカード追加"
+      description: ""
+      operationId: "addMyCreditCards"
+      responses:
+        201:
+          description: Successful operation
+          schema:
+            $ref: "#/definitions/CreditCard"
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+  /people/me/creditCards/{cardSeq}:
+    delete:
+      tags:
+      - "ユーザーサービス"
+      summary: "クレジットカード削除"
+      description: ""
+      operationId: "deleteMyCreditCards"
+      parameters:
+      - name: "cardSeq"
+        in: path
+        description: ""
+        required: true
+        type: string
+      responses:
+        204:
+          description: Successful operation
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+  /people/me/accounts:
+    get:
+      tags:
+      - "ユーザーサービス"
+      summary: "口座検索"
+      description: ""
+      operationId: "searchMyAccounts"
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/CreditCard"
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+    post:
+      tags:
+      - "ユーザーサービス"
+      summary: "口座開設"
+      description: ""
+      operationId: "openMyAccount"
+      responses:
+        201:
+          description: Successful operation
+          schema:
+            $ref: "#/definitions/Account"
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+  /people/me/accounts/{accountNumber}/close:
+    put:
+      tags:
+      - "ユーザーサービス"
+      summary: "口座解約"
+      description: ""
+      operationId: "closeMyAccount"
+      parameters:
+      - name: "accountNumber"
+        in: path
+        description: ""
+        required: true
+        type: string
+      responses:
+        204:
+          description: Successful operation
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+  /people/me/accounts/{accountNumber}:
+    delete:
+      tags:
+      - "ユーザーサービス"
+      summary: "口座削除"
+      description: ""
+      operationId: "deleteMyAccount"
+      parameters:
+      - name: "accountNumber"
+        in: path
+        description: ""
+        required: true
+        type: string
+      responses:
+        204:
+          description: Successful operation
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+  /people/me/accounts/{accountNumber}/actions/moneyTransfer:
+    get:
+      tags:
+      - "ユーザーサービス"
+      summary: "口座取引履歴検索"
+      description: ""
+      operationId: "searchMyAccountMoneyTransferActions"
+      parameters:
+      - name: "accountNumber"
+        in: path
+        description: ""
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/AccountMoneyTransferAction"
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+  /people/me/ownershipInfos/{goodType}:
+    get:
+      tags:
+      - "ユーザーサービス"
+      summary: "所有権検索"
+      description: ""
+      operationId: "searchMyOwnershipInfos"
+      parameters:
+      - name: "goodType"
+        in: path
+        description: ""
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/OwnershipInfo"
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+  /people/me/ownershipInfos/programMembership/register:
+    put:
+      tags:
+      - "ユーザーサービス"
+      summary: "会員プログラム登録"
+      description: ""
+      operationId: "registerMyProgramMembership"
+      responses:
+        202:
+          description: Successful operation
+          schema:
+            $ref: "#/definitions/Task"
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+  /people/me/ownershipInfosownershipInfos/programMembership/{identifier}/unRegister:
+    put:
+      tags:
+      - "ユーザーサービス"
+      summary: "会員プログラム登録解除"
+      description: ""
+      operationId: "unRegisterMyProgramMembership"
+      parameters:
+      - name: "identifier"
+        in: path
+        description: ""
+        required: true
+        type: string
+      responses:
+        202:
+          description: Successful operation
+          schema:
+            $ref: "#/definitions/Task"
+        400:
+          description: "パラメータ不適切"
+      security:
+      - UserAuth: []
+
+securityDefinitions:
+  AnonymousUserAuth:
+    type: oauth2
+    tokenUrl: https://sskts-development-v2.auth.ap-northeast-1.amazoncognito.com/oauth2/token
+    flow: application
+  UserAuth:
+    type: oauth2
+    authorizationUrl: https://sskts-development-v2.auth.ap-northeast-1.amazoncognito.com/oauth2/authorize
+    tokenUrl: https://sskts-development-v2.auth.ap-northeast-1.amazoncognito.com/oauth2/token
+    flow: accessCode
+  AdminUserAuth:
+    type: oauth2
+    authorizationUrl: https://sskts-admin-development.auth.ap-northeast-1.amazoncognito.com/oauth2/authorize
+    tokenUrl: https://sskts-admin-development.auth.ap-northeast-1.amazoncognito.com/oauth2/token
+    flow: accessCode
+
+definitions:
+  MovieTheaterOrganization:
+    type: object
+    # properties:
+    #   accountNumber:
+    #     type: string
+    #     description: ""
+    description: ""
+
+  Order:
+    type: object
+    description: ""
+
+  OrderInquiryKey:
+    type: object
+    required:
+      - theaterCode
+      - confirmationNumber
+      - telephone
+    properties:
+      theaterCode:
+        type: string
+        example: 118
+      confirmationNumber:
+        type: integer
+        example: 12345
+      telephone:
+        type: string
+        example: 09012345678
+
+  PersonContact:
+    type: object
+    description: ""
+
+  CreditCard:
+    type: object
+    description: ""
+
+  Account:
+    type: object
+    description: ""
+
+  AccountMoneyTransferAction:
+    type: object
+    description: ""
+
+  OwnershipInfo:
+    type: object
+    description: ""
+
+  Task:
+    type: object
+    description: ""
+
+  MovieTheaterPlace:
+    type: object
+    description: ""
+
+  ProgramMembership:
+    type: object
+    description: ""
+
+  IndividualScreeningEvent:
+    type: object
+    description: ""
+
+  PlaceOrderTransaction:
+    type: object
+    description: ""
+
+  AuthorizeAction:
+    type: object
+    description: ""
+
+  ReturnOrderTransaction:
+    type: object
+    description: ""
+
+  ReturnOrderTransactionResult:
+    type: object
+    description: ""
+
