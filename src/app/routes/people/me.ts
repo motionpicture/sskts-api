@@ -162,12 +162,13 @@ meRouter.post(
                 accountService: accountService
             });
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const ownershipInfo: sskts.factory.ownershipInfo.IOwnershipInfo<sskts.factory.pecorino.account.AccountType> = {
+            const ownershipInfo: sskts.factory.ownershipInfo.IOwnershipInfo<sskts.factory.pecorino.account.TypeOf> = {
                 typeOf: 'OwnershipInfo',
                 // 十分にユニーク
-                identifier: `${sskts.factory.pecorino.account.AccountType.Account}-${req.user.username}-${account.accountNumber}`,
+                identifier: `${sskts.factory.pecorino.account.TypeOf.Account}-${req.user.username}-${account.accountNumber}`,
                 typeOfGood: {
-                    typeOf: sskts.factory.pecorino.account.AccountType.Account,
+                    typeOf: sskts.factory.pecorino.account.TypeOf.Account,
+                    accountType: sskts.factory.accountType.Point,
                     accountNumber: account.accountNumber
                 },
                 ownedBy: req.agent,
@@ -197,7 +198,7 @@ meRouter.put(
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
             const accountOwnershipInfos = await ownershipInfoRepo.search({
-                goodType: sskts.factory.pecorino.account.AccountType.Account,
+                goodType: sskts.factory.pecorino.account.TypeOf.Account,
                 ownedBy: req.user.username
             });
             const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
@@ -209,7 +210,10 @@ meRouter.put(
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            await accountService.close({ accountNumber: accountOwnershipInfo.typeOfGood.accountNumber });
+            await accountService.close({
+                accountType: sskts.factory.accountType.Point,
+                accountNumber: accountOwnershipInfo.typeOfGood.accountNumber
+            });
             res.status(NO_CONTENT).end();
         } catch (error) {
             // PecorinoAPIのレスポンスステータスコードが4xxであればクライアントエラー
@@ -255,7 +259,7 @@ meRouter.delete(
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
             const accountOwnershipInfos = await ownershipInfoRepo.search({
-                goodType: sskts.factory.pecorino.account.AccountType.Account,
+                goodType: sskts.factory.pecorino.account.TypeOf.Account,
                 ownedBy: req.user.username,
                 ownedAt: now
             });
@@ -293,11 +297,11 @@ meRouter.get(
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
             const accountOwnershipInfos = await ownershipInfoRepo.search({
-                goodType: sskts.factory.pecorino.account.AccountType.Account,
+                goodType: sskts.factory.pecorino.account.TypeOf.Account,
                 ownedBy: req.user.username,
                 ownedAt: now
             });
-            let accounts: sskts.factory.pecorino.account.IAccount[] = [];
+            let accounts: sskts.factory.pecorino.account.IAccount<sskts.factory.accountType.Point>[] = [];
             if (accountOwnershipInfos.length > 0) {
                 const accountService = new sskts.pecorinoapi.service.Account({
                     endpoint: <string>process.env.PECORINO_API_ENDPOINT,
@@ -305,6 +309,7 @@ meRouter.get(
                 });
 
                 accounts = await accountService.search({
+                    accountType: sskts.factory.accountType.Point,
                     accountNumbers: accountOwnershipInfos.map((o) => o.typeOfGood.accountNumber),
                     statuses: [],
                     limit: 100
@@ -330,7 +335,7 @@ meRouter.get(
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
             const accountOwnershipInfos = await ownershipInfoRepo.search({
-                goodType: sskts.factory.pecorino.account.AccountType.Account,
+                goodType: sskts.factory.pecorino.account.TypeOf.Account,
                 ownedBy: req.user.username,
                 ownedAt: now
             });
@@ -344,6 +349,7 @@ meRouter.get(
                 auth: pecorinoAuthClient
             });
             const actions = await accountService.searchMoneyTransferActions({
+                accountType: sskts.factory.accountType.Point,
                 accountNumber: accountOwnershipInfo.typeOfGood.accountNumber
             });
             res.json(actions);

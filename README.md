@@ -1,5 +1,3 @@
-<img src="https://motionpicture.jp/images/common/logo_01.svg" alt="motionpicture" title="motionpicture" align="right" height="56" width="98"/>
-
 # SSKTS API web application
 
 [![CircleCI](https://circleci.com/gh/motionpicture/sskts-api.svg?style=svg&circle-token=9a0b1ea029ad57360986a0e17fdc74948e78575e)](https://circleci.com/gh/motionpicture/sskts-api)
@@ -45,7 +43,6 @@ npm start
 | Name                                                 | Required              | Value       | Purpose                            |
 |------------------------------------------------------|-----------------------|-------------|------------------------------------|
 | `DEBUG`                                              | false                 | sskts-api:* | Debug                              |
-| `NPM_TOKEN`                                          | true                  |             | NPM auth token                     |
 | `NODE_ENV`                                           | true                  |             | environment name                   |
 | `MONGOLAB_URI`                                       | true                  |             | MongoDB connection URI             |
 | `SENDGRID_API_KEY`                                   | true                  |             | SendGrid API Key                   |
