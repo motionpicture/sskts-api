@@ -39,7 +39,9 @@ ownershipInfosRouter.get(
 
             return res.json({count: ownershipInfo});
         } catch (error) {
-            return next(error);
+            next(error);
+
+            return;
         }
     }
 );
