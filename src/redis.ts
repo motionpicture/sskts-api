@@ -7,8 +7,24 @@ import * as createDebug from 'debug';
 const debug = createDebug('sskts-api:redis');
 const CONNECT_TIMEOUT_IN_MILLISECONDS = 3600000;
 const MAX_ATTEMPTS = 10;
+const PING_INTERVAL = 60000; // 60 seconds
 
 let client: sskts.redis.RedisClient | undefined;
+
+/**
+ * AzureRedisは10分間アイドル状態だとタイムアウトしてコネクションが切断される
+ * 無駄な再コネクションを避けるために定期的にPINGコマンドを送信する
+ * @see http://aka.ms/redis/p/bestpractices
+ */
+setInterval(
+    () => {
+        if (client !== undefined) {
+            debug('redisClient => Sending Ping...');
+            client.ping();
+        }
+    },
+    PING_INTERVAL
+);
 
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
@@ -77,7 +93,6 @@ function createClient() {
 /**
  * 接続クライアントをリセットする
  * 接続リトライをギブアップした場合に呼び出される
- *
  * @see retry_strategy
  */
 // tslint:disable-next-line:no-single-line-block-comment

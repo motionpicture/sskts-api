@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- RedisCacheコネクションに対して定期的な疎通確認を追加。
+- 口座タイプを追加して、Pecorinoに指定するように変更。
+
 ### Deprecated
 
 ### Removed

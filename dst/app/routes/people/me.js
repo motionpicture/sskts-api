@@ -139,9 +139,10 @@ meRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admi
         const ownershipInfo = {
             typeOf: 'OwnershipInfo',
             // 十分にユニーク
-            identifier: `${sskts.factory.pecorino.account.AccountType.Account}-${req.user.username}-${account.accountNumber}`,
+            identifier: `${sskts.factory.pecorino.account.TypeOf.Account}-${req.user.username}-${account.accountNumber}`,
             typeOfGood: {
-                typeOf: sskts.factory.pecorino.account.AccountType.Account,
+                typeOf: sskts.factory.pecorino.account.TypeOf.Account,
+                accountType: sskts.factory.accountType.Point,
                 accountNumber: account.accountNumber
             },
             ownedBy: req.agent,
@@ -166,7 +167,7 @@ meRouter.put('/accounts/:accountNumber/close', permitScopes_1.default(['aws.cogn
         // 口座所有権を検索
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const accountOwnershipInfos = yield ownershipInfoRepo.search({
-            goodType: sskts.factory.pecorino.account.AccountType.Account,
+            goodType: sskts.factory.pecorino.account.TypeOf.Account,
             ownedBy: req.user.username
         });
         const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
@@ -177,7 +178,10 @@ meRouter.put('/accounts/:accountNumber/close', permitScopes_1.default(['aws.cogn
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        yield accountService.close({ accountNumber: accountOwnershipInfo.typeOfGood.accountNumber });
+        yield accountService.close({
+            accountType: sskts.factory.accountType.Point,
+            accountNumber: accountOwnershipInfo.typeOfGood.accountNumber
+        });
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
@@ -217,7 +221,7 @@ meRouter.delete('/accounts/:accountNumber', permitScopes_1.default(['aws.cognito
         // 口座所有権を検索
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const accountOwnershipInfos = yield ownershipInfoRepo.search({
-            goodType: sskts.factory.pecorino.account.AccountType.Account,
+            goodType: sskts.factory.pecorino.account.TypeOf.Account,
             ownedBy: req.user.username,
             ownedAt: now
         });
@@ -245,7 +249,7 @@ meRouter.get('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin
         // 口座所有権を検索
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const accountOwnershipInfos = yield ownershipInfoRepo.search({
-            goodType: sskts.factory.pecorino.account.AccountType.Account,
+            goodType: sskts.factory.pecorino.account.TypeOf.Account,
             ownedBy: req.user.username,
             ownedAt: now
         });
@@ -256,6 +260,7 @@ meRouter.get('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin
                 auth: pecorinoAuthClient
             });
             accounts = yield accountService.search({
+                accountType: sskts.factory.accountType.Point,
                 accountNumbers: accountOwnershipInfos.map((o) => o.typeOfGood.accountNumber),
                 statuses: [],
                 limit: 100
@@ -276,7 +281,7 @@ meRouter.get('/accounts/:accountNumber/actions/moneyTransfer', permitScopes_1.de
         // 口座所有権を検索
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const accountOwnershipInfos = yield ownershipInfoRepo.search({
-            goodType: sskts.factory.pecorino.account.AccountType.Account,
+            goodType: sskts.factory.pecorino.account.TypeOf.Account,
             ownedBy: req.user.username,
             ownedAt: now
         });
@@ -289,6 +294,7 @@ meRouter.get('/accounts/:accountNumber/actions/moneyTransfer', permitScopes_1.de
             auth: pecorinoAuthClient
         });
         const actions = yield accountService.searchMoneyTransferActions({
+            accountType: sskts.factory.accountType.Point,
             accountNumber: accountOwnershipInfo.typeOfGood.accountNumber
         });
         res.json(actions);

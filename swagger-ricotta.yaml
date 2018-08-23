@@ -1,0 +1,33 @@
+---
+swagger: "2.0"
+info:
+  description: ""
+  version: "1.0.0"
+  title: "統合チケッティングサービス RICOTTA"
+  termsOfService: "http://motionpicture.jp"
+  contact:
+    email: "yamazaki@motionpicture.jp"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "motionpicture.azuer-api.net"
+basePath: "/ricotta"
+schemes:
+- "https"
+- "http"
+
+paths:
+  /:
+    get:
+      # tags:
+      # - "口座管理サービス"
+      summary: "HOME"
+      description: ""
+      operationId: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        400:
+          description: "パラメータ不適切"
