@@ -89,7 +89,7 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
  * リミテッド注文を検索する
  */
 ordersRouter.get('/isLimitedOrdered', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, __2, next) => {
-    req.checkQuery('username').notEmpty().withMessage('required');
+    req.checkQuery('customerMembershipNumber').notEmpty().withMessage('required');
     req.checkQuery('screenDate').notEmpty().withMessage('required').len({ min: 8, max: 8 }).withMessage('screenDate not valid!');
     req.checkQuery('limitedTicketCode').notEmpty().withMessage('required');
     next();
