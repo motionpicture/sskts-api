@@ -101,7 +101,7 @@ ordersRouter.get(
     '/isLimitedOrdered',
     permitScopes(['aws.cognito.signin.user.admin']),
     (req, __2, next) => {
-        req.checkQuery('username').notEmpty().withMessage('required');
+        req.checkQuery('customerMembershipNumber').notEmpty().withMessage('required');
         req.checkQuery('screenDate').notEmpty().withMessage('required').len({min: 8, max: 8}).withMessage('screenDate not valid!');
         req.checkQuery('limitedTicketCode').notEmpty().withMessage('required');
 
