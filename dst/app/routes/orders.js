@@ -85,4 +85,26 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
         next(error);
     }
 }));
+/**
+ * リミテッド注文を検索する
+ */
+ordersRouter.get('/isLimitedOrdered', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, __2, next) => {
+    req.checkQuery('username').notEmpty().withMessage('required');
+    req.checkQuery('screenDate').notEmpty().withMessage('required').len({ min: 8, max: 8 }).withMessage('screenDate not valid!');
+    req.checkQuery('limitedTicketCode').notEmpty().withMessage('required');
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const result = yield new sskts.repository.Order(sskts.mongoose.connection)
+            .isLimitedOrdered({
+            customerMembershipNumber: req.query.username,
+            screenDate: req.query.screenDate,
+            limitedTicketCode: req.query.limitedTicketCode
+        });
+        res.json({ result: result });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = ordersRouter;
