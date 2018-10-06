@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- RedisCacheコネクションに対して定期的な疎通確認を追加。
-- 口座タイプを追加して、Pecorinoに指定するように変更。
-- 注文検索条件を強化。
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v11.0.2 - 2018-10-06
+
+### Changed
+
+- RedisCacheコネクションに対して定期的な疎通確認を追加。
+- 口座タイプを追加して、Pecorinoに指定するように変更。
+- 注文検索条件を強化。
 
 ## v10.7.0 - 2018-06-13
 
