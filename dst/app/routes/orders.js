@@ -59,16 +59,14 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
-        const orders = yield orderRepo.search({
-            sellerId: req.query.sellerId,
-            sellerIds: (Array.isArray(req.query.sellerIds)) ? req.query.sellerIds : undefined,
-            customerMembershipNumber: req.query.customerMembershipNumber,
-            customerMembershipNumbers: (Array.isArray(req.query.customerMembershipNumbers))
-                ? req.query.customerMembershipNumbers
-                : undefined,
-            orderNumber: req.query.orderNumber,
+        const searchConditions = {
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+            sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: sskts.factory.sortType.Descending },
+            seller: req.query.seller,
+            customer: req.query.customer,
             orderNumbers: (Array.isArray(req.query.orderNumbers)) ? req.query.orderNumbers : undefined,
-            orderStatus: req.query.orderStatus,
             orderStatuses: (Array.isArray(req.query.orderStatuses)) ? req.query.orderStatuses : undefined,
             orderDateFrom: moment(req.query.orderDateFrom).toDate(),
             orderDateThrough: moment(req.query.orderDateThrough).toDate(),
@@ -78,7 +76,10 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
             reservedEventIdentifiers: (Array.isArray(req.query.reservedEventIdentifiers))
                 ? req.query.reservedEventIdentifiers
                 : undefined
-        });
+        };
+        const orders = yield orderRepo.search(searchConditions);
+        const totalCount = yield orderRepo.count(searchConditions);
+        res.set('X-Total-Count', totalCount.toString());
         res.json(orders);
     }
     catch (error) {
