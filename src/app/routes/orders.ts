@@ -50,7 +50,6 @@ ordersRouter.post(
         }
     }
 );
-
 /**
  * 注文検索
  */
@@ -60,23 +59,20 @@ ordersRouter.get(
     (req, __2, next) => {
         req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601');
         req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601');
-
         next();
     },
     validator,
     async (req, res, next) => {
         try {
             const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
-            const orders = await orderRepo.search({
-                sellerId: req.query.sellerId,
-                sellerIds: (Array.isArray(req.query.sellerIds)) ? req.query.sellerIds : undefined,
-                customerMembershipNumber: req.query.customerMembershipNumber,
-                customerMembershipNumbers: (Array.isArray(req.query.customerMembershipNumbers))
-                    ? req.query.customerMembershipNumbers
-                    : undefined,
-                orderNumber: req.query.orderNumber,
+            const searchConditions: sskts.factory.order.ISearchConditions = {
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: sskts.factory.sortType.Descending },
+                seller: req.query.seller,
+                customer: req.query.customer,
                 orderNumbers: (Array.isArray(req.query.orderNumbers)) ? req.query.orderNumbers : undefined,
-                orderStatus: req.query.orderStatus,
                 orderStatuses: (Array.isArray(req.query.orderStatuses)) ? req.query.orderStatuses : undefined,
                 orderDateFrom: moment(req.query.orderDateFrom).toDate(),
                 orderDateThrough: moment(req.query.orderDateThrough).toDate(),
@@ -86,12 +82,14 @@ ordersRouter.get(
                 reservedEventIdentifiers: (Array.isArray(req.query.reservedEventIdentifiers))
                     ? req.query.reservedEventIdentifiers
                     : undefined
-            });
+            };
+            const orders = await orderRepo.search(searchConditions);
+            const totalCount = await orderRepo.count(searchConditions);
+            res.set('X-Total-Count', totalCount.toString());
             res.json(orders);
         } catch (error) {
             next(error);
         }
     }
 );
-
 export default ordersRouter;
