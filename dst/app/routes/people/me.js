@@ -151,7 +151,6 @@ meRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admi
             ownedThrough: moment(now).add(100, 'years').toDate() // 十分に無期限
         };
         yield ownershipInfoRepo.save(ownershipInfo);
-        // await addPecorinoAccountNumber(<string>req.user.username, account.accountNumber);
         res.status(http_status_1.CREATED).json(account);
     }
     catch (error) {

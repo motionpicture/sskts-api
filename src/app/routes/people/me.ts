@@ -177,7 +177,6 @@ meRouter.post(
                 ownedThrough: moment(now).add(100, 'years').toDate() // 十分に無期限
             };
             await ownershipInfoRepo.save(ownershipInfo);
-            // await addPecorinoAccountNumber(<string>req.user.username, account.accountNumber);
             res.status(CREATED).json(account);
         } catch (error) {
             next(error);
@@ -374,7 +373,7 @@ meRouter.get(
             const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
             const ownershipInfos = await repository.search({
                 goodType: req.params.goodType,
-                ownedBy: req.user.username, // ユーザーネームで検索
+                ownedBy: req.user.username,
                 ownedAt: new Date()
             });
             res.json(ownershipInfos);
