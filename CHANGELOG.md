@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v11.2.0 - 2018-10-08
+
+### Added
+
+- ユーザープールルーターを追加。
+
+### Changed
+
+- 注文に決済と購入者の属性追加。
+
 ## v11.1.1 - 2018-10-07
 
 ### Changed

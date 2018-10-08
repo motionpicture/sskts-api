@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ルーター
- * @ignore
  */
 const express = require("express");
 const accounts_1 = require("./accounts");
@@ -19,6 +18,7 @@ const places_1 = require("./places");
 const programMembership_1 = require("./programMembership");
 const placeOrder_1 = require("./transactions/placeOrder");
 const returnOrder_1 = require("./transactions/returnOrder");
+const userPools_1 = require("./userPools");
 const router = express.Router();
 // middleware that is specific to this router
 // router.use((req, res, next) => {
@@ -38,6 +38,7 @@ router.use('/programMemberships', programMembership_1.default);
 router.use('/events', events_1.default);
 router.use('/transactions/placeOrder', placeOrder_1.default);
 router.use('/transactions/returnOrder', returnOrder_1.default);
+router.use('/userPools', userPools_1.default);
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 if (process.env.NODE_ENV !== 'production') {

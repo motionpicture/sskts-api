@@ -1,6 +1,5 @@
 /**
  * ルーター
- * @ignore
  */
 import * as express from 'express';
 
@@ -18,6 +17,7 @@ import placesRouter from './places';
 import programMembershipsRouter from './programMembership';
 import placeOrderTransactionsRouter from './transactions/placeOrder';
 import returnOrderTransactionsRouter from './transactions/returnOrder';
+import userPoolsRouter from './userPools';
 
 const router = express.Router();
 
@@ -40,6 +40,7 @@ router.use('/programMemberships', programMembershipsRouter);
 router.use('/events', eventsRouter);
 router.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 router.use('/transactions/returnOrder', returnOrderTransactionsRouter);
+router.use('/userPools', userPoolsRouter);
 
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
