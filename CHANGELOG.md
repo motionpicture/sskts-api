@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- coa-service@6.0.0に対応。
+
 ### Deprecated
 
 ### Removed
