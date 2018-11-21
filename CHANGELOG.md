@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v11.2.1 - 2018-11-21
+
+### Changed
+
+- coa-service@6.0.0に対応。
+
 ## v11.2.0 - 2018-10-08
 
 ### Added
