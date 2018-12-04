@@ -1,8 +1,6 @@
 /**
  * Expressアプリケーション
- * @ignore
  */
-
 import * as middlewares from '@motionpicture/express-middleware';
 import * as sskts from '@motionpicture/sskts-domain';
 import * as bodyParser from 'body-parser';
@@ -11,6 +9,7 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
+import * as qs from 'qs';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
@@ -21,6 +20,13 @@ import router from './routes/router';
 const debug = createDebug('sskts-api:*');
 
 const app = express();
+app.set('query parser', (str: any) => qs.parse(str, {
+    arrayLimit: 1000,
+    parseArrays: true,
+    depth: 10,
+    allowDots: false,
+    allowPrototypes: false
+}));
 
 app.use(middlewares.basicAuth({ // ベーシック認証
     name: process.env.BASIC_AUTH_NAME,

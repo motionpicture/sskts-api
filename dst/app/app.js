@@ -1,7 +1,6 @@
 "use strict";
 /**
  * Expressアプリケーション
- * @ignore
  */
 const middlewares = require("@motionpicture/express-middleware");
 const sskts = require("@motionpicture/sskts-domain");
@@ -11,12 +10,20 @@ const createDebug = require("debug");
 const express = require("express");
 const expressValidator = require("express-validator");
 const helmet = require("helmet");
+const qs = require("qs");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const router_1 = require("./routes/router");
 const debug = createDebug('sskts-api:*');
 const app = express();
+app.set('query parser', (str) => qs.parse(str, {
+    arrayLimit: 1000,
+    parseArrays: true,
+    depth: 10,
+    allowDots: false,
+    allowPrototypes: false
+}));
 app.use(middlewares.basicAuth({
     name: process.env.BASIC_AUTH_NAME,
     pass: process.env.BASIC_AUTH_PASS,
