@@ -86,6 +86,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // app.use(express.static(__dirname + '/../../public'));
 sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default)
     .then(() => { debug('MongoDB connected.'); })
+    // tslint:disable-next-line:no-console
     .catch(console.error);
 // routers
 app.use('/', router_1.default);

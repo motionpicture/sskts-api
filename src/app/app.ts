@@ -99,6 +99,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 
 sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions)
     .then(() => { debug('MongoDB connected.'); })
+    // tslint:disable-next-line:no-console
     .catch(console.error);
 
 // routers
