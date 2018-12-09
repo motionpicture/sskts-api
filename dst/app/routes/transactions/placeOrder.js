@@ -15,6 +15,8 @@ const middlewares = require("@motionpicture/express-middleware");
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
 const moment = require("moment");
@@ -579,6 +581,46 @@ placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification',
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
         res.status(http_status_1.CREATED).json(task);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 取引検索
+ */
+placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
+    check_1.query('startFrom').optional().isISO8601().toDate(),
+    check_1.query('startThrough').optional().isISO8601().toDate(),
+    check_1.query('endFrom').optional().isISO8601().toDate(),
+    check_1.query('endThrough').optional().isISO8601().toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const searchConditions = Object.assign({}, req.query, { 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending } });
+        const transactions = yield transactionRepo.search(searchConditions);
+        const totalCount = yield transactionRepo.count(searchConditions);
+        res.set('X-Total-Count', totalCount.toString());
+        res.json(transactions);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 取引に対するアクション検索
+ */
+placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actions = yield actionRepo.searchByTransactionId({
+            transactionType: sskts.factory.transactionType.PlaceOrder,
+            transactionId: req.params.transactionId,
+            sort: req.query.sort
+        });
+        res.json(actions);
     }
     catch (error) {
         next(error);

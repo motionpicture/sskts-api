@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - タスク検索を追加
 - 組織の対応決済方法にクレジットカードを追加
+- 取引検索を追加
 
 ### Changed
 
