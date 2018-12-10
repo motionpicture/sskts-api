@@ -1,8 +1,6 @@
 /**
  * Expressアプリケーション
- * @ignore
  */
-
 import * as middlewares from '@motionpicture/express-middleware';
 import * as sskts from '@motionpicture/sskts-domain';
 import * as bodyParser from 'body-parser';
@@ -11,6 +9,7 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
+import * as qs from 'qs';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
@@ -21,6 +20,13 @@ import router from './routes/router';
 const debug = createDebug('sskts-api:*');
 
 const app = express();
+app.set('query parser', (str: any) => qs.parse(str, {
+    arrayLimit: 1000,
+    parseArrays: true,
+    depth: 10,
+    allowDots: false,
+    allowPrototypes: false
+}));
 
 app.use(middlewares.basicAuth({ // ベーシック認証
     name: process.env.BASIC_AUTH_NAME,
@@ -82,10 +88,10 @@ if (process.env.NODE_ENV !== 'production') {
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '1mb' }));
 // The extended option allows to choose between parsing the URL-encoded data
 // with the querystring library (when false) or the qs library (when true).
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 
 // 静的ファイル
@@ -93,6 +99,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 
 sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions)
     .then(() => { debug('MongoDB connected.'); })
+    // tslint:disable-next-line:no-console
     .catch(console.error);
 
 // routers

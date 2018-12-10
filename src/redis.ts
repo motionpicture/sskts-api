@@ -41,6 +41,7 @@ function createClient() {
         retry_strategy: (options) => {
             debug('retrying...', options);
             if (options.error instanceof Error && (<any>options.error).code === 'ECONNREFUSED') {
+                // tslint:disable-next-line:no-console
                 console.error(options.error);
                 // redisClient = redisClient.duplicate();
 
@@ -80,6 +81,7 @@ function createClient() {
     // });
 
     c.on('error', (err: any) => {
+        // tslint:disable-next-line:no-console
         console.error(err);
     });
 

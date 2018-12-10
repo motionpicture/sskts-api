@@ -5,6 +5,8 @@ import * as middlewares from '@motionpicture/express-middleware';
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { query } from 'express-validator/check';
 import { CREATED, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
@@ -722,6 +724,61 @@ placeOrderTransactionsRouter.post(
             });
 
             res.status(CREATED).json(task);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 取引検索
+ */
+placeOrderTransactionsRouter.get(
+    '',
+    permitScopes(['admin']),
+    ...[
+        query('startFrom').optional().isISO8601().toDate(),
+        query('startThrough').optional().isISO8601().toDate(),
+        query('endFrom').optional().isISO8601().toDate(),
+        query('endThrough').optional().isISO8601().toDate()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+            const searchConditions: sskts.factory.transaction.ISearchConditions<sskts.factory.transactionType.PlaceOrder> = {
+                ...req.query,
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending }
+            };
+            const transactions = await transactionRepo.search(searchConditions);
+            const totalCount = await transactionRepo.count(searchConditions);
+            res.set('X-Total-Count', totalCount.toString());
+            res.json(transactions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 取引に対するアクション検索
+ */
+placeOrderTransactionsRouter.get(
+    '/:transactionId/actions',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+            const actions = await actionRepo.searchByTransactionId({
+                transactionType: sskts.factory.transactionType.PlaceOrder,
+                transactionId: req.params.transactionId,
+                sort: req.query.sort
+            });
+            res.json(actions);
         } catch (error) {
             next(error);
         }
