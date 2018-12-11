@@ -62,15 +62,16 @@ eventsRouter.get(
                 endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
                 endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
                 // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined,
+                limit: (req.query.limit !== undefined) ? Math.min(Number(req.query.limit), 100) : undefined,
+                page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : undefined,
                 sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending }
             };
             const events = await sskts.service.offer.searchIndividualScreeningEvents(searchConditions)({
                 event: eventRepo,
                 itemAvailability: itemAvailabilityRepo
             });
-            const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
+            // const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
+            const totalCount = events.length;
 
             res.set('X-Total-Count', totalCount.toString());
             res.json(events);
