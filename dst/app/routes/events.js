@@ -43,9 +43,12 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cogni
     try {
         const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
         const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient());
-        const searchConditions = Object.assign({}, req.query, { 
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending } });
+        const searchConditions = Object.assign({}, req.query
+        // tslint:disable-next-line:no-magic-numbers
+        // limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
+        // page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined,
+        // sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending }
+        );
         const events = yield sskts.service.offer.searchIndividualScreeningEvents(searchConditions)({
             event: eventRepo,
             itemAvailability: itemAvailabilityRepo
