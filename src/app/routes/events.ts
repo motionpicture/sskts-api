@@ -4,7 +4,8 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
+// import { query } from 'express-validator/check';
+import * as moment from 'moment';
 
 import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
@@ -34,12 +35,20 @@ eventsRouter.get(
 eventsRouter.get(
     '/individualScreeningEvent',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
-    ...[
-        query('startFrom').optional().isISO8601().toDate(),
-        query('startThrough').optional().isISO8601().toDate(),
-        query('endFrom').optional().isISO8601().toDate(),
-        query('endThrough').optional().isISO8601().toDate()
-    ],
+    (req, __, next) => {
+        req.checkQuery('startFrom').optional().isISO8601().withMessage('startFrom must be ISO8601 timestamp');
+        req.checkQuery('startThrough').optional().isISO8601().withMessage('startThrough must be ISO8601 timestamp');
+        req.checkQuery('endFrom').optional().isISO8601().withMessage('endFrom must be ISO8601 timestamp');
+        req.checkQuery('endThrough').optional().isISO8601().withMessage('endThrough must be ISO8601 timestamp');
+
+        next();
+    },
+    // ...[
+    //     query('startFrom').optional().isISO8601().toDate(),
+    //     query('startThrough').optional().isISO8601().toDate(),
+    //     query('endFrom').optional().isISO8601().toDate(),
+    //     query('endThrough').optional().isISO8601().toDate()
+    // ],
     validator,
     async (req, res, next) => {
         try {
@@ -47,18 +56,21 @@ eventsRouter.get(
             const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient());
 
             const searchConditions: sskts.factory.event.individualScreeningEvent.ISearchConditions = {
-                ...req.query
+                ...req.query,
+                startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
+                startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
+                endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
+                endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
                 // tslint:disable-next-line:no-magic-numbers
-                // limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
-                // page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined,
-                // sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending }
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined,
+                sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending }
             };
             const events = await sskts.service.offer.searchIndividualScreeningEvents(searchConditions)({
                 event: eventRepo,
                 itemAvailability: itemAvailabilityRepo
             });
-            // const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
-            const totalCount = events.length;
+            const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
 
             res.set('X-Total-Count', totalCount.toString());
             res.json(events);
