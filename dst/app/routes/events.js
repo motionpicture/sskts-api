@@ -64,8 +64,8 @@ validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, functio
         });
         debug(events.length, 'events found');
         // const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
-        const totalCount = events.length;
-        res.set('X-Total-Count', totalCount.toString());
+        // const totalCount = events.length;
+        // res.set('X-Total-Count', totalCount.toString());
         res.json(events);
     }
     catch (error) {

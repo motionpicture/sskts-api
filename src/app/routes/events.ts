@@ -76,9 +76,9 @@ eventsRouter.get(
             });
             debug(events.length, 'events found');
             // const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
-            const totalCount = events.length;
+            // const totalCount = events.length;
 
-            res.set('X-Total-Count', totalCount.toString());
+            // res.set('X-Total-Count', totalCount.toString());
             res.json(events);
         } catch (error) {
             next(error);
