@@ -2,6 +2,7 @@
  * イベントルーター
  */
 import * as sskts from '@motionpicture/sskts-domain';
+import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 // import { query } from 'express-validator/check';
@@ -11,6 +12,8 @@ import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
+
+const debug = createDebug('sskts-api:routes');
 
 const eventsRouter = Router();
 eventsRouter.use(authentication);
@@ -66,10 +69,12 @@ eventsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : undefined,
                 sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending }
             };
+            debug('searching events...', searchConditions);
             const events = await sskts.service.offer.searchIndividualScreeningEvents(searchConditions)({
                 event: eventRepo,
                 itemAvailability: itemAvailabilityRepo
             });
+            debug(events.length, 'events found');
             // const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
             const totalCount = events.length;
 

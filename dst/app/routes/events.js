@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * イベントルーター
  */
 const sskts = require("@motionpicture/sskts-domain");
+const createDebug = require("debug");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 // import { query } from 'express-validator/check';
@@ -20,6 +21,7 @@ const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const debug = createDebug('sskts-api:routes');
 const eventsRouter = express_1.Router();
 eventsRouter.use(authentication_1.default);
 eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -55,10 +57,12 @@ validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, functio
         const searchConditions = Object.assign({}, req.query, { startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined, startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined, endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined, endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(Number(req.query.limit), 100) : undefined, page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : undefined, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending } });
+        debug('searching events...', searchConditions);
         const events = yield sskts.service.offer.searchIndividualScreeningEvents(searchConditions)({
             event: eventRepo,
             itemAvailability: itemAvailabilityRepo
         });
+        debug(events.length, 'events found');
         // const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
         const totalCount = events.length;
         res.set('X-Total-Count', totalCount.toString());
