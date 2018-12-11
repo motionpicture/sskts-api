@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v11.3.1 - 2018-12-11
+
+### Changed
+
+- 上映イベント検索条件強化
+
 ## v11.3.0 - 2018-12-10
 
 ### Added
