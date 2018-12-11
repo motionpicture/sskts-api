@@ -53,7 +53,8 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cogni
             event: eventRepo,
             itemAvailability: itemAvailabilityRepo
         });
-        const totalCount = yield eventRepo.countIndividualScreeningEvents(searchConditions);
+        // const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
+        const totalCount = events.length;
         res.set('X-Total-Count', totalCount.toString());
         res.json(events);
     }
