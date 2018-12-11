@@ -3,6 +3,8 @@
  */
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { query } from 'express-validator/check';
 
 import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
@@ -32,14 +34,12 @@ eventsRouter.get(
 eventsRouter.get(
     '/individualScreeningEvent',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
-    (req, __, next) => {
-        req.checkQuery('startFrom').optional().isISO8601().withMessage('startFrom must be ISO8601 timestamp').toDate();
-        req.checkQuery('startThrough').optional().isISO8601().withMessage('startThrough must be ISO8601 timestamp').toDate();
-        req.checkQuery('endFrom').optional().isISO8601().withMessage('endFrom must be ISO8601 timestamp').toDate();
-        req.checkQuery('endThrough').optional().isISO8601().withMessage('endThrough must be ISO8601 timestamp').toDate();
-
-        next();
-    },
+    ...[
+        query('startFrom').optional().isISO8601().toDate(),
+        query('startThrough').optional().isISO8601().toDate(),
+        query('endFrom').optional().isISO8601().toDate(),
+        query('endThrough').optional().isISO8601().toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {

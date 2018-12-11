@@ -13,6 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const sskts = require("@motionpicture/sskts-domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -32,13 +34,12 @@ eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default
         next(error);
     }
 }));
-eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), (req, __, next) => {
-    req.checkQuery('startFrom').optional().isISO8601().withMessage('startFrom must be ISO8601 timestamp').toDate();
-    req.checkQuery('startThrough').optional().isISO8601().withMessage('startThrough must be ISO8601 timestamp').toDate();
-    req.checkQuery('endFrom').optional().isISO8601().withMessage('endFrom must be ISO8601 timestamp').toDate();
-    req.checkQuery('endThrough').optional().isISO8601().withMessage('endThrough must be ISO8601 timestamp').toDate();
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
+    check_1.query('startFrom').optional().isISO8601().toDate(),
+    check_1.query('startThrough').optional().isISO8601().toDate(),
+    check_1.query('endFrom').optional().isISO8601().toDate(),
+    check_1.query('endThrough').optional().isISO8601().toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
         const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient());
