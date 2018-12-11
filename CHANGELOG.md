@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 上映イベント検索条件強化
+
 ### Deprecated
 
 ### Removed
