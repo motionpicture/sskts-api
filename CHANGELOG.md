@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 所有権コレクションのインデックス調整
 
 ### Deprecated
 
