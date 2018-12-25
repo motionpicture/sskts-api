@@ -16,9 +16,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
-- 所有権検索に取得元条件が適用されないバグを修正
-
 ### Security
+
+## v11.3.3 - 2018-12-25
+
+### Fixed
+
+- 所有権検索に取得元条件が適用されないバグを修正
 
 ## v11.3.2 - 2018-12-25
 
