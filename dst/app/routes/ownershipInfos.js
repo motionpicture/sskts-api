@@ -34,8 +34,8 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
             theaterIds: theaterIds
         };
         const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const ownershipInfo = yield repository.searchProgramMembership(searchCondition);
-        return res.json({ count: ownershipInfo });
+        const count = yield repository.countProgramMembership(searchCondition);
+        return res.json({ count });
     }
     catch (error) {
         next(error);
