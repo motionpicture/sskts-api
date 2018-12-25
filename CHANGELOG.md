@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v11.3.4 - 2018-12-25
+
+### Changed
+
+- 会員プログラム所有権カウントを調整
+
 ## v11.3.3 - 2018-12-25
 
 ### Fixed

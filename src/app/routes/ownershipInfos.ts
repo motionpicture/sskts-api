@@ -35,9 +35,9 @@ ownershipInfosRouter.get(
             };
 
             const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const ownershipInfo = await repository.searchProgramMembership(searchCondition);
+            const count = await repository.countProgramMembership(searchCondition);
 
-            return res.json({count: ownershipInfo});
+            return res.json({ count });
         } catch (error) {
             next(error);
 
