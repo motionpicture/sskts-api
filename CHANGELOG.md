@@ -9,7 +9,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
-- 所有権コレクションのインデックス調整
 
 ### Deprecated
 
@@ -18,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v11.3.2 - 2018-12-25
+
+### Changed
+
+- 所有権コレクションのインデックス調整
 
 ## v11.3.1 - 2018-12-11
 
